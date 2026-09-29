@@ -2,7 +2,7 @@
 
 A single-file 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
 
-**Play online:** https://yousifalsaeed.github.io/project-a/
+**Play online:** https://project-a-cardgame.netlify.app/
 
 **Play locally:** open `index.html` in any modern browser — no build step, no dependencies.
 
