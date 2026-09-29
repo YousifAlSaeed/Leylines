@@ -216,6 +216,13 @@ body.land .side.me .hand .card.sel,body.land .side.opp .hand .card.sel{z-index:3
 .codebox{font:900 44px/1 var(--serif);letter-spacing:.3em;color:var(--gold-l);padding:10px 0 6px 0.3em}
 .codein{font:900 30px var(--serif);letter-spacing:.3em;text-align:center;text-transform:uppercase;background:rgba(0,0,0,.35);color:var(--gold-l);
   border:1px solid var(--gold-d);border-radius:10px;padding:10px;width:100%}
+.namein{font:700 20px var(--serif);text-align:center;background:rgba(0,0,0,.35);color:var(--ink);border:1px solid var(--gold-d);border-radius:10px;padding:10px;width:100%;user-select:text;-webkit-user-select:text}
+.namein:focus,.codein:focus{outline:2px solid var(--gold-l);outline-offset:1px}
+.namein.need{animation:need .5s 2}
+@keyframes need{50%{border-color:var(--gold-l);box-shadow:0 0 14px rgba(246,220,132,.7)}}
+.gold{color:var(--gold-l)}
+.pname .tag{font:800 9px/1 system-ui,sans-serif;letter-spacing:.1em;color:var(--gold);border:1px solid rgba(212,175,55,.5);border-radius:999px;padding:3px 6px;margin-left:6px;vertical-align:2px}
+.pname .who{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .linkin{width:100%;background:rgba(0,0,0,.35);color:var(--muted);border:1px solid rgba(212,175,55,.3);border-radius:8px;padding:8px;font-size:13px;user-select:all;-webkit-user-select:all}
 .row{display:flex;gap:8px}.row .btn{flex:1}
 .or{color:var(--muted);font-size:13px;margin:4px 0}
@@ -305,6 +312,10 @@ body.land .side.me .hand .card.sel,body.land .side.opp .hand .card.sel{z-index:3
 <section id="scr-online" class="screen">
   <div class="topbar"><button class="iconbtn" id="onBack" aria-label="Back">‹</button><h2>Online</h2></div>
   <div class="wrap">
+    <div class="panel" id="onName">
+      <label class="or" for="myName">Your name</label>
+      <input class="namein" id="myName" maxlength="16" placeholder="Enter your name" autocomplete="nickname" spellcheck="false">
+    </div>
     <div class="panel" id="onChoose">
       <button class="btn primary" id="btnHost">Host a Game</button>
       <div class="or">— or join a friend —</div>
@@ -312,7 +323,7 @@ body.land .side.me .hand .card.sel,body.land .side.opp .hand .card.sel{z-index:3
       <button class="btn" id="btnJoin">Join</button>
     </div>
     <div class="panel hidden" id="onHost">
-      <div class="or">Your game code</div>
+      <div class="or">Hosting as <b class="gold" id="hostAs"></b> · your game code</div>
       <div class="codebox" id="hostCode">·····</div>
       <input class="linkin" id="hostLink" readonly>
       <div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div>
@@ -418,7 +429,7 @@ const SKEY='ninefold.save.v1';
 function defSave(){
   const coll={};[0,1,2,3,4,5,6,7,13].forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,name:'',cid:''};
 }
 function loadSave(){
   const d=defSave();
@@ -429,6 +440,8 @@ function loadSave(){
 }
 let SAVE=loadSave();
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
+// stable per-device id so the host can recognise a guest who reconnects
+if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
@@ -789,7 +802,7 @@ async function newRound(h0,h1,first){
   G.first=first;G.sel=null;G.busy=true;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
   renderGame();
-  const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':(G.mode==='ai'?'CPU':'Opponent')+' goes first';
+  const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
   await banner(who,'small');await wait(250);
   if(G!==g)return;
   G.busy=false;nextTurn();
@@ -889,7 +902,8 @@ function finish(s0,s1){
     SAVE.stats[key]=(SAVE.stats[key]||0)+1;save();
   }
   sfx(w<0?'draw':(G.mode==='local'||w===G.me)?'win':'lose');
-  const head=`<h2>${title}</h2><div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`;
+  const head=`<h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
+    `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`;
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1);
   const g=G;
   setTimeout(()=>{
@@ -908,7 +922,7 @@ function finish(s0,s1){
       const lose=idx=>{
         const ids=idx.map(i=>G.decks[G.me][i]);ids.forEach(collRemove);save();
         const added=ensureMinimum();
-        resultModal(head+`<p>${G.mode==='ai'?'The CPU':'Your opponent'} took:</p>`+rowHTML(ids,'red')+
+        resultModal(head+`<p>${G.mode==='ai'?'The CPU':esc(oppName())} took:</p>`+rowHTML(ids,'red')+
           (added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(added,'blue'):''));
       };
       const myDeck=G.decks[G.me];
@@ -919,7 +933,7 @@ function finish(s0,s1){
       }else{
         if(G.pendingTrade){lose(G.pendingTrade);return}
         G.onTrade=lose;
-        modal(head+`<p><span class="spin"></span>Your opponent is choosing ${n} card${n>1?'s':''}…</p>`+rowHTML(myDeck,'blue'),[]);
+        modal(head+`<p><span class="spin"></span>${esc(oppName())} is choosing ${n} card${n>1?'s':''}…</p>`+rowHTML(myDeck,'blue'),[]);
       }
     }
   },600);
@@ -1004,7 +1018,8 @@ function renderHands(){
 function setScores(sc){$('#scBot').textContent=sc[G.bottom];$('#scTop').textContent=sc[1-G.bottom]}
 function renderHud(){
   const st=G.st,bot=G.bottom;
-  $('#nameBot').textContent=G.names[bot];$('#nameTop').textContent=G.names[1-bot];
+  const lab=p=>esc(G.names[p])+(G.mode==='online'?`<small class="tag">${p===0?'HOST':'GUEST'}</small>`:'');
+  $('#nameBot').innerHTML=lab(bot);$('#nameTop').innerHTML=lab(1-bot);
   setScores([score(st,0),score(st,1)]);
   $('#sideBot').classList.toggle('active',!G.over&&st.turn===bot);
   $('#sideTop').classList.toggle('active',!G.over&&st.turn!==bot);
@@ -1012,7 +1027,7 @@ function renderHud(){
   if(G.over)msg='Game over';
   else if(G.mode==='local')msg=(st.turn===0?'Blue':'Red')+"'s turn";
   else if(st.turn===G.me)msg='Your turn';
-  else msg=G.mode==='ai'?'CPU is thinking…':"Opponent's turn";
+  else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
   $('#turnMsg').textContent=msg;
   const R=G.rules;
   let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
@@ -1140,7 +1155,7 @@ function renderHowto(){
 /* =====================================================================
    ONLINE (PeerJS)
    ===================================================================== */
-const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,pendingDeck:null,closing:false};
+const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,pendingDeck:null,closing:false,oppName:'',last:0,joining:false,joinT:0};
 const CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ';
 const peerId=code=>'ninefold-tt-'+code.toLowerCase();
 function loadPeerJS(){
@@ -1150,15 +1165,27 @@ function loadPeerJS(){
     const s=document.createElement('script');s.src=u;s.onload=()=>window.Peer?res():rej();s.onerror=()=>{s.remove();rej()};document.head.append(s);
   })),Promise.reject()).catch(()=>{throw new Error('Could not load the networking library. Check your connection.')});
 }
+const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
+function myName(){return cleanName(SAVE.name)||(NET.role==='guest'?'Guest':'Host')}
+function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
+// which lobby panels are visible: 'choose' (name + host/join), 'host' (code & link), 'none'
+function onPanels(which){
+  $('#onName').classList.toggle('hidden',which!=='choose');
+  $('#onChoose').classList.toggle('hidden',which!=='choose');
+  $('#onHost').classList.toggle('hidden',which!=='host');
+}
+function setJoining(on){NET.joining=on;$('#btnJoin').disabled=on;clearTimeout(NET.joinT)}
 function openOnline(code){
   netClose(true);
-  $('#onChoose').classList.remove('hidden');$('#onHost').classList.add('hidden');
+  onPanels('choose');
+  $('#myName').value=SAVE.name||'';
   $('#joinCode').value=code||'';onStatus('');show('online');
 }
 $('#onBack').onclick=()=>{sfx('click');netClose(true);show('menu')};
 $('#btnHost').onclick=()=>{sfx('click');openSetup('online')};
 $('#btnJoin').onclick=()=>{sfx('click');joinGame($('#joinCode').value)};
+$('#myName').addEventListener('input',e=>{SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
 $('#joinCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,5)});
 $('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(e.target.value)});
 function inviteLink(code){return location.href.split(/[?#]/)[0]+'?join='+code}
@@ -1168,17 +1195,17 @@ $('#btnCopy').onclick=async()=>{
 };
 $('#btnShare').onclick=()=>{
   const url=$('#hostLink').value;
-  if(navigator.share)navigator.share({title:'Project A',text:`Play Project A with me! Code: ${NET.code}`,url}).catch(()=>{});
+  if(navigator.share)navigator.share({title:'Project A',text:`${myName()} invited you to Project A! Code: ${NET.code}`,url}).catch(()=>{});
   else $('#btnCopy').click();
 };
 
 async function hostStart(){
-  show('online');
-  $('#onChoose').classList.add('hidden');$('#onHost').classList.remove('hidden');
+  show('online');onPanels('host');
   $('#hostCode').textContent='·····';$('#hostLink').value='';
   onStatus('<span class="spin"></span>Connecting…');
   try{await loadPeerJS()}catch(e){onStatus(e.message,true);return}
-  netClose(true);NET.closing=false;NET.role='host';
+  netClose(true);NET.closing=false;NET.role='host';NET.oppName='';
+  $('#hostAs').textContent=myName();
   let tries=0;
   const attempt=()=>{
     const code=Array.from({length:5},()=>CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)]).join('');
@@ -1188,9 +1215,25 @@ async function hostStart(){
       onStatus('<span class="spin"></span>Waiting for a friend to join…');
     });
     peer.on('connection',c=>{
-      if(NET.conn){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),300)});return}
+      const meta=c.metadata||{},old=NET.conn;
+      if(old){
+        // let the same device back in (e.g. it pressed Join twice or reloaded), or replace a dead link
+        const same=meta.cid&&old.metadata&&old.metadata.cid===meta.cid;
+        const stale=!old.open||Date.now()-NET.last>8000;
+        if(!same&&!stale){c.on('open',()=>{c.send({t:'full'});setTimeout(()=>c.close(),500)});return}
+        NET.conn=null;try{old.close()}catch(e){}
+      }
+      const rejoin=!!old;
       NET.conn=c;bindConn(c);
-      c.on('open',()=>{onStatus('Friend connected!');sendSetup()});
+      c.on('open',()=>{
+        if(NET.conn!==c)return;
+        NET.oppName=cleanName(meta.name)||'Guest';
+        const n=esc(NET.oppName);
+        toast(rejoin?`${NET.oppName} reconnected — starting a new match`:`${NET.oppName} joined your game!`);
+        sfx('banner');
+        onStatus(`<b class="gold">${n}</b> joined! Setting up the match…`);
+        sendSetup();
+      });
     });
     peer.on('error',err=>{
       if(err.type==='unavailable-id'&&tries++<4){peer.destroy();attempt();return}
@@ -1203,33 +1246,36 @@ async function hostStart(){
 async function joinGame(code){
   code=(code||'').toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){onStatus('Enter the 5-letter code from your friend.',true);return}
+  if(NET.joining||(NET.role==='guest'&&NET.code===code&&NET.conn&&NET.conn.open)){onStatus('<span class="spin"></span>Already connecting to '+code+'…');return}
+  setJoining(true);
   onStatus('<span class="spin"></span>Connecting…');
-  try{await loadPeerJS()}catch(e){onStatus(e.message,true);return}
-  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;
+  try{await loadPeerJS()}catch(e){setJoining(false);onStatus(e.message,true);return}
+  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;NET.oppName='';
+  setJoining(true);
   const peer=new Peer();NET.peer=peer;
+  const fail=msg=>{if(NET.peer!==peer)return;netClose(true);onPanels('choose');onStatus(msg,true)};
+  NET.joinT=setTimeout(()=>fail('Couldn\'t reach game '+code+'. Check the code and try again.'),20000);
   peer.on('open',()=>{
     onStatus('<span class="spin"></span>Looking for game '+code+'…');
-    const c=peer.connect(peerId(code),{reliable:true});NET.conn=c;bindConn(c);
-    c.on('open',()=>onStatus('Connected! Waiting for the host…'));
+    const c=peer.connect(peerId(code),{reliable:true,metadata:{name:myName(),cid:SAVE.cid}});NET.conn=c;bindConn(c);
+    c.on('open',()=>{clearTimeout(NET.joinT);onPanels('none');onStatus('<span class="spin"></span>Connected as <b class="gold">'+esc(myName())+'</b>. Waiting for the host…')});
   });
   peer.on('error',err=>{
     if(NET.peer!==peer)return;
-    if(err.type==='peer-unavailable')onStatus('No game found with code '+code+'.',true);
-    else onStatus('Connection error: '+(err.type||err.message),true);
-    NET.conn=null;
+    fail(err.type==='peer-unavailable'?'No game found with code '+code+'.':'Connection error: '+(err.type||err.message));
   });
 }
 function bindConn(c){
   NET.last=Date.now();
   c.on('data',m=>{if(NET.conn===c){NET.last=Date.now();onNet(m)}});
-  c.on('close',()=>{if(NET.conn===c)netLost('Your opponent disconnected.')});
+  c.on('close',()=>{if(NET.conn===c)netLost(`${oppName()} disconnected.`)});
   c.on('error',()=>{});
 }
 // heartbeat: WebRTC often doesn't report a closed tab, so ping and time out
 setInterval(()=>{
   if(!NET.conn||!NET.conn.open||NET.closing)return;
   netSend({t:'ping'});
-  if(Date.now()-NET.last>15000)netLost('Lost connection to your opponent.');
+  if(Date.now()-NET.last>15000)netLost(`Lost connection to ${oppName()}.`);
 },3000);
 window.addEventListener('pagehide',()=>{if(NET.conn)netClose(true)});
 function netSend(m){try{NET.conn&&NET.conn.open&&NET.conn.send(m)}catch(e){}}
@@ -1239,34 +1285,42 @@ function netClose(silent){
   try{NET.conn&&NET.conn.close()}catch(e){}
   try{NET.peer&&NET.peer.destroy()}catch(e){}
   NET.conn=null;NET.peer=null;NET.meRe=false;NET.oppRe=false;NET.pendingDeck=null;
+  setJoining(false);
 }
 function netLost(msg){
   if(NET.closing)return;
+  // host whose guest left before the match began: keep the code alive and wait for someone else
+  if(NET.role==='host'&&(!G||G.mode!=='online'||!G.st)&&NET.peer&&!NET.peer.destroyed){hostBackToLobby(msg);return}
   netClose(true);
-  const inGame=G&&G.mode==='online';
-  if(inGame&&!G.over){SAVE.stats.ow++;save();msg+=' The match counts as a win.'}
+  if(G&&G.mode==='online'&&!G.over){SAVE.stats.ow++;save();msg+=' The match counts as a win.'}
   G=null;
-  modal(`<h2>Disconnected</h2><p>${msg}</p>`,[{label:'Menu',cls:'primary',fn:()=>show('menu')}]);
+  modal(`<h2>Disconnected</h2><p>${esc(msg)}</p>`,[{label:'Menu',cls:'primary',fn:()=>show('menu')}]);
+}
+function hostBackToLobby(msg){
+  const c=NET.conn;NET.conn=null;try{c&&c.close()}catch(e){}
+  NET.pendingDeck=null;NET.meRe=NET.oppRe=false;NET.oppName='';G=null;
+  closeModal();show('online');onPanels('host');
+  onStatus(esc(msg)+'<br><span class="spin"></span>Waiting for a friend to join…');
 }
 function sendSetup(){
   const seed=rand32();
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,seed});
+  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,seed,name:myName()});
   beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,seed});
 }
 function beginOnline(cfg){
   closeModal();
   NET.meRe=false;NET.oppRe=false;
-  const me=NET.role==='host'?0:1;
-  G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,seed:cfg.seed,me,bottom:me,names:me===0?['You','Opponent']:['Opponent','You']});
+  const me=NET.role==='host'?0:1,other=NET.oppName||(me===0?'Guest':'Host');
+  G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,seed:cfg.seed,me,bottom:me,names:me===0?[myName(),other]:[other,myName()]});
   if(NET.pendingDeck){G.decks[1-me]=NET.pendingDeck;NET.pendingDeck=null}
   if(collTotal()<5)ensureMinimum();
   const done=ids=>{
     SAVE.lastDeck=ids;save();G.decks[me]=ids;netSend({t:'deck',ids});
-    if(!G.decks[1-me]){show('online');$('#onChoose').classList.add('hidden');$('#onHost').classList.add('hidden');onStatus('<span class="spin"></span>Waiting for your opponent to choose cards…')}
+    if(!G.decks[1-me]){show('online');onPanels('none');onStatus(`<span class="spin"></span>Waiting for <b class="gold">${esc(oppName())}</b> to choose cards…`)}
     tryStartOnline();
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:'Choose 5 Cards',pool:collPool(),pre:SAVE.lastDeck,color:'blue',onDone:done,
+  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:SAVE.lastDeck,color:'blue',onDone:done,
     onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',fn:()=>{netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary'}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
@@ -1274,9 +1328,11 @@ function validDeck(ids){return Array.isArray(ids)&&ids.length===5&&ids.every(i=>
 function onNet(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){
-    case 'full':onStatus('That game is already full.',true);netClose(true);break;
+    case 'full':{const code=NET.code;netClose(true);onPanels('choose');onStatus(`Game ${code} already has two players.`,true);break}
     case 'setup':
       if(NET.role!=='guest')return;
+      setJoining(false);
+      NET.oppName=cleanName(m.name)||'Host';
       beginOnline({rules:{...defSave().rules,...m.rules},trade:m.trade,seed:m.seed>>>0});break;
     case 'deck':
       if(!validDeck(m.ids))return;
@@ -1290,8 +1346,8 @@ function onNet(m){
       {const idx=m.idx.filter(i=>Number.isInteger(i)&&i>=0&&i<5);
       if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(idx)}else G.pendingTrade=idx;}
       break;
-    case 'rematch':NET.oppRe=true;checkRematch();if(!NET.meRe)toast('Your opponent wants a rematch!');break;
-    case 'bye':netLost('Your opponent left the game.');break;
+    case 'rematch':NET.oppRe=true;checkRematch();if(!NET.meRe)toast(`${oppName()} wants a rematch!`);break;
+    case 'bye':netLost(`${oppName()} left the game.`);break;
   }
 }
 function checkRematch(){
@@ -1314,7 +1370,11 @@ updSnd();renderMenu();layout();
   if(q){
     const code=q.toUpperCase().replace(/[^A-Z]/g,'').slice(0,5);
     try{history.replaceState(null,'',location.pathname)}catch(e){}
-    if(code.length===5){openOnline(code);joinGame(code)}
+    if(code.length===5){
+      openOnline(code);
+      if(cleanName(SAVE.name))joinGame(code);
+      else{onStatus("You've been invited! Enter your name, then tap <b>Join</b>.");const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
+    }
   }
 })();
 </script>
