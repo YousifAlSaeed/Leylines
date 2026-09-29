@@ -122,6 +122,27 @@ h3{margin:10px 0 2px;font:700 14px var(--display);color:var(--gold);letter-spaci
 #scr-game{padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));overflow:hidden}
 .hud{display:flex;align-items:center;gap:8px;width:100%;max-width:980px;height:44px;flex:none}
 #turnMsg{flex:1;text-align:center;font:800 15px var(--display);color:var(--gold-l);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* turn timer: ring + number in the HUD, draining bar under it */
+.timer{position:relative;width:42px;height:42px;flex:none;--tc:var(--gold-l);transition:opacity .25s}
+.timer.off{opacity:0;visibility:hidden}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+.timer circle{fill:none;stroke-width:4}
+.timer .trk{stroke:rgba(0,0,0,.4)}
+.timer .prog{stroke:var(--tc);stroke-linecap:round;stroke-dasharray:106.8;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear,stroke .3s}
+.timer span{position:absolute;inset:0;display:grid;place-items:center;font:800 16px/1 var(--display);color:var(--tc);font-variant-numeric:tabular-nums;transition:color .3s}
+.timer.warn{--tc:#ffb347}
+.timer.crit{--tc:#ff5a5a;animation:tpulse 1s ease-in-out infinite}
+@keyframes tpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14);filter:drop-shadow(0 0 8px rgba(255,90,90,.8))}}
+.tbar{width:100%;max-width:980px;height:5px;border-radius:3px;background:rgba(0,0,0,.35);overflow:hidden;flex:none;margin:2px 0 4px;transition:opacity .25s}
+.tbar.off{opacity:0}
+.tbar i{display:block;height:100%;width:100%;transform-origin:left center;border-radius:3px;
+  background:linear-gradient(90deg,var(--gold-d),var(--gold-l));transition:transform .1s linear}
+.tbar.warn i{background:linear-gradient(90deg,#a85d0c,#ffb347)}
+.tbar.crit i{background:linear-gradient(90deg,#8b1c1c,#ff5a5a);animation:tblink .5s ease-in-out infinite alternate}
+@keyframes tblink{to{opacity:.55}}
+.board.crit{border-color:#ff5a5a;box-shadow:0 0 0 4px rgba(0,0,0,.35),0 0 0 5px rgba(255,90,90,.45),0 0 26px rgba(255,90,90,.35),0 10px 30px rgba(0,0,0,.5);transition:border-color .3s,box-shadow .3s}
+.side.crit .pname .who{color:#ff8080;text-shadow:0 0 10px rgba(255,90,90,.7)}
+.side.crit .pname .who::before{color:#ff5a5a}
 .rulebar{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;flex:none;min-height:18px;max-width:980px}
 .rulebar span{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(212,175,55,.35);border-radius:999px;padding:1px 7px;background:rgba(0,0,0,.2)}
 .rulebar span.sd{color:#ffb3b3;border-color:#c65b5b}
@@ -288,8 +309,10 @@ body.land .side.me .hand .card.sel,body.land .side.opp .hand .card.sel{z-index:3
   <div class="hud">
     <button class="iconbtn" id="btnQuit" aria-label="Menu">☰</button>
     <div id="turnMsg"></div>
+    <div class="timer off" id="timer" role="timer" aria-live="off"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="17"/><circle class="prog" id="tProg" cx="20" cy="20" r="17"/></svg><span id="tNum">45</span></div>
     <button class="iconbtn" id="btnSnd" aria-label="Sound">🔊</button>
   </div>
+  <div class="tbar off" id="tbar"><i id="tFill"></i></div>
   <div class="rulebar" id="ruleBar"></div>
   <div class="arena">
     <div class="side opp" id="sideTop"><div class="pname"><span class="who" id="nameTop">CPU</span><span class="sc" id="scTop">5</span></div><div class="hand" id="handTop"></div></div>
@@ -417,7 +440,8 @@ const RULES=[
  ['combo','Combo','Cards flipped by Same or Plus then flip their weaker enemy neighbours, chaining on.'],
  ['elemental','Elemental','Some squares carry an element. A matching card gets +1 on every side; any other card gets −1.'],
  ['suddenDeath','Sudden Death','A draw restarts the game; each player keeps the cards they owned at the end (up to 5 extra rounds).'],
- ['random','Random','Your 5 cards are dealt at random from your collection.']
+ ['random','Random','Your 5 cards are dealt at random from your collection.'],
+ ['timer','Turn Timer','Each turn has a 45-second limit. When time runs out, a random card is played to a random empty square.']
 ];
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
@@ -428,7 +452,7 @@ const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 const SKEY='ninefold.save.v1';
 function defSave(){
   const coll={};[0,1,2,3,4,5,6,7,13].forEach(i=>coll[i]=1);
-  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false},
+  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:true},
     trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,name:'',cid:''};
 }
 function loadSave(){
@@ -503,7 +527,7 @@ function banner(text,cls=''){
 /* ---------- sound ---------- */
 let AC=null;
 const SFX={place:[[300,.07,'triangle']],flip:[[620,.05,'square'],[930,.07,'triangle']],banner:[[523,.08],[659,.08],[784,.08],[1047,.16]],
-  win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],draw:[[523,.15],[523,.25]]};
+  win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]]};
 function sfx(k){
   if(!SAVE.sound)return;
   try{
@@ -808,7 +832,7 @@ async function newRound(h0,h1,first){
   G.busy=false;nextTurn();
 }
 function isHuman(p){return G.mode==='local'||p===G.me}
-function canAct(p){return G&&!G.busy&&!G.over&&G.st.turn===p&&isHuman(p)}
+function canAct(p){return G&&!G.busy&&!G.over&&!G.timeUp&&G.st.turn===p&&isHuman(p)}
 function colorOf(p){return p===G.bottom?'blue':'red'}
 function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===G.me)}
 
@@ -816,6 +840,7 @@ function nextTurn(){
   if(!G)return;
   G.sel=null;renderGame();
   if(isFull(G.st)){endRound();return}
+  startTurnTimer();
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
   else if(G.mode==='online'&&G.st.turn!==G.me)pump();
 }
@@ -841,7 +866,7 @@ function requestMove(hi,cell){
 }
 async function execMove(hi,cell){
   const g=G,st=G.st,p=st.turn,q=1-p,id=st.h[p][hi];
-  G.busy=true;G.sel=null;
+  G.busy=true;G.sel=null;G.timeUp=false;stopTurnTimer();
   const sc=[score(st,0),score(st,1)];
   const ev=[];play(st,G.rules,hi,cell,ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
@@ -982,6 +1007,60 @@ $('#btnQuit').onclick=()=>{
 $('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click')};
 function updSnd(){$('#btnSnd').textContent=SAVE.sound?'🔊':'🔇'}
 
+/* ---------- turn timer ---------- */
+const TURN_MS=45000,RING=106.8;
+let TMR={g:null,end:0,p:-1,fired:false,sec:-1};
+function startTurnTimer(){
+  // the CPU doesn't need a clock; everyone else gets 45 seconds per turn
+  if(!G||!G.rules.timer||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
+  TMR={g:G,end:performance.now()+TURN_MS,p:G.st.turn,fired:false,sec:-1};
+  $('#timer').classList.remove('off');$('#tbar').classList.remove('off');
+  tickTimer();
+}
+function stopTurnTimer(){
+  TMR.g=null;
+  $('#timer').classList.add('off');$('#tbar').classList.add('off');
+  setTimerLevel('');
+}
+function setTimerLevel(lvl){
+  for(const el of [$('#timer'),$('#tbar')]){el.classList.toggle('warn',lvl==='warn');el.classList.toggle('crit',lvl==='crit')}
+  $('#board').classList.toggle('crit',lvl==='crit');
+  const onBot=TMR.g&&TMR.p===G.bottom;
+  $('#sideBot').classList.toggle('crit',lvl==='crit'&&onBot);
+  $('#sideTop').classList.toggle('crit',lvl==='crit'&&!onBot);
+}
+function tickTimer(){
+  if(!TMR.g)return;
+  if(TMR.g!==G||G.over){stopTurnTimer();return}
+  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),f=rem/TURN_MS;
+  $('#tNum').textContent=sec;
+  $('#tProg').style.strokeDashoffset=(RING*(1-f)).toFixed(2);
+  $('#tFill').style.transform=`scaleX(${f.toFixed(4)})`;
+  if(sec!==TMR.sec){
+    TMR.sec=sec;
+    setTimerLevel(sec<=10?'crit':sec<=20?'warn':'');
+    $('#timer').setAttribute('aria-label',`${sec} seconds left`);
+    if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
+  }
+  if(rem<=0&&!TMR.fired){TMR.fired=true;onTimeUp(TMR.p)}
+}
+setInterval(tickTimer,100);
+async function onTimeUp(p){
+  // each client only auto-plays for its own player; an online opponent's move arrives over the network
+  if(!isHuman(p))return;
+  const g=G;
+  G.timeUp=true;G.sel=null;
+  if(drag)endDrag({},true);
+  renderHands();renderBoard();
+  sfx('timeup');
+  await banner("Time's up!",'small');
+  if(G!==g||G.busy||G.over||G.st.turn!==p)return;
+  G.timeUp=false;
+  const moves=genMoves(G.st),[hi,cell]=moves[Math.floor(Math.random()*moves.length)];
+  if(G.mode==='online')netSend({t:'move',hi,cell});
+  execMove(hi,cell);
+}
+
 /* =====================================================================
    GAME RENDERING & INPUT
    ===================================================================== */
@@ -1030,7 +1109,7 @@ function renderHud(){
   else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
   $('#turnMsg').textContent=msg;
   const R=G.rules;
-  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
+  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[0]==='timer'?'⏱ 45s':r[1]}</span>`).join('');
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden Death ${G.sd}</span>`;
   $('#ruleBar').innerHTML=chips;
@@ -1086,13 +1165,13 @@ function layout(){
   document.body.classList.toggle('land',land);
   let cell,hc;
   if(!land){
-    const extra=44+18+2*28+26; // hud + rulebar + names + gaps/padding
+    const extra=44+11+18+2*28+26; // hud + timer bar + rulebar + names + gaps/padding
     hc=Math.min((W-36)/5,120);
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
     hc=Math.min(hc,cell*.7);
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
   }else{
-    const avail=H-44-18-24;
+    const avail=H-44-11-18-24;
     cell=Math.min(avail/3.62,(W-60)/(3+2*0.9+0.5),210);
     hc=Math.min(cell*.9,(avail-30)/3.36);
   }
