@@ -232,6 +232,10 @@ body.land .side.me .hand .card.sel,body.land .side.opp .hand .card.sel{z-index:3
 .deckbar .btn.primary{flex:2}
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
+.card.lost{filter:saturate(.75) brightness(.8)}
+.card.lost::after{content:"×0";position:absolute;left:.25em;bottom:.95em;font:800 .62em/1 var(--display);background:#ff5a5a;color:#2a0505;border-radius:.6em;padding:.2em .45em}
+.lostc{color:#ff8b8b!important}
+
 /* ---------- online ---------- */
 .panel{background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.3);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center}
 .codebox{font:900 44px/1 var(--display);letter-spacing:.3em;color:var(--gold-l);padding:10px 0 6px 0.3em}
@@ -450,10 +454,11 @@ const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
    SAVE
    ===================================================================== */
 const SKEY='ninefold.save.v1';
+const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
-  const coll={};[0,1,2,3,4,5,6,7,13].forEach(i=>coll[i]=1);
+  const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:true},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,name:'',cid:''};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,name:'',cid:'',seen:STARTER.slice()};
 }
 function loadSave(){
   const d=defSave();
@@ -466,8 +471,12 @@ let SAVE=loadSave();
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
 // stable per-device id so the host can recognise a guest who reconnects
 if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
+// 'seen' = every card ever owned, so lost cards still show in the collection.
+// Older saves had no history: rebuild it from starter cards, current cards and the last deck used.
+{const seen=new Set([...(Array.isArray(SAVE.seen)?SAVE.seen:[]),...STARTER,...Object.keys(SAVE.coll).map(Number),...(SAVE.lastDeck||[])]);
+ SAVE.seen=[...seen].filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).sort((a,b)=>a-b);save()}
 function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
-function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1}
+function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
 function collPool(){return Object.entries(SAVE.coll).filter(([,c])=>c>0).map(([id,c])=>({id:+id,count:c}))}
 function ensureMinimum(){
@@ -1186,21 +1195,26 @@ window.addEventListener('resize',layout);
    COLLECTION
    ===================================================================== */
 function openCollection(){
-  const uniq=Object.keys(SAVE.coll).length;
-  $('#collMeta').textContent=`${uniq} of 55 cards discovered · ${collTotal()} cards owned`;
+  const uniq=Object.keys(SAVE.coll).length,lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
+  $('#collMeta').innerHTML=`${SAVE.seen.length} of 55 discovered · ${collTotal()} cards owned`+(lost?` · <span class="lostc">${lost} lost</span>`:'');
   let html='',lv=0;
   for(const c of CARDS){
     if(c.lv!==lv){lv=c.lv;html+=`<h4>Level ${lv}</h4>`}
     const n=SAVE.coll[c.id]||0;
-    html+=`<div class="gc" data-id="${c.id}">${n?cardHTML(c.id,'blue',{count:n}):'<div class="card unknown"><i>?</i></div>'}</div>`;
+    const face=n?cardHTML(c.id,'blue',{count:n})
+      :SAVE.seen.includes(c.id)?cardHTML(c.id,'red',{cls:'lost'})
+      :'<div class="card unknown"><i>?</i></div>';
+    html+=`<div class="gc" data-id="${c.id}">${face}</div>`;
   }
   $('#collGrid').innerHTML=html;
   $$('#collGrid .gc').forEach(g=>g.onclick=()=>{
     const id=+g.dataset.id,c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
-    if(!n){toast(`Level ${c.lv} card — win it in a match to discover it.`);return}
-    modal(`<div class="bigcard">${cardHTML(id,'blue')}</div><h2 style="font-size:24px">${esc(c.name)}</h2>
+    const lost=!n&&SAVE.seen.includes(id);
+    if(!n&&!lost){toast(`Level ${c.lv} card — win it in a match to discover it.`);return}
+    modal(`<div class="bigcard">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}</div><h2 style="font-size:24px">${esc(c.name)}</h2>
       <div class="stats"><span>Level</span><b>${c.lv}</b><span>Element</span><b>${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'None'}</b>
-      <span>Top / Right</span><b>${fmt(c.s[0])} / ${fmt(c.s[1])}</b><span>Bottom / Left</span><b>${fmt(c.s[2])} / ${fmt(c.s[3])}</b><span>Owned</span><b>×${n}</b></div>`,
+      <span>Top / Right</span><b>${fmt(c.s[0])} / ${fmt(c.s[1])}</b><span>Bottom / Left</span><b>${fmt(c.s[2])} / ${fmt(c.s[3])}</b><span>Owned</span><b${lost?' class="lostc"':''}>×${n}</b></div>`+
+      (lost?`<p class="lostc">You lost every copy of this card. Win it back in a match with a trade rule.</p>`:''),
       [{label:'Close',cls:'primary'}]);
   });
   show('coll');$('#scr-coll').scrollTop=0;
