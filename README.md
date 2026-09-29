@@ -2,7 +2,9 @@
 
 A single-file 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
 
-**Play:** open `index.html` in any modern browser — no build step, no dependencies.
+**Play online:** https://yousifalsaeed.github.io/project-a/
+
+**Play locally:** open `index.html` in any modern browser — no build step, no dependencies.
 
 ## Features
 - **Modes:** vs Computer (Easy / Normal / Hard minimax), Same Screen (2 players, 1 device), Online (PeerJS — host shares a 5-letter code or invite link)
