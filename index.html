@@ -290,8 +290,23 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .card .nm{position:absolute;left:0;right:0;bottom:0;padding:.2em .3em .24em;font:600 .5em/1.1 var(--body);text-align:center;color:#fff;background:rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .mod{position:absolute;right:.2em;top:1.15em;font:900 .72em/1 var(--display);padding:.12em .25em;border-radius:.3em;background:rgba(0,0,0,.6)}
 .card .mod.up{color:#8dff8d} .card .mod.dn{color:#ff9b9b}
-.card .cnt{position:absolute;left:.25em;bottom:.95em;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
-.card .lv{position:absolute;left:.3em;bottom:.95em;font:800 .5em/1 var(--display);color:#fff;text-shadow:0 0 .2em #000}
+.card .cnt{position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
+/* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a metal frame and a "3★" tag.
+   --rc colours the frame on the card; --rt is a text colour that stays readable on the page in both themes. */
+:root{--r1:#b08358;--r2:#cfd8e0;--r3:#f0c35c;--r4:#b98cff;--r5:#ff8fd0;--r1t:#c99a6c;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#c7a2ff;--r5t:#ff9fd6}
+:root[data-theme="light"]{--r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#7446c8;--r5t:#b8337f}
+.rar1{--rc:var(--r1);--rt:var(--r1t)} .rar2{--rc:var(--r2);--rt:var(--r2t)} .rar3{--rc:var(--r3);--rt:var(--r3t)} .rar4{--rc:var(--r4);--rt:var(--r4t)} .rar5{--rc:var(--r5);--rt:var(--r5t)}
+.rt{color:var(--rt)}
+.card .rf{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
+.card.rar5 .rf{box-shadow:inset 0 0 .55em .05em color-mix(in srgb,var(--r5) 45%,transparent)}
+.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:conic-gradient(from 200deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* the tag sits above the name strip with a clear gap (the strip is ~.77em tall), so a long name is never covered.
+   Offsets are in the tag's own em (its font is .5 of the card's): 2.05em = 1.03 card-em up, .5em = .25 card-em in. */
+.card .rchip{position:absolute;left:.5em;bottom:2.05em;z-index:2;font:800 .5em/1 var(--display);padding:.18em .38em .2em;border-radius:.35em;white-space:nowrap;
+  background:rgba(0,0,0,.62);color:var(--rc);border:.08em solid var(--rc)}
+.card.nn .rchip{bottom:.6em}
+.card.back .rf,.card.back .rchip{display:none}
 .card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
 .card.back::after{content:"";position:absolute;inset:28% 30%;border:.1em solid var(--accent);transform:rotate(45deg);border-radius:.15em;opacity:.75}
 .card.back i{display:none}
@@ -304,7 +319,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 @keyframes flipY{0%{transform:perspective(30em) rotateY(0)}50%{transform:perspective(30em) rotateY(90deg) scale(1.1)}100%{transform:perspective(30em) rotateY(0)}}
 @keyframes flipX{0%{transform:perspective(30em) rotateX(0)}50%{transform:perspective(30em) rotateX(90deg) scale(1.1)}100%{transform:perspective(30em) rotateX(0)}}
 .card.lost{filter:saturate(.7) brightness(.85)}
-.card.lost::after{content:"×0";position:absolute;left:.25em;bottom:.95em;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
+.card.lost::after{content:"×0";position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
 .lostc{color:var(--danger)!important}
 
 /* ---------- game ---------- */
@@ -601,7 +616,7 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
 /* ---------- collection binder ---------- */
-/* one binder page per level; two pages side by side on wide screens, one on phones */
+/* binder pages by rarity; two pages side by side on wide screens, one on phones */
 #scr-coll .wrap,#scr-coll .topbar{max-width:1120px}
 :root{--leather:#2a1a0d;--leather2:#140c06} :root[data-theme="light"]{--leather:#5b3b20;--leather2:#3a2413}
 .bd-tabs{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 4px;align-self:flex-end}
@@ -611,6 +626,8 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .bd-tab:hover{color:var(--text)}
 .bd-tab.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .bd-tab i{font-style:normal;font-size:11px}
+.bd-tab.on .rt{color:inherit}
+.bd-h b em{font-style:normal;font-weight:600;font-size:12px;color:var(--muted);margin-left:4px}
 .binder{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:24px;padding:14px;border-radius:16px;perspective:2400px;touch-action:pan-y;
   background:linear-gradient(160deg,var(--leather),var(--leather2));box-shadow:inset 0 0 0 1px rgba(217,178,106,.2),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
 .binder.single{grid-template-columns:1fr;padding-left:38px;overflow:hidden}
@@ -1021,7 +1038,10 @@ const CARD_DATA=[
 ['Mira Frostheart','💎',10,[9,7,10,4],'ice'],
 ['King Oryn','👑',10,[7,9,4,10],'']
 ];
-const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],s:c[3],e:c[4]||null,sum:c[3].reduce((a,b)=>a+b,0)}));
+const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],rar:Math.ceil(c[2]/2),s:c[3],e:c[4]||null,sum:c[3].reduce((a,b)=>a+b,0)}));
+// players see rarity, not level: levels 1–2 are 1★, 3–4 are 2★ … 9–10 are 5★ (the AI still balances on level)
+const RARITY=['Common','Uncommon','Rare','Epic','Legendary'];
+const rarName=r=>`${r}★ ${RARITY[r-1]}`;
 const RULES=[
  ['open','Open','Both hands are played face up.'],
  ['same','Same','When two or more sides of the placed card equal the touching sides of adjacent cards, those enemy cards flip.'],
@@ -1105,7 +1125,7 @@ const fmt=v=>v===10?'A':String(v);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
 
-function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, level ${c.lv}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
+function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
 // keyboard: remember whether the player is using keys, so focus can follow the game
 let KBD=false;
 window.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key.startsWith('Arrow')||e.key==='Enter'||e.key===' ')KBD=true},true);
@@ -1126,14 +1146,15 @@ document.addEventListener('keydown',e=>{
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
   const c=CARDS[id];
-  return `<div class="card ${color||'blue'} ${o.cls||''}" ${o.attrs||''}>`+
+  return `<div class="card ${color||'blue'} rar${c.rar}${o.name===false?' nn':''} ${o.cls||''}" ${o.attrs||''}>`+
     `<div class="art">${c.art}</div>`+
     `<div class="nums"><b class="n0">${fmt(c.s[0])}</b><b class="n1">${fmt(c.s[1])}</b><b class="n2">${fmt(c.s[2])}</b><b class="n3">${fmt(c.s[3])}</b></div>`+
     (c.e?`<div class="el">${ELEM[c.e]}</div>`:'')+
     (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+1':'−1'}</div>`:'')+
     (o.count>1?`<div class="cnt">×${o.count}</div>`:'')+
-    (o.lv?`<div class="lv">Lv${c.lv}</div>`:'')+
+    `<div class="rchip" aria-hidden="true">${c.rar}★</div>`+
     (o.name===false?'':`<div class="nm">${esc(c.name)}</div>`)+
+    '<i class="rf"></i>'+
   `</div>`;
 }
 
@@ -1527,7 +1548,7 @@ const RULE_ICON={
   timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
-const DIFF_INFO={easy:[1,'Level 1–2 cards'],normal:[2,'Level 1–4 cards'],hard:[3,'Level 3–6, plans ahead']};
+const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
@@ -1588,12 +1609,12 @@ function openDeck(o){
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
 }
 const remaining=id=>handRemaining(DK,id);
-const DECK_RANGES=[['all','All levels',1,10],['low','Lv 1–3',1,3],['mid','Lv 4–6',4,6],['high','Lv 7–10',7,10]];
+const DECK_RANGES=[['all','All',0],...[1,2,3,4,5].map(r=>[String(r),rarName(r),r])];
 const SIDE_NAMES=['Top','Right','Bottom','Left'];
 function renderDeck(){
   const col=DK.color||'blue';
-  // level filter: only offer ranges that hold cards, and hide the row when there's nothing to choose between
-  const inRange=(e,r)=>CARDS[e.id].lv>=r[2]&&CARDS[e.id].lv<=r[3];
+  // rarity filter: only offer rarities you hold cards of, and hide the row when there's nothing to choose between
+  const inRange=(e,r)=>!r[2]||CARDS[e.id].rar===r[2];
   const ranges=DECK_RANGES.filter(r=>r[0]==='all'||DK.pool.some(e=>inRange(e,r)));
   if(!ranges.some(r=>r[0]===DK.f))DK.f='all';
   $('#deckFilter').innerHTML=ranges.length>2?ranges.map(r=>`<button class="dk-chip ${DK.f===r[0]?'on':''}" data-f="${r[0]}" aria-pressed="${DK.f===r[0]}">${r[1]}</button>`).join(''):'';
@@ -1601,11 +1622,11 @@ function renderDeck(){
   const n=DK.sel.length;
   // collection grid
   const cur=DECK_RANGES.find(r=>r[0]===DK.f);
-  const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
-  let html='',lastLv=0;
+  const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].rar-CARDS[a.id].rar||CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
+  let html='',lastR=0;
   for(const e of pool){
     const c=CARDS[e.id];
-    if(c.lv!==lastLv){html+=`<h4>Level ${c.lv}</h4>`;lastLv=c.lv}
+    if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}</h4>`;lastR=c.rar}
     const r=remaining(e.id);
     html+=`<div class="gc ${r<=0?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left"${r<=0?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
@@ -2188,10 +2209,10 @@ function openCollection(){
 function collDetail(id){
   const c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
   const lost=!n&&SAVE.seen.includes(id);
-  if(!n&&!lost){toast(`Level ${c.lv} card — win it in a match to discover it.`);return}
+  if(!n&&!lost){toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
   const r=handRemaining(CH,id),full=CH.sel.length>=5;
   const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
-    <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b>Level ${c.lv}</b></div>
+    <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
     <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
     <h2 class="nm2 cd-name">${esc(c.name)}</h2>
     <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
@@ -2211,32 +2232,43 @@ function collDetail(id){
 const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0;
 function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
 
-/* ---------- binder: page k holds the level k+1 cards ---------- */
-const BD_PAGES=10;
+/* ---------- binder: pages by rarity, up to 8 cards a page ----------
+   8 fits both the 3×3 sleeves (with one spare) and the 4×2 layout on short pages, so no card is ever hidden */
+const BD_PER=8;
+const BD_BOOK=(()=>{const out=[];for(let r=1;r<=5;r++){
+  const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),n=Math.ceil(cs.length/BD_PER);
+  for(let i=0;i<n;i++)out.push({r,cards:cs.slice(i*BD_PER,(i+1)*BD_PER),part:i+1,parts:n})}return out})();
+const BD_PAGES=BD_BOOK.length;
+const bdFirst=r=>BD_BOOK.findIndex(pg=>pg.r===r);
 const BD={p:0,done:null,swiped:false};
 // two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
 const bdSpread=()=>$('#collBook').clientWidth>=540;
-const bdFound=k=>{const cs=CARDS.filter(c=>c.lv===k+1);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
+const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
 // in spread mode the left page is always even, so the pair is (p, p+1)
 const bdNorm=p=>{p=Math.max(0,Math.min(BD_PAGES-1,p));return bdSpread()?p-p%2:p};
 function bdPage(k){
-  const cs=CARDS.filter(c=>c.lv===k+1),[f,t]=bdFound(k);
+  const pg=BD_BOOK[k];
+  if(!pg)return '';
+  const cs=pg.cards,[f,t]=rarFound(pg.r);
   let pk='';
   for(let i=0;i<9;i++){
     const c=cs[i];
     if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
     const n=SAVE.coll[c.id]||0,seen=SAVE.seen.includes(c.id);
     const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
-    const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered level ${c.lv} card`;
+    const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
     pk+=`<div class="pk-cell"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
   }
-  return `<div class="bd-h"><b>Level ${k+1}</b><span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
+  return `<div class="bd-h rar${pg.r}"><b><span class="rt">${pg.r}★</span> ${RARITY[pg.r-1]}${pg.parts>1?` <em>${pg.part}/${pg.parts}</em>`:''}</b>`+
+    `<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
     `<div class="bd-bar"><i style="width:${(f/t*100).toFixed(1)}%"></i></div><div class="bd-grid">${pk}</div><div class="bd-num">${k+1}</div>`;
 }
 function bdChrome(p){
   const sp=bdSpread();
-  $$('#bdTabs .bd-tab').forEach(b=>{const on=+b.dataset.p===p;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  // a tab is on when its rarity is on a page you can see (on wide screens two rarities can share a spread)
+  const seen=new Set((sp?[p,p+1]:[p]).map(k=>BD_BOOK[k]&&BD_BOOK[k].r));
+  $$('#bdTabs .bd-tab').forEach(b=>{const on=seen.has(+b.dataset.r);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   $('#bdPos').textContent=sp?`Pages ${p+1}–${p+2} of ${BD_PAGES}`:`Page ${p+1} of ${BD_PAGES}`;
   $('#bdPrev').disabled=p===0;
   $('#bdNext').disabled=p+(sp?2:1)>=BD_PAGES;
@@ -2250,12 +2282,11 @@ function bdRender(){
   $('#binder').classList.toggle('single',!sp);
   $('#bdL').innerHTML=sp?bdPage(BD.p):'';
   $('#bdR').innerHTML=bdPage(sp?BD.p+1:BD.p);
-  // one tab per page pair on wide screens, one per page on phones
-  const groups=sp?[0,2,4,6,8]:[0,1,2,3,4,5,6,7,8,9];
-  $('#bdTabs').innerHTML=groups.map(k=>{
-    const done=(sp?[k,k+1]:[k]).every(x=>{const [f,t]=bdFound(x);return f===t});
-    return `<button class="bd-tab" data-p="${k}">Lv ${sp?`${k+1}–${k+2}`:k+1}${done?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
-  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>bdTurn(+b.dataset.p));
+  // one tab per rarity; it opens that rarity's first page
+  $('#bdTabs').innerHTML=[1,2,3,4,5].map(r=>{
+    const [f,t]=rarFound(r);
+    return `<button class="bd-tab rar${r}" data-r="${r}"><span class="rt">${r}★</span> ${RARITY[r-1]}${f===t?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
+  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>bdTurn(bdFirst(+b.dataset.r)));
   bdChrome(BD.p);
 }
 // turn to page `to`: a two-sided sheet rotates around the rings while a shadow sweeps across it
