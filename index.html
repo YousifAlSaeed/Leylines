@@ -540,11 +540,43 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--ease)}
 .dk-bar.weak i{background:var(--danger)}
 .dk-row .btn.primary{margin-left:auto;min-width:120px}
-.dk-foot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 4px;font-size:12.5px;color:var(--muted);margin-top:6px}
-.dk-foot .btn.text{min-height:36px;padding:4px 10px;font-size:13px}
-.dk-foot .btn.text#deckBest{color:var(--accent-ink)}
-@media (max-width:480px){.dk-head .meta,.dk-foot span{display:none}}
-@media (max-width:380px){.dk-sides{display:none}}
+.dk-acts{display:flex;gap:8px;margin-top:12px}
+.dk-act{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 10px;border-radius:12px;
+  border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);font:600 13.5px var(--body);cursor:pointer;white-space:nowrap;
+  transition:background .18s,border-color .18s,color .18s,transform .2s var(--spring)}
+.dk-act svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.dk-act:hover:not(:disabled){background:rgba(var(--tint),.07);border-color:var(--accent)}
+.dk-act:active:not(:disabled){transform:scale(.96)}
+.dk-act:disabled{opacity:.4;cursor:default}
+.dk-act.gold{color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.dk-act.quiet{color:var(--muted)}
+.dk-act.quiet:hover:not(:disabled){color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
+.dk-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+/* loadouts: saved hands above the collection */
+.dk-lo{display:flex;flex-direction:column;gap:8px}
+.dk-lohead{display:flex;justify-content:space-between;align-items:center;min-height:28px}
+.dk-lohead .lbl{margin:0}
+.dk-lohead .btn.text{min-height:28px;padding:2px 8px;font-size:13px}
+.dk-lorow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dk-loslot{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px 9px;border-radius:14px;border:1px solid var(--line2);
+  background:var(--surf);cursor:pointer;text-align:left;min-width:0;transition:border-color .18s,box-shadow .18s,transform .2s var(--spring)}
+.dk-loslot:hover{border-color:var(--accent)}
+.dk-loslot:active{transform:scale(.97)}
+.dk-loslot.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px -10px var(--accent-glow)}
+.dk-loslot .stack{display:flex;font-size:5.2px;height:6em;padding-left:2.4em}
+.dk-loslot .stack .card{margin-left:-2.4em;box-shadow:0 0 0 .15em var(--surf)}
+.dk-loslot .stack .miss{width:5em;height:6em;margin-left:-2.4em;border-radius:.6em;border:.2em dashed var(--danger);background:var(--surf)}
+.dk-loslot b{font:700 13.5px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dk-loslot span{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dk-loslot span.bad{color:var(--danger)}
+.dk-loslot .tagx{position:absolute;right:8px;top:8px;font:700 10.5px var(--body);padding:1px 6px;border-radius:5px;background:var(--accent);color:var(--on-accent)}
+.dk-loslot.empty{border-style:dashed;justify-content:center;align-items:center;min-height:86px;color:var(--muted);font:600 12.5px var(--body);text-align:center}
+.dk-loslot.pick{border-color:var(--accent);border-style:solid;animation:loPulse 1.2s ease-in-out infinite}
+@keyframes loPulse{50%{box-shadow:0 0 0 3px var(--accent-glow)}}
+.dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
+.dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
+@media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
+@media (max-width:380px){.dk-sides{display:none}.dk-act{padding:6px;font-size:13px;gap:4px}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px 8px;justify-items:center;font-size:15px}
 .grid .gc{cursor:pointer;position:relative;border-radius:.6em;transition:transform .25s var(--spring)}
 @media (hover:hover){.grid .gc:not(.used):hover{transform:translateY(-4px) rotate(-1deg)}}
@@ -633,6 +665,11 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 <section id="scr-deck" class="screen">
   <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
   <div class="wrap">
+    <div class="dk-lo" id="deckLo">
+      <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="deckLoCancel">Cancel</button></div>
+      <div class="dk-lorow" id="deckLoRow"></div>
+      <div class="dk-lonote" id="deckLoNote" aria-live="polite"></div>
+    </div>
     <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
     <div class="grid" id="deckGrid"></div>
     <div class="dk-tray">
@@ -642,11 +679,12 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
         <div class="dk-sides" id="deckSides"></div>
         <button class="btn primary" id="deckGo" disabled>Play</button>
       </div>
-      <div class="dk-foot">
-        <button class="btn text" id="deckBest">Best 5</button>
-        <span>Tap a card in your hand to put it back</span>
-        <button class="btn text" id="deckClear">Clear</button>
+      <div class="dk-acts">
+        <button class="dk-act gold" id="deckBest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Best 5</button>
+        <button class="dk-act" id="deckSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save hand</button>
+        <button class="dk-act quiet" id="deckClear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Clear</button>
       </div>
+      <div class="dk-hint">Tap a card in your hand to put it back</div>
     </div>
   </div>
 </section>
@@ -821,7 +859,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice()};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null]};
 }
 function loadSave(){
   const d=defSave();
@@ -841,6 +879,10 @@ if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 // Older saves had no history: rebuild it from starter cards, current cards and the last deck used.
 {const seen=new Set([...(Array.isArray(SAVE.seen)?SAVE.seen:[]),...STARTER,...Object.keys(SAVE.coll).map(Number),...(SAVE.lastDeck||[])]);
  SAVE.seen=[...seen].filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).sort((a,b)=>a-b);save()}
+// loadouts: 3 saved hands, each {name, ids:[5 card ids]} or null
+SAVE.loadouts=[0,1,2].map(i=>{const l=Array.isArray(SAVE.loadouts)?SAVE.loadouts[i]:null;
+  return l&&Array.isArray(l.ids)&&l.ids.length===5&&l.ids.every(id=>Number.isInteger(id)&&id>=0&&id<CARD_DATA.length)
+    ?{name:typeof l.name==='string'&&l.name?l.name.slice(0,24):`Loadout ${i+1}`,ids:l.ids.slice()}:null});
 function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
@@ -1328,7 +1370,7 @@ $('#setupGo').onclick=()=>{
 let DK=null;
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
-  DK={...o,sel:[],f:'all',deal:-1};
+  DK={...o,sel:[],f:'all',deal:-1,saving:false,note:''};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0)DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
@@ -1352,7 +1394,7 @@ function renderDeck(){
       ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===DK.deal?'deal':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   DK.deal=-1;
-  $$('#deckSlots .dk-fs[data-i]').forEach(s=>s.onclick=()=>{DK.sel.splice(+s.dataset.i,1);sfx('click');renderDeck()});
+  $$('#deckSlots .dk-fs[data-i]').forEach(s=>s.onclick=()=>{DK.sel.splice(+s.dataset.i,1);DK.note='';sfx('click');renderDeck()});
   // stats: total power and the best number on each side
   const n=DK.sel.length;
   $('#deckPower').textContent=DK.sel.reduce((a,id)=>a+CARDS[id].sum,0);
@@ -1369,19 +1411,59 @@ function renderDeck(){
     html+=`<div class="gc ${r<=0?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left"${r<=0?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
   $('#deckGrid').innerHTML=html;
-  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);DK.deal=DK.sel.length-1;sfx('place');renderDeck()}});
+  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);DK.deal=DK.sel.length-1;DK.note='';sfx('place');renderDeck()}});
   const total=DK.pool.reduce((a,e)=>a+e.count,0);
   $('#deckMeta').textContent=`${total} cards`;
   $('#deckGo').disabled=n!==5;
   $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
+  $('#deckSave').disabled=n!==5;
+  $('#deckSave').title=n===5?'':'Pick 5 cards to save them';
+  $('#deckClear').disabled=!n;
+  renderLoadouts();
 }
+// indexes in a loadout whose card you no longer own enough copies of (lost in a trade)
+function loMissing(ids){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;const e=DK.pool.find(x=>x.id===id);if(!e||need[id]>e.count)miss.push(k)});return miss}
+const sameHand=(a,b)=>a.length===b.length&&a.slice().sort((x,y)=>x-y).join()===b.slice().sort((x,y)=>x-y).join();
+function renderLoadouts(){
+  $('#deckLo').classList.toggle('hidden',!DK.loadouts);
+  $('#deckSave').classList.toggle('hidden',!DK.loadouts);
+  if(!DK.loadouts)return;
+  const col=DK.color||'blue';
+  $('#deckLoRow').innerHTML=SAVE.loadouts.map((l,i)=>{
+    const attrs=`data-i="${i}" data-kbd`;
+    if(!l)return `<button class="dk-loslot empty ${DK.saving?'pick':''}" ${attrs}>${DK.saving?'Save here':'+ Save hand<br>to this slot'}</button>`;
+    const miss=loMissing(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!DK.saving&&!miss.length&&sameHand(l.ids,DK.sel);
+    const sub=DK.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
+    return `<button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
+      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${esc(l.name)}</b>${sub}</button>`;
+  }).join('');
+  $$('#deckLoRow .dk-loslot').forEach(b=>b.onclick=()=>pickLoadout(+b.dataset.i));
+  $('#deckLoCancel').classList.toggle('hidden',!DK.saving);
+  $('#deckLoNote').innerHTML=DK.saving?'Pick a slot to save your hand in.':DK.note||'';
+}
+function pickLoadout(i){
+  const l=SAVE.loadouts[i];sfx('click');
+  if(DK.saving||!l){
+    if(DK.sel.length!==5){DK.saving=false;DK.note='Pick 5 cards first, then save them here.';renderDeck();return}
+    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:DK.sel.slice()};save();
+    DK.saving=false;DK.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;renderDeck();return;
+  }
+  const miss=loMissing(l.ids);
+  DK.sel=l.ids.filter((_,k)=>!miss.includes(k));
+  DK.note=miss.length
+    ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
+    :`Loaded <b>${esc(l.name)}</b>.`;
+  renderDeck();
+}
+$('#deckSave').onclick=()=>{if(DK.sel.length!==5)return;sfx('click');DK.saving=!DK.saving;DK.note='';renderDeck()};
+$('#deckLoCancel').onclick=()=>{sfx('click');DK.saving=false;renderDeck()};
 $('#deckBest').onclick=()=>{
   sfx('click');DK.sel=[];
   const all=[];DK.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
   all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
-  DK.sel=all.slice(0,5);renderDeck();
+  DK.sel=all.slice(0,5);DK.saving=false;DK.note='';renderDeck();
 };
-$('#deckClear').onclick=()=>{sfx('click');DK.sel=[];renderDeck()};
+$('#deckClear').onclick=()=>{sfx('click');DK.sel=[];DK.saving=false;DK.note='';renderDeck()};
 $('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 $('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return shuffle(all).slice(0,5)}
@@ -1401,7 +1483,7 @@ function startAI(){
   G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
-  openDeck({title:'Choose 5 cards',pool:collPool(),pre:SAVE.lastDeck,color:'blue',
+  openDeck({title:'Choose 5 cards',pool:collPool(),pre:SAVE.lastDeck,color:'blue',loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},onBack:()=>openSetup('ai')});
 }
 function startLocal(){
@@ -2197,7 +2279,7 @@ function beginOnline(cfg){
     tryStartOnline();
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:SAVE.lastDeck,color:'blue',onDone:done,
+  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:SAVE.lastDeck,color:'blue',loadouts:true,onDone:done,
     onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',fn:()=>{netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
