@@ -520,19 +520,19 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-chip:hover{color:var(--text)}
 .dk-chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 /* the picked hand: 5 cards spread in a gentle arc, spaced so each card's art stays visible */
-.dk-tray{position:sticky;bottom:0;z-index:2;container-type:inline-size;padding:12px 14px 8px;border-radius:20px;
+.dk-tray{position:sticky;bottom:0;z-index:2;container-type:inline-size;padding:16px 18px 10px;border-radius:20px;
   background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px solid var(--line2);box-shadow:0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
 /* covers the screen's bottom padding so grid cards don't peek out under the sticky tray */
 .dk-tray::after{content:"";position:absolute;left:-2px;right:-2px;top:calc(100% + 1px);height:max(24px,env(safe-area-inset-bottom));background:var(--bg0)}
 /* 5 cards × 5em + 4 gaps × .5em = 27em, plus room for the tilt; shrinks to fit narrow screens */
-.dk-fan{position:relative;height:7.6em;font-size:min(16px,calc(100cqw / 28.5))}
-.dk-fs{position:absolute;bottom:.5em;left:50%;width:5em;height:6em;margin-left:-2.5em;transform-origin:50% 100%;transition:transform .45s var(--spring)}
+.dk-fan{position:relative;height:8.4em;font-size:min(16px,calc(100cqw / 28.5))}
+.dk-fs{position:absolute;bottom:1.6em;left:50%;width:5em;height:6em;margin-left:-2.5em;transform-origin:50% 100%;transition:transform .45s var(--spring)}
 .dk-fs .dk-empty{width:100%;height:100%;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;color:var(--muted);font:700 .8em var(--display);opacity:.7}
 .dk-fs .card{cursor:pointer;transition:filter .18s}
 .dk-fs .card.deal{animation:deal .45s var(--spring)}
 @keyframes deal{from{transform:translateY(4em) rotate(8deg);opacity:0}}
 @media (hover:hover){.dk-fs:has(.card):hover{transform:var(--t) translateY(-.5em)!important}.dk-fs .card:hover{filter:brightness(1.12)}}
-.dk-row{display:flex;align-items:center;gap:14px;margin-top:6px}
+.dk-row{display:flex;align-items:center;gap:14px;margin-top:4px;padding-top:12px;border-top:1px solid var(--line)}
 .dk-power{display:flex;flex-direction:column;gap:2px;font:600 11.5px var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .dk-power b{font:800 22px/1 var(--display);color:var(--text);letter-spacing:0;font-variant-numeric:tabular-nums}
 .dk-sides{display:grid;grid-template-columns:repeat(2,auto auto);gap:3px 8px;align-items:center;font-size:12px;color:var(--muted)}
@@ -540,7 +540,7 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--ease)}
 .dk-bar.weak i{background:var(--danger)}
 .dk-row .btn.primary{margin-left:auto;min-width:120px}
-.dk-foot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 4px;font-size:12.5px;color:var(--muted)}
+.dk-foot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 4px;font-size:12.5px;color:var(--muted);margin-top:6px}
 .dk-foot .btn.text{min-height:36px;padding:4px 10px;font-size:13px}
 .dk-foot .btn.text#deckBest{color:var(--accent-ink)}
 @media (max-width:480px){.dk-head .meta,.dk-foot span{display:none}}
