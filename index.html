@@ -1252,6 +1252,17 @@ const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
   local:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
   online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>'};
+// what the Play card says about your deck, plus the small fan of its cards
+function heroDeck(random){
+  const mlo=mainLoadout(),d=lastDeckReady(),back=cardHTML(0,null,{back:true});
+  const sub=random?'Random deck'
+    :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:`${mlo.l.name} ready`)
+    :d?'Last deck ready':'Pick 5 cards';
+  const cards=random?Array(5).fill(back)
+    :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
+    :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
+  return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
+}
 const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online']];
 // the Play card: a 3-way mode switch, then what that mode needs
 function renderHero(anim){
@@ -1260,16 +1271,10 @@ function renderHero(anim){
   $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
   let h,sub,side='',row;
   if(m==='ai'){
-    const mlo=mainLoadout(),d=lastDeckReady(),tr=TRADES.find(t=>t[0]===SAVE.trade),back=cardHTML(0,null,{back:true});
+    const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
     h='vs Computer';
-    const deckSub=SAVE.rules.random?'Random deck'
-      :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:`${mlo.l.name} ready`)
-      :d?'Last deck ready':'Pick 5 cards';
-    sub=deckSub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
-    const fanCards=SAVE.rules.random?Array(5).fill(back)
-      :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
-      :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
-    side=`<div class="fan" aria-hidden="true">${fanCards.join('')}</div>`;
+    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
+    side=dk.fan;
     row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
       DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;
   }else if(m==='local'){
@@ -1277,7 +1282,9 @@ function renderHero(anim){
     side='<div class="vsav" aria-hidden="true"><span class="av b">B</span><em>vs</em><span class="av r">R</span></div>';
     row='<button class="btn primary full" id="heroGo">Play</button>';
   }else{
-    h='Online';sub='Host a game, or type a friend\'s code';
+    // online uses the host's rules, so your own "random deck" setting doesn't apply here
+    const dk=heroDeck(false);
+    h='Online';sub=dk.sub+' · Host or join with a code';side=dk.fan;
     row=`<button class="btn primary full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
   const body=$('#heroBody');
