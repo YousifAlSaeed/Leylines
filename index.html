@@ -137,6 +137,49 @@ h3,.lbl{margin:0 0 8px;font:600 12.5px var(--body);color:var(--muted);letter-spa
 .setrow .seg button{min-height:34px;padding:4px 10px;font-size:13px}
 button.setrow{cursor:pointer}
 button.setrow:hover{background:rgba(var(--tint),.03)}
+/* match setup: difficulty cards, rule cards, trade cards */
+h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
+.note:empty{display:none}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dc{border-radius:14px;padding:10px;border:1px solid var(--line);background:var(--surf);color:var(--text);text-align:left;display:flex;flex-direction:column;gap:5px;cursor:pointer;
+  transition:border-color .18s,box-shadow .18s,transform .22s var(--spring)}
+.dc:hover{transform:translateY(-1px);border-color:var(--line2)}
+.dc b{font:700 15px/1.1 var(--display)} .dc small{color:var(--muted);font-size:11.5px;line-height:1.3}
+.pips{display:flex;gap:3px}.pips i{width:14px;height:5px;border-radius:3px;background:rgba(var(--tint),.14)}.pips i.f{background:var(--red1)}
+.dc.on,.tc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px -10px var(--accent-glow)}
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rc{position:relative;aspect-ratio:5/5.4;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
+  background:repeating-linear-gradient(45deg,var(--surf2) 0 6px,var(--surf) 6px 12px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 6px;text-align:center;
+  transition:transform .25s var(--spring),box-shadow .2s,border-color .2s,opacity .2s}
+.rc:hover{transform:translateY(-2px)}
+.rc:active{transform:scale(.97)}
+.rc .em{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;transform:rotate(45deg);border:1.5px solid var(--line2);background:var(--surf)}
+.rc .em svg{transform:rotate(-45deg);width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rc b{font:700 13px/1.15 var(--display)}
+.rc.on{background:linear-gradient(160deg,var(--accent-hi),var(--accent));border-color:transparent;color:var(--on-accent);
+  box-shadow:0 10px 22px -10px var(--accent-glow),inset 0 0 0 1px rgba(255,255,255,.35)}
+.rc.on .em{background:rgba(255,255,255,.25);border-color:rgba(0,0,0,.22)}
+.rc.on::after{content:"✓";position:absolute;top:6px;right:9px;font:900 12px var(--display)}
+.rc.dim{opacity:.42}
+.rc.flip{animation:rcflip .4s var(--ease)}
+@keyframes rcflip{50%{transform:perspective(500px) rotateY(90deg)}}
+.rinfo{margin-top:10px;border-radius:14px;padding:10px 12px;background:var(--surf);border:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;min-height:62px}
+.rinfo svg{width:20px;height:20px;flex:none;margin-top:1px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rinfo b{display:block;font:700 14px var(--display)} .rinfo span{color:var(--muted);font-size:12.5px;line-height:1.4}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tc{border-radius:12px;padding:8px 4px;border:1px solid var(--line);background:var(--surf);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:border-color .18s,box-shadow .18s}
+.tc .n{font:900 20px/1 var(--display);color:var(--accent-ink)} .tc small{font-size:11.5px;color:var(--muted)}
+@media (min-width:920px) and (min-height:560px){
+  #scr-setup{justify-content:center}
+  #scr-setup .topbar{max-width:1100px}
+  .setup{max-width:1100px;display:grid;grid-template-columns:1fr 1.3fr;grid-template-areas:"diff rules" "trade rules" "note rules" "foot foot";column-gap:44px;row-gap:20px;align-items:start}
+  .setup .s-diff{grid-area:diff} .setup .s-rules{grid-area:rules} .setup .s-trade{grid-area:trade} .setup #setupNote{grid-area:note} .setup .setup-foot{grid-area:foot}
+  .setup .rgrid{grid-template-columns:repeat(5,1fr)}
+  .setup .rc b{font-size:14px}
+  .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0}
+  .setup .setup-foot .btn{width:280px}
+}
 .setup-foot{position:sticky;bottom:0;padding:14px 0 4px;background:linear-gradient(transparent,var(--bg0) 45%);margin-top:auto}
 .setup-foot .btn{width:100%}
 
@@ -536,10 +579,10 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 <!-- SETUP -->
 <section id="scr-setup" class="screen">
   <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
-  <div class="wrap">
-    <div id="diffBox"><h3>Difficulty</h3><div class="seg" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
-    <div><h3>Rules</h3><div class="rules" id="ruleChips"></div></div>
-    <div id="tradeBox"><h3>Trade</h3><div class="seg" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
+  <div class="wrap setup">
+    <div id="diffBox" class="s-diff"><h3>Difficulty</h3><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
+    <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
+    <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
     <p class="note" id="setupNote"></p>
     <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
   </div>
@@ -1091,20 +1134,40 @@ function openSetup(mode){
   $('#setupGo').textContent=mode==='online'?'Create game':SAVE.rules.random?'Start match':'Choose cards';
   $('#setupNote').innerHTML=mode==='local'
     ?'Free play: each player picks any 5 cards from the full set. No cards are traded.'
-    :mode==='ai'?'<b>Easy</b> plays level 1–2 cards, <b>Normal</b> level 1–4, <b>Hard</b> level 3–6 and thinks ahead with minimax.'
+    :mode==='ai'?''
     :'You will get a 5-letter code and an invite link to send to a friend.';
-  renderSetup();show('setup');
+  setupLast=null;renderSetup();show('setup');
 }
 function refocus(host,old){const a=document.activeElement;if(!a||a===document.body||!a.isConnected){const n=$(`${host} [data-k="${old.dataset.k}"]`);n&&n.focus()}}
-function renderSetup(){
-  $('#diffSeg').innerHTML=DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('');
+const RULE_ICON={
+  open:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  same:'<path d="M5 9h14M5 15h14"/>',
+  sameWall:'<path d="M4 4v16"/><path d="M9 9h11M9 15h11"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  combo:'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',
+  elemental:'<path d="M12 3c1 4 5 5.5 5 10a5 5 0 01-10 0c0-2.5 1.5-4 2.5-5 .3 1.6 1 2.5 2 3 .4-3-.5-5.5.5-8z"/>',
+  suddenDeath:'<path d="M20 12a8 8 0 11-2.3-5.7"/><path d="M20 4v4h-4"/><path d="M12.5 8.5l-2 4h3l-2 4"/>',
+  random:'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
+const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
+const DIFF_INFO={easy:[1,'Level 1–2 cards'],normal:[2,'Level 1–4 cards'],hard:[3,'Level 3–6, plans ahead']};
+const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
+let setupLast=null; // the rule card tapped last, explained in the box under the cards
+function renderSetup(flipKey){
+  $('#diffSeg').innerHTML=DIFFS.map(([k,l])=>{const[n,sub]=DIFF_INFO[k];
+    return`<button class="dc ${SAVE.diff===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.diff===k}"><span class="pips" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><b>${l}</b><small>${sub}</small></button>`}).join('');
   $$('#diffSeg button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderSetup();refocus('#diffSeg',b)});
   const R=SAVE.rules;
   $('#ruleChips').innerHTML=RULES.map(([k,l])=>{
     const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus);
-    return`<button class="rule ${dim?'dim':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}"><span class="rt"><b>${l}</b><small>${RULE_SHORT[k]}</small></span><span class="switch" aria-hidden="true"></span></button>`}).join('');
-  $$('#ruleChips .rule').forEach(b=>b.onclick=()=>{const k=b.dataset.k;R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;save();sfx('click');renderSetup();refocus('#ruleChips',b)});
-  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button data-k="${k}" class="${SAVE.trade===k?'on':''}" aria-pressed="${SAVE.trade===k}">${l}</button>`).join('');
+    return`<button class="rc ${R[k]?'on':''} ${dim?'dim':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}" aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
+  $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
+  $('#ruleCount').textContent=`${RULES.filter(r=>R[r[0]]).length} on`;
+  const lr=RULES.find(r=>r[0]===setupLast);
+  $('#ruleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
+    :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>Gold cards are on. Tap one to turn it on or off and see what it does.</span></div>`;
+  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${SAVE.trade===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.trade===k}"><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
   $$('#tradeSeg button').forEach(b=>b.onclick=()=>{SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
   const tr=TRADES.find(t=>t[0]===SAVE.trade);
   $('#tradeDesc').textContent=tr[2];
