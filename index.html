@@ -183,7 +183,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .rinfo{margin-top:10px;border-radius:14px;padding:10px 12px;background:var(--surf);border:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;min-height:62px}
 .rinfo svg{width:20px;height:20px;flex:none;margin-top:1px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .rinfo b{display:block;font:700 14px var(--display)} .rinfo span{color:var(--muted);font-size:12.5px;line-height:1.4}
-.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .tc{border-radius:12px;padding:8px 4px;border:1px solid var(--line);background:var(--surf);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:border-color .18s,box-shadow .18s}
 .tc .n{font:900 20px/1 var(--display);color:var(--accent-ink)} .tc small{font-size:11.5px;color:var(--muted)}
 @media (min-width:920px) and (min-height:560px){
@@ -1068,7 +1068,7 @@ const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.
 function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as A for Same',plus:'Equal sums flip cards',
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
-const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.']];
+const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 
 /* =====================================================================
@@ -1558,7 +1558,7 @@ const RULE_ICON={
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
-const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
+const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
 function timerInfo(){const t=SAVE.rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
@@ -1884,7 +1884,9 @@ async function endRound(){
 }
 
 /* ---------- results & trading ---------- */
-function tradeCount(s0,s1){return{one:1,diff:Math.min(5,Math.abs(s0-s1)),all:5}[G.trade]||0}
+// sweep: the winner must own all 9 squares at the end
+const swept=w=>w>=0&&G.st.o.every(o=>o===w);
+function tradeCount(s0,s1,w){return{one:1,diff:Math.min(5,Math.abs(s0-s1)),all:5,sweep:swept(w)?5:0}[G.trade]||0}
 function rowHTML(ids,color){return`<div class="cardrow">${ids.map(id=>cardHTML(id,color)).join('')}</div>`}
 function finish(s0,s1){
   G.over=true;G.busy=true;renderHud();
@@ -1899,13 +1901,15 @@ function finish(s0,s1){
     SAVE.stats[key]=(SAVE.stats[key]||0)+1;save();
   }
   sfx(w<0?'draw':(G.mode==='local'||w===G.me)?'win':'lose');
-  const head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
+  let head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
     `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`;
-  const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1);
+  const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
   setTimeout(()=>{
     if(G!==g)return;
-    if(!n){resultModal(head+(G.mode!=='local'&&G.trade!=='none'&&w<0?'<p>No cards change hands on a draw.</p>':''));return}
+    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?'<p>No cards change hands on a draw.</p>':
+      G.trade==='sweep'?'<p>No sweep: cards only change hands when the winner owns the whole board.</p>':''));return}
+    if(G.trade==='sweep')head+='<p class="gold"><b>Full board sweep!</b></p>';
     const loser=1-w,loserDeck=G.decks[loser];
     if(w===G.me){
       const take=idx=>{
@@ -2515,7 +2519,7 @@ const HOW=[
   list:['Set the limit in match setup: <b>Off</b>, or <b>10 to 90 seconds</b>','The ring turns orange, then red, as time runs low','At 0, a random card goes to a random empty square','<b>Example:</b> the clock hits 0 → one of your cards is played for you']},
  {tab:'Trade',tag:'Trade · Collection',title:'Win cards, lose cards',
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
-  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','You start with weak cards. Everything saves on this device']},
+  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
  {tab:'Tips',tag:'Tips',title:'How to win more',
   stage:()=>`<div class="keys"><div><kbd>Tab</kbd><kbd>←</kbd><kbd>→</kbd> pick a card</div><div><kbd>Enter</kbd> place it</div><div><kbd>Esc</kbd> put it back</div><div><kbd>H</kbd> open this guide</div></div>`,
   list:['Keep your <b>strong sides</b> facing empty squares','Corners only show 2 sides: safe spots for weak cards','Save a strong card for the last turn','Tap, drag, or use the keyboard: all three work']}
