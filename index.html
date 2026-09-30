@@ -663,6 +663,8 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .pocket.blank::after{display:none}
 /* the turning page: a two-sided sheet that rotates around the rings */
 .bd-leaf{position:absolute;z-index:5;transform-style:preserve-3d;pointer-events:none;will-change:transform}
+.bd-clip{position:absolute;z-index:5;overflow:hidden;border-radius:8px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
+.bd-clip .bd-leaf{left:0;top:0;width:100%;height:100%;transform-origin:0 50%}
 .bd-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px}
 .bd-face.back{transform:rotateY(180deg)}
 .bd-face>.bd-page{height:100%}
@@ -2297,6 +2299,7 @@ function bdTurn(to){
   const fwd=to>from,sp=bdSpread(),binder=$('#binder'),L=$('#bdL'),R=$('#bdR');
   sfx('click');
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||!binder.animate){BD.p=to;bdRender();return}
+  if(!sp){bdTurnSingle(from,to,fwd);return}
   // src: the page the sheet lifts from (the revealed page is drawn into it underneath)
   // land: the static page the sheet comes to rest on, and what it should show once the sheet is gone
   let src,front,back,frontSide,backSide,deg,land,landHTML;
@@ -2348,6 +2351,40 @@ function bdTurn(to){
   BD.done=done;
   anims[0].onfinish=done;
   bdChrome(to); // tabs and page count update right away instead of after the turn
+}
+// One page (phones): the sheet hinges on the page's left edge and only swings as far as edge-on, where it's
+// invisible. It lives in a clip box the size of the page, with its depth seen from the hinge, so no part of
+// it can ever swing out over the rings. Forward: the page lifts away and vanishes edge-on. Back: the earlier
+// page swings in from edge-on and settles flat on the page it covers.
+function bdTurnSingle(from,to,fwd){
+  const binder=$('#binder'),R=$('#bdR');
+  const bR=binder.getBoundingClientRect(),sR=R.getBoundingClientRect();
+  const sheet=bdPage(fwd?from:to);
+  const clip=document.createElement('div');
+  clip.className='bd-clip';clip.setAttribute('aria-hidden','true');
+  Object.assign(clip.style,{left:(sR.left-bR.left-binder.clientLeft)+'px',top:(sR.top-bR.top-binder.clientTop)+'px',width:sR.width+'px',height:sR.height+'px'});
+  clip.innerHTML=`<div class="bd-leaf"><div class="bd-face front"><div class="bd-page r">${sheet}</div><i class="bd-shade to-r"></i></div></div>`;
+  if(fwd)R.innerHTML=bdPage(to); // the next page waits underneath
+  binder.append(clip);
+  const under=document.createElement('i');
+  under.className='bd-shade to-r';
+  R.append(under);
+  // forward eases in (a gentle lift, then away); back eases out (swings in, then settles softly)
+  const opt={duration:560,easing:fwd?'cubic-bezier(.45,0,.8,.55)':'cubic-bezier(.2,.45,.55,1)',fill:'forwards'};
+  const leaf=clip.firstChild;
+  const anims=[
+    leaf.animate([{transform:`rotateY(${fwd?0:-90}deg)`},{transform:`rotateY(${fwd?-90:0}deg)`}],opt),
+    leaf.querySelector('.bd-shade').animate(fwd?[{opacity:0},{opacity:.6}]:[{opacity:.6},{opacity:0}],opt),
+    under.animate(fwd?[{opacity:.45},{opacity:0}]:[{opacity:0},{opacity:.3}],opt)
+  ];
+  const done=()=>{
+    if(BD.done!==done)return;BD.done=null;
+    if(!fwd)R.innerHTML=sheet; // the sheet is flat on the page now, so the swap is invisible
+    anims.forEach(a=>a.cancel());clip.remove();under.remove();BD.p=to;bdChrome(to);
+  };
+  BD.done=done;
+  anims[0].onfinish=done;
+  bdChrome(to);
 }
 // finish a turn that's still running first, so quick repeated taps each move one more page
 const bdStep=d=>{if(BD.done)BD.done();bdTurn(BD.p+d*(bdSpread()?2:1))};
