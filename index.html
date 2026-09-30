@@ -512,10 +512,39 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- deck & collection ---------- */
-.slots{display:flex;gap:6px;justify-content:center;font-size:clamp(11px,3.4vw,16px);padding:10px;border-radius:16px;background:var(--well);border:1px solid var(--line)}
-.slot{width:5em;height:6em;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;cursor:pointer;flex:none;transition:transform .2s var(--spring)}
-.slot:empty::after{content:"+";color:var(--muted);font-size:1.6em;opacity:.6}
-.slot .card{font-size:1em}
+.dk-head{display:flex;align-items:center;gap:10px}
+.dk-head .meta{margin-left:auto;flex:none}
+.dk-filter{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.dk-filter::-webkit-scrollbar{display:none}
+.dk-chip{flex:none;border:1px solid var(--line2);background:none;color:var(--muted);border-radius:999px;padding:5px 12px;font:600 12.5px var(--body);cursor:pointer;white-space:nowrap;min-height:32px;transition:background .18s,color .18s}
+.dk-chip:hover{color:var(--text)}
+.dk-chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+/* the picked hand: 5 cards spread in a gentle arc, spaced so each card's art stays visible */
+.dk-tray{position:sticky;bottom:0;z-index:2;container-type:inline-size;padding:12px 14px 8px;border-radius:20px;
+  background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px solid var(--line2);box-shadow:0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
+/* covers the screen's bottom padding so grid cards don't peek out under the sticky tray */
+.dk-tray::after{content:"";position:absolute;left:-2px;right:-2px;top:calc(100% + 1px);height:max(24px,env(safe-area-inset-bottom));background:var(--bg0)}
+/* 5 cards × 5em + 4 gaps × .5em = 27em, plus room for the tilt; shrinks to fit narrow screens */
+.dk-fan{position:relative;height:7.6em;font-size:min(16px,calc(100cqw / 28.5))}
+.dk-fs{position:absolute;bottom:.5em;left:50%;width:5em;height:6em;margin-left:-2.5em;transform-origin:50% 100%;transition:transform .45s var(--spring)}
+.dk-fs .dk-empty{width:100%;height:100%;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;color:var(--muted);font:700 .8em var(--display);opacity:.7}
+.dk-fs .card{cursor:pointer;transition:filter .18s}
+.dk-fs .card.deal{animation:deal .45s var(--spring)}
+@keyframes deal{from{transform:translateY(4em) rotate(8deg);opacity:0}}
+@media (hover:hover){.dk-fs:has(.card):hover{transform:var(--t) translateY(-.5em)!important}.dk-fs .card:hover{filter:brightness(1.12)}}
+.dk-row{display:flex;align-items:center;gap:14px;margin-top:6px}
+.dk-power{display:flex;flex-direction:column;gap:2px;font:600 11.5px var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.dk-power b{font:800 22px/1 var(--display);color:var(--text);letter-spacing:0;font-variant-numeric:tabular-nums}
+.dk-sides{display:grid;grid-template-columns:repeat(2,auto auto);gap:3px 8px;align-items:center;font-size:12px;color:var(--muted)}
+.dk-bar{width:40px;height:5px;border-radius:3px;background:rgba(var(--tint),.1);overflow:hidden}
+.dk-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--ease)}
+.dk-bar.weak i{background:var(--danger)}
+.dk-row .btn.primary{margin-left:auto;min-width:120px}
+.dk-foot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 4px;font-size:12.5px;color:var(--muted)}
+.dk-foot .btn.text{min-height:36px;padding:4px 10px;font-size:13px}
+.dk-foot .btn.text#deckBest{color:var(--accent-ink)}
+@media (max-width:480px){.dk-head .meta,.dk-foot span{display:none}}
+@media (max-width:380px){.dk-sides{display:none}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px 8px;justify-items:center;font-size:15px}
 .grid .gc{cursor:pointer;position:relative;border-radius:.6em;transition:transform .25s var(--spring)}
 @media (hover:hover){.grid .gc:not(.used):hover{transform:translateY(-4px) rotate(-1deg)}}
@@ -524,9 +553,6 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
 .grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 #btnReset{margin-top:18px;align-self:center}
-.deckbar{display:flex;gap:8px;position:sticky;bottom:0;padding:14px 0 2px;background:linear-gradient(transparent,var(--bg0) 40%)}
-.deckbar .btn{flex:1}
-.deckbar .btn.primary{flex:2}
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
 /* ---------- online ---------- */
@@ -607,13 +633,20 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 <section id="scr-deck" class="screen">
   <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
   <div class="wrap">
-    <div class="slots" id="deckSlots"></div>
-    <div class="meta" id="deckMeta"></div>
+    <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
     <div class="grid" id="deckGrid"></div>
-    <div class="deckbar">
-      <button class="btn small" id="deckBest">Best 5</button>
-      <button class="btn small" id="deckClear">Clear</button>
-      <button class="btn primary" id="deckGo" disabled>Play</button>
+    <div class="dk-tray">
+      <div class="dk-fan" id="deckSlots"></div>
+      <div class="dk-row">
+        <div class="dk-power">Power<b id="deckPower">0</b></div>
+        <div class="dk-sides" id="deckSides"></div>
+        <button class="btn primary" id="deckGo" disabled>Play</button>
+      </div>
+      <div class="dk-foot">
+        <button class="btn text" id="deckBest">Best 5</button>
+        <span>Tap a card in your hand to put it back</span>
+        <button class="btn text" id="deckClear">Clear</button>
+      </div>
     </div>
   </div>
 </section>
@@ -1295,17 +1328,39 @@ $('#setupGo').onclick=()=>{
 let DK=null;
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
-  DK={...o,sel:[]};
+  DK={...o,sel:[],f:'all',deal:-1};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0)DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
 }
 function remaining(id){const e=DK.pool.find(x=>x.id===id);return e?e.count-DK.sel.filter(x=>x===id).length:0}
+const DECK_RANGES=[['all','All levels',1,10],['low','Lv 1–3',1,3],['mid','Lv 4–6',4,6],['high','Lv 7–10',7,10]];
+const SIDE_NAMES=['Top','Right','Bottom','Left'];
 function renderDeck(){
   const col=DK.color||'blue';
-  $('#deckSlots').innerHTML=[0,1,2,3,4].map(i=>(DK.sel[i]!=null?`<div class="slot" data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[DK.sel[i]].name)}">${cardHTML(DK.sel[i],col,{name:false})}</div>`:`<div class="slot" data-i="${i}"></div>`)).join('');
-  $$('#deckSlots .slot').forEach(s=>s.onclick=()=>{const i=+s.dataset.i;if(DK.sel[i]!=null){DK.sel.splice(i,1);sfx('click');renderDeck()}});
-  const pool=DK.pool.slice().sort((a,b)=>CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
+  // level filter: only offer ranges that hold cards, and hide the row when there's nothing to choose between
+  const inRange=(e,r)=>CARDS[e.id].lv>=r[2]&&CARDS[e.id].lv<=r[3];
+  const ranges=DECK_RANGES.filter(r=>r[0]==='all'||DK.pool.some(e=>inRange(e,r)));
+  if(!ranges.some(r=>r[0]===DK.f))DK.f='all';
+  $('#deckFilter').innerHTML=ranges.length>2?ranges.map(r=>`<button class="dk-chip ${DK.f===r[0]?'on':''}" data-f="${r[0]}" aria-pressed="${DK.f===r[0]}">${r[1]}</button>`).join(''):'';
+  $$('#deckFilter .dk-chip').forEach(b=>b.onclick=()=>{DK.f=b.dataset.f;sfx('click');renderDeck()});
+  // the hand
+  $('#deckSlots').innerHTML=[0,1,2,3,4].map(i=>{
+    const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=DK.sel[i];
+    const st=`style="--t:${t};transform:${t};z-index:${i}"`;
+    return id!=null
+      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===DK.deal?'deal':''})}</div>`
+      :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
+  DK.deal=-1;
+  $$('#deckSlots .dk-fs[data-i]').forEach(s=>s.onclick=()=>{DK.sel.splice(+s.dataset.i,1);sfx('click');renderDeck()});
+  // stats: total power and the best number on each side
+  const n=DK.sel.length;
+  $('#deckPower').textContent=DK.sel.reduce((a,id)=>a+CARDS[id].sum,0);
+  $('#deckSides').innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...DK.sel.map(id=>CARDS[id].s[i])):0;
+    return `<span>${s}</span><span class="dk-bar ${n&&v<5?'weak':''}" role="img" aria-label="Best ${s.toLowerCase()} ${v}"><i style="width:${v*10}%"></i></span>`}).join('');
+  // collection grid
+  const cur=DECK_RANGES.find(r=>r[0]===DK.f);
+  const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
   let html='',lastLv=0;
   for(const e of pool){
     const c=CARDS[e.id];
@@ -1314,10 +1369,11 @@ function renderDeck(){
     html+=`<div class="gc ${r<=0?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left"${r<=0?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
   $('#deckGrid').innerHTML=html;
-  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);sfx('place');renderDeck()}});
+  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);DK.deal=DK.sel.length-1;sfx('place');renderDeck()}});
   const total=DK.pool.reduce((a,e)=>a+e.count,0);
-  $('#deckMeta').textContent=`${DK.sel.length}/5 chosen · ${total} cards available`;
-  $('#deckGo').disabled=DK.sel.length!==5;
+  $('#deckMeta').textContent=`${total} cards`;
+  $('#deckGo').disabled=n!==5;
+  $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
 }
 $('#deckBest').onclick=()=>{
   sfx('click');DK.sel=[];
