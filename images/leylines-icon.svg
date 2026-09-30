@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img">
+<title>LEYLINES app icon</title>
+<rect x="0" y="0" width="240" height="240" rx="54" fill="#1E1450" stroke="#3A2C6E" stroke-width="3"/>
+<g transform="translate(120 120) scale(0.78) translate(-120 -120)">
+<g stroke-width="3">
+<rect x="26" y="26" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="92" y="26" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="158" y="26" width="56" height="56" rx="8" fill="#140C33" stroke="#3A2C6E"/>
+<rect x="26" y="92" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="158" y="92" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="26" y="158" width="56" height="56" rx="8" fill="#140C33" stroke="#3A2C6E"/>
+<rect x="92" y="158" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="158" y="158" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="92" y="92" width="56" height="56" rx="8" fill="#EDE6FF" stroke="#FFFFFF"/>
+</g>
+<g fill="#EDE6FF" fill-opacity="0.9">
+<polygon points="54,44 64,54 54,64 44,54"/>
+<polygon points="120,44 130,54 120,64 110,54"/>
+<polygon points="54,110 64,120 54,130 44,120"/>
+<polygon points="186,110 196,120 186,130 176,120"/>
+<polygon points="120,176 130,186 120,196 110,186"/>
+<polygon points="186,176 196,186 186,196 176,186"/>
+</g>
+<polygon points="120,104 136,120 120,136 104,120" fill="#1E1450"/>
+</g>
+</svg>
