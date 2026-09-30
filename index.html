@@ -646,10 +646,15 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .bd-bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
 .bd-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;gap:8px;justify-items:center;padding-top:2px;
   /* 3 sleeves of 5.4em across, 3 rows of 6.4em down, leaving room for the page header */
-  font-size:min(20px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
+  font-size:min(28px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
 /* a short, wide page (phones, short windows) fits more card on screen as 4 sleeves by 2 rows */
 @container bdpage (min-aspect-ratio: 1/1){
-  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(20px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(28px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid .pk-cell.p9{display:none}
+}
+/* a tall, narrow page (big windows with the side column) fills its height as 2 sleeves by 4 rows */
+@container bdpage (max-aspect-ratio: 1/2){
+  .bd-grid{grid-template-columns:repeat(2,1fr);font-size:min(28px,calc((100cqw - 8px) / 11.4),calc((100cqh - 100px) / 26))}
   .bd-grid .pk-cell.p9{display:none}
 }
 @container bdpage (max-height:300px){.bd-num{display:none}}
@@ -720,7 +725,9 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .coll-reset{color:var(--muted)}
 .coll-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
 #scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
-.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0}
+.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0;container-type:inline-size}
+/* two pages side by side: never taller than the 3×3 sleeves need at this width, so tall windows get no empty strip */
+.binder:not(.single){max-height:calc(126px + 19.2 * min(28px,(50cqw - 66px) / 16.6))}
 .bd-top{display:flex;align-items:flex-end;gap:6px;margin-bottom:-2px;position:relative;z-index:1}
 .bd-arrow{width:36px;height:36px;border-radius:10px;margin-bottom:6px}
 .bd-arrow:disabled{opacity:.35;cursor:default}
@@ -2235,7 +2242,7 @@ const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0;
 function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
 
 /* ---------- binder: pages by rarity, up to 8 cards a page ----------
-   8 fits both the 3×3 sleeves (with one spare) and the 4×2 layout on short pages, so no card is ever hidden */
+   8 fits the 3×3 sleeves (with one spare), 4×2 on short pages and 2×4 on tall ones, so no card is ever hidden */
 const BD_PER=8;
 const BD_BOOK=(()=>{const out=[];for(let r=1;r<=5;r++){
   const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),n=Math.ceil(cs.length/BD_PER);
