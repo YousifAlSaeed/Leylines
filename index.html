@@ -271,7 +271,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 }
 
 /* ---------- cards ---------- */
-.card{position:relative;width:5em;height:6em;border-radius:.6em;flex:none;overflow:hidden;
+.card{position:relative;width:5em;height:6em;border-radius:.6em;flex:none;overflow:hidden;isolation:isolate; /* keeps the rarity tag and frame under overlapping cards */
   background:linear-gradient(160deg,var(--c1) 0%,var(--c2) 100%);
   box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),inset 0 -1.2em 1.4em rgba(0,0,0,.22),0 .2em .5em rgba(var(--sh),calc(.6*var(--shk)));
   --c1:#777;--c2:#333}
@@ -2147,6 +2147,8 @@ window.addEventListener('pointermove',e=>{
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize='calc(var(--cell) / 5)';
     document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
+    // dragging picks this card, so drop the highlight from the one picked before
+    $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
     G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0));
   }
   drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
