@@ -579,7 +579,11 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-loedit{position:absolute;right:5px;bottom:5px;width:32px;height:32px;border-radius:9px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .18s,color .18s}
 .dk-loedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .dk-loedit:hover{background:rgba(var(--tint),.08);color:var(--accent-ink)}
-.dk-lodel{margin-top:10px;color:var(--danger)!important;font-size:13.5px}
+.dk-loopts{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin-top:10px}
+.dk-lomain{color:var(--accent-ink)!important;font-size:13.5px}
+.dk-lomain:disabled{opacity:1}
+.dk-star{font-style:normal;color:var(--accent-ink);margin-right:4px}
+.dk-lodel{color:var(--danger)!important;font-size:13.5px}
 .dk-lodel:hover{background:color-mix(in srgb,var(--danger) 10%,transparent)}
 .dk-lodel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
@@ -892,6 +896,14 @@ if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 SAVE.loadouts=[0,1,2].map(i=>{const l=Array.isArray(SAVE.loadouts)?SAVE.loadouts[i]:null;
   return l&&Array.isArray(l.ids)&&l.ids.length===5&&l.ids.every(id=>Number.isInteger(id)&&id>=0&&id<CARD_DATA.length)
     ?{name:typeof l.name==='string'&&l.name?l.name.slice(0,24):`Loadout ${i+1}`,ids:l.ids.slice()}:null});
+// the main loadout is what the menu shows and the deck picker starts with; it must point at a saved slot
+function fixMain(){if(!(Number.isInteger(SAVE.mainLo)&&SAVE.loadouts[SAVE.mainLo]))SAVE.mainLo=SAVE.loadouts.findIndex(Boolean)}
+fixMain();
+// indexes in ids you don't have enough copies of; have(id) = how many you own
+function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
+function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,id=>SAVE.coll[id]||0)}:null}
+// the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
+function preDeck(){const m=mainLoadout();return m&&!m.miss.length?m.l.ids:SAVE.lastDeck}
 function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
@@ -1248,10 +1260,16 @@ function renderHero(anim){
   $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
   let h,sub,side='',row;
   if(m==='ai'){
-    const d=lastDeckReady(),tr=TRADES.find(t=>t[0]===SAVE.trade);
+    const mlo=mainLoadout(),d=lastDeckReady(),tr=TRADES.find(t=>t[0]===SAVE.trade),back=cardHTML(0,null,{back:true});
     h='vs Computer';
-    sub=(SAVE.rules.random?'Random deck':d?'Last deck ready':'Pick 5 cards')+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
-    side=`<div class="fan" aria-hidden="true">${d?d.map(id=>cardHTML(id,'blue',{name:false})).join(''):Array(5).fill(cardHTML(0,null,{back:true})).join('')}</div>`;
+    const deckSub=SAVE.rules.random?'Random deck'
+      :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:`${mlo.l.name} ready`)
+      :d?'Last deck ready':'Pick 5 cards';
+    sub=deckSub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
+    const fanCards=SAVE.rules.random?Array(5).fill(back)
+      :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
+      :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
+    side=`<div class="fan" aria-hidden="true">${fanCards.join('')}</div>`;
     row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
       DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;
   }else if(m==='local'){
@@ -1431,7 +1449,7 @@ function renderDeck(){
   renderLoadouts();
 }
 // indexes in a loadout whose card you no longer own enough copies of (lost in a trade)
-function loMissing(ids){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;const e=DK.pool.find(x=>x.id===id);if(!e||need[id]>e.count)miss.push(k)});return miss}
+function loMissing(ids){return missingIn(ids,id=>{const e=DK.pool.find(x=>x.id===id);return e?e.count:0})}
 const sameHand=(a,b)=>a.length===b.length&&a.slice().sort((x,y)=>x-y).join()===b.slice().sort((x,y)=>x-y).join();
 function renderLoadouts(){
   $('#deckLo').classList.toggle('hidden',!DK.loadouts);
@@ -1441,11 +1459,11 @@ function renderLoadouts(){
   $('#deckLoRow').innerHTML=SAVE.loadouts.map((l,i)=>{
     const attrs=`data-i="${i}"`;
     if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${DK.saving?'pick':''}" ${attrs}>${DK.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
-    const miss=loMissing(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!DK.saving&&!miss.length&&sameHand(l.ids,DK.sel);
+    const miss=loMissing(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!DK.saving&&!miss.length&&sameHand(l.ids,DK.sel),main=i===SAVE.mainLo;
     const sub=DK.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
-    return `<div class="dk-lowrap ${DK.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
-      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${esc(l.name)}</b>${sub}</button>`+
-      (DK.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Rename ${esc(l.name)}" title="Rename"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
+    return `<div class="dk-lowrap ${DK.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${main?', main loadout':''}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
+      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${main?'<i class="dk-star" title="Main loadout">★</i>':''}${esc(l.name)}</b>${sub}</button>`+
+      (DK.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Edit ${esc(l.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
   }).join('');
   $$('#deckLoRow .dk-loslot').forEach(b=>b.onclick=()=>pickLoadout(+b.dataset.i));
   $$('#deckLoRow .dk-loedit').forEach(b=>b.onclick=()=>renameLoadout(+b.dataset.edit));
@@ -1456,7 +1474,7 @@ function pickLoadout(i){
   const l=SAVE.loadouts[i];sfx('click');
   if(DK.saving||!l){
     if(DK.sel.length!==5){DK.saving=false;DK.note='Pick 5 cards first, then save them here.';renderDeck();focusLo(`[data-i="${i}"]`);return}
-    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:DK.sel.slice()};save();
+    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:DK.sel.slice()};fixMain();save();
     DK.saving=false;DK.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`);return;
   }
   const miss=loMissing(l.ids);
@@ -1476,20 +1494,25 @@ function renameLoadout(i){
     l.name=v||`Loadout ${i+1}`;save();
     DK.note=`Renamed to <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-edit="${i}"]`);
   };
-  const box=modal(`<h2 class="nm2">Rename loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
+  const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
     <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
-    <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button>`,
+    <div class="dk-loopts"><button class="btn text dk-lomain" id="loMain"></button>
+    <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button></div>`,
     [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
   const inp=box.querySelector('#loName');
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
   box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(i)};
+  const mb=box.querySelector('#loMain');
+  const paintMain=()=>{const on=SAVE.mainLo===i;mb.disabled=on;mb.innerHTML=on?'★ Your main loadout':'☆ Make main loadout'};
+  mb.onclick=()=>{sfx('click');SAVE.mainLo=i;save();paintMain();renderDeck();inp.focus()};
+  paintMain();
   inp.focus();inp.select();
 }
 function deleteLoadout(i){
   const l=SAVE.loadouts[i];if(!l)return;
   modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
     [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},
-     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;save();DK.note=`Deleted <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`)}}]);
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();DK.note=`Deleted <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`)}}]);
 }
 $('#deckSave').onclick=()=>{if(DK.sel.length!==5)return;sfx('click');DK.saving=!DK.saving;DK.note='';renderDeck()};
 $('#deckLoCancel').onclick=()=>{sfx('click');DK.saving=false;renderDeck()};
@@ -1519,7 +1542,7 @@ function startAI(){
   G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
-  openDeck({title:'Choose 5 cards',pool:collPool(),pre:SAVE.lastDeck,color:'blue',loadouts:true,
+  openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},onBack:()=>openSetup('ai')});
 }
 function startLocal(){
@@ -2315,7 +2338,7 @@ function beginOnline(cfg){
     tryStartOnline();
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:SAVE.lastDeck,color:'blue',loadouts:true,onDone:done,
+  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,onDone:done,
     onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',fn:()=>{netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
