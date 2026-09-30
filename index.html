@@ -73,7 +73,6 @@ p{text-wrap:pretty}
 h2[tabindex="-1"]:focus,.mbox:focus{outline:none}
 .sc,.bigscore,.codebox,.stat b,.meta,#deckMeta,.timer span{font-variant-numeric:tabular-nums}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-kbd{font:600 12px var(--body);min-width:26px;text-align:center;padding:3px 7px;border-radius:7px;background:var(--surf2);border:1px solid var(--line2);border-bottom-width:3px;color:var(--text);display:inline-block}
 
 /* ---------- screens ---------- */
 .screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;
@@ -183,7 +182,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .rinfo{margin-top:10px;border-radius:14px;padding:10px 12px;background:var(--surf);border:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;min-height:62px}
 .rinfo svg{width:20px;height:20px;flex:none;margin-top:1px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .rinfo b{display:block;font:700 14px var(--display)} .rinfo span{color:var(--muted);font-size:12.5px;line-height:1.4}
-.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .tc{border-radius:12px;padding:8px 4px;border:1px solid var(--line);background:var(--surf);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:border-color .18s,box-shadow .18s}
 .tc .n{font:900 20px/1 var(--display);color:var(--accent-ink)} .tc small{font-size:11.5px;color:var(--muted)}
 @media (min-width:920px) and (min-height:560px){
@@ -234,7 +233,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .hero-row .btn.primary{flex:1 1 130px;min-height:52px;font-size:18px}
 .hero-row .seg{flex:1 1 210px}
-.kbdhint{display:none;color:var(--muted);font-size:12.5px;align-items:center;gap:6px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{position:relative;text-align:left;border-radius:18px;padding:14px;min-height:100px;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
   display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
@@ -265,13 +263,12 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .fan{font-size:14px}
   .modeseg svg{display:block}
   .m-right .tiles{flex:1;grid-auto-rows:1fr}
-  .kbdhint{display:flex;grid-column:1;margin-top:-14px}
   .tile{min-height:122px;padding:18px}
   .tile b{font-size:19px}
 }
 
 /* ---------- cards ---------- */
-.card{position:relative;width:5em;height:6em;border-radius:.6em;flex:none;overflow:hidden;
+.card{position:relative;width:5em;height:6em;border-radius:.6em;flex:none;overflow:hidden;isolation:isolate; /* keeps the rarity tag and frame under overlapping cards */
   background:linear-gradient(160deg,var(--c1) 0%,var(--c2) 100%);
   box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),inset 0 -1.2em 1.4em rgba(0,0,0,.22),0 .2em .5em rgba(var(--sh),calc(.6*var(--shk)));
   --c1:#777;--c2:#333}
@@ -373,8 +370,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .side.opp .hand .card.sel{transform:translateY(16%)}
 @media (hover:hover){.side.me .hand .card.play:not(.sel):hover{transform:translateY(-7%)}}
 .hand .card.dragging{opacity:.25}
-.side.me .hand .card.play:focus-visible:not(.sel){transform:translateY(-7%)}
-.side.opp .hand .card.play:focus-visible:not(.sel){transform:translateY(7%)}
 body.nohn .hand .nm{display:none}
 body.nobn .board .nm{display:none}
 
@@ -388,7 +383,6 @@ body.nobn .board .nm{display:none}
 .cell .eicon{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cell)*.32);opacity:.5}
 .cell.hot{border-color:color-mix(in srgb,var(--hot) 55%,transparent);box-shadow:inset 0 0 16px color-mix(in srgb,var(--hot) 22%,transparent);cursor:pointer}
 .cell.over{border-color:var(--hot);box-shadow:inset 0 0 24px color-mix(in srgb,var(--hot) 40%,transparent)}
-.cell:focus-visible{outline-offset:1px;z-index:2}
 .ghost{position:fixed;z-index:var(--z-ghost);pointer-events:none;transform:translate(-50%,-55%) scale(1.06) rotate(-4deg);box-shadow:0 1.2em 2.4em rgba(var(--sh),calc(.8*var(--shk)+.2))!important}
 
 body.land .arena{flex-direction:row;justify-content:center;gap:max(16px,3.2vw)}
@@ -399,9 +393,8 @@ body.land .hand{flex-direction:column;gap:0;min-width:calc(var(--hc) + 20px);min
 body.land .hand .card+.card{margin-top:calc(var(--hc) * -0.62)}
 body.land .side.me .hand .card.sel{transform:translateX(-22%)}
 body.land .side.opp .hand .card.sel{transform:translateX(22%)}
-body.land .hand .card.sel,body.land .hand .card:focus-visible{z-index:3}
+body.land .hand .card.sel{z-index:3}
 @media (hover:hover){body.land .side.me .hand .card.play:not(.sel):hover{transform:translateX(-9%)}}
-body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX(-9%)}
 @media (min-width:900px){
   .wordmark{display:block;margin-right:auto}
   .hud .turn{position:absolute;left:50%;transform:translateX(-50%);flex:none}
@@ -518,8 +511,6 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .code{display:flex;gap:.25em}
 .code span{width:1.8em;height:2.2em;display:grid;place-items:center;border-radius:.4em;background:var(--surf);border:1px solid var(--line2);font:900 1.3em var(--display);color:var(--accent-ink)}
 .link{margin-top:.7em;font-size:.72em;color:var(--muted);padding:.3em .7em;border-radius:.5em;background:var(--surf);border:1px solid var(--line)}
-.keys{display:flex;flex-direction:column;gap:.6em;align-items:flex-start;color:var(--muted);font-size:.9em}
-.keys div{display:flex;gap:.35em;align-items:center}
 
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,12px);z-index:var(--z-toast);
   background:var(--surf2);border:1px solid var(--line2);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;
@@ -612,6 +603,7 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .grid .gc.used{opacity:.3;cursor:default}
 .grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
 .grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+.grid h4 small{order:1;font:500 11.5px var(--body);color:var(--muted)}
 
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
@@ -646,10 +638,15 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .bd-bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
 .bd-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;gap:8px;justify-items:center;padding-top:2px;
   /* 3 sleeves of 5.4em across, 3 rows of 6.4em down, leaving room for the page header */
-  font-size:min(20px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
+  font-size:min(28px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
 /* a short, wide page (phones, short windows) fits more card on screen as 4 sleeves by 2 rows */
 @container bdpage (min-aspect-ratio: 1/1){
-  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(20px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(28px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid .pk-cell.p9{display:none}
+}
+/* a tall, narrow page (big windows with the side column) fills its height as 2 sleeves by 4 rows */
+@container bdpage (max-aspect-ratio: 1/2){
+  .bd-grid{grid-template-columns:repeat(2,1fr);font-size:min(28px,calc((100cqw - 8px) / 11.4),calc((100cqh - 100px) / 26))}
   .bd-grid .pk-cell.p9{display:none}
 }
 @container bdpage (max-height:300px){.bd-num{display:none}}
@@ -720,7 +717,9 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .coll-reset{color:var(--muted)}
 .coll-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
 #scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
-.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0}
+.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0;container-type:inline-size}
+/* two pages side by side: never taller than the 3×3 sleeves need at this width, so tall windows get no empty strip */
+.binder:not(.single){max-height:calc(126px + 19.2 * min(28px,(50cqw - 66px) / 16.6))}
 .bd-top{display:flex;align-items:flex-end;gap:6px;margin-bottom:-2px;position:relative;z-index:1}
 .bd-arrow{width:36px;height:36px;border-radius:10px;margin-bottom:6px}
 .bd-arrow:disabled{opacity:.35;cursor:default}
@@ -822,7 +821,6 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
         <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
       </div>
     </div>
-    <div class="kbdhint" aria-hidden="true"><kbd>H</kbd> how to play</div>
   </div>
 </section>
 
@@ -1044,6 +1042,8 @@ const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],rar:Math.ceil
 // players see rarity, not level: levels 1–2 are 1★, 3–4 are 2★ … 9–10 are 5★ (the AI still balances on level)
 const RARITY=['Common','Uncommon','Rare','Epic','Legendary'];
 const rarName=r=>`${r}★ ${RARITY[r-1]}`;
+// deck limits shown next to the rarity headings (the rules live in rarBlock)
+const RAR_CAP={4:'2 per deck, counting 5★',5:'1 per deck'};
 const RULES=[
  ['open','Open','Both hands are played face up.'],
  ['same','Same','When two or more sides of the placed card equal the touching sides of adjacent cards, those enemy cards flip.'],
@@ -1061,7 +1061,7 @@ const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.
 function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as A for Same',plus:'Equal sums flip cards',
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
-const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.']];
+const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 
 /* =====================================================================
@@ -1101,16 +1101,34 @@ function fixMain(){if(!(Number.isInteger(SAVE.mainLo)&&SAVE.loadouts[SAVE.mainLo
 fixMain();
 // indexes in ids you don't have enough copies of; have(id) = how many you own
 function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
-function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,id=>SAVE.coll[id]||0)}:null}
+/* deck building rules: at most 1 card of 5★ rarity, at most 2 cards of 4★ or more, 3★ and below have no limit */
+function rarBlock(ids,id){
+  const r=CARDS[id].rar;if(r<4)return '';
+  if(r===5&&ids.some(x=>CARDS[x].rar===5))return 'Only 1 card of 5★ rarity per deck.';
+  if(ids.filter(x=>CARDS[x].rar>=4).length>=2)return 'Only 2 cards of 4★ rarity or more per deck.';
+  return '';
+}
+// indexes in ids that break the rarity rules (the earlier cards are kept)
+function rarOver(ids){const kept=[],bad=[];ids.forEach((id,k)=>{if(rarBlock(kept,id))bad.push(k);else kept.push(id)});return bad}
+// add ids in order, skipping any that break the rules, up to 5
+function legalDeck(ids){const d=[];for(const id of ids){if(d.length<5&&!rarBlock(d,id))d.push(id)}return d}
+// how many cards of a pool can go into one legal deck
+function deckable(pool){let lo=0,n4=0,n5=0;pool.forEach(e=>{const r=CARDS[e.id].rar;if(r<4)lo+=e.count;else if(r===4)n4+=e.count;else n5+=e.count});return lo+Math.min(2,n4+Math.min(1,n5))}
+function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,owned),over:rarOver(l.ids)}:null}
 // the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
-function preDeck(){const m=mainLoadout();return m&&!m.miss.length?m.l.ids:SAVE.lastDeck}
-function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
+function preDeck(){const m=mainLoadout();return m&&!m.miss.length&&!m.over.length?m.l.ids:SAVE.lastDeck}
+// "Unlock all cards" (Settings) lends you at least 1 copy of every card while it's on; the real collection stays underneath
+const owned=id=>{const n=SAVE.coll[id]||0;return SAVE.unlockAll?Math.max(1,n):n};
+const isSeen=id=>SAVE.unlockAll||SAVE.seen.includes(id);
+const seenCount=()=>SAVE.unlockAll?CARDS.length:SAVE.seen.length;
+function collTotal(){return CARDS.reduce((a,c)=>a+owned(c.id),0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
-function collPool(){return Object.entries(SAVE.coll).filter(([,c])=>c>0).map(([id,c])=>({id:+id,count:c}))}
+function collPool(){return CARDS.map(c=>({id:c.id,count:owned(c.id)})).filter(e=>e.count>0)}
 function ensureMinimum(){
   const added=[];const lv1=CARDS.filter(c=>c.lv===1);
-  while(collTotal()<5){const c=lv1[Math.floor(Math.random()*lv1.length)];collAdd(c.id);added.push(c.id)}
+  // enough cards for a legal deck: 4★ and 5★ cards beyond the rarity limits don't count
+  while(deckable(collPool())<5){const c=lv1[Math.floor(Math.random()*lv1.length)];collAdd(c.id);added.push(c.id)}
   save();return added;
 }
 
@@ -1128,22 +1146,11 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
 
 function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
-// keyboard: remember whether the player is using keys, so focus can follow the game
-let KBD=false;
-window.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key.startsWith('Arrow')||e.key==='Enter'||e.key===' ')KBD=true},true);
-window.addEventListener('pointerdown',()=>{KBD=false},true);
-// Enter / Space on card tiles that act like buttons; keep focus on the same tile after it re-renders
+// Esc closes the open popup
 document.addEventListener('keydown',e=>{
-  const t=e.target;
-  if(e.key==='Escape'&&$('#modal').classList.contains('on')){const b=$('#modal [data-esc]');if(b){e.preventDefault();b.click()}return}
-  if(e.key==='Escape'&&$('#how').classList.contains('on')){e.preventDefault();closeHow();return}
-  if((e.key==='h'||e.key==='H'||e.key==='?')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!(t instanceof HTMLInputElement)
-    &&!$('#how').classList.contains('on')&&!$('#modal').classList.contains('on')&&($('#scr-menu').classList.contains('on')||$('#scr-game').classList.contains('on'))){e.preventDefault();openHow(0);return}
-  if(!(t instanceof Element)||!t.matches('[data-kbd]')||(e.key!=='Enter'&&e.key!==' '))return;
-  e.preventDefault();
-  const host=t.parentElement&&t.parentElement.id,k=t.dataset.id!=null?'id':'i',v=t.dataset[k];
-  t.click();
-  if(!t.isConnected&&host){const n=$(`#${host} [data-kbd][data-${k}="${v}"]`)||$(`#${host} [data-kbd]`);n&&n.focus()}
+  if(e.key!=='Escape')return;
+  if($('#modal').classList.contains('on')){const b=$('#modal [data-esc]');if(b){e.preventDefault();b.click()}return}
+  if($('#how').classList.contains('on')){e.preventDefault();closeHow()}
 });
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
@@ -1433,20 +1440,19 @@ function show(id){
   if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
-  else if(id==='menu'&&KBD)$('#scr-menu .btn').focus();
 }
 // the last deck is only "ready" if every card in it is still owned
 function lastDeckReady(){
   const d=SAVE.lastDeck||[],need={};
   if(d.length!==5)return null;
-  for(const id of d){need[id]=(need[id]||0)+1;if((SAVE.coll[id]||0)<need[id])return null}
+  for(const id of d){need[id]=(need[id]||0)+1;if(owned(id)<need[id])return null}
   return d;
 }
 function renderMenu(){
   const st=SAVE.stats;
   $('#stW').textContent=st.w+st.ow;$('#stL').textContent=st.l+st.ol;$('#stD').textContent=st.d+st.od;
-  $('#collSub').textContent=`${SAVE.seen.length} of ${CARDS.length} found`;
-  $('#collBar').style.width=(SAVE.seen.length/CARDS.length*100).toFixed(1)+'%';
+  $('#collSub').textContent=SAVE.unlockAll?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
+  $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();
 }
 const MODE_ICON={
@@ -1457,7 +1463,7 @@ const MODE_ICON={
 function heroDeck(random){
   const mlo=mainLoadout(),d=lastDeckReady(),back=cardHTML(0,null,{back:true});
   const sub=random?'Random deck'
-    :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:`${mlo.l.name} ready`)
+    :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:mlo.over.length?`${mlo.l.name} breaks the rarity limits`:`${mlo.l.name} ready`)
     :d?'Last deck ready':'Pick 5 cards';
   const cards=random?Array(5).fill(back)
     :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
@@ -1551,7 +1557,7 @@ const RULE_ICON={
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
-const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
+const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
 function timerInfo(){const t=SAVE.rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
@@ -1606,7 +1612,7 @@ let DK=null;
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
   DK={...o,pfx:'deck',sel:[],f:'all',deal:-1,saving:false,note:'',render:()=>renderDeck()};
-  for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0)DK.sel.push(id)}
+  for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0&&!rarBlock(DK.sel,id))DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
 }
@@ -1628,12 +1634,12 @@ function renderDeck(){
   let html='',lastR=0;
   for(const e of pool){
     const c=CARDS[e.id];
-    if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}</h4>`;lastR=c.rar}
-    const r=remaining(e.id);
-    html+=`<div class="gc ${r<=0?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left"${r<=0?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
+    if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}${RAR_CAP[c.rar]?`<small>${RAR_CAP[c.rar]}</small>`:''}</h4>`;lastR=c.rar}
+    const r=remaining(e.id),why=r>0?rarBlock(DK.sel,e.id):'',off=r<=0||!!why;
+    html+=`<div class="gc ${off?'used':''}" data-id="${e.id}" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left${why?'. '+why:''}"${why?` title="${why}"`:''}${off?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
   $('#deckGrid').innerHTML=html;
-  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);DK.deal=DK.sel.length-1;DK.note='';sfx('place');renderDeck()}});
+  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>handAdd(DK,+g.dataset.id));
   const total=DK.pool.reduce((a,e)=>a+e.count,0);
   $('#deckMeta').textContent=`${total} cards`;
   $('#deckGo').disabled=n!==5;
@@ -1647,7 +1653,12 @@ function renderDeck(){
    {pfx, sel:[ids], pool:[{id,count}], color, loadouts, saving, note, deal, render()}
    ===================================================================== */
 function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
-function handAdd(h,id){if(h.sel.length<5&&handRemaining(h,id)>0){h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render()}}
+function handAdd(h,id){
+  if(h.sel.length>=5||handRemaining(h,id)<=0)return;
+  const why=rarBlock(h.sel,id);
+  if(why){h.note=`<span class="bad">${why}</span>`;sfx('click');h.render();return}
+  h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render();
+}
 function renderHand(h){
   const P=h.pfx,col=h.color||'blue',n=h.sel.length;
   // 5 cards spread in a gentle arc, spaced so each card's art stays visible
@@ -1655,7 +1666,7 @@ function renderHand(h){
     const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
     const st=`style="--t:${t};transform:${t};z-index:${i}"`;
     return id!=null
-      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
+      ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   h.deal=-1;
   $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
@@ -1680,8 +1691,8 @@ function renderLoadouts(h){
   $(`#${P}LoRow`).innerHTML=SAVE.loadouts.map((l,i)=>{
     const attrs=`data-i="${i}"`;
     if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${h.saving?'pick':''}" ${attrs}>${h.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
-    const miss=loMissing(h,l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!h.saving&&!miss.length&&sameHand(l.ids,h.sel),main=i===SAVE.mainLo;
-    const sub=h.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
+    const miss=loMissing(h,l.ids),over=rarOver(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!h.saving&&!miss.length&&!over.length&&sameHand(l.ids,h.sel),main=i===SAVE.mainLo;
+    const sub=h.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:over.length?'<span class="bad">Over rarity limit</span>':`<span>Power ${pow}</span>`;
     return `<div class="dk-lowrap ${h.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${h.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${main?', main loadout':''}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
       `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${main?'<i class="dk-star" title="Main loadout">★</i>':''}${esc(l.name)}</b>${sub}</button>`+
       (h.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Edit ${esc(l.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
@@ -1694,32 +1705,32 @@ function renderLoadouts(h){
 function pickLoadout(h,i){
   const l=SAVE.loadouts[i];sfx('click');
   if(h.saving||!l){
-    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();focusLo(h,`[data-i="${i}"]`);return}
+    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();return}
     SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:h.sel.slice()};fixMain();save();
-    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`);return;
+    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();return;
   }
-  const miss=loMissing(h,l.ids);
-  h.sel=l.ids.filter((_,k)=>!miss.includes(k));
+  const miss=loMissing(h,l.ids),have=l.ids.filter((_,k)=>!miss.includes(k));
+  h.sel=legalDeck(have);
+  const over=have.length-h.sel.length;
   h.note=miss.length
     ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
+    :over?`<span class="bad">${over} card${over>1?'s':''} went over the rarity limit.</span> Pick a replacement.`
     :`Loaded <b>${esc(l.name)}</b>.`;
-  h.render();focusLo(h,`[data-i="${i}"]`);
+  h.render();
 }
-// buttons in the loadout row are rebuilt on every render, so put keyboard focus back where it was
-function focusLo(h,sel){if(KBD){const b=$(`#${h.pfx}LoRow ${sel}`);b&&b.focus({preventScroll:true})}}
 function renameLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;sfx('click');
   const commit=()=>{
     const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
     closeModal();
     l.name=v||`Loadout ${i+1}`;save();
-    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-edit="${i}"]`);
+    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();
   };
   const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
     <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
     <div class="dk-loopts"><button class="btn text dk-lomain" id="loMain"></button>
     <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button></div>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
+    [{label:'Cancel',esc:true},{label:'Save',cls:'primary',keep:true,fn:commit}]);
   const inp=box.querySelector('#loName');
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
   box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(h,i)};
@@ -1732,8 +1743,8 @@ function renameLoadout(h,i){
 function deleteLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;
   modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},
-     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`)}}]);
+    [{label:'Cancel',esc:true},
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render()}}]);
 }
 // Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
 function wireHand(P,get){
@@ -1743,14 +1754,14 @@ function wireHand(P,get){
     const h=get();sfx('click');
     const all=[];h.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
     all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
-    h.sel=all.slice(0,5);h.saving=false;h.note='';h.render();
+    h.sel=legalDeck(all);h.saving=false;h.note='';h.render();
   };
   $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
 }
 wireHand('deck',()=>DK);
 $('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 $('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
-function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return shuffle(all).slice(0,5)}
+function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return legalDeck(shuffle(all))}
 const fullPool=()=>CARDS.map(c=>({id:c.id,count:1}));
 
 /* =====================================================================
@@ -1763,7 +1774,7 @@ function baseMatch(mode,extra){
     seed:rand32(),sd:0,sel:null,busy:false,over:false,inbox:[],...extra};
 }
 function startAI(){
-  if(collTotal()<5)ensureMinimum();
+  if(deckable(collPool())<5)ensureMinimum();
   G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
@@ -1804,7 +1815,6 @@ function nextTurn(){
   if(!G)return;
   G.sel=null;renderGame();
   if(isFull(G.st)){endRound();return}
-  if(KBD&&canAct(G.st.turn)&&!$('#modal').classList.contains('on'))focusHand(0);
   startTurnTimer();
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
   else if(G.mode==='online'&&G.st.turn!==G.me)pump();
@@ -1877,7 +1887,9 @@ async function endRound(){
 }
 
 /* ---------- results & trading ---------- */
-function tradeCount(s0,s1){return{one:1,diff:Math.min(5,Math.abs(s0-s1)),all:5}[G.trade]||0}
+// sweep: the winner must own all 9 squares at the end
+const swept=w=>w>=0&&G.st.o.every(o=>o===w);
+function tradeCount(s0,s1,w){return{one:1,diff:Math.min(5,Math.abs(s0-s1)),all:5,sweep:swept(w)?5:0}[G.trade]||0}
 function rowHTML(ids,color){return`<div class="cardrow">${ids.map(id=>cardHTML(id,color)).join('')}</div>`}
 function finish(s0,s1){
   G.over=true;G.busy=true;renderHud();
@@ -1892,13 +1904,15 @@ function finish(s0,s1){
     SAVE.stats[key]=(SAVE.stats[key]||0)+1;save();
   }
   sfx(w<0?'draw':(G.mode==='local'||w===G.me)?'win':'lose');
-  const head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
+  let head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
     `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`;
-  const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1);
+  const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
   setTimeout(()=>{
     if(G!==g)return;
-    if(!n){resultModal(head+(G.mode!=='local'&&G.trade!=='none'&&w<0?'<p>No cards change hands on a draw.</p>':''));return}
+    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?'<p>No cards change hands on a draw.</p>':
+      G.trade==='sweep'?'<p>No sweep: cards only change hands when the winner owns the whole board.</p>':''));return}
+    if(G.trade==='sweep')head+='<p class="gold"><b>Full board sweep!</b></p>';
     const loser=1-w,loserDeck=G.decks[loser];
     if(w===G.me){
       const take=idx=>{
@@ -1931,7 +1945,7 @@ function finish(s0,s1){
 function pickCards(head,deck,n){
   return new Promise(res=>{
     const sel=new Set();
-    const box=modal(head+`<p>Choose <b>${n}</b> card${n>1?'s':''} to take.</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk" data-i="${i}" data-kbd tabindex="0" role="button" aria-pressed="false" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'red')}</div>`).join('')}</div>`,
+    const box=modal(head+`<p>Choose <b>${n}</b> card${n>1?'s':''} to take.</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk" data-i="${i}" role="button" aria-pressed="false" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'red')}</div>`).join('')}</div>`,
       [{label:'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n){closeModal();res([...sel])}}}]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=true;
     box.querySelectorAll('.pk').forEach(el=>el.onclick=()=>{
@@ -2045,15 +2059,8 @@ let CELLS=[];
 function buildBoard(){
   const b=$('#board');b.innerHTML='';CELLS=[];
   for(let i=0;i<9;i++){
-    const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.tabIndex=-1;c.setAttribute('role','button');
+    const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.setAttribute('role','button');
     c.onclick=()=>{if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
-    c.onkeydown=e=>{
-      if(!G)return;
-      const dir={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3}[e.key];
-      if(dir!=null){e.preventDefault();const n=NB[i][dir];if(n>=0)CELLS[n].focus();return}
-      if((e.key==='Enter'||e.key===' ')&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){e.preventDefault();requestMove(G.sel,i);return}
-      if(e.key==='Escape'&&G.sel!=null){e.preventDefault();const hi=G.sel;G.sel=null;renderHands();renderBoard();focusHand(hi)}
-    };
     b.append(c);CELLS.push(c);
   }
 }
@@ -2066,7 +2073,6 @@ function renderBoard(){
     const hot=G.sel!=null&&st.b[i]<0&&canAct(st.turn);
     CELLS[i].classList.toggle('hot',hot);
     CELLS[i].classList.remove('over');
-    CELLS[i].tabIndex=hot?0:-1;
     CELLS[i].setAttribute('aria-disabled',!hot);
     CELLS[i].setAttribute('aria-label',`Row ${Math.floor(i/3)+1}, column ${i%3+1}: `+
       (st.b[i]>=0?`${CARDS[st.b[i]].name}, ${colorOf(st.o[i])}`:'empty')+(st.el[i]?`, ${st.el[i]} square`:''));
@@ -2079,8 +2085,8 @@ function renderHands(){
     el.innerHTML=st.h[p].map((id,i)=>hide
       ?cardHTML(id,null,{back:true})
       :cardHTML(id,colorOf(p),{cls:(can?'play ':'')+(can&&G.sel===i?'sel':''),
-        attrs:`data-p="${p}" data-i="${i}"`+(can?` tabindex="0" role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join('');
-    if(can)el.querySelectorAll('.card').forEach(c=>{c.addEventListener('pointerdown',onHandDown);c.addEventListener('keydown',onHandKey)});
+        attrs:`data-p="${p}" data-i="${i}"`+(can?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join('');
+    if(can)el.querySelectorAll('.card').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
   // in same-screen mode the active player is shown at the bottom side's highlight
 }
@@ -2109,21 +2115,6 @@ function renderHud(){
   updSnd();
 }
 
-function focusHand(hi){
-  const h=G.st.turn===G.bottom?'#handBot':'#handTop',cards=$$(h+' .card.play');
-  (cards[hi]||cards[0])?.focus();
-}
-function onHandKey(e){
-  const p=+e.currentTarget.dataset.p,hi=+e.currentTarget.dataset.i,cards=[...e.currentTarget.parentElement.children];
-  if(e.key.startsWith('Arrow')){
-    e.preventDefault();const d=(e.key==='ArrowLeft'||e.key==='ArrowUp')?-1:1;cards[(hi+d+cards.length)%cards.length].focus();return}
-  if(e.key!=='Enter'&&e.key!==' ')return;
-  e.preventDefault();
-  if(!canAct(p))return;
-  G.sel=G.sel===hi?null:hi;sfx('click');
-  renderHands();renderBoard();
-  if(G.sel!=null)(CELLS.find(c=>c.classList.contains('hot'))||CELLS[0]).focus();else focusHand(hi);
-}
 let drag=null;
 function onHandDown(e){
   const el=e.currentTarget,p=+el.dataset.p,hi=+el.dataset.i;
@@ -2140,6 +2131,8 @@ window.addEventListener('pointermove',e=>{
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize='calc(var(--cell) / 5)';
     document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
+    // dragging picks this card, so drop the highlight from the one picked before
+    $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
     G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0));
   }
   drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
@@ -2198,21 +2191,21 @@ const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
 wireHand('coll',()=>CH);
 function openCollection(){
-  const lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
-  $('#collMeta').innerHTML=`${SAVE.seen.length} of 55 discovered · ${collTotal()} cards owned`+(lost?` · <span class="lostc">${lost} lost</span>`:'');
+  const lost=SAVE.seen.filter(i=>!owned(i)).length;
+  $('#collMeta').innerHTML=(SAVE.unlockAll?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:'');
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
   CH.pool=collPool();
-  const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0)CH.sel.push(id)});
+  const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
   CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
   bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
 }
 // card detail: the card lifts out of its sleeve on a binder page
 function collDetail(id){
-  const c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
-  const lost=!n&&SAVE.seen.includes(id);
+  const c=CARDS[id],n=owned(id);sfx('click');
+  const lost=!n&&isSeen(id);
   if(!n&&!lost){toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
-  const r=handRemaining(CH,id),full=CH.sel.length>=5;
+  const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id);
   const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
     <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
@@ -2222,20 +2215,20 @@ function collDetail(id){
     <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your binder':n>1?'copies in your binder':'copy in your binder'}</div>
     ${lost?'<p class="cd-msg">You lost every copy of this card. Win it back in a match with a trade rule.</p>':''}</div>`,
     lost?[{label:'Close',cls:'primary',esc:true}]
-      :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':'Add to hand',cls:'primary',fn:()=>handAdd(CH,id)}]);
+      :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':capped?'Over rarity limit':'Add to hand',cls:'primary',fn:()=>handAdd(CH,id)}]);
   box.classList.add('cd-box');
   // move the buttons onto the page (this drops focus, so set it again below)
   box.querySelector('.cd-sheet').append(box.querySelector('.mbtns'));
   const add=box.querySelector('.mbtns .btn.primary');
-  if(!lost&&(r<=0||full))add.disabled=true;
+  if(!lost&&(r<=0||full||capped))add.disabled=true;
   (add.disabled?box.querySelector('.mbtns .btn'):add).focus({preventScroll:true});
 }
-// the + on each owned card: greyed out once every copy is in the hand or the hand is full
-const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0;
+// the + on each owned card: greyed out once every copy is in the hand, the hand is full, or the rarity limit is reached
+const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0&&!rarBlock(CH.sel,id);
 function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
 
 /* ---------- binder: pages by rarity, up to 8 cards a page ----------
-   8 fits both the 3×3 sleeves (with one spare) and the 4×2 layout on short pages, so no card is ever hidden */
+   8 fits the 3×3 sleeves (with one spare), 4×2 on short pages and 2×4 on tall ones, so no card is ever hidden */
 const BD_PER=8;
 const BD_BOOK=(()=>{const out=[];for(let r=1;r<=5;r++){
   const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),n=Math.ceil(cs.length/BD_PER);
@@ -2245,7 +2238,7 @@ const bdFirst=r=>BD_BOOK.findIndex(pg=>pg.r===r);
 const BD={p:0,done:null,swiped:false};
 // two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
 const bdSpread=()=>$('#collBook').clientWidth>=540;
-const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
+const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>isSeen(c.id)).length,cs.length]};
 // in spread mode the left page is always even, so the pair is (p, p+1)
 const bdNorm=p=>{p=Math.max(0,Math.min(BD_PAGES-1,p));return bdSpread()?p-p%2:p};
 function bdPage(k){
@@ -2256,7 +2249,7 @@ function bdPage(k){
   for(let i=0;i<9;i++){
     const c=cs[i];
     if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
-    const n=SAVE.coll[c.id]||0,seen=SAVE.seen.includes(c.id);
+    const n=owned(c.id),seen=isSeen(c.id);
     const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
@@ -2406,11 +2399,6 @@ $('#binder').addEventListener('click',e=>{
  });
  $('#binder').addEventListener('pointercancel',()=>{down=false});
 }
-document.addEventListener('keydown',e=>{
-  if(!$('#scr-coll').classList.contains('on')||$('#modal').classList.contains('on')||e.target instanceof HTMLInputElement)return;
-  if(e.key==='ArrowRight'){e.preventDefault();bdStep(1)}
-  else if(e.key==='ArrowLeft'){e.preventDefault();bdStep(-1)}
-});
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
 
@@ -2454,7 +2442,7 @@ function captureDemo(st,waves){
 const HOW=[
  {tab:'Basics',tag:'Basics',title:'Own the most cards',
   stage:()=>miniBoard([[21,'red'],0,[7,'blue'],0,[28,'blue','new'],0,[18,'red'],0,[0,'blue']]),
-  list:['Each player brings <b>5 cards</b>','Take turns placing one on the <b>3×3 board</b>','Your score is your cards on the board plus the cards in your hand','Board full? The <b>higher score wins</b>']},
+  list:['Each player brings <b>5 cards</b>: at most <b>1 of 5★</b> and <b>2 of 4★ or more</b>','Take turns placing one on the <b>3×3 board</b>','Your score is your cards on the board plus the cards in your hand','Board full? The <b>higher score wins</b>']},
  {tab:'Capture',tag:'Capture',title:'Higher side flips',
   stage:()=>`<div class="demo">${cardHTML(22,'blue')}<span class="eq">7 › 6</span><span id="hFlip">${cardHTML(20,'red')}</span></div>`,
   run:st=>{const c=st.querySelector('#hFlip .card');return demoLoop([[900,()=>flipTo(c,'blue','fy')],[2400,()=>setCol(c,'red')]],3000)},
@@ -2506,18 +2494,22 @@ const HOW=[
   list:['Set the limit in match setup: <b>Off</b>, or <b>10 to 90 seconds</b>','The ring turns orange, then red, as time runs low','At 0, a random card goes to a random empty square','<b>Example:</b> the clock hits 0 → one of your cards is played for you']},
  {tab:'Trade',tag:'Trade · Collection',title:'Win cards, lose cards',
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
-  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','You start with weak cards. Everything saves on this device']},
+  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
  {tab:'Tips',tag:'Tips',title:'How to win more',
-  stage:()=>`<div class="keys"><div><kbd>Tab</kbd><kbd>←</kbd><kbd>→</kbd> pick a card</div><div><kbd>Enter</kbd> place it</div><div><kbd>Esc</kbd> put it back</div><div><kbd>H</kbd> open this guide</div></div>`,
-  list:['Keep your <b>strong sides</b> facing empty squares','Corners only show 2 sides: safe spots for weak cards','Save a strong card for the last turn','Tap, drag, or use the keyboard: all three work']}
+  // Iron Crab (3 top, 3 left) tucks into the corner so only its 7 and 6 face the board
+  stage:()=>miniBoard([[22,'blue','n'],0,0,0,0,0,0,0,0])+'<span class="flag"></span>',
+  run:st=>{const n=st.querySelector('.c.n .card'),f=st.querySelector('.flag');
+    return demoLoop([[0,()=>{n.style.opacity=0;f.classList.remove('on')}],[600,()=>dropIn(n)],[1300,()=>{f.textContent='Weak sides hidden';f.classList.add('on')}]],3600)},
+  list:['Keep your <b>strong sides</b> facing empty squares','Corners only show 2 sides: safe spots for weak cards','Save a strong card for the last turn','With <b>Open</b> on, check which enemy cards could flip yours before you place','Tap a card then a square, or drag it there','<b>Example:</b> Iron Crab\'s weak 3s face the walls, so only its 7 and 6 can be attacked']}
 ];
 let HI=0,hStop=null,howReturn=null;
 function renderHow(){
   const h=HOW[HI];
-  $('#hTabs').innerHTML=HOW.map((x,i)=>`<button role="tab" id="htab${i}" aria-selected="${i===HI}" aria-controls="hPanel" tabindex="${i===HI?0:-1}" data-i="${i}">${x.tab}</button>`).join('');
+  $('#hTabs').innerHTML=HOW.map((x,i)=>`<button role="tab" id="htab${i}" aria-selected="${i===HI}" aria-controls="hPanel" data-i="${i}">${x.tab}</button>`).join('');
   $('#hPanel').setAttribute('aria-labelledby','htab'+HI);
   if(hStop){hStop();hStop=null}
-  const st=$('#hStage');st.innerHTML=h.stage();
+  // a tab without an example (Tips) gives its text the whole panel
+  const st=$('#hStage');st.innerHTML=h.stage?h.stage():'';st.style.display=h.stage?'':'none';
   if(h.run&&!matchMedia('(prefers-reduced-motion: reduce)').matches)hStop=h.run(st);
   $('#hTag').textContent=h.tag;$('#hTitle').textContent=h.title;
   $('#hList').innerHTML=h.list.map(l=>`<li>${l}</li>`).join('');
@@ -2543,10 +2535,6 @@ function closeHow(){
   howReturn=null;
 }
 $('#hTabs').onclick=e=>{const b=e.target.closest('[role="tab"]');if(b){sfx('click');goHow(+b.dataset.i,true)}};
-$('#hTabs').onkeydown=e=>{
-  const k={ArrowRight:HI+1,ArrowLeft:HI-1,Home:0,End:HOW.length-1}[e.key];
-  if(k!=null){e.preventDefault();goHow(k,true)}
-};
 $('#hNext').onclick=()=>{sfx('click');HI===HOW.length-1?closeHow():goHow(HI+1)};
 $('#hBack').onclick=$('#hPrev').onclick=()=>{sfx('click');goHow(HI-1)};
 $('#hClose').onclick=()=>{sfx('click');closeHow()};
@@ -2571,12 +2559,20 @@ function openSettings(){
     ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
       `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+
       `<input type="range" class="rng" min="0" max="100" step="5" aria-labelledby="${k}L"><span class="vpct"></span></div>`).join('')}
+    <div class="setrow"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection</small></span><div class="seg" id="setUnlock" role="group" aria-label="Unlock all cards">${
+      [[false,'Off'],[true,'On']].map(([k,l])=>`<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
     <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="setrow"><span class="rt"><b>Reset progress</b><small>Erase your cards and stats</small></span><button class="btn danger small" id="setReset">Reset</button></div>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+  });
+  box.querySelectorAll('#setUnlock button').forEach(b=>b.onclick=()=>{
+    const on=b.dataset.k==='true';if(!!SAVE.unlockAll===on)return;
+    SAVE.unlockAll=on;save();sfx('click');
+    box.querySelectorAll('#setUnlock button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+    if($('#scr-menu').classList.contains('on'))renderMenu();
   });
   box.querySelectorAll('[data-vol]').forEach(row=>{
     const k=row.dataset.vol,sl=row.querySelector('input'),pct=row.querySelector('.vpct');
@@ -2753,7 +2749,7 @@ function beginOnline(cfg){
   const me=NET.role==='host'?0:1,other=NET.oppName||(me===0?'Guest':'Host');
   G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,seed:cfg.seed,me,bottom:me,names:me===0?[myName(),other]:[other,myName()]});
   if(NET.pendingDeck){G.decks[1-me]=NET.pendingDeck;NET.pendingDeck=null}
-  if(collTotal()<5)ensureMinimum();
+  if(deckable(collPool())<5)ensureMinimum();
   const done=ids=>{
     SAVE.lastDeck=ids;save();G.decks[me]=ids;netSend({t:'deck',ids});
     if(!G.decks[1-me]){show('online');onPanels('none');onStatus(`<span class="spin"></span>Waiting for <b class="gold">${esc(oppName())}</b> to choose cards…`)}
