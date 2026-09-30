@@ -152,12 +152,16 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .trow svg{width:20px;height:20px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .trow b{font:700 14px var(--display)} .trow output{font:800 15px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
 .trow.off output{color:var(--muted)}
-.trow input{grid-column:1/-1;width:100%;margin:6px 0 0;appearance:none;-webkit-appearance:none;height:28px;background:none;cursor:pointer;--f:50%}
-.trow input::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
-.trow input::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
-.trow input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
-.trow input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
-.trow input:focus-visible{outline:none}.trow input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}.trow input:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
+.trow input{grid-column:1/-1;width:100%;margin:6px 0 0}
+input.rng{appearance:none;-webkit-appearance:none;height:28px;background:none;cursor:pointer;--f:50%}
+input.rng::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+input.rng::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+input.rng::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+input.rng::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}input.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
+.setrow .rng{flex:0 0 44%;min-width:0}
+.setrow .vpct{font:800 14px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
+.setrow.muted .vpct{color:var(--muted)}
 .trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
 .trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
 .rc{position:relative;aspect-ratio:5/5.4;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
@@ -784,7 +788,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice()};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice()};
 }
 function loadSave(){
   const d=defSave();
@@ -794,6 +798,8 @@ function loadSave(){
   return d;
 }
 let SAVE=loadSave();
+if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
+for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 SAVE.rules.timer=timerSec(SAVE.rules.timer);
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
 // stable per-device id so the host can recognise a guest who reconnects
@@ -895,18 +901,83 @@ let AC=null;
 const SFX={place:[[300,.07,'triangle']],flip:[[620,.05,'square'],[930,.07,'triangle']],banner:[[523,.08],[659,.08],[784,.08],[1047,.16]],
   win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]]};
 function sfx(k){
-  if(!SAVE.sound)return;
+  const v=SAVE.sfxVol/100;
+  if(!SAVE.sound||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
     let t=AC.currentTime+.01;
     for(const[f,d,type] of SFX[k]){
       const o=AC.createOscillator(),g=AC.createGain();o.type=type||'triangle';o.frequency.value=f;
-      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16*v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
       o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.03);t+=d*.85;
     }
   }catch(e){}
 }
+
+/* ---------- music ---------- */
+// Placeholder track, played on every screen from the first click, tap or key press. It is 115 BPM (one bar = 2.086925 s) and its first note
+// lands on a downbeat at 1.7007 s. The first pass plays the whole song from that note; bar 95
+// (199.96 s) is where the song lands its last hit and the fade-out starts, so there the opening comes
+// back in on the downbeat while the old ending rings out underneath for one bar. From then on it loops
+// seamlessly and never reaches the fade. Replace these numbers if the track changes.
+const MUSIC={src:'audio/music.mp3',max:.5,first:1.7007,bar:2.086925,loopBars:95,
+  buf:null,loading:null,node:null,gain:null,want:false};
+function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
+const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
+// download now; decoding needs the audio context, which waits for the first interaction
+MUSIC.data=fetch(MUSIC.src).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()});
+MUSIC.data.catch(()=>{});
+function audioUnlock(){
+  removeEventListener('pointerdown',audioUnlock,true);removeEventListener('keydown',audioUnlock,true);
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return}
+  musicPlay();
+}
+addEventListener('pointerdown',audioUnlock,true);addEventListener('keydown',audioUnlock,true);
+function musicLoad(){
+  if(MUSIC.loading)return MUSIC.loading;
+  AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+  MUSIC.loading=MUSIC.data.then(d=>new Promise((ok,no)=>AC.decodeAudioData(d,ok,no))).then(b=>{
+    const sr=b.sampleRate,S=Math.round(MUSIC.first*sr),F=Math.round(MUSIC.bar*sr),E=Math.round((MUSIC.first+MUSIC.loopBars*MUSIC.bar)*sr);
+    // bar 95 onwards: the opening bar plus the old ending fading out (cosine curve) underneath it
+    for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);
+      for(let j=0;j<F;j++)d[E+j]=d[S+j]+d[E+j]*.5*(1+Math.cos(Math.PI*j/F))}
+    // after that bar, continue from bar 2 of the song
+    MUSIC.buf=b;MUSIC.loopStart=(S+F)/sr;MUSIC.loopEnd=(E+F)/sr;return b;
+  }).catch(e=>{MUSIC.loading=null;throw e});
+  return MUSIC.loading;
+}
+function musicPlay(){
+  MUSIC.want=true;
+  if(!musicOn()||MUSIC.node)return;
+  musicLoad().then(b=>{
+    if(!MUSIC.want||!musicOn()||MUSIC.node)return;
+    if(AC.state==='suspended')AC.resume();
+    const src=AC.createBufferSource(),g=AC.createGain(),t=AC.currentTime+.05;
+    src.buffer=b;src.loop=true;src.loopStart=MUSIC.loopStart;src.loopEnd=MUSIC.loopEnd;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+.03);
+    src.connect(g).connect(AC.destination);src.start(t,MUSIC.first-.03);
+    MUSIC.node=src;MUSIC.gain=g;
+  }).catch(()=>{});
+}
+function musicStop(keepWant){
+  if(!keepWant)MUSIC.want=false;
+  const src=MUSIC.node,g=MUSIC.gain;if(!src)return;
+  MUSIC.node=MUSIC.gain=null;
+  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);
+  src.stop(t+.65);
+}
+function musicSync(){
+  if(!musicOn()){musicStop(true);return}
+  if(!MUSIC.node){if(MUSIC.want)musicPlay();return}
+  if(!document.hidden)MUSIC.gain.gain.setTargetAtTime(musicGain(),AC.currentTime,.05);
+}
+// fade out while the tab is hidden, back in when it returns
+document.addEventListener('visibilitychange',()=>{
+  const g=MUSIC.gain;if(!g)return;
+  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(Math.max(g.gain.value,.0001),t);
+  g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+(document.hidden?.3:1));
+});
 
 /* =====================================================================
    ENGINE  (pure — used by UI, AI search and online sync)
@@ -1061,6 +1132,8 @@ function aiDeck(level){
    NAV / MENU
    ===================================================================== */
 function show(id){
+  // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
+  if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
   else if(id==='menu'&&KBD)$('#scr-menu .btn').focus();
@@ -1177,7 +1250,7 @@ function renderTimerRow(){
   const row=$('#timerRow'),t=SAVE.rules.timer;
   if(!row.firstChild){
     row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
-      `<input type="range" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
+      `<input type="range" class="rng" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
       `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
     const sl=$('#timerSl');
     sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
@@ -1474,10 +1547,10 @@ $('#btnQuit').onclick=()=>{
     {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'){const k=G.mode==='online'?'ol':'l';SAVE.stats[k]++;save()}leaveMatch()}},
     {label:'Keep playing',cls:'primary',esc:true}]);
 };
-$('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click')};
+$('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};
 const SND_ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a7.5 7.5 0 010 11"/></svg>',
   SND_OFF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 10l4 4M21 10l-4 4"/></svg>';
-function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off')}
+function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off');$$('[data-vol]').forEach(r=>r.paint&&r.paint())}
 
 /* ---------- turn timer ---------- */
 // The ring and bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
@@ -1876,7 +1949,9 @@ function openSettings(){
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">
     <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
-    <button class="setrow" id="setSound" role="switch" aria-checked="${!!SAVE.sound}"><span class="rt"><b>Sound</b><small>Clicks, flips and the timer</small></span><span class="switch" aria-hidden="true"></span></button>
+    ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
+      `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+
+      `<input type="range" class="rng" min="0" max="100" step="5" aria-labelledby="${k}L"><span class="vpct"></span></div>`).join('')}
     <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="setrow"><span class="rt"><b>Reset progress</b><small>Erase your cards and stats</small></span><button class="btn danger small" id="setReset">Reset</button></div>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
@@ -1884,7 +1959,15 @@ function openSettings(){
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
-  box.querySelector('#setSound').onclick=e=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');e.currentTarget.setAttribute('aria-checked',SAVE.sound)};
+  box.querySelectorAll('[data-vol]').forEach(row=>{
+    const k=row.dataset.vol,sl=row.querySelector('input'),pct=row.querySelector('.vpct');
+    const paint=()=>{const v=SAVE[k];sl.value=v;sl.style.setProperty('--f',v+'%');
+      const txt=!SAVE.sound?'Muted':v?v+'%':'Off';pct.textContent=txt;sl.setAttribute('aria-valuetext',txt);row.classList.toggle('muted',!SAVE.sound||!v)};
+    row.paint=paint;paint();
+    // moving a slider also lifts the in-game mute
+    sl.oninput=()=>{SAVE[k]=+sl.value;if(!SAVE.sound){SAVE.sound=true;updSnd()}save();box.querySelectorAll('[data-vol]').forEach(r=>r.paint());musicSync()};
+    if(k==='sfxVol')sl.onchange=()=>sfx('click');
+  });
   box.querySelector('#setHow').onclick=()=>{closeModal();openHow(0)};
   box.querySelector('#setReset').onclick=()=>confirmReset(()=>show('menu'));
 }
