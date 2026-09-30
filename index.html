@@ -597,28 +597,28 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .grid .gc.used{opacity:.3;cursor:default}
 .grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
 .grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
-#btnReset{margin-top:18px;align-self:center}
+
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
 /* ---------- collection binder ---------- */
 /* one binder page per level; two pages side by side on wide screens, one on phones */
-#scr-coll .wrap,#scr-coll .topbar{max-width:820px}
+#scr-coll .wrap,#scr-coll .topbar{max-width:1120px}
 :root{--leather:#2a1a0d;--leather2:#140c06} :root[data-theme="light"]{--leather:#5b3b20;--leather2:#3a2413}
-.bd-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 16px;margin-bottom:-2px}
+.bd-tabs{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 4px;align-self:flex-end}
 .bd-tabs::-webkit-scrollbar{display:none}
 .bd-tab{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line2);border-bottom:0;background:var(--surf2);color:var(--muted);
   border-radius:10px 10px 0 0;padding:7px 13px 8px;font:700 12.5px var(--display);cursor:pointer;transition:background .18s,color .18s}
 .bd-tab:hover{color:var(--text)}
 .bd-tab.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .bd-tab i{font-style:normal;font-size:11px}
-.binder{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:14px;border-radius:16px;perspective:2400px;touch-action:pan-y;
+.binder{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:24px;padding:14px;border-radius:16px;perspective:2400px;touch-action:pan-y;
   background:linear-gradient(160deg,var(--leather),var(--leather2));box-shadow:inset 0 0 0 1px rgba(217,178,106,.2),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
 .binder.single{grid-template-columns:1fr;padding-left:38px;overflow:hidden}
 .binder.single .bd-page.l{display:none}
 .bd-rings{position:absolute;left:50%;top:22px;bottom:22px;width:20px;margin-left:-10px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:6;pointer-events:none}
 .binder.single .bd-rings{left:19px}
 .bd-rings i{width:20px;height:11px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#7d5a1c);box-shadow:0 2px 3px rgba(0,0,0,.6)}
-.bd-page{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 12px 10px;border-radius:8px;background:var(--surf);container-type:inline-size;overflow:hidden}
+.bd-page{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0;padding:10px 12px 8px;border-radius:8px;background:var(--surf);container:bdpage/size;overflow:hidden}
 .bd-page.l{box-shadow:inset -18px 0 22px -16px rgba(0,0,0,.6)}
 .bd-page.r{box-shadow:inset 18px 0 22px -16px rgba(0,0,0,.6)}
 .bd-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
@@ -627,7 +627,15 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .bd-h span.done{color:var(--accent-ink);font-weight:600}
 .bd-bar{height:4px;border-radius:2px;background:rgba(var(--tint),.08);overflow:hidden}
 .bd-bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
-.bd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;justify-items:center;font-size:min(15px,calc(100cqw / 17.6));padding-top:4px}
+.bd-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;gap:8px;justify-items:center;padding-top:2px;
+  /* 3 sleeves of 5.4em across, 3 rows of 6.4em down, leaving room for the page header */
+  font-size:min(20px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
+/* a short, wide page (phones, short windows) fits more card on screen as 4 sleeves by 2 rows */
+@container bdpage (min-aspect-ratio: 1/1){
+  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(20px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid .pk-cell.p9{display:none}
+}
+@container bdpage (max-height:300px){.bd-num{display:none}}
 .bd-num{align-self:center;font:600 11px var(--body);color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
 .pocket{position:relative;width:5.4em;height:6.4em;border-radius:.6em;display:grid;place-items:center;border:0;padding:0;cursor:pointer;
   background:var(--well);box-shadow:inset 0 0 0 1px var(--line2);transition:transform .2s var(--spring)}
@@ -645,8 +653,97 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .bd-shade.to-r{background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 70%,rgba(0,0,0,.05))}
 .bd-shade.to-l{background:linear-gradient(270deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 70%,rgba(0,0,0,.05))}
 .bd-blank{height:100%;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(var(--tint),.035) 27px 28px),var(--surf)}
-.bd-nav{display:flex;align-items:center;justify-content:center;gap:14px;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-.bd-nav .iconbtn:disabled{opacity:.35;cursor:default}
+
+
+/* + on an owned card's sleeve adds it to the hand below */
+.pk-cell{position:relative}
+.pk-add{position:absolute;right:-.35em;bottom:-.35em;z-index:2;width:1.9em;height:1.9em;min-width:28px;min-height:28px;border-radius:50%;padding:0;cursor:pointer;
+  display:grid;place-items:center;font:800 1.15em/1 var(--display);color:var(--on-accent);border:2px solid var(--surf);
+  background:linear-gradient(180deg,var(--accent-hi),var(--accent));box-shadow:0 3px 8px rgba(var(--sh),calc(.5*var(--shk)));transition:transform .2s var(--spring),opacity .18s}
+.pk-add:hover:not(:disabled){transform:scale(1.12)}
+.pk-add:active:not(:disabled){transform:scale(.92)}
+.pk-add:disabled{opacity:.3;cursor:default;filter:grayscale(.6)}
+
+
+/* card detail popup: a single binder page, the card lifted out of its sleeve */
+.mbox.cd-box{position:relative;max-width:420px;padding:12px 12px 12px 38px;background:linear-gradient(160deg,var(--leather),var(--leather2));border-color:rgba(217,178,106,.25)}
+.cd-rings{position:absolute;left:10px;top:28px;bottom:28px;width:18px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:2;pointer-events:none}
+.cd-rings i{width:18px;height:10px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#7d5a1c);box-shadow:0 2px 3px rgba(0,0,0,.6)}
+.cd-sheet{border-radius:10px;background:var(--surf);box-shadow:inset 16px 0 20px -16px rgba(0,0,0,.6);padding:14px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cd-top{align-self:stretch;display:flex;justify-content:space-between;font:600 12px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+.cd-top b{color:var(--accent-ink);font-weight:600}
+.cd-pulled{font-size:30px}
+.cd-sleeve{position:relative;padding:.3em;border-radius:.8em;background:var(--well);box-shadow:inset 0 0 0 1px var(--line2)}
+.cd-sleeve::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.1) 45%,transparent 58%)}
+.cd-sleeve .card{transform:translateY(-.55em) rotate(-2.5deg);box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .5em 1em -.2em rgba(0,0,0,.8);animation:cdLift .6s var(--ease) both .12s}
+@keyframes cdLift{from{transform:none}}
+.cd-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg);z-index:2;font:900 .5em/1 var(--display);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--danger);border:.08em solid var(--danger);border-radius:.18em;padding:.15em .4em;background:rgba(20,4,4,.55)}
+.mbox h2.cd-name{margin:0;font-size:26px}
+.cd-sub{margin-top:-8px;font-size:13.5px;color:var(--muted)}
+.cd-sides{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-self:stretch}
+.cd-sides div{border-radius:10px;background:var(--well);border:1px solid var(--line);padding:6px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.cd-sides b{font:900 20px/1 var(--display)} .cd-sides span{font-size:11px;color:var(--muted)}
+.cd-own{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.cd-own b{font:800 15px var(--display);color:var(--on-accent);background:var(--accent);border-radius:7px;padding:1px 8px}
+.cd-own.lost b{background:var(--danger);color:#fff}
+.mbox p.cd-msg{font-size:13px;color:var(--danger);margin:-4px auto 0;max-width:34ch}
+.cd-sheet .mbtns{align-self:stretch;margin-top:0}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ---------- collection fits one screen ----------
+   phones / narrow: binder on top (fills the height left), loadouts + hand below
+   wide screens: binder on the left, loadouts + hand in a column on the right */
+#scr-coll .topbar.coll-top{margin:2px 0 10px}
+.coll-title{flex:1;min-width:0;display:flex;flex-direction:column}
+.coll-title h2{margin:0}
+.coll-title .meta{text-align:left;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coll-reset{color:var(--muted)}
+.coll-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
+#scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
+.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0}
+.bd-top{display:flex;align-items:flex-end;gap:6px;margin-bottom:-2px;position:relative;z-index:1}
+.bd-arrow{width:36px;height:36px;border-radius:10px;margin-bottom:6px}
+.bd-arrow:disabled{opacity:.35;cursor:default}
+.coll-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+#scr-coll .dk-tray{position:relative;bottom:auto;padding:10px 14px 12px}
+#scr-coll .dk-tray::after{display:none}
+#scr-coll .dk-fan{height:7.8em}
+.coll-sides{grid-template-columns:repeat(4,auto minmax(14px,40px))!important;justify-content:space-between;column-gap:6px!important;margin-top:2px;min-width:0}
+.coll-sides .dk-bar{width:auto}
+.coll-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.coll-row .dk-power{flex:none;margin-right:4px}
+.coll-row .dk-act{flex:none;min-height:42px}
+.coll-row #collClear{width:42px;padding:0}
+.coll-row .btn.primary{flex:1;min-width:0;min-height:42px;padding:6px 12px;font-size:15px}
+#scr-coll .dk-lohead{min-height:22px}
+#scr-coll .dk-lonote:empty{display:none}
+/* compact loadout tiles: name and power only */
+#scr-coll .dk-loslot{padding:7px 10px;gap:1px}
+#scr-coll .dk-loslot .stack,#scr-coll .dk-loslot .tagx{display:none}
+#scr-coll .dk-loslot.empty{min-height:48px}
+@media (max-width:599px){#scr-coll .coll-sides{display:none}}
+@media (max-height:740px){#scr-coll .dk-fan{font-size:min(11px,calc(100cqw / 28.5))}}
+.coll-row .btn.primary{white-space:nowrap}
+/* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
+@container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
+@media (min-width:700px) and (orientation:landscape){
+  #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,34vw,380px);grid-template-rows:minmax(0,1fr)}
+  #scr-coll .dk-lorow{grid-template-columns:1fr}
+  #scr-coll .dk-loslot{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;min-height:54px;padding:6px 10px}
+  #scr-coll .dk-loslot .stack{display:flex;grid-row:1/3}
+  #scr-coll .dk-loslot b{align-self:end} #scr-coll .dk-loslot span{align-self:start}
+  #scr-coll .dk-loslot.empty{display:flex;min-height:54px}
+}
+/* phones held sideways: loadouts go back to one compact row so the side column fits the short height */
+@media (orientation:landscape) and (max-height:520px){
+  #scr-coll .wrap.coll-wrap{min-height:0}
+  #scr-coll .topbar.coll-top{margin:0 0 6px}
+  #scr-coll .dk-lorow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #scr-coll .dk-loslot{display:flex;min-height:48px;padding:7px 10px}
+  #scr-coll .dk-loslot .stack{display:none}
+  #scr-coll .dk-loslot.empty{min-height:48px}
+}
 
 /* ---------- online ---------- */
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:18px 16px 20px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center}
@@ -773,23 +870,44 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 
 <!-- COLLECTION -->
 <section id="scr-coll" class="screen">
-  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Collection</h2></div>
-  <div class="wrap">
-    <div class="meta" id="collMeta"></div>
-    <div>
-      <div class="bd-tabs" id="bdTabs"></div>
+  <div class="topbar coll-top">
+    <button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="coll-title"><h2>Collection</h2><div class="meta" id="collMeta"></div></div>
+    <button class="iconbtn coll-reset" id="btnReset" aria-label="Reset all progress" title="Reset all progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  </div>
+  <!-- one screen, no scrolling: the binder takes whatever height is left and its cards resize to fit -->
+  <div class="wrap coll-wrap">
+    <div class="coll-book" id="collBook">
+      <div class="bd-top">
+        <button class="iconbtn bd-arrow" id="bdPrev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="bd-tabs" id="bdTabs"></div>
+        <button class="iconbtn bd-arrow" id="bdNext" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
       <div class="binder" id="binder">
         <div class="bd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="bd-page l" id="bdL"></div>
         <div class="bd-page r" id="bdR"></div>
       </div>
+      <span class="vh" id="bdPos" aria-live="polite"></span>
     </div>
-    <div class="bd-nav">
-      <button class="iconbtn" id="bdPrev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <span id="bdPos" aria-live="polite"></span>
-      <button class="iconbtn" id="bdNext" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div class="coll-side">
+      <!-- build and save loadouts straight from the binder -->
+      <div class="dk-lo" id="collLo">
+        <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="collLoCancel">Cancel</button></div>
+        <div class="dk-lorow" id="collLoRow"></div>
+        <div class="dk-lonote" id="collLoNote" aria-live="polite"></div>
+      </div>
+      <div class="dk-tray coll-tray">
+        <div class="dk-fan" id="collSlots"></div>
+        <div class="dk-sides coll-sides" id="collSides"></div>
+        <div class="coll-row">
+          <div class="dk-power">Power<b id="collPower">0</b></div>
+          <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
+          <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="btn primary" id="collSave">Save hand</button>
+        </div>
+      </div>
     </div>
-    <button class="btn danger small" id="btnReset">Reset all progress</button>
   </div>
 </section>
 
@@ -1072,12 +1190,12 @@ function sfx(k){
 }
 
 /* ---------- music ---------- */
-// Placeholder track, played on every screen from the first click, tap or key press. It is 115 BPM (one bar = 2.086925 s) and its first note
-// lands on a downbeat at 1.7007 s. The first pass plays the whole song from that note; bar 95
-// (199.96 s) is where the song lands its last hit and the fade-out starts, so there the opening comes
-// back in on the downbeat while the old ending rings out underneath for one bar. From then on it loops
-// seamlessly and never reaches the fade. Replace these numbers if the track changes.
-const MUSIC={src:'audio/music.mp3',max:.5,first:1.7007,bar:2.086925,loopBars:95,
+// Game track, played on every screen from the first click, tap or key press. It is 173.48 BPM in 4/4
+// (one bar = 1.3835 s) and starts on a downbeat at 0 s. Its last bar (bar 122, from 167.409 s) is just a
+// final hit ringing out into near-silence, so the opening comes back in on that bar's downbeat and the
+// final hit and its ring play on top of it, fading out, instead of leaving a second of silence.
+// Replace these numbers if the track changes.
+const MUSIC={src:'audio/theme.mp3',max:.5,first:0,loopAt:167.4085,
   buf:null,loading:null,node:null,gain:null,want:false};
 function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
 const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
@@ -1094,12 +1212,12 @@ function musicLoad(){
   if(MUSIC.loading)return MUSIC.loading;
   AC=AC||new(window.AudioContext||window.webkitAudioContext)();
   MUSIC.loading=MUSIC.data.then(d=>new Promise((ok,no)=>AC.decodeAudioData(d,ok,no))).then(b=>{
-    const sr=b.sampleRate,S=Math.round(MUSIC.first*sr),F=Math.round(MUSIC.bar*sr),E=Math.round((MUSIC.first+MUSIC.loopBars*MUSIC.bar)*sr);
-    // bar 95 onwards: the opening bar plus the old ending fading out (cosine curve) underneath it
+    const sr=b.sampleRate,S=Math.round(MUSIC.first*sr),E=Math.round(MUSIC.loopAt*sr),F=b.length-E;
+    // from the loop point to the end of the file: the opening plus the leftover tail fading out (cosine curve)
     for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);
       for(let j=0;j<F;j++)d[E+j]=d[S+j]+d[E+j]*.5*(1+Math.cos(Math.PI*j/F))}
-    // after that bar, continue from bar 2 of the song
-    MUSIC.buf=b;MUSIC.loopStart=(S+F)/sr;MUSIC.loopEnd=(E+F)/sr;return b;
+    // then carry on from just after that stretch of the opening
+    MUSIC.buf=b;MUSIC.loopStart=(S+F)/sr;MUSIC.loopEnd=b.length/sr;return b;
   }).catch(e=>{MUSIC.loading=null;throw e});
   return MUSIC.loading;
 }
@@ -1112,7 +1230,7 @@ function musicPlay(){
     const src=AC.createBufferSource(),g=AC.createGain(),t=AC.currentTime+.05;
     src.buffer=b;src.loop=true;src.loopStart=MUSIC.loopStart;src.loopEnd=MUSIC.loopEnd;
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+.03);
-    src.connect(g).connect(AC.destination);src.start(t,MUSIC.first-.03);
+    src.connect(g).connect(AC.destination);src.start(t,MUSIC.first);
     MUSIC.node=src;MUSIC.gain=g;
   }).catch(()=>{});
 }
@@ -1464,12 +1582,12 @@ $('#setupGo').onclick=()=>{
 let DK=null;
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
-  DK={...o,sel:[],f:'all',deal:-1,saving:false,note:''};
+  DK={...o,pfx:'deck',sel:[],f:'all',deal:-1,saving:false,note:'',render:()=>renderDeck()};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0)DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
 }
-function remaining(id){const e=DK.pool.find(x=>x.id===id);return e?e.count-DK.sel.filter(x=>x===id).length:0}
+const remaining=id=>handRemaining(DK,id);
 const DECK_RANGES=[['all','All levels',1,10],['low','Lv 1–3',1,3],['mid','Lv 4–6',4,6],['high','Lv 7–10',7,10]];
 const SIDE_NAMES=['Top','Right','Bottom','Left'];
 function renderDeck(){
@@ -1480,20 +1598,7 @@ function renderDeck(){
   if(!ranges.some(r=>r[0]===DK.f))DK.f='all';
   $('#deckFilter').innerHTML=ranges.length>2?ranges.map(r=>`<button class="dk-chip ${DK.f===r[0]?'on':''}" data-f="${r[0]}" aria-pressed="${DK.f===r[0]}">${r[1]}</button>`).join(''):'';
   $$('#deckFilter .dk-chip').forEach(b=>b.onclick=()=>{DK.f=b.dataset.f;sfx('click');renderDeck()});
-  // the hand
-  $('#deckSlots').innerHTML=[0,1,2,3,4].map(i=>{
-    const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=DK.sel[i];
-    const st=`style="--t:${t};transform:${t};z-index:${i}"`;
-    return id!=null
-      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===DK.deal?'deal':''})}</div>`
-      :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
-  DK.deal=-1;
-  $$('#deckSlots .dk-fs[data-i]').forEach(s=>s.onclick=()=>{DK.sel.splice(+s.dataset.i,1);DK.note='';sfx('click');renderDeck()});
-  // stats: total power and the best number on each side
   const n=DK.sel.length;
-  $('#deckPower').textContent=DK.sel.reduce((a,id)=>a+CARDS[id].sum,0);
-  $('#deckSides').innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...DK.sel.map(id=>CARDS[id].s[i])):0;
-    return `<span>${s}</span><span class="dk-bar ${n&&v<5?'weak':''}" role="img" aria-label="Best ${s.toLowerCase()} ${v}"><i style="width:${v*10}%"></i></span>`}).join('');
   // collection grid
   const cur=DECK_RANGES.find(r=>r[0]===DK.f);
   const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
@@ -1510,86 +1615,116 @@ function renderDeck(){
   $('#deckMeta').textContent=`${total} cards`;
   $('#deckGo').disabled=n!==5;
   $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
-  $('#deckSave').disabled=n!==5;
-  $('#deckSave').title=n===5?'':'Pick 5 cards to save them';
-  $('#deckClear').disabled=!n;
-  renderLoadouts();
+  renderHand(DK);
+}
+
+/* =====================================================================
+   HAND + LOADOUTS — shared by the deck picker (ids "deck…") and the
+   collection (ids "coll…"). A hand context looks like
+   {pfx, sel:[ids], pool:[{id,count}], color, loadouts, saving, note, deal, render()}
+   ===================================================================== */
+function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
+function handAdd(h,id){if(h.sel.length<5&&handRemaining(h,id)>0){h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render()}}
+function renderHand(h){
+  const P=h.pfx,col=h.color||'blue',n=h.sel.length;
+  // 5 cards spread in a gentle arc, spaced so each card's art stays visible
+  $(`#${P}Slots`).innerHTML=[0,1,2,3,4].map(i=>{
+    const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
+    const st=`style="--t:${t};transform:${t};z-index:${i}"`;
+    return id!=null
+      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
+      :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
+  h.deal=-1;
+  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
+  // stats: total power and the best number on each side
+  $(`#${P}Power`).textContent=h.sel.reduce((a,id)=>a+CARDS[id].sum,0);
+  $(`#${P}Sides`).innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...h.sel.map(id=>CARDS[id].s[i])):0;
+    return `<span>${s}</span><span class="dk-bar ${n&&v<5?'weak':''}" role="img" aria-label="Best ${s.toLowerCase()} ${v}"><i style="width:${v*10}%"></i></span>`}).join('');
+  $(`#${P}Save`).disabled=n!==5;
+  $(`#${P}Save`).title=n===5?'':'Pick 5 cards to save them';
+  $(`#${P}Clear`).disabled=!n;
+  renderLoadouts(h);
 }
 // indexes in a loadout whose card you no longer own enough copies of (lost in a trade)
-function loMissing(ids){return missingIn(ids,id=>{const e=DK.pool.find(x=>x.id===id);return e?e.count:0})}
+function loMissing(h,ids){return missingIn(ids,id=>{const e=h.pool.find(x=>x.id===id);return e?e.count:0})}
 const sameHand=(a,b)=>a.length===b.length&&a.slice().sort((x,y)=>x-y).join()===b.slice().sort((x,y)=>x-y).join();
-function renderLoadouts(){
-  $('#deckLo').classList.toggle('hidden',!DK.loadouts);
-  $('#deckSave').classList.toggle('hidden',!DK.loadouts);
-  if(!DK.loadouts)return;
-  const col=DK.color||'blue';
-  $('#deckLoRow').innerHTML=SAVE.loadouts.map((l,i)=>{
+function renderLoadouts(h){
+  const P=h.pfx;
+  $(`#${P}Lo`).classList.toggle('hidden',!h.loadouts);
+  $(`#${P}Save`).classList.toggle('hidden',!h.loadouts);
+  if(!h.loadouts)return;
+  const col=h.color||'blue';
+  $(`#${P}LoRow`).innerHTML=SAVE.loadouts.map((l,i)=>{
     const attrs=`data-i="${i}"`;
-    if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${DK.saving?'pick':''}" ${attrs}>${DK.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
-    const miss=loMissing(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!DK.saving&&!miss.length&&sameHand(l.ids,DK.sel),main=i===SAVE.mainLo;
-    const sub=DK.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
-    return `<div class="dk-lowrap ${DK.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${main?', main loadout':''}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
+    if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${h.saving?'pick':''}" ${attrs}>${h.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
+    const miss=loMissing(h,l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!h.saving&&!miss.length&&sameHand(l.ids,h.sel),main=i===SAVE.mainLo;
+    const sub=h.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
+    return `<div class="dk-lowrap ${h.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${h.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${main?', main loadout':''}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
       `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${main?'<i class="dk-star" title="Main loadout">★</i>':''}${esc(l.name)}</b>${sub}</button>`+
-      (DK.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Edit ${esc(l.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
+      (h.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Edit ${esc(l.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
   }).join('');
-  $$('#deckLoRow .dk-loslot').forEach(b=>b.onclick=()=>pickLoadout(+b.dataset.i));
-  $$('#deckLoRow .dk-loedit').forEach(b=>b.onclick=()=>renameLoadout(+b.dataset.edit));
-  $('#deckLoCancel').classList.toggle('hidden',!DK.saving);
-  $('#deckLoNote').innerHTML=DK.saving?'Pick a slot to save your hand in.':DK.note||'';
+  $$(`#${P}LoRow .dk-loslot`).forEach(b=>b.onclick=()=>pickLoadout(h,+b.dataset.i));
+  $$(`#${P}LoRow .dk-loedit`).forEach(b=>b.onclick=()=>renameLoadout(h,+b.dataset.edit));
+  $(`#${P}LoCancel`).classList.toggle('hidden',!h.saving);
+  $(`#${P}LoNote`).innerHTML=h.saving?'Pick a slot to save your hand in.':h.note||'';
 }
-function pickLoadout(i){
+function pickLoadout(h,i){
   const l=SAVE.loadouts[i];sfx('click');
-  if(DK.saving||!l){
-    if(DK.sel.length!==5){DK.saving=false;DK.note='Pick 5 cards first, then save them here.';renderDeck();focusLo(`[data-i="${i}"]`);return}
-    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:DK.sel.slice()};fixMain();save();
-    DK.saving=false;DK.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`);return;
+  if(h.saving||!l){
+    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();focusLo(h,`[data-i="${i}"]`);return}
+    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:h.sel.slice()};fixMain();save();
+    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`);return;
   }
-  const miss=loMissing(l.ids);
-  DK.sel=l.ids.filter((_,k)=>!miss.includes(k));
-  DK.note=miss.length
+  const miss=loMissing(h,l.ids);
+  h.sel=l.ids.filter((_,k)=>!miss.includes(k));
+  h.note=miss.length
     ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
     :`Loaded <b>${esc(l.name)}</b>.`;
-  renderDeck();focusLo(`[data-i="${i}"]`);
+  h.render();focusLo(h,`[data-i="${i}"]`);
 }
 // buttons in the loadout row are rebuilt on every render, so put keyboard focus back where it was
-function focusLo(sel){if(KBD){const b=$(`#deckLoRow ${sel}`);b&&b.focus({preventScroll:true})}}
-function renameLoadout(i){
+function focusLo(h,sel){if(KBD){const b=$(`#${h.pfx}LoRow ${sel}`);b&&b.focus({preventScroll:true})}}
+function renameLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;sfx('click');
   const commit=()=>{
     const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
     closeModal();
     l.name=v||`Loadout ${i+1}`;save();
-    DK.note=`Renamed to <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-edit="${i}"]`);
+    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-edit="${i}"]`);
   };
   const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
     <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
     <div class="dk-loopts"><button class="btn text dk-lomain" id="loMain"></button>
     <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button></div>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
+    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
   const inp=box.querySelector('#loName');
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
-  box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(i)};
+  box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(h,i)};
   const mb=box.querySelector('#loMain');
   const paintMain=()=>{const on=SAVE.mainLo===i;mb.disabled=on;mb.innerHTML=on?'★ Your main loadout':'☆ Make main loadout'};
-  mb.onclick=()=>{sfx('click');SAVE.mainLo=i;save();paintMain();renderDeck();inp.focus()};
+  mb.onclick=()=>{sfx('click');SAVE.mainLo=i;save();paintMain();h.render();inp.focus()};
   paintMain();
   inp.focus();inp.select();
 }
-function deleteLoadout(i){
+function deleteLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;
   modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},
-     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();DK.note=`Deleted <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`)}}]);
+    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`)}}]);
 }
-$('#deckSave').onclick=()=>{if(DK.sel.length!==5)return;sfx('click');DK.saving=!DK.saving;DK.note='';renderDeck()};
-$('#deckLoCancel').onclick=()=>{sfx('click');DK.saving=false;renderDeck()};
-$('#deckBest').onclick=()=>{
-  sfx('click');DK.sel=[];
-  const all=[];DK.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
-  all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
-  DK.sel=all.slice(0,5);DK.saving=false;DK.note='';renderDeck();
-};
-$('#deckClear').onclick=()=>{sfx('click');DK.sel=[];DK.saving=false;DK.note='';renderDeck()};
+// Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
+function wireHand(P,get){
+  $(`#${P}Save`).onclick=()=>{const h=get();if(h.sel.length!==5)return;sfx('click');h.saving=!h.saving;h.note='';h.render()};
+  $(`#${P}LoCancel`).onclick=()=>{const h=get();sfx('click');h.saving=false;h.render()};
+  $(`#${P}Best`).onclick=()=>{
+    const h=get();sfx('click');
+    const all=[];h.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
+    all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
+    h.sel=all.slice(0,5);h.saving=false;h.note='';h.render();
+  };
+  $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
+}
+wireHand('deck',()=>DK);
 $('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 $('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return shuffle(all).slice(0,5)}
@@ -2035,28 +2170,52 @@ window.addEventListener('resize',layout);
 /* =====================================================================
    COLLECTION
    ===================================================================== */
+// the hand you build in the collection; it stays put while you browse, and survives leaving the screen
+const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
+function renderCollHand(){renderHand(CH);bdSyncAdd()}
+wireHand('coll',()=>CH);
 function openCollection(){
   const lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
   $('#collMeta').innerHTML=`${SAVE.seen.length} of 55 discovered · ${collTotal()} cards owned`+(lost?` · <span class="lostc">${lost} lost</span>`:'');
-  bdRender();
+  // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
+  CH.pool=collPool();
+  const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0)CH.sel.push(id)});
+  CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
+  bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
 }
+// card detail: the card lifts out of its sleeve on a binder page
 function collDetail(id){
   const c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
   const lost=!n&&SAVE.seen.includes(id);
   if(!n&&!lost){toast(`Level ${c.lv} card — win it in a match to discover it.`);return}
-  modal(`<div class="bigcard">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}</div><h2 class="nm2">${esc(c.name)}</h2>
-    <div class="stats"><span>Level</span><b>${c.lv}</b><span>Element</span><b>${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'None'}</b>
-    <span>Top / Right</span><b>${fmt(c.s[0])} / ${fmt(c.s[1])}</b><span>Bottom / Left</span><b>${fmt(c.s[2])} / ${fmt(c.s[3])}</b><span>Owned</span><b${lost?' class="lostc"':''}>×${n}</b></div>`+
-    (lost?`<p class="lostc">You lost every copy of this card. Win it back in a match with a trade rule.</p>`:''),
-    [{label:'Close',cls:'primary',esc:true}]);
+  const r=handRemaining(CH,id),full=CH.sel.length>=5;
+  const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
+    <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b>Level ${c.lv}</b></div>
+    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
+    <h2 class="nm2 cd-name">${esc(c.name)}</h2>
+    <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
+    <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
+    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your binder':n>1?'copies in your binder':'copy in your binder'}</div>
+    ${lost?'<p class="cd-msg">You lost every copy of this card. Win it back in a match with a trade rule.</p>':''}</div>`,
+    lost?[{label:'Close',cls:'primary',esc:true}]
+      :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':'Add to hand',cls:'primary',fn:()=>handAdd(CH,id)}]);
+  box.classList.add('cd-box');
+  // move the buttons onto the page (this drops focus, so set it again below)
+  box.querySelector('.cd-sheet').append(box.querySelector('.mbtns'));
+  const add=box.querySelector('.mbtns .btn.primary');
+  if(!lost&&(r<=0||full))add.disabled=true;
+  (add.disabled?box.querySelector('.mbtns .btn'):add).focus({preventScroll:true});
 }
+// the + on each owned card: greyed out once every copy is in the hand or the hand is full
+const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0;
+function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
 
 /* ---------- binder: page k holds the level k+1 cards ---------- */
 const BD_PAGES=10;
 const BD={p:0,done:null,swiped:false};
-const bdMQ=matchMedia('(min-width:720px)');
-const bdSpread=()=>bdMQ.matches;
+// two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
+const bdSpread=()=>$('#collBook').clientWidth>=540;
 const bdFound=k=>{const cs=CARDS.filter(c=>c.lv===k+1);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
 // in spread mode the left page is always even, so the pair is (p, p+1)
 const bdNorm=p=>{p=Math.max(0,Math.min(BD_PAGES-1,p));return bdSpread()?p-p%2:p};
@@ -2065,11 +2224,12 @@ function bdPage(k){
   let pk='';
   for(let i=0;i<9;i++){
     const c=cs[i];
-    if(!c){pk+='<div class="pocket blank" aria-hidden="true"></div>';continue}
+    if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
     const n=SAVE.coll[c.id]||0,seen=SAVE.seen.includes(c.id);
     const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered level ${c.lv} card`;
-    pk+=`<button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>`;
+    const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
+    pk+=`<div class="pk-cell"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
   }
   return `<div class="bd-h"><b>Level ${k+1}</b><span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
     `<div class="bd-bar"><i style="width:${(f/t*100).toFixed(1)}%"></i></div><div class="bd-grid">${pk}</div><div class="bd-num">${k+1}</div>`;
@@ -2163,6 +2323,8 @@ const bdStep=d=>{if(BD.done)BD.done();bdTurn(BD.p+d*(bdSpread()?2:1))};
 $('#bdPrev').onclick=()=>bdStep(-1);
 $('#bdNext').onclick=()=>bdStep(1);
 $('#binder').addEventListener('click',e=>{
+  const a=e.target.closest('.pk-add');
+  if(a){if(!BD.swiped&&!a.disabled)handAdd(CH,+a.dataset.add);return}
   const b=e.target.closest('.pocket[data-id]');
   if(b&&!BD.swiped)collDetail(+b.dataset.id);
 });
@@ -2183,8 +2345,8 @@ document.addEventListener('keydown',e=>{
 });
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
-bdMQ.addEventListener('change',bdFit);
-if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#binder'));else window.addEventListener('resize',bdFit);
+
+if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#collBook'));else window.addEventListener('resize',bdFit);
 function confirmReset(after){
   modal('<h2>Reset progress?</h2><p>Your collection, stats and settings will be erased and you will start over with the starter cards.</p>',[
     {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();after();toast('Progress reset.')}},
