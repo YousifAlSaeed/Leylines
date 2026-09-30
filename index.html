@@ -152,12 +152,16 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .trow svg{width:20px;height:20px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .trow b{font:700 14px var(--display)} .trow output{font:800 15px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
 .trow.off output{color:var(--muted)}
-.trow input{grid-column:1/-1;width:100%;margin:6px 0 0;appearance:none;-webkit-appearance:none;height:28px;background:none;cursor:pointer;--f:50%}
-.trow input::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
-.trow input::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
-.trow input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
-.trow input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
-.trow input:focus-visible{outline:none}.trow input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}.trow input:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
+.trow input{grid-column:1/-1;width:100%;margin:6px 0 0}
+input.rng{appearance:none;-webkit-appearance:none;height:28px;background:none;cursor:pointer;--f:50%}
+input.rng::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+input.rng::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+input.rng::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+input.rng::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}input.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
+.setrow .rng{flex:0 0 44%;min-width:0}
+.setrow .vpct{font:800 14px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
+.setrow.muted .vpct{color:var(--muted)}
 .trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
 .trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
 .rc{position:relative;aspect-ratio:5/5.4;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
@@ -286,8 +290,23 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .card .nm{position:absolute;left:0;right:0;bottom:0;padding:.2em .3em .24em;font:600 .5em/1.1 var(--body);text-align:center;color:#fff;background:rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .mod{position:absolute;right:.2em;top:1.15em;font:900 .72em/1 var(--display);padding:.12em .25em;border-radius:.3em;background:rgba(0,0,0,.6)}
 .card .mod.up{color:#8dff8d} .card .mod.dn{color:#ff9b9b}
-.card .cnt{position:absolute;left:.25em;bottom:.95em;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
-.card .lv{position:absolute;left:.3em;bottom:.95em;font:800 .5em/1 var(--display);color:#fff;text-shadow:0 0 .2em #000}
+.card .cnt{position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
+/* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a metal frame and a "3★" tag.
+   --rc colours the frame on the card; --rt is a text colour that stays readable on the page in both themes. */
+:root{--r1:#b08358;--r2:#cfd8e0;--r3:#f0c35c;--r4:#b98cff;--r5:#ff8fd0;--r1t:#c99a6c;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#c7a2ff;--r5t:#ff9fd6}
+:root[data-theme="light"]{--r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#7446c8;--r5t:#b8337f}
+.rar1{--rc:var(--r1);--rt:var(--r1t)} .rar2{--rc:var(--r2);--rt:var(--r2t)} .rar3{--rc:var(--r3);--rt:var(--r3t)} .rar4{--rc:var(--r4);--rt:var(--r4t)} .rar5{--rc:var(--r5);--rt:var(--r5t)}
+.rt{color:var(--rt)}
+.card .rf{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
+.card.rar5 .rf{box-shadow:inset 0 0 .55em .05em color-mix(in srgb,var(--r5) 45%,transparent)}
+.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:conic-gradient(from 200deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* the tag sits above the name strip with a clear gap (the strip is ~.77em tall), so a long name is never covered.
+   Offsets are in the tag's own em (its font is .5 of the card's): 2.05em = 1.03 card-em up, .5em = .25 card-em in. */
+.card .rchip{position:absolute;left:.5em;bottom:2.05em;z-index:2;font:800 .5em/1 var(--display);padding:.18em .38em .2em;border-radius:.35em;white-space:nowrap;
+  background:rgba(0,0,0,.62);color:var(--rc);border:.08em solid var(--rc)}
+.card.nn .rchip{bottom:.6em}
+.card.back .rf,.card.back .rchip{display:none}
 .card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
 .card.back::after{content:"";position:absolute;inset:28% 30%;border:.1em solid var(--accent);transform:rotate(45deg);border-radius:.15em;opacity:.75}
 .card.back i{display:none}
@@ -300,7 +319,7 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 @keyframes flipY{0%{transform:perspective(30em) rotateY(0)}50%{transform:perspective(30em) rotateY(90deg) scale(1.1)}100%{transform:perspective(30em) rotateY(0)}}
 @keyframes flipX{0%{transform:perspective(30em) rotateX(0)}50%{transform:perspective(30em) rotateX(90deg) scale(1.1)}100%{transform:perspective(30em) rotateX(0)}}
 .card.lost{filter:saturate(.7) brightness(.85)}
-.card.lost::after{content:"×0";position:absolute;left:.25em;bottom:.95em;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
+.card.lost::after{content:"×0";position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
 .lostc{color:var(--danger)!important}
 
 /* ---------- game ---------- */
@@ -508,10 +527,84 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- deck & collection ---------- */
-.slots{display:flex;gap:6px;justify-content:center;font-size:clamp(11px,3.4vw,16px);padding:10px;border-radius:16px;background:var(--well);border:1px solid var(--line)}
-.slot{width:5em;height:6em;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;cursor:pointer;flex:none;transition:transform .2s var(--spring)}
-.slot:empty::after{content:"+";color:var(--muted);font-size:1.6em;opacity:.6}
-.slot .card{font-size:1em}
+.dk-head{display:flex;align-items:center;gap:10px}
+.dk-head .meta{margin-left:auto;flex:none}
+.dk-filter{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.dk-filter::-webkit-scrollbar{display:none}
+.dk-chip{flex:none;border:1px solid var(--line2);background:none;color:var(--muted);border-radius:999px;padding:5px 12px;font:600 12.5px var(--body);cursor:pointer;white-space:nowrap;min-height:32px;transition:background .18s,color .18s}
+.dk-chip:hover{color:var(--text)}
+.dk-chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+/* the picked hand: 5 cards spread in a gentle arc, spaced so each card's art stays visible */
+.dk-tray{position:sticky;bottom:0;z-index:2;container-type:inline-size;padding:16px 18px 10px;border-radius:20px;
+  background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px solid var(--line2);box-shadow:0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
+/* covers the screen's bottom padding so grid cards don't peek out under the sticky tray */
+.dk-tray::after{content:"";position:absolute;left:-2px;right:-2px;top:calc(100% + 1px);height:max(24px,env(safe-area-inset-bottom));background:var(--bg0)}
+/* 5 cards × 5em + 4 gaps × .5em = 27em, plus room for the tilt; shrinks to fit narrow screens */
+.dk-fan{position:relative;height:8.4em;font-size:min(16px,calc(100cqw / 28.5))}
+.dk-fs{position:absolute;bottom:1.6em;left:50%;width:5em;height:6em;margin-left:-2.5em;transform-origin:50% 100%;transition:transform .45s var(--spring)}
+.dk-fs .dk-empty{width:100%;height:100%;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;color:var(--muted);font:700 .8em var(--display);opacity:.7}
+.dk-fs .card{cursor:pointer;transition:filter .18s}
+.dk-fs .card.deal{animation:deal .45s var(--spring)}
+@keyframes deal{from{transform:translateY(4em) rotate(8deg);opacity:0}}
+@media (hover:hover){.dk-fs:has(.card):hover{transform:var(--t) translateY(-.5em)!important}.dk-fs .card:hover{filter:brightness(1.12)}}
+.dk-row{display:flex;align-items:center;gap:14px;margin-top:4px;padding-top:12px;border-top:1px solid var(--line)}
+.dk-power{display:flex;flex-direction:column;gap:2px;font:600 11.5px var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.dk-power b{font:800 22px/1 var(--display);color:var(--text);letter-spacing:0;font-variant-numeric:tabular-nums}
+.dk-sides{display:grid;grid-template-columns:repeat(2,auto auto);gap:3px 8px;align-items:center;font-size:12px;color:var(--muted)}
+.dk-bar{width:40px;height:5px;border-radius:3px;background:rgba(var(--tint),.1);overflow:hidden}
+.dk-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--ease)}
+.dk-bar.weak i{background:var(--danger)}
+.dk-row .btn.primary{margin-left:auto;min-width:120px}
+.dk-acts{display:flex;gap:8px;margin-top:12px}
+.dk-act{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 10px;border-radius:12px;
+  border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);font:600 13.5px var(--body);cursor:pointer;white-space:nowrap;
+  transition:background .18s,border-color .18s,color .18s,transform .2s var(--spring)}
+.dk-act svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.dk-act:hover:not(:disabled){background:rgba(var(--tint),.07);border-color:var(--accent)}
+.dk-act:active:not(:disabled){transform:scale(.96)}
+.dk-act:disabled{opacity:.4;cursor:default}
+.dk-act.gold{color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.dk-act.quiet{color:var(--muted)}
+.dk-act.quiet:hover:not(:disabled){color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
+.dk-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+/* loadouts: saved hands above the collection */
+.dk-lo{display:flex;flex-direction:column;gap:8px}
+.dk-lohead{display:flex;justify-content:space-between;align-items:center;min-height:28px}
+.dk-lohead .lbl{margin:0}
+.dk-lohead .btn.text{min-height:28px;padding:2px 8px;font-size:13px}
+.dk-lorow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dk-loslot{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px 9px;border-radius:14px;border:1px solid var(--line2);
+  background:var(--surf);cursor:pointer;text-align:left;min-width:0;transition:border-color .18s,box-shadow .18s,transform .2s var(--spring)}
+.dk-loslot:hover{border-color:var(--accent)}
+.dk-loslot:active{transform:scale(.97)}
+.dk-loslot.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px -10px var(--accent-glow)}
+.dk-loslot .stack{display:flex;font-size:5.2px;height:6em;padding-left:2.4em}
+.dk-loslot .stack .card{margin-left:-2.4em;box-shadow:0 0 0 .15em var(--surf)}
+.dk-loslot .stack .miss{width:5em;height:6em;margin-left:-2.4em;border-radius:.6em;border:.2em dashed var(--danger);background:var(--surf)}
+.dk-loslot b{font:700 13.5px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dk-loslot span{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dk-loslot span.bad{color:var(--danger)}
+.dk-loslot .tagx{position:absolute;right:8px;top:8px;font:700 10.5px var(--body);padding:1px 6px;border-radius:5px;background:var(--accent);color:var(--on-accent)}
+.dk-loslot.empty{border-style:dashed;justify-content:center;align-items:center;min-height:86px;color:var(--muted);font:600 12.5px var(--body);text-align:center}
+.dk-loslot.pick{border-color:var(--accent);border-style:solid;animation:loPulse 1.2s ease-in-out infinite}
+@keyframes loPulse{50%{box-shadow:0 0 0 3px var(--accent-glow)}}
+.dk-lowrap{position:relative;display:flex;min-width:0}
+.dk-lowrap>.dk-loslot{flex:1}
+.dk-lowrap.named .dk-loslot b{padding-right:28px}
+.dk-loedit{position:absolute;right:5px;bottom:5px;width:32px;height:32px;border-radius:9px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .18s,color .18s}
+.dk-loedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dk-loedit:hover{background:rgba(var(--tint),.08);color:var(--accent-ink)}
+.dk-loopts{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin-top:10px}
+.dk-lomain{color:var(--accent-ink)!important;font-size:13.5px}
+.dk-lomain:disabled{opacity:1}
+.dk-star{font-style:normal;color:var(--accent-ink);margin-right:4px}
+.dk-lodel{color:var(--danger)!important;font-size:13.5px}
+.dk-lodel:hover{background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.dk-lodel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
+.dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
+@media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
+@media (max-width:380px){.dk-sides{display:none}.dk-act{padding:6px;font-size:13px;gap:4px}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px 8px;justify-items:center;font-size:15px}
 .grid .gc{cursor:pointer;position:relative;border-radius:.6em;transition:transform .25s var(--spring)}
 @media (hover:hover){.grid .gc:not(.used):hover{transform:translateY(-4px) rotate(-1deg)}}
@@ -519,11 +612,157 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .grid .gc.used{opacity:.3;cursor:default}
 .grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
 .grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
-#btnReset{margin-top:18px;align-self:center}
-.deckbar{display:flex;gap:8px;position:sticky;bottom:0;padding:14px 0 2px;background:linear-gradient(transparent,var(--bg0) 40%)}
-.deckbar .btn{flex:1}
-.deckbar .btn.primary{flex:2}
+
 .meta{color:var(--muted);font-size:13px;text-align:center}
+
+/* ---------- collection binder ---------- */
+/* binder pages by rarity; two pages side by side on wide screens, one on phones */
+#scr-coll .wrap,#scr-coll .topbar{max-width:1120px}
+:root{--leather:#2a1a0d;--leather2:#140c06} :root[data-theme="light"]{--leather:#5b3b20;--leather2:#3a2413}
+.bd-tabs{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 4px;align-self:flex-end}
+.bd-tabs::-webkit-scrollbar{display:none}
+.bd-tab{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line2);border-bottom:0;background:var(--surf2);color:var(--muted);
+  border-radius:10px 10px 0 0;padding:7px 13px 8px;font:700 12.5px var(--display);cursor:pointer;transition:background .18s,color .18s}
+.bd-tab:hover{color:var(--text)}
+.bd-tab.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.bd-tab i{font-style:normal;font-size:11px}
+.bd-tab.on .rt{color:inherit}
+.bd-h b em{font-style:normal;font-weight:600;font-size:12px;color:var(--muted);margin-left:4px}
+.binder{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:24px;padding:14px;border-radius:16px;perspective:2400px;touch-action:pan-y;
+  background:linear-gradient(160deg,var(--leather),var(--leather2));box-shadow:inset 0 0 0 1px rgba(217,178,106,.2),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
+.binder.single{grid-template-columns:1fr;padding-left:38px;overflow:hidden}
+.binder.single .bd-page.l{display:none}
+.bd-rings{position:absolute;left:50%;top:22px;bottom:22px;width:20px;margin-left:-10px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:6;pointer-events:none}
+.binder.single .bd-rings{left:19px}
+.bd-rings i{width:20px;height:11px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#7d5a1c);box-shadow:0 2px 3px rgba(0,0,0,.6)}
+.bd-page{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0;padding:10px 12px 8px;border-radius:8px;background:var(--surf);container:bdpage/size;overflow:hidden}
+.bd-page.l{box-shadow:inset -18px 0 22px -16px rgba(0,0,0,.6)}
+.bd-page.r{box-shadow:inset 18px 0 22px -16px rgba(0,0,0,.6)}
+.bd-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.bd-h b{font:800 16px var(--display)}
+.bd-h span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bd-h span.done{color:var(--accent-ink);font-weight:600}
+.bd-bar{height:4px;border-radius:2px;background:rgba(var(--tint),.08);overflow:hidden}
+.bd-bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
+.bd-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;gap:8px;justify-items:center;padding-top:2px;
+  /* 3 sleeves of 5.4em across, 3 rows of 6.4em down, leaving room for the page header */
+  font-size:min(20px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
+/* a short, wide page (phones, short windows) fits more card on screen as 4 sleeves by 2 rows */
+@container bdpage (min-aspect-ratio: 1/1){
+  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(20px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
+  .bd-grid .pk-cell.p9{display:none}
+}
+@container bdpage (max-height:300px){.bd-num{display:none}}
+.bd-num{align-self:center;font:600 11px var(--body);color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
+.pocket{position:relative;width:5.4em;height:6.4em;border-radius:.6em;display:grid;place-items:center;border:0;padding:0;cursor:pointer;
+  background:var(--well);box-shadow:inset 0 0 0 1px var(--line2);transition:transform .2s var(--spring)}
+.pocket::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.08) 48%,transparent 60%)}
+.pocket .card{font-size:1em}
+@media (hover:hover){.pocket:not(.blank):hover{transform:translateY(-3px)}}
+.pocket.blank{cursor:default;background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.pocket.blank::after{display:none}
+/* the turning page: a two-sided sheet that rotates around the rings */
+.bd-leaf{position:absolute;z-index:5;transform-style:preserve-3d;pointer-events:none;will-change:transform}
+.bd-clip{position:absolute;z-index:5;overflow:hidden;border-radius:8px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
+.bd-clip .bd-leaf{left:0;top:0;width:100%;height:100%;transform-origin:0 50%}
+.bd-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px}
+.bd-face.back{transform:rotateY(180deg)}
+.bd-face>.bd-page{height:100%}
+.bd-shade{position:absolute;inset:0;border-radius:8px;pointer-events:none;opacity:0;z-index:3}
+.bd-shade.to-r{background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 70%,rgba(0,0,0,.05))}
+.bd-shade.to-l{background:linear-gradient(270deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 70%,rgba(0,0,0,.05))}
+.bd-blank{height:100%;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(var(--tint),.035) 27px 28px),var(--surf)}
+
+
+/* + on an owned card's sleeve adds it to the hand below */
+.pk-cell{position:relative}
+.pk-add{position:absolute;right:-.35em;bottom:-.35em;z-index:2;width:1.9em;height:1.9em;min-width:28px;min-height:28px;border-radius:50%;padding:0;cursor:pointer;
+  display:grid;place-items:center;font:800 1.15em/1 var(--display);color:var(--on-accent);border:2px solid var(--surf);
+  background:linear-gradient(180deg,var(--accent-hi),var(--accent));box-shadow:0 3px 8px rgba(var(--sh),calc(.5*var(--shk)));transition:transform .2s var(--spring),opacity .18s}
+.pk-add:hover:not(:disabled){transform:scale(1.12)}
+.pk-add:active:not(:disabled){transform:scale(.92)}
+.pk-add:disabled{opacity:.3;cursor:default;filter:grayscale(.6)}
+
+
+/* card detail popup: a single binder page, the card lifted out of its sleeve */
+.mbox.cd-box{position:relative;max-width:420px;padding:12px 12px 12px 38px;background:linear-gradient(160deg,var(--leather),var(--leather2));border-color:rgba(217,178,106,.25)}
+.cd-rings{position:absolute;left:10px;top:28px;bottom:28px;width:18px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:2;pointer-events:none}
+.cd-rings i{width:18px;height:10px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#7d5a1c);box-shadow:0 2px 3px rgba(0,0,0,.6)}
+.cd-sheet{border-radius:10px;background:var(--surf);box-shadow:inset 16px 0 20px -16px rgba(0,0,0,.6);padding:14px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cd-top{align-self:stretch;display:flex;justify-content:space-between;font:600 12px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+.cd-top b{color:var(--accent-ink);font-weight:600}
+.cd-pulled{font-size:30px}
+.cd-sleeve{position:relative;padding:.3em;border-radius:.8em;background:var(--well);box-shadow:inset 0 0 0 1px var(--line2)}
+.cd-sleeve::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.1) 45%,transparent 58%)}
+.cd-sleeve .card{transform:translateY(-.55em) rotate(-2.5deg);box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .5em 1em -.2em rgba(0,0,0,.8);animation:cdLift .6s var(--ease) both .12s}
+@keyframes cdLift{from{transform:none}}
+.cd-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg);z-index:2;font:900 .5em/1 var(--display);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--danger);border:.08em solid var(--danger);border-radius:.18em;padding:.15em .4em;background:rgba(20,4,4,.55)}
+.mbox h2.cd-name{margin:0;font-size:26px}
+.cd-sub{margin-top:-8px;font-size:13.5px;color:var(--muted)}
+.cd-sides{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-self:stretch}
+.cd-sides div{border-radius:10px;background:var(--well);border:1px solid var(--line);padding:6px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.cd-sides b{font:900 20px/1 var(--display)} .cd-sides span{font-size:11px;color:var(--muted)}
+.cd-own{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.cd-own b{font:800 15px var(--display);color:var(--on-accent);background:var(--accent);border-radius:7px;padding:1px 8px}
+.cd-own.lost b{background:var(--danger);color:#fff}
+.mbox p.cd-msg{font-size:13px;color:var(--danger);margin:-4px auto 0;max-width:34ch}
+.cd-sheet .mbtns{align-self:stretch;margin-top:0}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ---------- collection fits one screen ----------
+   phones / narrow: binder on top (fills the height left), loadouts + hand below
+   wide screens: binder on the left, loadouts + hand in a column on the right */
+#scr-coll .topbar.coll-top{margin:2px 0 10px}
+.coll-title{flex:1;min-width:0;display:flex;flex-direction:column}
+.coll-title h2{margin:0}
+.coll-title .meta{text-align:left;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coll-reset{color:var(--muted)}
+.coll-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
+#scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
+.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0}
+.bd-top{display:flex;align-items:flex-end;gap:6px;margin-bottom:-2px;position:relative;z-index:1}
+.bd-arrow{width:36px;height:36px;border-radius:10px;margin-bottom:6px}
+.bd-arrow:disabled{opacity:.35;cursor:default}
+.coll-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+#scr-coll .dk-tray{position:relative;bottom:auto;padding:10px 14px 12px}
+#scr-coll .dk-tray::after{display:none}
+#scr-coll .dk-fan{height:7.8em}
+.coll-sides{grid-template-columns:repeat(4,auto minmax(14px,40px))!important;justify-content:space-between;column-gap:6px!important;margin-top:2px;min-width:0}
+.coll-sides .dk-bar{width:auto}
+.coll-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.coll-row .dk-power{flex:none;margin-right:4px}
+.coll-row .dk-act{flex:none;min-height:42px}
+.coll-row #collClear{width:42px;padding:0}
+.coll-row .btn.primary{flex:1;min-width:0;min-height:42px;padding:6px 12px;font-size:15px}
+#scr-coll .dk-lohead{min-height:22px}
+#scr-coll .dk-lonote:empty{display:none}
+/* compact loadout tiles: name and power only */
+#scr-coll .dk-loslot{padding:7px 10px;gap:1px}
+#scr-coll .dk-loslot .stack,#scr-coll .dk-loslot .tagx{display:none}
+#scr-coll .dk-loslot.empty{min-height:48px}
+@media (max-width:599px){#scr-coll .coll-sides{display:none}}
+@media (max-height:740px){#scr-coll .dk-fan{font-size:min(11px,calc(100cqw / 28.5))}}
+.coll-row .btn.primary{white-space:nowrap}
+/* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
+@container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
+@media (min-width:700px) and (orientation:landscape){
+  #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,34vw,380px);grid-template-rows:minmax(0,1fr)}
+  #scr-coll .dk-lorow{grid-template-columns:1fr}
+  #scr-coll .dk-loslot{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;min-height:54px;padding:6px 10px}
+  #scr-coll .dk-loslot .stack{display:flex;grid-row:1/3}
+  #scr-coll .dk-loslot b{align-self:end} #scr-coll .dk-loslot span{align-self:start}
+  #scr-coll .dk-loslot.empty{display:flex;min-height:54px}
+}
+/* phones held sideways: loadouts go back to one compact row so the side column fits the short height */
+@media (orientation:landscape) and (max-height:520px){
+  #scr-coll .wrap.coll-wrap{min-height:0}
+  #scr-coll .topbar.coll-top{margin:0 0 6px}
+  #scr-coll .dk-lorow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #scr-coll .dk-loslot{display:flex;min-height:48px;padding:7px 10px}
+  #scr-coll .dk-loslot .stack{display:none}
+  #scr-coll .dk-loslot.empty{min-height:48px}
+}
 
 /* ---------- online ---------- */
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:18px 16px 20px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center}
@@ -603,13 +842,26 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 <section id="scr-deck" class="screen">
   <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
   <div class="wrap">
-    <div class="slots" id="deckSlots"></div>
-    <div class="meta" id="deckMeta"></div>
+    <div class="dk-lo" id="deckLo">
+      <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="deckLoCancel">Cancel</button></div>
+      <div class="dk-lorow" id="deckLoRow"></div>
+      <div class="dk-lonote" id="deckLoNote" aria-live="polite"></div>
+    </div>
+    <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
     <div class="grid" id="deckGrid"></div>
-    <div class="deckbar">
-      <button class="btn small" id="deckBest">Best 5</button>
-      <button class="btn small" id="deckClear">Clear</button>
-      <button class="btn primary" id="deckGo" disabled>Play</button>
+    <div class="dk-tray">
+      <div class="dk-fan" id="deckSlots"></div>
+      <div class="dk-row">
+        <div class="dk-power">Power<b id="deckPower">0</b></div>
+        <div class="dk-sides" id="deckSides"></div>
+        <button class="btn primary" id="deckGo" disabled>Play</button>
+      </div>
+      <div class="dk-acts">
+        <button class="dk-act gold" id="deckBest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Best 5</button>
+        <button class="dk-act" id="deckSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save hand</button>
+        <button class="dk-act quiet" id="deckClear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Clear</button>
+      </div>
+      <div class="dk-hint">Tap a card in your hand to put it back</div>
     </div>
   </div>
 </section>
@@ -637,11 +889,44 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 
 <!-- COLLECTION -->
 <section id="scr-coll" class="screen">
-  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Collection</h2></div>
-  <div class="wrap">
-    <div class="meta" id="collMeta"></div>
-    <div class="grid" id="collGrid"></div>
-    <button class="btn danger small" id="btnReset">Reset all progress</button>
+  <div class="topbar coll-top">
+    <button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="coll-title"><h2>Collection</h2><div class="meta" id="collMeta"></div></div>
+    <button class="iconbtn coll-reset" id="btnReset" aria-label="Reset all progress" title="Reset all progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  </div>
+  <!-- one screen, no scrolling: the binder takes whatever height is left and its cards resize to fit -->
+  <div class="wrap coll-wrap">
+    <div class="coll-book" id="collBook">
+      <div class="bd-top">
+        <button class="iconbtn bd-arrow" id="bdPrev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="bd-tabs" id="bdTabs"></div>
+        <button class="iconbtn bd-arrow" id="bdNext" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="binder" id="binder">
+        <div class="bd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="bd-page l" id="bdL"></div>
+        <div class="bd-page r" id="bdR"></div>
+      </div>
+      <span class="vh" id="bdPos" aria-live="polite"></span>
+    </div>
+    <div class="coll-side">
+      <!-- build and save loadouts straight from the binder -->
+      <div class="dk-lo" id="collLo">
+        <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="collLoCancel">Cancel</button></div>
+        <div class="dk-lorow" id="collLoRow"></div>
+        <div class="dk-lonote" id="collLoNote" aria-live="polite"></div>
+      </div>
+      <div class="dk-tray coll-tray">
+        <div class="dk-fan" id="collSlots"></div>
+        <div class="dk-sides coll-sides" id="collSides"></div>
+        <div class="coll-row">
+          <div class="dk-power">Power<b id="collPower">0</b></div>
+          <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
+          <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="btn primary" id="collSave">Save hand</button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -755,7 +1040,10 @@ const CARD_DATA=[
 ['Mira Frostheart','💎',10,[9,7,10,4],'ice'],
 ['King Oryn','👑',10,[7,9,4,10],'']
 ];
-const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],s:c[3],e:c[4]||null,sum:c[3].reduce((a,b)=>a+b,0)}));
+const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],rar:Math.ceil(c[2]/2),s:c[3],e:c[4]||null,sum:c[3].reduce((a,b)=>a+b,0)}));
+// players see rarity, not level: levels 1–2 are 1★, 3–4 are 2★ … 9–10 are 5★ (the AI still balances on level)
+const RARITY=['Common','Uncommon','Rare','Epic','Legendary'];
+const rarName=r=>`${r}★ ${RARITY[r-1]}`;
 const RULES=[
  ['open','Open','Both hands are played face up.'],
  ['same','Same','When two or more sides of the placed card equal the touching sides of adjacent cards, those enemy cards flip.'],
@@ -784,7 +1072,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice()};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null]};
 }
 function loadSave(){
   const d=defSave();
@@ -794,6 +1082,8 @@ function loadSave(){
   return d;
 }
 let SAVE=loadSave();
+if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
+for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 SAVE.rules.timer=timerSec(SAVE.rules.timer);
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
 // stable per-device id so the host can recognise a guest who reconnects
@@ -802,6 +1092,18 @@ if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 // Older saves had no history: rebuild it from starter cards, current cards and the last deck used.
 {const seen=new Set([...(Array.isArray(SAVE.seen)?SAVE.seen:[]),...STARTER,...Object.keys(SAVE.coll).map(Number),...(SAVE.lastDeck||[])]);
  SAVE.seen=[...seen].filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).sort((a,b)=>a-b);save()}
+// loadouts: 3 saved hands, each {name, ids:[5 card ids]} or null
+SAVE.loadouts=[0,1,2].map(i=>{const l=Array.isArray(SAVE.loadouts)?SAVE.loadouts[i]:null;
+  return l&&Array.isArray(l.ids)&&l.ids.length===5&&l.ids.every(id=>Number.isInteger(id)&&id>=0&&id<CARD_DATA.length)
+    ?{name:typeof l.name==='string'&&l.name?l.name.slice(0,24):`Loadout ${i+1}`,ids:l.ids.slice()}:null});
+// the main loadout is what the menu shows and the deck picker starts with; it must point at a saved slot
+function fixMain(){if(!(Number.isInteger(SAVE.mainLo)&&SAVE.loadouts[SAVE.mainLo]))SAVE.mainLo=SAVE.loadouts.findIndex(Boolean)}
+fixMain();
+// indexes in ids you don't have enough copies of; have(id) = how many you own
+function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
+function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,id=>SAVE.coll[id]||0)}:null}
+// the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
+function preDeck(){const m=mainLoadout();return m&&!m.miss.length?m.l.ids:SAVE.lastDeck}
 function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
@@ -825,7 +1127,7 @@ const fmt=v=>v===10?'A':String(v);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
 
-function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, level ${c.lv}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
+function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
 // keyboard: remember whether the player is using keys, so focus can follow the game
 let KBD=false;
 window.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key.startsWith('Arrow')||e.key==='Enter'||e.key===' ')KBD=true},true);
@@ -846,14 +1148,15 @@ document.addEventListener('keydown',e=>{
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
   const c=CARDS[id];
-  return `<div class="card ${color||'blue'} ${o.cls||''}" ${o.attrs||''}>`+
+  return `<div class="card ${color||'blue'} rar${c.rar}${o.name===false?' nn':''} ${o.cls||''}" ${o.attrs||''}>`+
     `<div class="art">${c.art}</div>`+
     `<div class="nums"><b class="n0">${fmt(c.s[0])}</b><b class="n1">${fmt(c.s[1])}</b><b class="n2">${fmt(c.s[2])}</b><b class="n3">${fmt(c.s[3])}</b></div>`+
     (c.e?`<div class="el">${ELEM[c.e]}</div>`:'')+
     (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+1':'−1'}</div>`:'')+
     (o.count>1?`<div class="cnt">×${o.count}</div>`:'')+
-    (o.lv?`<div class="lv">Lv${c.lv}</div>`:'')+
+    `<div class="rchip" aria-hidden="true">${c.rar}★</div>`+
     (o.name===false?'':`<div class="nm">${esc(c.name)}</div>`)+
+    '<i class="rf"></i>'+
   `</div>`;
 }
 
@@ -895,18 +1198,83 @@ let AC=null;
 const SFX={place:[[300,.07,'triangle']],flip:[[620,.05,'square'],[930,.07,'triangle']],banner:[[523,.08],[659,.08],[784,.08],[1047,.16]],
   win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]]};
 function sfx(k){
-  if(!SAVE.sound)return;
+  const v=SAVE.sfxVol/100;
+  if(!SAVE.sound||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
     let t=AC.currentTime+.01;
     for(const[f,d,type] of SFX[k]){
       const o=AC.createOscillator(),g=AC.createGain();o.type=type||'triangle';o.frequency.value=f;
-      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16*v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
       o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.03);t+=d*.85;
     }
   }catch(e){}
 }
+
+/* ---------- music ---------- */
+// Game track, played on every screen from the first click, tap or key press. It is 173.48 BPM in 4/4
+// (one bar = 1.3835 s) and starts on a downbeat at 0 s. Its last bar (bar 122, from 167.409 s) is just a
+// final hit ringing out into near-silence, so the opening comes back in on that bar's downbeat and the
+// final hit and its ring play on top of it, fading out, instead of leaving a second of silence.
+// Replace these numbers if the track changes.
+const MUSIC={src:'audio/theme.mp3',max:.5,first:0,loopAt:167.4085,
+  buf:null,loading:null,node:null,gain:null,want:false};
+function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
+const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
+// download now; decoding needs the audio context, which waits for the first interaction
+MUSIC.data=fetch(MUSIC.src).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()});
+MUSIC.data.catch(()=>{});
+function audioUnlock(){
+  removeEventListener('pointerdown',audioUnlock,true);removeEventListener('keydown',audioUnlock,true);
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return}
+  musicPlay();
+}
+addEventListener('pointerdown',audioUnlock,true);addEventListener('keydown',audioUnlock,true);
+function musicLoad(){
+  if(MUSIC.loading)return MUSIC.loading;
+  AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+  MUSIC.loading=MUSIC.data.then(d=>new Promise((ok,no)=>AC.decodeAudioData(d,ok,no))).then(b=>{
+    const sr=b.sampleRate,S=Math.round(MUSIC.first*sr),E=Math.round(MUSIC.loopAt*sr),F=b.length-E;
+    // from the loop point to the end of the file: the opening plus the leftover tail fading out (cosine curve)
+    for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);
+      for(let j=0;j<F;j++)d[E+j]=d[S+j]+d[E+j]*.5*(1+Math.cos(Math.PI*j/F))}
+    // then carry on from just after that stretch of the opening
+    MUSIC.buf=b;MUSIC.loopStart=(S+F)/sr;MUSIC.loopEnd=b.length/sr;return b;
+  }).catch(e=>{MUSIC.loading=null;throw e});
+  return MUSIC.loading;
+}
+function musicPlay(){
+  MUSIC.want=true;
+  if(!musicOn()||MUSIC.node)return;
+  musicLoad().then(b=>{
+    if(!MUSIC.want||!musicOn()||MUSIC.node)return;
+    if(AC.state==='suspended')AC.resume();
+    const src=AC.createBufferSource(),g=AC.createGain(),t=AC.currentTime+.05;
+    src.buffer=b;src.loop=true;src.loopStart=MUSIC.loopStart;src.loopEnd=MUSIC.loopEnd;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+.03);
+    src.connect(g).connect(AC.destination);src.start(t,MUSIC.first);
+    MUSIC.node=src;MUSIC.gain=g;
+  }).catch(()=>{});
+}
+function musicStop(keepWant){
+  if(!keepWant)MUSIC.want=false;
+  const src=MUSIC.node,g=MUSIC.gain;if(!src)return;
+  MUSIC.node=MUSIC.gain=null;
+  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);
+  src.stop(t+.65);
+}
+function musicSync(){
+  if(!musicOn()){musicStop(true);return}
+  if(!MUSIC.node){if(MUSIC.want)musicPlay();return}
+  if(!document.hidden)MUSIC.gain.gain.setTargetAtTime(musicGain(),AC.currentTime,.05);
+}
+// fade out while the tab is hidden, back in when it returns
+document.addEventListener('visibilitychange',()=>{
+  const g=MUSIC.gain;if(!g)return;
+  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(Math.max(g.gain.value,.0001),t);
+  g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+(document.hidden?.3:1));
+});
 
 /* =====================================================================
    ENGINE  (pure — used by UI, AI search and online sync)
@@ -1061,6 +1429,8 @@ function aiDeck(level){
    NAV / MENU
    ===================================================================== */
 function show(id){
+  // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
+  if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
   else if(id==='menu'&&KBD)$('#scr-menu .btn').focus();
@@ -1083,6 +1453,17 @@ const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
   local:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
   online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>'};
+// what the Play card says about your deck, plus the small fan of its cards
+function heroDeck(random){
+  const mlo=mainLoadout(),d=lastDeckReady(),back=cardHTML(0,null,{back:true});
+  const sub=random?'Random deck'
+    :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:`${mlo.l.name} ready`)
+    :d?'Last deck ready':'Pick 5 cards';
+  const cards=random?Array(5).fill(back)
+    :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
+    :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
+  return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
+}
 const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online']];
 // the Play card: a 3-way mode switch, then what that mode needs
 function renderHero(anim){
@@ -1091,10 +1472,10 @@ function renderHero(anim){
   $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
   let h,sub,side='',row;
   if(m==='ai'){
-    const d=lastDeckReady(),tr=TRADES.find(t=>t[0]===SAVE.trade);
+    const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
     h='vs Computer';
-    sub=(SAVE.rules.random?'Random deck':d?'Last deck ready':'Pick 5 cards')+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
-    side=`<div class="fan" aria-hidden="true">${d?d.map(id=>cardHTML(id,'blue',{name:false})).join(''):Array(5).fill(cardHTML(0,null,{back:true})).join('')}</div>`;
+    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
+    side=dk.fan;
     row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
       DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;
   }else if(m==='local'){
@@ -1102,7 +1483,9 @@ function renderHero(anim){
     side='<div class="vsav" aria-hidden="true"><span class="av b">B</span><em>vs</em><span class="av r">R</span></div>';
     row='<button class="btn primary full" id="heroGo">Play</button>';
   }else{
-    h='Online';sub='Host a game, or type a friend\'s code';
+    // online uses the host's rules, so your own "random deck" setting doesn't apply here
+    const dk=heroDeck(false);
+    h='Online';sub=dk.sub+' · Host or join with a code';side=dk.fan;
     row=`<button class="btn primary full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
   const body=$('#heroBody');
@@ -1167,7 +1550,7 @@ const RULE_ICON={
   timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
-const DIFF_INFO={easy:[1,'Level 1–2 cards'],normal:[2,'Level 1–4 cards'],hard:[3,'Level 3–6, plans ahead']};
+const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
@@ -1177,7 +1560,7 @@ function renderTimerRow(){
   const row=$('#timerRow'),t=SAVE.rules.timer;
   if(!row.firstChild){
     row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
-      `<input type="range" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
+      `<input type="range" class="rng" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
       `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
     const sl=$('#timerSl');
     sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
@@ -1222,37 +1605,149 @@ $('#setupGo').onclick=()=>{
 let DK=null;
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
-  DK={...o,sel:[]};
+  DK={...o,pfx:'deck',sel:[],f:'all',deal:-1,saving:false,note:'',render:()=>renderDeck()};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0)DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
   renderDeck();show('deck');$('#scr-deck').scrollTop=0;
 }
-function remaining(id){const e=DK.pool.find(x=>x.id===id);return e?e.count-DK.sel.filter(x=>x===id).length:0}
+const remaining=id=>handRemaining(DK,id);
+const DECK_RANGES=[['all','All',0],...[1,2,3,4,5].map(r=>[String(r),rarName(r),r])];
+const SIDE_NAMES=['Top','Right','Bottom','Left'];
 function renderDeck(){
   const col=DK.color||'blue';
-  $('#deckSlots').innerHTML=[0,1,2,3,4].map(i=>(DK.sel[i]!=null?`<div class="slot" data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[DK.sel[i]].name)}">${cardHTML(DK.sel[i],col,{name:false})}</div>`:`<div class="slot" data-i="${i}"></div>`)).join('');
-  $$('#deckSlots .slot').forEach(s=>s.onclick=()=>{const i=+s.dataset.i;if(DK.sel[i]!=null){DK.sel.splice(i,1);sfx('click');renderDeck()}});
-  const pool=DK.pool.slice().sort((a,b)=>CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
-  let html='',lastLv=0;
+  // rarity filter: only offer rarities you hold cards of, and hide the row when there's nothing to choose between
+  const inRange=(e,r)=>!r[2]||CARDS[e.id].rar===r[2];
+  const ranges=DECK_RANGES.filter(r=>r[0]==='all'||DK.pool.some(e=>inRange(e,r)));
+  if(!ranges.some(r=>r[0]===DK.f))DK.f='all';
+  $('#deckFilter').innerHTML=ranges.length>2?ranges.map(r=>`<button class="dk-chip ${DK.f===r[0]?'on':''}" data-f="${r[0]}" aria-pressed="${DK.f===r[0]}">${r[1]}</button>`).join(''):'';
+  $$('#deckFilter .dk-chip').forEach(b=>b.onclick=()=>{DK.f=b.dataset.f;sfx('click');renderDeck()});
+  const n=DK.sel.length;
+  // collection grid
+  const cur=DECK_RANGES.find(r=>r[0]===DK.f);
+  const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].rar-CARDS[a.id].rar||CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
+  let html='',lastR=0;
   for(const e of pool){
     const c=CARDS[e.id];
-    if(c.lv!==lastLv){html+=`<h4>Level ${c.lv}</h4>`;lastLv=c.lv}
+    if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}</h4>`;lastR=c.rar}
     const r=remaining(e.id);
     html+=`<div class="gc ${r<=0?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left"${r<=0?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
   $('#deckGrid').innerHTML=html;
-  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);sfx('place');renderDeck()}});
+  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>{const id=+g.dataset.id;if(DK.sel.length<5&&remaining(id)>0){DK.sel.push(id);DK.deal=DK.sel.length-1;DK.note='';sfx('place');renderDeck()}});
   const total=DK.pool.reduce((a,e)=>a+e.count,0);
-  $('#deckMeta').textContent=`${DK.sel.length}/5 chosen · ${total} cards available`;
-  $('#deckGo').disabled=DK.sel.length!==5;
+  $('#deckMeta').textContent=`${total} cards`;
+  $('#deckGo').disabled=n!==5;
+  $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
+  renderHand(DK);
 }
-$('#deckBest').onclick=()=>{
-  sfx('click');DK.sel=[];
-  const all=[];DK.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
-  all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
-  DK.sel=all.slice(0,5);renderDeck();
-};
-$('#deckClear').onclick=()=>{sfx('click');DK.sel=[];renderDeck()};
+
+/* =====================================================================
+   HAND + LOADOUTS — shared by the deck picker (ids "deck…") and the
+   collection (ids "coll…"). A hand context looks like
+   {pfx, sel:[ids], pool:[{id,count}], color, loadouts, saving, note, deal, render()}
+   ===================================================================== */
+function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
+function handAdd(h,id){if(h.sel.length<5&&handRemaining(h,id)>0){h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render()}}
+function renderHand(h){
+  const P=h.pfx,col=h.color||'blue',n=h.sel.length;
+  // 5 cards spread in a gentle arc, spaced so each card's art stays visible
+  $(`#${P}Slots`).innerHTML=[0,1,2,3,4].map(i=>{
+    const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
+    const st=`style="--t:${t};transform:${t};z-index:${i}"`;
+    return id!=null
+      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
+      :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
+  h.deal=-1;
+  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
+  // stats: total power and the best number on each side
+  $(`#${P}Power`).textContent=h.sel.reduce((a,id)=>a+CARDS[id].sum,0);
+  $(`#${P}Sides`).innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...h.sel.map(id=>CARDS[id].s[i])):0;
+    return `<span>${s}</span><span class="dk-bar ${n&&v<5?'weak':''}" role="img" aria-label="Best ${s.toLowerCase()} ${v}"><i style="width:${v*10}%"></i></span>`}).join('');
+  $(`#${P}Save`).disabled=n!==5;
+  $(`#${P}Save`).title=n===5?'':'Pick 5 cards to save them';
+  $(`#${P}Clear`).disabled=!n;
+  renderLoadouts(h);
+}
+// indexes in a loadout whose card you no longer own enough copies of (lost in a trade)
+function loMissing(h,ids){return missingIn(ids,id=>{const e=h.pool.find(x=>x.id===id);return e?e.count:0})}
+const sameHand=(a,b)=>a.length===b.length&&a.slice().sort((x,y)=>x-y).join()===b.slice().sort((x,y)=>x-y).join();
+function renderLoadouts(h){
+  const P=h.pfx;
+  $(`#${P}Lo`).classList.toggle('hidden',!h.loadouts);
+  $(`#${P}Save`).classList.toggle('hidden',!h.loadouts);
+  if(!h.loadouts)return;
+  const col=h.color||'blue';
+  $(`#${P}LoRow`).innerHTML=SAVE.loadouts.map((l,i)=>{
+    const attrs=`data-i="${i}"`;
+    if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${h.saving?'pick':''}" ${attrs}>${h.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
+    const miss=loMissing(h,l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!h.saving&&!miss.length&&sameHand(l.ids,h.sel),main=i===SAVE.mainLo;
+    const sub=h.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
+    return `<div class="dk-lowrap ${h.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${h.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${main?', main loadout':''}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
+      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${main?'<i class="dk-star" title="Main loadout">★</i>':''}${esc(l.name)}</b>${sub}</button>`+
+      (h.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Edit ${esc(l.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
+  }).join('');
+  $$(`#${P}LoRow .dk-loslot`).forEach(b=>b.onclick=()=>pickLoadout(h,+b.dataset.i));
+  $$(`#${P}LoRow .dk-loedit`).forEach(b=>b.onclick=()=>renameLoadout(h,+b.dataset.edit));
+  $(`#${P}LoCancel`).classList.toggle('hidden',!h.saving);
+  $(`#${P}LoNote`).innerHTML=h.saving?'Pick a slot to save your hand in.':h.note||'';
+}
+function pickLoadout(h,i){
+  const l=SAVE.loadouts[i];sfx('click');
+  if(h.saving||!l){
+    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();focusLo(h,`[data-i="${i}"]`);return}
+    SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:h.sel.slice()};fixMain();save();
+    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`);return;
+  }
+  const miss=loMissing(h,l.ids);
+  h.sel=l.ids.filter((_,k)=>!miss.includes(k));
+  h.note=miss.length
+    ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
+    :`Loaded <b>${esc(l.name)}</b>.`;
+  h.render();focusLo(h,`[data-i="${i}"]`);
+}
+// buttons in the loadout row are rebuilt on every render, so put keyboard focus back where it was
+function focusLo(h,sel){if(KBD){const b=$(`#${h.pfx}LoRow ${sel}`);b&&b.focus({preventScroll:true})}}
+function renameLoadout(h,i){
+  const l=SAVE.loadouts[i];if(!l)return;sfx('click');
+  const commit=()=>{
+    const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
+    closeModal();
+    l.name=v||`Loadout ${i+1}`;save();
+    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-edit="${i}"]`);
+  };
+  const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
+    <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
+    <div class="dk-loopts"><button class="btn text dk-lomain" id="loMain"></button>
+    <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button></div>`,
+    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
+  const inp=box.querySelector('#loName');
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
+  box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(h,i)};
+  const mb=box.querySelector('#loMain');
+  const paintMain=()=>{const on=SAVE.mainLo===i;mb.disabled=on;mb.innerHTML=on?'★ Your main loadout':'☆ Make main loadout'};
+  mb.onclick=()=>{sfx('click');SAVE.mainLo=i;save();paintMain();h.render();inp.focus()};
+  paintMain();
+  inp.focus();inp.select();
+}
+function deleteLoadout(h,i){
+  const l=SAVE.loadouts[i];if(!l)return;
+  modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
+    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`)}}]);
+}
+// Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
+function wireHand(P,get){
+  $(`#${P}Save`).onclick=()=>{const h=get();if(h.sel.length!==5)return;sfx('click');h.saving=!h.saving;h.note='';h.render()};
+  $(`#${P}LoCancel`).onclick=()=>{const h=get();sfx('click');h.saving=false;h.render()};
+  $(`#${P}Best`).onclick=()=>{
+    const h=get();sfx('click');
+    const all=[];h.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
+    all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
+    h.sel=all.slice(0,5);h.saving=false;h.note='';h.render();
+  };
+  $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
+}
+wireHand('deck',()=>DK);
 $('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 $('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return shuffle(all).slice(0,5)}
@@ -1272,7 +1767,7 @@ function startAI(){
   G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
-  openDeck({title:'Choose 5 cards',pool:collPool(),pre:SAVE.lastDeck,color:'blue',
+  openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},onBack:()=>openSetup('ai')});
 }
 function startLocal(){
@@ -1474,10 +1969,10 @@ $('#btnQuit').onclick=()=>{
     {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'){const k=G.mode==='online'?'ol':'l';SAVE.stats[k]++;save()}leaveMatch()}},
     {label:'Keep playing',cls:'primary',esc:true}]);
 };
-$('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click')};
+$('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};
 const SND_ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a7.5 7.5 0 010 11"/></svg>',
   SND_OFF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 10l4 4M21 10l-4 4"/></svg>';
-function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off')}
+function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off');$$('[data-vol]').forEach(r=>r.paint&&r.paint())}
 
 /* ---------- turn timer ---------- */
 // The ring and bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
@@ -1698,31 +2193,228 @@ window.addEventListener('resize',layout);
 /* =====================================================================
    COLLECTION
    ===================================================================== */
+// the hand you build in the collection; it stays put while you browse, and survives leaving the screen
+const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
+function renderCollHand(){renderHand(CH);bdSyncAdd()}
+wireHand('coll',()=>CH);
 function openCollection(){
-  const uniq=Object.keys(SAVE.coll).length,lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
+  const lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
   $('#collMeta').innerHTML=`${SAVE.seen.length} of 55 discovered · ${collTotal()} cards owned`+(lost?` · <span class="lostc">${lost} lost</span>`:'');
-  let html='',lv=0;
-  for(const c of CARDS){
-    if(c.lv!==lv){lv=c.lv;html+=`<h4>Level ${lv}</h4>`}
-    const n=SAVE.coll[c.id]||0;
-    const face=n?cardHTML(c.id,'blue',{count:n})
-      :SAVE.seen.includes(c.id)?cardHTML(c.id,'red',{cls:'lost'})
-      :'<div class="card unknown"><i>?</i></div>';
-    html+=`<div class="gc" data-id="${c.id}" data-kbd tabindex="0" role="button" aria-label="${n?esc(cardLabel(c.id))+`, owned ×${n}`:SAVE.seen.includes(c.id)?esc(c.name)+', lost':`Undiscovered level ${c.lv} card`}">${face}</div>`;
-  }
-  $('#collGrid').innerHTML=html;
-  $$('#collGrid .gc').forEach(g=>g.onclick=()=>{
-    const id=+g.dataset.id,c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
-    const lost=!n&&SAVE.seen.includes(id);
-    if(!n&&!lost){toast(`Level ${c.lv} card — win it in a match to discover it.`);return}
-    modal(`<div class="bigcard">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}</div><h2 class="nm2">${esc(c.name)}</h2>
-      <div class="stats"><span>Level</span><b>${c.lv}</b><span>Element</span><b>${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'None'}</b>
-      <span>Top / Right</span><b>${fmt(c.s[0])} / ${fmt(c.s[1])}</b><span>Bottom / Left</span><b>${fmt(c.s[2])} / ${fmt(c.s[3])}</b><span>Owned</span><b${lost?' class="lostc"':''}>×${n}</b></div>`+
-      (lost?`<p class="lostc">You lost every copy of this card. Win it back in a match with a trade rule.</p>`:''),
-      [{label:'Close',cls:'primary',esc:true}]);
-  });
+  // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
+  CH.pool=collPool();
+  const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0)CH.sel.push(id)});
+  CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
+  bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
 }
+// card detail: the card lifts out of its sleeve on a binder page
+function collDetail(id){
+  const c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
+  const lost=!n&&SAVE.seen.includes(id);
+  if(!n&&!lost){toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
+  const r=handRemaining(CH,id),full=CH.sel.length>=5;
+  const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
+    <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
+    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:lost?'lost':''})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
+    <h2 class="nm2 cd-name">${esc(c.name)}</h2>
+    <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
+    <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
+    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your binder':n>1?'copies in your binder':'copy in your binder'}</div>
+    ${lost?'<p class="cd-msg">You lost every copy of this card. Win it back in a match with a trade rule.</p>':''}</div>`,
+    lost?[{label:'Close',cls:'primary',esc:true}]
+      :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':'Add to hand',cls:'primary',fn:()=>handAdd(CH,id)}]);
+  box.classList.add('cd-box');
+  // move the buttons onto the page (this drops focus, so set it again below)
+  box.querySelector('.cd-sheet').append(box.querySelector('.mbtns'));
+  const add=box.querySelector('.mbtns .btn.primary');
+  if(!lost&&(r<=0||full))add.disabled=true;
+  (add.disabled?box.querySelector('.mbtns .btn'):add).focus({preventScroll:true});
+}
+// the + on each owned card: greyed out once every copy is in the hand or the hand is full
+const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0;
+function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
+
+/* ---------- binder: pages by rarity, up to 8 cards a page ----------
+   8 fits both the 3×3 sleeves (with one spare) and the 4×2 layout on short pages, so no card is ever hidden */
+const BD_PER=8;
+const BD_BOOK=(()=>{const out=[];for(let r=1;r<=5;r++){
+  const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),n=Math.ceil(cs.length/BD_PER);
+  for(let i=0;i<n;i++)out.push({r,cards:cs.slice(i*BD_PER,(i+1)*BD_PER),part:i+1,parts:n})}return out})();
+const BD_PAGES=BD_BOOK.length;
+const bdFirst=r=>BD_BOOK.findIndex(pg=>pg.r===r);
+const BD={p:0,done:null,swiped:false};
+// two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
+const bdSpread=()=>$('#collBook').clientWidth>=540;
+const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
+// in spread mode the left page is always even, so the pair is (p, p+1)
+const bdNorm=p=>{p=Math.max(0,Math.min(BD_PAGES-1,p));return bdSpread()?p-p%2:p};
+function bdPage(k){
+  const pg=BD_BOOK[k];
+  if(!pg)return '';
+  const cs=pg.cards,[f,t]=rarFound(pg.r);
+  let pk='';
+  for(let i=0;i<9;i++){
+    const c=cs[i];
+    if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
+    const n=SAVE.coll[c.id]||0,seen=SAVE.seen.includes(c.id);
+    const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
+    const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
+    pk+=`<div class="pk-cell"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
+  }
+  return `<div class="bd-h rar${pg.r}"><b><span class="rt">${pg.r}★</span> ${RARITY[pg.r-1]}${pg.parts>1?` <em>${pg.part}/${pg.parts}</em>`:''}</b>`+
+    `<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
+    `<div class="bd-bar"><i style="width:${(f/t*100).toFixed(1)}%"></i></div><div class="bd-grid">${pk}</div><div class="bd-num">${k+1}</div>`;
+}
+function bdChrome(p){
+  const sp=bdSpread();
+  // a tab is on when its rarity is on a page you can see (on wide screens two rarities can share a spread)
+  const seen=new Set((sp?[p,p+1]:[p]).map(k=>BD_BOOK[k]&&BD_BOOK[k].r));
+  $$('#bdTabs .bd-tab').forEach(b=>{const on=seen.has(+b.dataset.r);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  $('#bdPos').textContent=sp?`Pages ${p+1}–${p+2} of ${BD_PAGES}`:`Page ${p+1} of ${BD_PAGES}`;
+  $('#bdPrev').disabled=p===0;
+  $('#bdNext').disabled=p+(sp?2:1)>=BD_PAGES;
+  // keep the current tab in view by scrolling the tab row sideways only (never the screen)
+  const row=$('#bdTabs'),t=$('#bdTabs .bd-tab.on');
+  if(t&&row.scrollWidth>row.clientWidth)row.scrollTo({left:t.offsetLeft-(row.clientWidth-t.offsetWidth)/2,behavior:'smooth'});
+}
+function bdRender(){
+  if(BD.done)BD.done();
+  const sp=bdSpread();BD.p=bdNorm(BD.p);
+  $('#binder').classList.toggle('single',!sp);
+  $('#bdL').innerHTML=sp?bdPage(BD.p):'';
+  $('#bdR').innerHTML=bdPage(sp?BD.p+1:BD.p);
+  // one tab per rarity; it opens that rarity's first page
+  $('#bdTabs').innerHTML=[1,2,3,4,5].map(r=>{
+    const [f,t]=rarFound(r);
+    return `<button class="bd-tab rar${r}" data-r="${r}"><span class="rt">${r}★</span> ${RARITY[r-1]}${f===t?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
+  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>bdTurn(bdFirst(+b.dataset.r)));
+  bdChrome(BD.p);
+}
+// turn to page `to`: a two-sided sheet rotates around the rings while a shadow sweeps across it
+function bdTurn(to){
+  if(BD.done)BD.done();
+  to=bdNorm(to);
+  const from=BD.p;if(to===from)return;
+  const fwd=to>from,sp=bdSpread(),binder=$('#binder'),L=$('#bdL'),R=$('#bdR');
+  sfx('click');
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||!binder.animate){BD.p=to;bdRender();return}
+  if(!sp){bdTurnSingle(from,to,fwd);return}
+  // src: the page the sheet lifts from (the revealed page is drawn into it underneath)
+  // land: the static page the sheet comes to rest on, and what it should show once the sheet is gone
+  let src,front,back,frontSide,backSide,deg,land,landHTML;
+  if(sp){
+    if(fwd){src=R;front=bdPage(from+1);back=bdPage(to);frontSide='r';backSide='l';deg=[0,-180];R.innerHTML=bdPage(to+1);land=L;landHTML=back}
+    else{src=L;front=bdPage(from);back=bdPage(to+1);frontSide='l';backSide='r';deg=[0,180];L.innerHTML=bdPage(to);land=R;landHTML=back}
+  }else{
+    // one page: going forward the page swings away to the left; going back the earlier page swings in over it
+    src=R;frontSide='r';backSide='l';back=null;land=R;
+    if(fwd){front=bdPage(from);deg=[0,-180];R.innerHTML=bdPage(to);landHTML=null}
+    else{front=bdPage(to);deg=[-180,0];landHTML=front}
+  }
+  // Pivot on the middle of the spine, not the page's own edge: the pages sit a gap apart, so turning
+  // around the page edge would land the sheet short of the facing page and make it jump at the end.
+  // Fractional rects keep the landing exact to the sub-pixel.
+  const bR=binder.getBoundingClientRect(),sR=src.getBoundingClientRect();
+  let pivot;
+  if(sp){const lR=L.getBoundingClientRect(),rR=R.getBoundingClientRect(),mid=(lR.right+rR.left)/2;pivot=mid-sR.left}
+  else pivot=0;
+  const shadeDir=pivot<sR.width/2?'to-r':'to-l',backDir=shadeDir==='to-r'?'to-l':'to-r';
+  const leaf=document.createElement('div');
+  leaf.className='bd-leaf';leaf.setAttribute('aria-hidden','true');
+  Object.assign(leaf.style,{left:(sR.left-bR.left-binder.clientLeft)+'px',top:(sR.top-bR.top-binder.clientTop)+'px',
+    width:sR.width+'px',height:sR.height+'px',transformOrigin:`${pivot}px 50%`});
+  leaf.innerHTML=`<div class="bd-face front"><div class="bd-page ${frontSide}">${front}</div><i class="bd-shade ${shadeDir}"></i></div>`+
+    `<div class="bd-face back">${back?`<div class="bd-page ${backSide}">${back}</div>`:'<div class="bd-page bd-blank"></div>'}<i class="bd-shade ${backDir}"></i></div>`;
+  binder.append(leaf);
+  // a shadow on the page underneath: lifts away as it's uncovered, or falls on it as it's covered
+  const under=document.createElement('i');
+  under.className='bd-shade '+shadeDir;
+  src.append(under);
+  const T=780,opt={duration:T,easing:'cubic-bezier(.45,.05,.2,1)',fill:'forwards'},opening=deg[0]===0;
+  const anims=[
+    leaf.animate([{transform:`rotateY(${deg[0]}deg)`},{transform:`rotateY(${deg[1]}deg)`}],opt),
+    // the lifting side darkens as it turns edge-on, the landing side brightens as it settles
+    leaf.querySelector('.front .bd-shade').animate(opening?[{opacity:0},{opacity:.55}]:[{opacity:.55},{opacity:0}],opt),
+    leaf.querySelector('.back .bd-shade').animate(opening?[{opacity:.55},{opacity:0}]:[{opacity:0},{opacity:.55}],opt),
+    under.animate(opening?[{opacity:.6},{opacity:0}]:[{opacity:0},{opacity:.35}],opt),
+    // the sheet casts a shadow only while it's in the air, so nothing pops off when it lands
+    ...[...leaf.querySelectorAll('.bd-face')].map(f=>f.animate([{boxShadow:'0 0 0 rgba(0,0,0,0)'},{boxShadow:'0 8px 26px rgba(0,0,0,.42)',offset:.5},{boxShadow:'0 0 0 rgba(0,0,0,0)'}],opt))
+  ];
+  // Finish quietly: draw the landing page underneath, then drop the sheet in the same frame.
+  // Only that one page changes, so the tabs and scroll position don't get rebuilt mid-motion.
+  const done=()=>{
+    if(BD.done!==done)return;BD.done=null;
+    if(landHTML!=null)land.innerHTML=landHTML;
+    anims.forEach(a=>a.cancel());leaf.remove();under.remove();BD.p=to;bdChrome(to);
+  };
+  BD.done=done;
+  anims[0].onfinish=done;
+  bdChrome(to); // tabs and page count update right away instead of after the turn
+}
+// One page (phones): the sheet hinges on the page's left edge and only swings as far as edge-on, where it's
+// invisible. It lives in a clip box the size of the page, with its depth seen from the hinge, so no part of
+// it can ever swing out over the rings. Forward: the page lifts away and vanishes edge-on. Back: the earlier
+// page swings in from edge-on and settles flat on the page it covers.
+function bdTurnSingle(from,to,fwd){
+  const binder=$('#binder'),R=$('#bdR');
+  const bR=binder.getBoundingClientRect(),sR=R.getBoundingClientRect();
+  const sheet=bdPage(fwd?from:to);
+  const clip=document.createElement('div');
+  clip.className='bd-clip';clip.setAttribute('aria-hidden','true');
+  Object.assign(clip.style,{left:(sR.left-bR.left-binder.clientLeft)+'px',top:(sR.top-bR.top-binder.clientTop)+'px',width:sR.width+'px',height:sR.height+'px'});
+  clip.innerHTML=`<div class="bd-leaf"><div class="bd-face front"><div class="bd-page r">${sheet}</div><i class="bd-shade to-r"></i></div></div>`;
+  if(fwd)R.innerHTML=bdPage(to); // the next page waits underneath
+  binder.append(clip);
+  const under=document.createElement('i');
+  under.className='bd-shade to-r';
+  R.append(under);
+  // forward eases in (a gentle lift, then away); back eases out (swings in, then settles softly)
+  const opt={duration:560,easing:fwd?'cubic-bezier(.45,0,.8,.55)':'cubic-bezier(.2,.45,.55,1)',fill:'forwards'};
+  const leaf=clip.firstChild;
+  const anims=[
+    leaf.animate([{transform:`rotateY(${fwd?0:-90}deg)`},{transform:`rotateY(${fwd?-90:0}deg)`}],opt),
+    leaf.querySelector('.bd-shade').animate(fwd?[{opacity:0},{opacity:.6}]:[{opacity:.6},{opacity:0}],opt),
+    under.animate(fwd?[{opacity:.45},{opacity:0}]:[{opacity:0},{opacity:.3}],opt)
+  ];
+  const done=()=>{
+    if(BD.done!==done)return;BD.done=null;
+    if(!fwd)R.innerHTML=sheet; // the sheet is flat on the page now, so the swap is invisible
+    anims.forEach(a=>a.cancel());clip.remove();under.remove();BD.p=to;bdChrome(to);
+  };
+  BD.done=done;
+  anims[0].onfinish=done;
+  bdChrome(to);
+}
+// finish a turn that's still running first, so quick repeated taps each move one more page
+const bdStep=d=>{if(BD.done)BD.done();bdTurn(BD.p+d*(bdSpread()?2:1))};
+$('#bdPrev').onclick=()=>bdStep(-1);
+$('#bdNext').onclick=()=>bdStep(1);
+$('#binder').addEventListener('click',e=>{
+  const a=e.target.closest('.pk-add');
+  if(a){if(!BD.swiped&&!a.disabled)handAdd(CH,+a.dataset.add);return}
+  const b=e.target.closest('.pocket[data-id]');
+  if(b&&!BD.swiped)collDetail(+b.dataset.id);
+});
+// swipe left / right to turn pages
+{let sx=0,sy=0,down=false;
+ $('#binder').addEventListener('pointerdown',e=>{down=true;sx=e.clientX;sy=e.clientY;BD.swiped=false});
+ $('#binder').addEventListener('pointerup',e=>{
+   if(!down)return;down=false;
+   const dx=e.clientX-sx,dy=e.clientY-sy;
+   if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){BD.swiped=true;bdStep(dx<0?1:-1);setTimeout(()=>{BD.swiped=false},0)}
+ });
+ $('#binder').addEventListener('pointercancel',()=>{down=false});
+}
+document.addEventListener('keydown',e=>{
+  if(!$('#scr-coll').classList.contains('on')||$('#modal').classList.contains('on')||e.target instanceof HTMLInputElement)return;
+  if(e.key==='ArrowRight'){e.preventDefault();bdStep(1)}
+  else if(e.key==='ArrowLeft'){e.preventDefault();bdStep(-1)}
+});
+// switch between one and two pages when the window crosses the breakpoint
+const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
+
+if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#collBook'));else window.addEventListener('resize',bdFit);
 function confirmReset(after){
   modal('<h2>Reset progress?</h2><p>Your collection, stats and settings will be erased and you will start over with the starter cards.</p>',[
     {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();after();toast('Progress reset.')}},
@@ -1876,7 +2568,9 @@ function openSettings(){
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">
     <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
-    <button class="setrow" id="setSound" role="switch" aria-checked="${!!SAVE.sound}"><span class="rt"><b>Sound</b><small>Clicks, flips and the timer</small></span><span class="switch" aria-hidden="true"></span></button>
+    ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
+      `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+
+      `<input type="range" class="rng" min="0" max="100" step="5" aria-labelledby="${k}L"><span class="vpct"></span></div>`).join('')}
     <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="setrow"><span class="rt"><b>Reset progress</b><small>Erase your cards and stats</small></span><button class="btn danger small" id="setReset">Reset</button></div>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
@@ -1884,7 +2578,15 @@ function openSettings(){
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
-  box.querySelector('#setSound').onclick=e=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');e.currentTarget.setAttribute('aria-checked',SAVE.sound)};
+  box.querySelectorAll('[data-vol]').forEach(row=>{
+    const k=row.dataset.vol,sl=row.querySelector('input'),pct=row.querySelector('.vpct');
+    const paint=()=>{const v=SAVE[k];sl.value=v;sl.style.setProperty('--f',v+'%');
+      const txt=!SAVE.sound?'Muted':v?v+'%':'Off';pct.textContent=txt;sl.setAttribute('aria-valuetext',txt);row.classList.toggle('muted',!SAVE.sound||!v)};
+    row.paint=paint;paint();
+    // moving a slider also lifts the in-game mute
+    sl.oninput=()=>{SAVE[k]=+sl.value;if(!SAVE.sound){SAVE.sound=true;updSnd()}save();box.querySelectorAll('[data-vol]').forEach(r=>r.paint());musicSync()};
+    if(k==='sfxVol')sl.onchange=()=>sfx('click');
+  });
   box.querySelector('#setHow').onclick=()=>{closeModal();openHow(0)};
   box.querySelector('#setReset').onclick=()=>confirmReset(()=>show('menu'));
 }
@@ -2058,7 +2760,7 @@ function beginOnline(cfg){
     tryStartOnline();
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:SAVE.lastDeck,color:'blue',onDone:done,
+  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,onDone:done,
     onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',fn:()=>{netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
