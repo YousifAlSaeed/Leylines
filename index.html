@@ -579,6 +579,9 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-loedit{position:absolute;right:5px;bottom:5px;width:32px;height:32px;border-radius:9px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .18s,color .18s}
 .dk-loedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .dk-loedit:hover{background:rgba(var(--tint),.08);color:var(--accent-ink)}
+.dk-lodel{margin-top:10px;color:var(--danger)!important;font-size:13.5px}
+.dk-lodel:hover{background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.dk-lodel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
 .dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
 @media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
@@ -1474,11 +1477,19 @@ function renameLoadout(i){
     DK.note=`Renamed to <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-edit="${i}"]`);
   };
   const box=modal(`<h2 class="nm2">Rename loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
-    <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">`,
+    <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
+    <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button>`,
     [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
   const inp=box.querySelector('#loName');
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
+  box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(i)};
   inp.focus();inp.select();
+}
+function deleteLoadout(i){
+  const l=SAVE.loadouts[i];if(!l)return;
+  modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
+    [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;save();DK.note=`Deleted <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`)}}]);
 }
 $('#deckSave').onclick=()=>{if(DK.sel.length!==5)return;sfx('click');DK.saving=!DK.saving;DK.note='';renderDeck()};
 $('#deckLoCancel').onclick=()=>{sfx('click');DK.saving=false;renderDeck()};
