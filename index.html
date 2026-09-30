@@ -73,7 +73,6 @@ p{text-wrap:pretty}
 h2[tabindex="-1"]:focus,.mbox:focus{outline:none}
 .sc,.bigscore,.codebox,.stat b,.meta,#deckMeta,.timer span{font-variant-numeric:tabular-nums}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-kbd{font:600 12px var(--body);min-width:26px;text-align:center;padding:3px 7px;border-radius:7px;background:var(--surf2);border:1px solid var(--line2);border-bottom-width:3px;color:var(--text);display:inline-block}
 
 /* ---------- screens ---------- */
 .screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;
@@ -234,7 +233,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .hero-row .btn.primary{flex:1 1 130px;min-height:52px;font-size:18px}
 .hero-row .seg{flex:1 1 210px}
-.kbdhint{display:none;color:var(--muted);font-size:12.5px;align-items:center;gap:6px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{position:relative;text-align:left;border-radius:18px;padding:14px;min-height:100px;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
   display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
@@ -265,7 +263,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .fan{font-size:14px}
   .modeseg svg{display:block}
   .m-right .tiles{flex:1;grid-auto-rows:1fr}
-  .kbdhint{display:flex;grid-column:1;margin-top:-14px}
   .tile{min-height:122px;padding:18px}
   .tile b{font-size:19px}
 }
@@ -373,8 +370,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .side.opp .hand .card.sel{transform:translateY(16%)}
 @media (hover:hover){.side.me .hand .card.play:not(.sel):hover{transform:translateY(-7%)}}
 .hand .card.dragging{opacity:.25}
-.side.me .hand .card.play:focus-visible:not(.sel){transform:translateY(-7%)}
-.side.opp .hand .card.play:focus-visible:not(.sel){transform:translateY(7%)}
 body.nohn .hand .nm{display:none}
 body.nobn .board .nm{display:none}
 
@@ -388,7 +383,6 @@ body.nobn .board .nm{display:none}
 .cell .eicon{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--cell)*.32);opacity:.5}
 .cell.hot{border-color:color-mix(in srgb,var(--hot) 55%,transparent);box-shadow:inset 0 0 16px color-mix(in srgb,var(--hot) 22%,transparent);cursor:pointer}
 .cell.over{border-color:var(--hot);box-shadow:inset 0 0 24px color-mix(in srgb,var(--hot) 40%,transparent)}
-.cell:focus-visible{outline-offset:1px;z-index:2}
 .ghost{position:fixed;z-index:var(--z-ghost);pointer-events:none;transform:translate(-50%,-55%) scale(1.06) rotate(-4deg);box-shadow:0 1.2em 2.4em rgba(var(--sh),calc(.8*var(--shk)+.2))!important}
 
 body.land .arena{flex-direction:row;justify-content:center;gap:max(16px,3.2vw)}
@@ -399,9 +393,8 @@ body.land .hand{flex-direction:column;gap:0;min-width:calc(var(--hc) + 20px);min
 body.land .hand .card+.card{margin-top:calc(var(--hc) * -0.62)}
 body.land .side.me .hand .card.sel{transform:translateX(-22%)}
 body.land .side.opp .hand .card.sel{transform:translateX(22%)}
-body.land .hand .card.sel,body.land .hand .card:focus-visible{z-index:3}
+body.land .hand .card.sel{z-index:3}
 @media (hover:hover){body.land .side.me .hand .card.play:not(.sel):hover{transform:translateX(-9%)}}
-body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX(-9%)}
 @media (min-width:900px){
   .wordmark{display:block;margin-right:auto}
   .hud .turn{position:absolute;left:50%;transform:translateX(-50%);flex:none}
@@ -518,8 +511,6 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .code{display:flex;gap:.25em}
 .code span{width:1.8em;height:2.2em;display:grid;place-items:center;border-radius:.4em;background:var(--surf);border:1px solid var(--line2);font:900 1.3em var(--display);color:var(--accent-ink)}
 .link{margin-top:.7em;font-size:.72em;color:var(--muted);padding:.3em .7em;border-radius:.5em;background:var(--surf);border:1px solid var(--line)}
-.keys{display:flex;flex-direction:column;gap:.6em;align-items:flex-start;color:var(--muted);font-size:.9em}
-.keys div{display:flex;gap:.35em;align-items:center}
 
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,12px);z-index:var(--z-toast);
   background:var(--surf2);border:1px solid var(--line2);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;
@@ -830,7 +821,6 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
         <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
       </div>
     </div>
-    <div class="kbdhint" aria-hidden="true"><kbd>H</kbd> how to play</div>
   </div>
 </section>
 
@@ -1156,22 +1146,11 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
 
 function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
-// keyboard: remember whether the player is using keys, so focus can follow the game
-let KBD=false;
-window.addEventListener('keydown',e=>{if(e.key==='Tab'||e.key.startsWith('Arrow')||e.key==='Enter'||e.key===' ')KBD=true},true);
-window.addEventListener('pointerdown',()=>{KBD=false},true);
-// Enter / Space on card tiles that act like buttons; keep focus on the same tile after it re-renders
+// Esc closes the open popup
 document.addEventListener('keydown',e=>{
-  const t=e.target;
-  if(e.key==='Escape'&&$('#modal').classList.contains('on')){const b=$('#modal [data-esc]');if(b){e.preventDefault();b.click()}return}
-  if(e.key==='Escape'&&$('#how').classList.contains('on')){e.preventDefault();closeHow();return}
-  if((e.key==='h'||e.key==='H'||e.key==='?')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!(t instanceof HTMLInputElement)
-    &&!$('#how').classList.contains('on')&&!$('#modal').classList.contains('on')&&($('#scr-menu').classList.contains('on')||$('#scr-game').classList.contains('on'))){e.preventDefault();openHow(0);return}
-  if(!(t instanceof Element)||!t.matches('[data-kbd]')||(e.key!=='Enter'&&e.key!==' '))return;
-  e.preventDefault();
-  const host=t.parentElement&&t.parentElement.id,k=t.dataset.id!=null?'id':'i',v=t.dataset[k];
-  t.click();
-  if(!t.isConnected&&host){const n=$(`#${host} [data-kbd][data-${k}="${v}"]`)||$(`#${host} [data-kbd]`);n&&n.focus()}
+  if(e.key!=='Escape')return;
+  if($('#modal').classList.contains('on')){const b=$('#modal [data-esc]');if(b){e.preventDefault();b.click()}return}
+  if($('#how').classList.contains('on')){e.preventDefault();closeHow()}
 });
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
@@ -1461,7 +1440,6 @@ function show(id){
   if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
-  else if(id==='menu'&&KBD)$('#scr-menu .btn').focus();
 }
 // the last deck is only "ready" if every card in it is still owned
 function lastDeckReady(){
@@ -1658,7 +1636,7 @@ function renderDeck(){
     const c=CARDS[e.id];
     if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}${RAR_CAP[c.rar]?`<small>${RAR_CAP[c.rar]}</small>`:''}</h4>`;lastR=c.rar}
     const r=remaining(e.id),why=r>0?rarBlock(DK.sel,e.id):'',off=r<=0||!!why;
-    html+=`<div class="gc ${off?'used':''}" data-id="${e.id}" data-kbd tabindex="0" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left${why?'. '+why:''}"${why?` title="${why}"`:''}${off?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
+    html+=`<div class="gc ${off?'used':''}" data-id="${e.id}" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left${why?'. '+why:''}"${why?` title="${why}"`:''}${off?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
   }
   $('#deckGrid').innerHTML=html;
   $$('#deckGrid .gc').forEach(g=>g.onclick=()=>handAdd(DK,+g.dataset.id));
@@ -1688,7 +1666,7 @@ function renderHand(h){
     const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
     const st=`style="--t:${t};transform:${t};z-index:${i}"`;
     return id!=null
-      ?`<div class="dk-fs" ${st} data-i="${i}" data-kbd tabindex="0" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
+      ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   h.deal=-1;
   $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
@@ -1727,9 +1705,9 @@ function renderLoadouts(h){
 function pickLoadout(h,i){
   const l=SAVE.loadouts[i];sfx('click');
   if(h.saving||!l){
-    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();focusLo(h,`[data-i="${i}"]`);return}
+    if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();return}
     SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:h.sel.slice()};fixMain();save();
-    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`);return;
+    h.saving=false;h.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;h.render();return;
   }
   const miss=loMissing(h,l.ids),have=l.ids.filter((_,k)=>!miss.includes(k));
   h.sel=legalDeck(have);
@@ -1738,23 +1716,21 @@ function pickLoadout(h,i){
     ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
     :over?`<span class="bad">${over} card${over>1?'s':''} went over the rarity limit.</span> Pick a replacement.`
     :`Loaded <b>${esc(l.name)}</b>.`;
-  h.render();focusLo(h,`[data-i="${i}"]`);
+  h.render();
 }
-// buttons in the loadout row are rebuilt on every render, so put keyboard focus back where it was
-function focusLo(h,sel){if(KBD){const b=$(`#${h.pfx}LoRow ${sel}`);b&&b.focus({preventScroll:true})}}
 function renameLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;sfx('click');
   const commit=()=>{
     const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
     closeModal();
     l.name=v||`Loadout ${i+1}`;save();
-    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-edit="${i}"]`);
+    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();
   };
   const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
     <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
     <div class="dk-loopts"><button class="btn text dk-lomain" id="loMain"></button>
     <button class="btn text dk-lodel" id="loDel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete loadout</button></div>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
+    [{label:'Cancel',esc:true},{label:'Save',cls:'primary',keep:true,fn:commit}]);
   const inp=box.querySelector('#loName');
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
   box.querySelector('#loDel').onclick=()=>{sfx('click');deleteLoadout(h,i)};
@@ -1767,8 +1743,8 @@ function renameLoadout(h,i){
 function deleteLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;
   modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
-    [{label:'Cancel',esc:true,fn:()=>focusLo(h,`[data-edit="${i}"]`)},
-     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render();focusLo(h,`[data-i="${i}"]`)}}]);
+    [{label:'Cancel',esc:true},
+     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render()}}]);
 }
 // Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
 function wireHand(P,get){
@@ -1839,7 +1815,6 @@ function nextTurn(){
   if(!G)return;
   G.sel=null;renderGame();
   if(isFull(G.st)){endRound();return}
-  if(KBD&&canAct(G.st.turn)&&!$('#modal').classList.contains('on'))focusHand(0);
   startTurnTimer();
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
   else if(G.mode==='online'&&G.st.turn!==G.me)pump();
@@ -1970,7 +1945,7 @@ function finish(s0,s1){
 function pickCards(head,deck,n){
   return new Promise(res=>{
     const sel=new Set();
-    const box=modal(head+`<p>Choose <b>${n}</b> card${n>1?'s':''} to take.</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk" data-i="${i}" data-kbd tabindex="0" role="button" aria-pressed="false" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'red')}</div>`).join('')}</div>`,
+    const box=modal(head+`<p>Choose <b>${n}</b> card${n>1?'s':''} to take.</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk" data-i="${i}" role="button" aria-pressed="false" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'red')}</div>`).join('')}</div>`,
       [{label:'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n){closeModal();res([...sel])}}}]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=true;
     box.querySelectorAll('.pk').forEach(el=>el.onclick=()=>{
@@ -2084,15 +2059,8 @@ let CELLS=[];
 function buildBoard(){
   const b=$('#board');b.innerHTML='';CELLS=[];
   for(let i=0;i<9;i++){
-    const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.tabIndex=-1;c.setAttribute('role','button');
+    const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.setAttribute('role','button');
     c.onclick=()=>{if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
-    c.onkeydown=e=>{
-      if(!G)return;
-      const dir={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3}[e.key];
-      if(dir!=null){e.preventDefault();const n=NB[i][dir];if(n>=0)CELLS[n].focus();return}
-      if((e.key==='Enter'||e.key===' ')&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){e.preventDefault();requestMove(G.sel,i);return}
-      if(e.key==='Escape'&&G.sel!=null){e.preventDefault();const hi=G.sel;G.sel=null;renderHands();renderBoard();focusHand(hi)}
-    };
     b.append(c);CELLS.push(c);
   }
 }
@@ -2105,7 +2073,6 @@ function renderBoard(){
     const hot=G.sel!=null&&st.b[i]<0&&canAct(st.turn);
     CELLS[i].classList.toggle('hot',hot);
     CELLS[i].classList.remove('over');
-    CELLS[i].tabIndex=hot?0:-1;
     CELLS[i].setAttribute('aria-disabled',!hot);
     CELLS[i].setAttribute('aria-label',`Row ${Math.floor(i/3)+1}, column ${i%3+1}: `+
       (st.b[i]>=0?`${CARDS[st.b[i]].name}, ${colorOf(st.o[i])}`:'empty')+(st.el[i]?`, ${st.el[i]} square`:''));
@@ -2118,8 +2085,8 @@ function renderHands(){
     el.innerHTML=st.h[p].map((id,i)=>hide
       ?cardHTML(id,null,{back:true})
       :cardHTML(id,colorOf(p),{cls:(can?'play ':'')+(can&&G.sel===i?'sel':''),
-        attrs:`data-p="${p}" data-i="${i}"`+(can?` tabindex="0" role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join('');
-    if(can)el.querySelectorAll('.card').forEach(c=>{c.addEventListener('pointerdown',onHandDown);c.addEventListener('keydown',onHandKey)});
+        attrs:`data-p="${p}" data-i="${i}"`+(can?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join('');
+    if(can)el.querySelectorAll('.card').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
   // in same-screen mode the active player is shown at the bottom side's highlight
 }
@@ -2148,21 +2115,6 @@ function renderHud(){
   updSnd();
 }
 
-function focusHand(hi){
-  const h=G.st.turn===G.bottom?'#handBot':'#handTop',cards=$$(h+' .card.play');
-  (cards[hi]||cards[0])?.focus();
-}
-function onHandKey(e){
-  const p=+e.currentTarget.dataset.p,hi=+e.currentTarget.dataset.i,cards=[...e.currentTarget.parentElement.children];
-  if(e.key.startsWith('Arrow')){
-    e.preventDefault();const d=(e.key==='ArrowLeft'||e.key==='ArrowUp')?-1:1;cards[(hi+d+cards.length)%cards.length].focus();return}
-  if(e.key!=='Enter'&&e.key!==' ')return;
-  e.preventDefault();
-  if(!canAct(p))return;
-  G.sel=G.sel===hi?null:hi;sfx('click');
-  renderHands();renderBoard();
-  if(G.sel!=null)(CELLS.find(c=>c.classList.contains('hot'))||CELLS[0]).focus();else focusHand(hi);
-}
 let drag=null;
 function onHandDown(e){
   const el=e.currentTarget,p=+el.dataset.p,hi=+el.dataset.i;
@@ -2447,11 +2399,6 @@ $('#binder').addEventListener('click',e=>{
  });
  $('#binder').addEventListener('pointercancel',()=>{down=false});
 }
-document.addEventListener('keydown',e=>{
-  if(!$('#scr-coll').classList.contains('on')||$('#modal').classList.contains('on')||e.target instanceof HTMLInputElement)return;
-  if(e.key==='ArrowRight'){e.preventDefault();bdStep(1)}
-  else if(e.key==='ArrowLeft'){e.preventDefault();bdStep(-1)}
-});
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
 
@@ -2549,16 +2496,20 @@ const HOW=[
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
   list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
  {tab:'Tips',tag:'Tips',title:'How to win more',
-  stage:()=>`<div class="keys"><div><kbd>Tab</kbd><kbd>←</kbd><kbd>→</kbd> pick a card</div><div><kbd>Enter</kbd> place it</div><div><kbd>Esc</kbd> put it back</div><div><kbd>H</kbd> open this guide</div></div>`,
-  list:['Keep your <b>strong sides</b> facing empty squares','Corners only show 2 sides: safe spots for weak cards','Save a strong card for the last turn','Tap, drag, or use the keyboard: all three work']}
+  // Iron Crab (3 top, 3 left) tucks into the corner so only its 7 and 6 face the board
+  stage:()=>miniBoard([[22,'blue','n'],0,0,0,0,0,0,0,0])+'<span class="flag"></span>',
+  run:st=>{const n=st.querySelector('.c.n .card'),f=st.querySelector('.flag');
+    return demoLoop([[0,()=>{n.style.opacity=0;f.classList.remove('on')}],[600,()=>dropIn(n)],[1300,()=>{f.textContent='Weak sides hidden';f.classList.add('on')}]],3600)},
+  list:['Keep your <b>strong sides</b> facing empty squares','Corners only show 2 sides: safe spots for weak cards','Save a strong card for the last turn','With <b>Open</b> on, check which enemy cards could flip yours before you place','Tap a card then a square, or drag it there','<b>Example:</b> Iron Crab\'s weak 3s face the walls, so only its 7 and 6 can be attacked']}
 ];
 let HI=0,hStop=null,howReturn=null;
 function renderHow(){
   const h=HOW[HI];
-  $('#hTabs').innerHTML=HOW.map((x,i)=>`<button role="tab" id="htab${i}" aria-selected="${i===HI}" aria-controls="hPanel" tabindex="${i===HI?0:-1}" data-i="${i}">${x.tab}</button>`).join('');
+  $('#hTabs').innerHTML=HOW.map((x,i)=>`<button role="tab" id="htab${i}" aria-selected="${i===HI}" aria-controls="hPanel" data-i="${i}">${x.tab}</button>`).join('');
   $('#hPanel').setAttribute('aria-labelledby','htab'+HI);
   if(hStop){hStop();hStop=null}
-  const st=$('#hStage');st.innerHTML=h.stage();
+  // a tab without an example (Tips) gives its text the whole panel
+  const st=$('#hStage');st.innerHTML=h.stage?h.stage():'';st.style.display=h.stage?'':'none';
   if(h.run&&!matchMedia('(prefers-reduced-motion: reduce)').matches)hStop=h.run(st);
   $('#hTag').textContent=h.tag;$('#hTitle').textContent=h.title;
   $('#hList').innerHTML=h.list.map(l=>`<li>${l}</li>`).join('');
@@ -2584,10 +2535,6 @@ function closeHow(){
   howReturn=null;
 }
 $('#hTabs').onclick=e=>{const b=e.target.closest('[role="tab"]');if(b){sfx('click');goHow(+b.dataset.i,true)}};
-$('#hTabs').onkeydown=e=>{
-  const k={ArrowRight:HI+1,ArrowLeft:HI-1,Home:0,End:HOW.length-1}[e.key];
-  if(k!=null){e.preventDefault();goHow(k,true)}
-};
 $('#hNext').onclick=()=>{sfx('click');HI===HOW.length-1?closeHow():goHow(HI+1)};
 $('#hBack').onclick=$('#hPrev').onclick=()=>{sfx('click');goHow(HI-1)};
 $('#hClose').onclick=()=>{sfx('click');closeHow()};
