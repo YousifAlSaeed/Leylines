@@ -1124,13 +1124,17 @@ function rarOver(ids){const kept=[],bad=[];ids.forEach((id,k)=>{if(rarBlock(kept
 function legalDeck(ids){const d=[];for(const id of ids){if(d.length<5&&!rarBlock(d,id))d.push(id)}return d}
 // how many cards of a pool can go into one legal deck
 function deckable(pool){let lo=0,n4=0,n5=0;pool.forEach(e=>{const r=CARDS[e.id].rar;if(r<4)lo+=e.count;else if(r===4)n4+=e.count;else n5+=e.count});return lo+Math.min(2,n4+Math.min(1,n5))}
-function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,id=>SAVE.coll[id]||0),over:rarOver(l.ids)}:null}
+function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,owned),over:rarOver(l.ids)}:null}
 // the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
 function preDeck(){const m=mainLoadout();return m&&!m.miss.length&&!m.over.length?m.l.ids:SAVE.lastDeck}
-function collTotal(){return Object.values(SAVE.coll).reduce((a,b)=>a+b,0)}
+// "Unlock all cards" (Settings) lends you at least 1 copy of every card while it's on; the real collection stays underneath
+const owned=id=>{const n=SAVE.coll[id]||0;return SAVE.unlockAll?Math.max(1,n):n};
+const isSeen=id=>SAVE.unlockAll||SAVE.seen.includes(id);
+const seenCount=()=>SAVE.unlockAll?CARDS.length:SAVE.seen.length;
+function collTotal(){return CARDS.reduce((a,c)=>a+owned(c.id),0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
-function collPool(){return Object.entries(SAVE.coll).filter(([,c])=>c>0).map(([id,c])=>({id:+id,count:c}))}
+function collPool(){return CARDS.map(c=>({id:c.id,count:owned(c.id)})).filter(e=>e.count>0)}
 function ensureMinimum(){
   const added=[];const lv1=CARDS.filter(c=>c.lv===1);
   // enough cards for a legal deck: 4★ and 5★ cards beyond the rarity limits don't count
@@ -1463,14 +1467,14 @@ function show(id){
 function lastDeckReady(){
   const d=SAVE.lastDeck||[],need={};
   if(d.length!==5)return null;
-  for(const id of d){need[id]=(need[id]||0)+1;if((SAVE.coll[id]||0)<need[id])return null}
+  for(const id of d){need[id]=(need[id]||0)+1;if(owned(id)<need[id])return null}
   return d;
 }
 function renderMenu(){
   const st=SAVE.stats;
   $('#stW').textContent=st.w+st.ow;$('#stL').textContent=st.l+st.ol;$('#stD').textContent=st.d+st.od;
-  $('#collSub').textContent=`${SAVE.seen.length} of ${CARDS.length} found`;
-  $('#collBar').style.width=(SAVE.seen.length/CARDS.length*100).toFixed(1)+'%';
+  $('#collSub').textContent=SAVE.unlockAll?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
+  $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();
 }
 const MODE_ICON={
@@ -2235,8 +2239,8 @@ const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
 wireHand('coll',()=>CH);
 function openCollection(){
-  const lost=SAVE.seen.filter(i=>!SAVE.coll[i]).length;
-  $('#collMeta').innerHTML=`${SAVE.seen.length} of 55 discovered · ${collTotal()} cards owned`+(lost?` · <span class="lostc">${lost} lost</span>`:'');
+  const lost=SAVE.seen.filter(i=>!owned(i)).length;
+  $('#collMeta').innerHTML=(SAVE.unlockAll?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:'');
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
   CH.pool=collPool();
   const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
@@ -2246,8 +2250,8 @@ function openCollection(){
 }
 // card detail: the card lifts out of its sleeve on a binder page
 function collDetail(id){
-  const c=CARDS[id],n=SAVE.coll[id]||0;sfx('click');
-  const lost=!n&&SAVE.seen.includes(id);
+  const c=CARDS[id],n=owned(id);sfx('click');
+  const lost=!n&&isSeen(id);
   if(!n&&!lost){toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id);
   const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
@@ -2282,7 +2286,7 @@ const bdFirst=r=>BD_BOOK.findIndex(pg=>pg.r===r);
 const BD={p:0,done:null,swiped:false};
 // two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
 const bdSpread=()=>$('#collBook').clientWidth>=540;
-const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>SAVE.seen.includes(c.id)).length,cs.length]};
+const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>isSeen(c.id)).length,cs.length]};
 // in spread mode the left page is always even, so the pair is (p, p+1)
 const bdNorm=p=>{p=Math.max(0,Math.min(BD_PAGES-1,p));return bdSpread()?p-p%2:p};
 function bdPage(k){
@@ -2293,7 +2297,7 @@ function bdPage(k){
   for(let i=0;i<9;i++){
     const c=cs[i];
     if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
-    const n=SAVE.coll[c.id]||0,seen=SAVE.seen.includes(c.id);
+    const n=owned(c.id),seen=isSeen(c.id);
     const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
@@ -2608,12 +2612,20 @@ function openSettings(){
     ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
       `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+
       `<input type="range" class="rng" min="0" max="100" step="5" aria-labelledby="${k}L"><span class="vpct"></span></div>`).join('')}
+    <div class="setrow"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection</small></span><div class="seg" id="setUnlock" role="group" aria-label="Unlock all cards">${
+      [[false,'Off'],[true,'On']].map(([k,l])=>`<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
     <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <div class="setrow"><span class="rt"><b>Reset progress</b><small>Erase your cards and stats</small></span><button class="btn danger small" id="setReset">Reset</button></div>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+  });
+  box.querySelectorAll('#setUnlock button').forEach(b=>b.onclick=()=>{
+    const on=b.dataset.k==='true';if(!!SAVE.unlockAll===on)return;
+    SAVE.unlockAll=on;save();sfx('click');
+    box.querySelectorAll('#setUnlock button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+    if($('#scr-menu').classList.contains('on'))renderMenu();
   });
   box.querySelectorAll('[data-vol]').forEach(row=>{
     const k=row.dataset.vol,sl=row.querySelector('input'),pct=row.querySelector('.vpct');
