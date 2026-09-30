@@ -573,6 +573,12 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
 .dk-loslot.empty{border-style:dashed;justify-content:center;align-items:center;min-height:86px;color:var(--muted);font:600 12.5px var(--body);text-align:center}
 .dk-loslot.pick{border-color:var(--accent);border-style:solid;animation:loPulse 1.2s ease-in-out infinite}
 @keyframes loPulse{50%{box-shadow:0 0 0 3px var(--accent-glow)}}
+.dk-lowrap{position:relative;display:flex;min-width:0}
+.dk-lowrap>.dk-loslot{flex:1}
+.dk-lowrap.named .dk-loslot b{padding-right:28px}
+.dk-loedit{position:absolute;right:5px;bottom:5px;width:32px;height:32px;border-radius:9px;border:0;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .18s,color .18s}
+.dk-loedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.dk-loedit:hover{background:rgba(var(--tint),.08);color:var(--accent-ink)}
 .dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
 .dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
 @media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
@@ -1430,30 +1436,49 @@ function renderLoadouts(){
   if(!DK.loadouts)return;
   const col=DK.color||'blue';
   $('#deckLoRow').innerHTML=SAVE.loadouts.map((l,i)=>{
-    const attrs=`data-i="${i}" data-kbd`;
-    if(!l)return `<button class="dk-loslot empty ${DK.saving?'pick':''}" ${attrs}>${DK.saving?'Save here':'+ Save hand<br>to this slot'}</button>`;
+    const attrs=`data-i="${i}"`;
+    if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${DK.saving?'pick':''}" ${attrs}>${DK.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;
     const miss=loMissing(l.ids),pow=l.ids.reduce((a,id)=>a+CARDS[id].sum,0),on=!DK.saving&&!miss.length&&sameHand(l.ids,DK.sel);
     const sub=DK.saving?'<span>Replace with hand</span>':miss.length?`<span class="bad">Missing ${miss.length} card${miss.length>1?'s':''}</span>`:`<span>Power ${pow}</span>`;
-    return `<button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
-      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${esc(l.name)}</b>${sub}</button>`;
+    return `<div class="dk-lowrap ${DK.saving?'':'named'}"><button class="dk-loslot ${on?'on':''} ${DK.saving?'pick':''}" ${attrs} aria-label="${esc(l.name)}${miss.length?`, missing ${miss.length}`:''}${on?', in hand':''}">${on?'<span class="tagx">In hand</span>':''}`+
+      `<div class="stack">${l.ids.map((id,k)=>miss.includes(k)?'<div class="miss"></div>':cardHTML(id,col,{name:false})).join('')}</div><b>${esc(l.name)}</b>${sub}</button>`+
+      (DK.saving?'':`<button class="dk-loedit" data-edit="${i}" aria-label="Rename ${esc(l.name)}" title="Rename"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>`)+`</div>`;
   }).join('');
   $$('#deckLoRow .dk-loslot').forEach(b=>b.onclick=()=>pickLoadout(+b.dataset.i));
+  $$('#deckLoRow .dk-loedit').forEach(b=>b.onclick=()=>renameLoadout(+b.dataset.edit));
   $('#deckLoCancel').classList.toggle('hidden',!DK.saving);
   $('#deckLoNote').innerHTML=DK.saving?'Pick a slot to save your hand in.':DK.note||'';
 }
 function pickLoadout(i){
   const l=SAVE.loadouts[i];sfx('click');
   if(DK.saving||!l){
-    if(DK.sel.length!==5){DK.saving=false;DK.note='Pick 5 cards first, then save them here.';renderDeck();return}
+    if(DK.sel.length!==5){DK.saving=false;DK.note='Pick 5 cards first, then save them here.';renderDeck();focusLo(`[data-i="${i}"]`);return}
     SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:DK.sel.slice()};save();
-    DK.saving=false;DK.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;renderDeck();return;
+    DK.saving=false;DK.note=`Saved to <b>${esc(SAVE.loadouts[i].name)}</b>.`;renderDeck();focusLo(`[data-i="${i}"]`);return;
   }
   const miss=loMissing(l.ids);
   DK.sel=l.ids.filter((_,k)=>!miss.includes(k));
   DK.note=miss.length
     ?`<span class="bad">You no longer have enough ${[...new Set(miss.map(k=>esc(CARDS[l.ids[k]].name)))].join(', ')}.</span> Pick a replacement.`
     :`Loaded <b>${esc(l.name)}</b>.`;
-  renderDeck();
+  renderDeck();focusLo(`[data-i="${i}"]`);
+}
+// buttons in the loadout row are rebuilt on every render, so put keyboard focus back where it was
+function focusLo(sel){if(KBD){const b=$(`#deckLoRow ${sel}`);b&&b.focus({preventScroll:true})}}
+function renameLoadout(i){
+  const l=SAVE.loadouts[i];if(!l)return;sfx('click');
+  const commit=()=>{
+    const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
+    closeModal();
+    l.name=v||`Loadout ${i+1}`;save();
+    DK.note=`Renamed to <b>${esc(l.name)}</b>.`;renderDeck();focusLo(`[data-edit="${i}"]`);
+  };
+  const box=modal(`<h2 class="nm2">Rename loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
+    <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">`,
+    [{label:'Cancel',esc:true,fn:()=>focusLo(`[data-edit="${i}"]`)},{label:'Save',cls:'primary',keep:true,fn:commit}]);
+  const inp=box.querySelector('#loName');
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sfx('click');commit()}};
+  inp.focus();inp.select();
 }
 $('#deckSave').onclick=()=>{if(DK.sel.length!==5)return;sfx('click');DK.saving=!DK.saving;DK.note='';renderDeck()};
 $('#deckLoCancel').onclick=()=>{sfx('click');DK.saving=false;renderDeck()};
