@@ -147,7 +147,19 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .dc b{font:700 15px/1.1 var(--display)} .dc small{color:var(--muted);font-size:11.5px;line-height:1.3}
 .pips{display:flex;gap:3px}.pips i{width:14px;height:5px;border-radius:3px;background:rgba(var(--tint),.14)}.pips i.f{background:var(--red1)}
 .dc.on,.tc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px -10px var(--accent-glow)}
-.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.trow{margin-top:8px;border-radius:14px;padding:10px 14px 8px;border:1px solid var(--line2);background:var(--surf);display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:4px}
+.trow svg{width:20px;height:20px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.trow b{font:700 14px var(--display)} .trow output{font:800 15px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
+.trow.off output{color:var(--muted)}
+.trow input{grid-column:1/-1;width:100%;margin:6px 0 0;appearance:none;-webkit-appearance:none;height:28px;background:none;cursor:pointer;--f:50%}
+.trow input::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+.trow input::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),rgba(var(--tint),.14) var(--f))}
+.trow input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+.trow input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
+.trow input:focus-visible{outline:none}.trow input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}.trow input:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
+.trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
+.trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
 .rc{position:relative;aspect-ratio:5/5.4;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
   background:repeating-linear-gradient(45deg,var(--surf2) 0 6px,var(--surf) 6px 12px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 6px;text-align:center;
@@ -175,7 +187,6 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
   #scr-setup .topbar{max-width:1100px}
   .setup{max-width:1100px;display:grid;grid-template-columns:1fr 1.3fr;grid-template-areas:"diff rules" "trade rules" "note rules" "foot foot";column-gap:44px;row-gap:20px;align-items:start}
   .setup .s-diff{grid-area:diff} .setup .s-rules{grid-area:rules} .setup .s-trade{grid-area:trade} .setup #setupNote{grid-area:note} .setup .setup-foot{grid-area:foot}
-  .setup .rgrid{grid-template-columns:repeat(5,1fr)}
   .setup .rc b{font-size:14px}
   .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0}
   .setup .setup-foot .btn{width:280px}
@@ -307,7 +318,7 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .timer svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
 .timer circle{fill:none;stroke-width:4}
 .timer .trk{stroke:rgba(var(--tint),.12)}
-.timer .prog{stroke:var(--tc);stroke-linecap:round;stroke-dasharray:106.8;stroke-dashoffset:0;transition:stroke-dashoffset .1s linear,stroke .3s}
+.timer .prog{stroke:var(--tc);stroke-linecap:round;stroke-dasharray:106.8;stroke-dashoffset:0;transition:stroke .3s}
 .timer span{position:absolute;inset:0;display:grid;place-items:center;font:800 12px/1 var(--display);color:var(--text)}
 .timer.warn{--tc:var(--warn)}
 .timer.crit{--tc:var(--crit);animation:tpulse 1s ease-in-out infinite}
@@ -315,7 +326,7 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 @keyframes tpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 .tbar{width:100%;max-width:1240px;height:3px;border-radius:2px;background:rgba(var(--tint),.07);overflow:hidden;flex:none;margin:3px 0 4px;transition:opacity .25s}
 .tbar.off{opacity:0}
-.tbar i{display:block;height:100%;width:100%;transform-origin:left center;background:var(--accent);transition:transform .1s linear}
+.tbar i{display:block;height:100%;width:100%;transform-origin:left center;background:var(--accent);will-change:transform}
 .tbar.warn i{background:var(--warn)}
 .tbar.crit i{background:var(--crit);animation:tblink .5s ease-in-out infinite alternate}
 @keyframes tblink{to{opacity:.5}}
@@ -581,7 +592,7 @@ body.land .side.me .hand .card.play:focus-visible:not(.sel){transform:translateX
   <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
   <div class="wrap setup">
     <div id="diffBox" class="s-diff"><h3>Difficulty</h3><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
-    <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
+    <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="trow" id="timerRow"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
     <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
     <p class="note" id="setupNote"></p>
     <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
@@ -753,11 +764,15 @@ const RULES=[
  ['combo','Combo','Cards flipped by Same or Plus then flip their weaker enemy neighbours, chaining on.'],
  ['elemental','Elemental','Some squares carry an element. A matching card gets +1 on every side; any other card gets −1.'],
  ['suddenDeath','Sudden death','A draw restarts the game; each player keeps the cards they owned at the end (up to 5 extra rounds).'],
- ['random','Random','Your 5 cards are dealt at random from your collection.'],
- ['timer','Turn timer','Each turn has a 45-second limit. When time runs out, a random card is played to a random empty square.']
+ ['random','Random','Your 5 cards are dealt at random from your collection.']
 ];
+// turn timer: 0 = off, otherwise 10–90 seconds in steps of 5 (older saves stored true/false)
+const TIMER_MAX=90;
+function timerSec(v){if(v===true)return 45;const n=Math.round(+v/5)*5;return n>=10?Math.min(TIMER_MAX,n):0}
+const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.round(t*.22));
+function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as A for Same',plus:'Equal sums flip cards',
-  combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you',timer:'45 seconds per turn'};
+  combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 
@@ -768,7 +783,7 @@ const SKEY='ninefold.save.v1';
 const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
-  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:true},
+  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
     trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice()};
 }
 function loadSave(){
@@ -779,6 +794,7 @@ function loadSave(){
   return d;
 }
 let SAVE=loadSave();
+SAVE.rules.timer=timerSec(SAVE.rules.timer);
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
 // stable per-device id so the host can recognise a guest who reconnects
 if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
@@ -1154,6 +1170,26 @@ const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</s
 const DIFF_INFO={easy:[1,'Level 1–2 cards'],normal:[2,'Level 1–4 cards'],hard:[3,'Level 3–6, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
+const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
+function timerInfo(){const t=SAVE.rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
+// slider positions: 0 = off, 1..17 = 10..90 seconds
+function renderTimerRow(){
+  const row=$('#timerRow'),t=SAVE.rules.timer;
+  if(!row.firstChild){
+    row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
+      `<input type="range" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
+      `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
+    const sl=$('#timerSl');
+    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
+      renderTimerRow();$('#ruleInfo').innerHTML=timerInfo()};
+  }
+  const sl=$('#timerSl'),pos=t?t/5-1:0;
+  sl.value=pos;sl.style.setProperty('--f',(pos/(+sl.max)*100)+'%');
+  sl.setAttribute('aria-valuetext',t?t+' seconds per turn':'Off, no time limit');
+  $('#timerOut').textContent=t?t+' s':'Off';
+  row.classList.toggle('off',!t);
+  $('#ruleCount').textContent=ruleCountText();
+}
 function renderSetup(flipKey){
   $('#diffSeg').innerHTML=DIFFS.map(([k,l])=>{const[n,sub]=DIFF_INFO[k];
     return`<button class="dc ${SAVE.diff===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.diff===k}"><span class="pips" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><b>${l}</b><small>${sub}</small></button>`}).join('');
@@ -1163,9 +1199,9 @@ function renderSetup(flipKey){
     const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus);
     return`<button class="rc ${R[k]?'on':''} ${dim?'dim':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}" aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
   $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
-  $('#ruleCount').textContent=`${RULES.filter(r=>R[r[0]]).length} on`;
+  renderTimerRow();
   const lr=RULES.find(r=>r[0]===setupLast);
-  $('#ruleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
+  $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
     :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>Gold cards are on. Tap one to turn it on or off and see what it does.</span></div>`;
   $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${SAVE.trade===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.trade===k}"><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
   $$('#tradeSeg button').forEach(b=>b.onclick=()=>{SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
@@ -1444,17 +1480,21 @@ const SND_ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4
 function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off')}
 
 /* ---------- turn timer ---------- */
-const TURN_MS=45000,RING=106.8;
-let TMR={g:null,end:0,p:-1,fired:false,sec:-1};
+// The ring and bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
+// The interval below handles the logic (seconds, warnings, time-up), because animation frames pause in a background tab.
+const RING=106.8;
+let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0};
 function startTurnTimer(){
-  // the CPU doesn't need a clock; everyone else gets 45 seconds per turn
+  // the CPU doesn't need a clock; everyone else gets the chosen time per turn
   if(!G||!G.rules.timer||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
-  TMR={g:G,end:performance.now()+TURN_MS,p:G.st.turn,fired:false,sec:-1};
+  const dur=G.rules.timer*1000;
+  cancelAnimationFrame(TMR.raf);
+  TMR={g:G,end:performance.now()+dur,dur,p:G.st.turn,fired:false,sec:-1,raf:0};
   $('#timer').classList.remove('off');$('#tbar').classList.remove('off');
-  tickTimer();
+  tickTimer();drawTimer(performance.now());
 }
 function stopTurnTimer(){
-  TMR.g=null;
+  TMR.g=null;cancelAnimationFrame(TMR.raf);
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
   setTimerLevel('');
 }
@@ -1465,16 +1505,22 @@ function setTimerLevel(lvl){
   $('#sideBot').classList.toggle('crit',lvl==='crit'&&onBot);
   $('#sideTop').classList.toggle('crit',lvl==='crit'&&!onBot);
 }
+const tProg=$('#tProg'),tFill=$('#tFill');
+function drawTimer(now){
+  if(!TMR.g)return;
+  const f=Math.max(0,TMR.end-now)/TMR.dur;
+  tProg.style.strokeDashoffset=(RING*(1-f)).toFixed(3);
+  tFill.style.transform=`scaleX(${f.toFixed(6)})`;
+  if(f>0)TMR.raf=requestAnimationFrame(drawTimer);
+}
 function tickTimer(){
   if(!TMR.g)return;
   if(TMR.g!==G||G.over){stopTurnTimer();return}
-  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),f=rem/TURN_MS;
-  $('#tNum').textContent=sec;
-  $('#tProg').style.strokeDashoffset=(RING*(1-f)).toFixed(2);
-  $('#tFill').style.transform=`scaleX(${f.toFixed(4)})`;
+  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.dur/1000;
   if(sec!==TMR.sec){
     TMR.sec=sec;
-    setTimerLevel(sec<=10?'crit':sec<=20?'warn':'');
+    $('#tNum').textContent=sec;
+    setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
     $('#timer').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }
@@ -1560,7 +1606,8 @@ function renderHud(){
   else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
   $('#turnMsg').textContent=msg;
   const R=G.rules;
-  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[0]==='timer'?'⏱ 45s':r[1]}</span>`).join('');
+  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
+  if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   $('#ruleBar').innerHTML=chips;
@@ -1757,14 +1804,14 @@ const HOW=[
     const deal=()=>{row.innerHTML='';shuffle(pool.slice()).slice(0,5).forEach((id,i)=>setTimeout(()=>row.insertAdjacentHTML('beforeend',cardHTML(id,'blue',{name:false,cls:'drop'})),i*180))};
     return demoLoop([[0,deal]],3000)},
   list:['Your 5 cards are dealt at random from your collection','You skip the card picker','Good for quick games, and for trying cards you never pick','<b>Example:</b> start a match and 5 random cards from your collection land in your hand']},
- {tab:'Turn timer',tag:'Rule · Turn timer',title:'45 seconds a turn',
+ {tab:'Turn timer',tag:'Rule · Turn timer',title:'Up to 90 seconds a turn',
   stage:()=>`<span class="pill big"><span class="ring" id="hRing"><span>45</span></span><span id="hTmsg">Your turn</span></span>`,
   run:st=>{
     const ring=st.querySelector('#hRing'),num=ring.querySelector('span'),msg=st.querySelector('#hTmsg'),steps=[];
     const set=v=>{num.textContent=v;ring.style.setProperty('--p',v/45*100);ring.style.setProperty('--rc',v<=10?'var(--crit)':v<=20?'var(--warn)':'var(--accent)');msg.textContent=v?'Your turn':'Time\'s up'};
     [45,30,20,15,10,6,3,1,0].forEach((v,i)=>steps.push([i*420,()=>set(v)]));
     return demoLoop(steps,5200)},
-  list:['Each turn has a <b>45-second</b> limit','The ring turns orange at 20 seconds and red at 10','At 0, a random card goes to a random empty square','<b>Example:</b> the clock hits 0 → one of your cards is played for you']},
+  list:['Set the limit in match setup: <b>Off</b>, or <b>10 to 90 seconds</b>','The ring turns orange, then red, as time runs low','At 0, a random card goes to a random empty square','<b>Example:</b> the clock hits 0 → one of your cards is played for you']},
  {tab:'Trade',tag:'Trade · Collection',title:'Win cards, lose cards',
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
   list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','You start with weak cards. Everything saves on this device']},
@@ -2024,7 +2071,7 @@ function onNet(m){
       if(NET.role!=='guest')return;
       setJoining(false);
       NET.oppName=cleanName(m.name)||'Host';
-      beginOnline({rules:{...defSave().rules,...m.rules},trade:m.trade,seed:m.seed>>>0});break;
+      {const r={...defSave().rules,...m.rules};r.timer=timerSec(r.timer);beginOnline({rules:r,trade:m.trade,seed:m.seed>>>0})}break;
     case 'deck':
       if(!validDeck(m.ids))return;
       if(G&&G.mode==='online'&&!G.st){G.decks[1-G.me]=m.ids;tryStartOnline()}
