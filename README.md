@@ -1,8 +1,9 @@
-<p align="center">
-  <img src="images/logo.svg" alt="Leylines logo" width="120">
-</p>
-
-<h1 align="center">Leylines</h1>
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/leylines-vertical.svg">
+    <img src="images/leylines-vertical-on-dark.png" alt="Leylines" width="320">
+  </picture>
+</h1>
 
 <p align="center">
   A card game of nine squares: a single-file 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
@@ -100,7 +101,7 @@ An internet connection is needed for:
 ```
 index.html        the whole game: markup, styles and scripts
 audio/theme.mp3   background music
-images/logo.svg   logo (placeholder)
+images/          logos, favicon and app icons
 ```
 
 ## Deployment
