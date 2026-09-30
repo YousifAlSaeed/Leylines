@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/logo.svg" alt="Project A logo" width="120">
+  <img src="images/logo.svg" alt="Leylines logo" width="120">
 </p>
 
-<h1 align="center">Project A</h1>
+<h1 align="center">Leylines</h1>
 
 <p align="center">
   A card game of nine squares: a single-file 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
