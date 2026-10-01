@@ -107,4 +107,4 @@ images/          logos, favicon and app icons
 ## Deployment
 
 The game is hosted on GitHub Pages from the `main` branch:
-https://yousifalsaeed.github.io/project-a/
+https://yousifalsaeed.github.io/Leylines/
