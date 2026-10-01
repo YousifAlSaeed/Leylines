@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="css/online.css">
 <link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/packs.css">
 </head>
 <body>
 
@@ -67,6 +68,7 @@
     </div>
     <div class="m-right">
       <nav class="tiles" aria-label="Main menu">
+        <button class="tile ptile" id="packTile" data-go="packs"><span class="pk-mini t-arcane" aria-hidden="true"></span><div><b>Packs</b><small id="packSub"></small></div><span class="ptdot" id="packDot" aria-hidden="true" hidden></span></button>
         <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
         <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
       </nav>
@@ -188,6 +190,12 @@
   <div class="wrap pf-wrap" id="pfBody"></div>
 </section>
 
+<!-- PACKS: the daily pack, unopened packs and the level road; packs.js draws it -->
+<section id="scr-packs" class="screen">
+  <div class="topbar pk-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Packs</h2></div>
+  <div class="wrap pk-wrap" id="pkBody"></div>
+</section>
+
 <!-- ONLINE -->
 <section id="scr-online" class="screen">
   <div class="topbar"><button class="iconbtn" id="onBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Online</h2></div>
@@ -229,6 +237,27 @@
   </div>
 </div>
 
+<!-- opening a pack: tear the strip, then reveal the cards one by one -->
+<div id="pkStage" class="pk-stage" role="dialog" aria-modal="true" aria-labelledby="pkTitle" tabindex="-1">
+  <div class="pk-rays" id="pkRays"></div><div class="pk-dim"></div><canvas id="pkFx" aria-hidden="true"></canvas>
+  <div class="pk-topbar"><button class="iconbtn" id="pkClose" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="pkTitle"></b><span class="pk-sp"></span></div>
+  <div class="pk-wrapp">
+    <div class="pk-pack" id="pkPack" role="button" tabindex="0">
+      <div class="pk-body"><div class="pk-brand">LEYLINES</div><div class="pk-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="pk-label"><b id="pkName"></b><small id="pkSub"></small></div><div class="pk-foil"></div></div>
+      <div class="pk-leak"></div>
+      <div class="pk-cap pk-capB"><div class="pk-foil"></div></div><div class="pk-cap pk-capA"><div class="pk-foil"></div></div>
+      <div class="pk-seam"><i></i></div>
+    </div>
+  </div>
+  <div class="pk-hint" id="pkHint"></div>
+  <div class="pk-count" id="pkCount"></div>
+  <div class="pk-deck" id="pkDeck"></div>
+  <div class="pk-sum" id="pkSum"></div>
+  <div class="pk-foot" id="pkFoot"></div>
+  <span class="vh pk-live" aria-live="polite"></span>
+</div>
+
 <div id="banners" aria-hidden="true"></div>
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -247,6 +276,7 @@
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/packs.js"></script>
 <script src="js/account.js"></script>
 <script src="js/main.js"></script>
 </body>

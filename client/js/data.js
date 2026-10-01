@@ -87,3 +87,18 @@ const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards'
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
+
+// player levels (profile.js): the total XP to reach level n is 0, 100, 300, 600…
+const lvlXp=n=>50*n*(n-1);
+function levelOf(xp){let n=1;while(lvlXp(n+1)<=xp)n++;return n}
+// card packs (packs.js): odds = % chance of 1★…5★ for each card; the last card is at least min★
+const PACKS={
+  spark:{name:'Spark',n:3,odds:[60,28,10,1.8,.2],min:1},
+  arcane:{name:'Arcane',n:4,odds:[35,35,22,7,1],min:2},
+  ley:{name:'Leyline',n:5,odds:[15,30,35,16,4],min:3},
+  mythic:{name:'Mythic',n:5,odds:[0,20,40,30,10],min:4},
+};
+// every level up gives one pack; every 5th level is a milestone whose last card is at least 4★
+const packForLevel=lv=>lv>=15?'mythic':lv>=10?'ley':lv>=5?'arcane':'spark';
+const PACK_LEVELS=[['spark','Lv 2–4 · daily'],['arcane','Lv 5–9'],['ley','Lv 10–14'],['mythic','Lv 15+']];
+const PITY=10; // this many packs in a row without a 5★ makes the next one end in a 5★
