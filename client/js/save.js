@@ -9,19 +9,34 @@ function defSave(){
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
     trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
-    pv:1,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[]};
+    pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
+    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
+    packs:[],packLv:1,daily:null,pity:0};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
   const ob=v=>v&&typeof v==='object'&&!Array.isArray(v);
   if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
-  for(const k of ['xp','streak','best'])p[k]=Math.max(0,+p[k]|0);
+  // the first time with packs: one for every level already reached
+  if(p.pv<2){p.packLv=1;p.pv=2}
+  for(const k of ['xp','streak','best','pity'])p[k]=Math.max(0,+p[k]|0);
+  p.packLv=Math.max(1,+p.packLv|0);
+  p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
+  p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  grantPacks(p);
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   p.recent=(Array.isArray(p.recent)?p.recent:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
   p.badges=ob(p.badges)?p.badges:{};
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
   return p;
+}
+// a pack for every level reached since the last one that gave one; returns the new packs.
+// Worked out from the save alone, so two devices with the same save agree.
+function grantPacks(p){
+  const got=[],lv=levelOf(p.xp);
+  while(p.packLv<lv){const l=++p.packLv,k={t:packForLevel(l),lv:l};if(l%5===0)k.mile=1;p.packs.push(k);got.push(k)}
+  return got;
 }
 // a stored save with any missing fields filled in
 function normSave(s){

@@ -5,8 +5,6 @@
    link (?u=name) shows someone else's, read-only, from /api/users/:name.
    ===================================================================== */
 const XP={w:40,d:20,l:10};              // per match; online matches give 1.5×
-const lvlXp=n=>50*n*(n-1);              // total XP to reach level n: 0, 100, 300, 600…
-function levelOf(xp){let n=1;while(lvlXp(n+1)<=xp)n++;return n}
 const TITLES=[[1,'Wanderer'],[3,'Apprentice'],[5,'Card Adept'],[8,'Leyweaver'],[12,'Rune Master'],[16,'Archmage'],[20,'Ley Sovereign']];
 const titleOf=lv=>TITLES.filter(t=>lv>=t[0]).pop()[1];
 const RINGS=['#8B6CFF','#FF5FA8','#2F5FD0','#5EE6B0','#f0c35c','#C8344F'];
@@ -67,6 +65,7 @@ function recordMatch(res,o={}){
   SAVE.stats[k]=(SAVE.stats[k]||0)+1;
   const lv0=levelOf(SAVE.xp),gain=Math.round(XP[res]*(o.online?1.5:1));
   SAVE.xp+=gain;
+  const packs=grantPacks(SAVE);
   // a draw doesn't break a streak, it just doesn't add to it
   if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
   SAVE.recent=[...SAVE.recent,res].slice(-10);
@@ -78,7 +77,7 @@ function recordMatch(res,o={}){
     if(o.elemental)earn('elemental');
   }
   profCheck();save();
-  return {gain,lv0,lv:levelOf(SAVE.xp)};
+  return {gain,lv0,lv:levelOf(SAVE.xp),packs};
 }
 // a move's flips, for the badges (only your own moves in CPU and online matches)
 function profFlips(ev){
@@ -90,7 +89,8 @@ function profFlips(ev){
 function rewardHTML(r){
   const up=r.lv>r.lv0,newTitle=titleOf(r.lv)!==titleOf(r.lv0);
   return `<div class="pf-reward"><span class="pf-gain">+${r.gain} XP</span>`+
-    (up?`<span class="pf-up">Level ${r.lv}${newTitle?' · '+titleOf(r.lv):''}</span>`:'')+`</div>`+freshHTML();
+    (up?`<span class="pf-up">Level ${r.lv}${newTitle?' · '+titleOf(r.lv):''}</span>`:'')+
+    Object.entries((r.packs||[]).reduce((n,k)=>(n[k.t]=(n[k.t]||0)+1,n),{})).map(([t,n])=>`<span class="pf-pack">🎁 ${PACKS[t].name} pack${n>1?' ×'+n:''}</span>`).join('')+`</div>`+freshHTML();
 }
 
 /* ---------- avatar ---------- */
