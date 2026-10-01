@@ -170,7 +170,7 @@ function editName(){
     run:async v=>{
       const name=cleanName(v.name);if(!name)throw new Error('Enter a name.');
       const r=await api('/me',{method:'PATCH',body:{displayName:name}});
-      SAVE.name=r.user.displayName;save();acctUser(r.user);toast('Name saved.');
+      acctUser(r.user);toast('Name saved.');
     }});
 }
 function editEmail(){

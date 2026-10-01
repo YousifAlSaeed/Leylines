@@ -29,3 +29,4 @@
 .ring::before{content:"";position:absolute;inset:.24em;border-radius:50%;background:var(--surf2)}
 .ring span{position:relative}
 .hstage .pill{min-height:0;font:700 .9em var(--display);padding:.25em 1em .25em .25em}
+.namein:read-only{opacity:.7;cursor:default}

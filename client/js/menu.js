@@ -82,14 +82,14 @@ function renderHero(anim){
 // online from the menu: the online screen still asks for a name if we don't have one yet
 function askName(msg){onStatus(msg);const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
 function heroHost(){
-  if(cleanName(SAVE.name)){openSetup('online');return}
+  if(playerName()){openSetup('online');return}
   openOnline();askName('Enter your name, then tap <b>Host a game</b>.');
 }
 function heroJoin(){
   const code=$('#heroCode').value.toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){toast('Enter the 5-letter code from your friend.');$('#heroCode').focus();return}
   openOnline(code);
-  if(cleanName(SAVE.name))joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
+  if(playerName())joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
 }
 $$('[data-go]').forEach(b=>b.onclick=()=>{
   sfx('click');const g=b.dataset.go;
