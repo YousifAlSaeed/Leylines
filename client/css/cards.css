@@ -1,0 +1,51 @@
+/* ---------- cards ---------- */
+.card{position:relative;width:5em;height:6em;border-radius:.6em;flex:none;overflow:hidden;isolation:isolate; /* keeps the rarity tag and frame under overlapping cards */
+  background:linear-gradient(160deg,var(--c1) 0%,var(--c2) 100%);
+  box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),inset 0 -1.2em 1.4em rgba(0,0,0,.22),0 .2em .5em rgba(var(--sh),calc(.6*var(--shk)));
+  --c1:#777;--c2:#333}
+.card.blue{--c1:var(--blue1);--c2:var(--blue2)}
+.card.red{--c1:var(--red1);--c2:var(--red2)}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 72% 68%,rgba(255,255,255,.2),transparent 55%);pointer-events:none}
+.card .art{position:absolute;right:.12em;bottom:.72em;font-size:2.5em;line-height:1;filter:drop-shadow(0 .04em .08em rgba(0,0,0,.55))}
+.card .nums{position:absolute;left:.12em;top:.12em;width:2.5em;height:2.5em}
+.card .nums::before{content:"";position:absolute;inset:.44em;transform:rotate(45deg);background:rgba(0,0,0,.4);border:.05em solid rgba(255,255,255,.4);border-radius:.14em}
+.card .nums b{position:absolute;width:1em;text-align:center;font:900 .95em/1 var(--display);color:#fff;text-shadow:0 0 .12em #000,0 0 .12em #000,.05em .05em 0 #000}
+.card .n0{left:50%;top:0;transform:translateX(-50%)}
+.card .n2{left:50%;bottom:0;transform:translateX(-50%)}
+.card .n1{right:0;top:50%;transform:translateY(-50%)}
+.card .n3{left:0;top:50%;transform:translateY(-50%)}
+.card .el{position:absolute;right:.18em;top:.14em;font-size:.95em;line-height:1;filter:drop-shadow(0 0 .1em rgba(0,0,0,.7))}
+.card .nm{position:absolute;left:0;right:0;bottom:0;padding:.2em .3em .24em;font:600 .5em/1.1 var(--body);text-align:center;color:#fff;background:rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .mod{position:absolute;right:.2em;top:1.15em;font:900 .72em/1 var(--display);padding:.12em .25em;border-radius:.3em;background:rgba(0,0,0,.6)}
+.card .mod.up{color:#8dff8d} .card .mod.dn{color:#ff9b9b}
+.card .cnt{position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
+/* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a metal frame and a "3★" tag.
+   --rc colours the frame on the card; --rt is a text colour that stays readable on the page in both themes. */
+:root{--r1:#b08358;--r2:#cfd8e0;--r3:#f0c35c;--r4:#b98cff;--r5:#ff8fd0;--r1t:#c99a6c;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#c7a2ff;--r5t:#ff9fd6}
+:root[data-theme="light"]{--r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#7446c8;--r5t:#b8337f}
+.rar1{--rc:var(--r1);--rt:var(--r1t)} .rar2{--rc:var(--r2);--rt:var(--r2t)} .rar3{--rc:var(--r3);--rt:var(--r3t)} .rar4{--rc:var(--r4);--rt:var(--r4t)} .rar5{--rc:var(--r5);--rt:var(--r5t)}
+.rt{color:var(--rt)}
+.card .rf{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
+.card.rar5 .rf{box-shadow:inset 0 0 .55em .05em color-mix(in srgb,var(--r5) 45%,transparent)}
+.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:conic-gradient(from 200deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+/* the tag sits above the name strip with a clear gap (the strip is ~.77em tall), so a long name is never covered.
+   Offsets are in the tag's own em (its font is .5 of the card's): 2.05em = 1.03 card-em up, .5em = .25 card-em in. */
+.card .rchip{position:absolute;left:.5em;bottom:2.05em;z-index:2;font:800 .5em/1 var(--display);padding:.18em .38em .2em;border-radius:.35em;white-space:nowrap;
+  background:rgba(0,0,0,.62);color:var(--rc);border:.08em solid var(--rc)}
+.card.nn .rchip{bottom:.6em}
+.card.back .rf,.card.back .rchip{display:none}
+.card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
+.card.back::after{content:"";position:absolute;inset:28% 30%;border:.1em solid var(--accent);transform:rotate(45deg);border-radius:.15em;opacity:.75}
+.card.back i{display:none}
+.card.unknown{background:var(--surf);box-shadow:inset 0 0 0 .05em var(--line2)}
+.card.unknown i{position:absolute;inset:0;display:grid;place-items:center;font:900 2em var(--display);color:var(--muted);opacity:.45;font-style:normal}
+.card.drop{animation:drop .3s var(--ease)}
+@keyframes drop{0%{transform:scale(1.3) translateY(-.6em);opacity:0}100%{transform:none;opacity:1}}
+.card.fy{animation:flipY .46s ease-in-out}
+.card.fx{animation:flipX .46s ease-in-out}
+@keyframes flipY{0%{transform:perspective(30em) rotateY(0)}50%{transform:perspective(30em) rotateY(90deg) scale(1.1)}100%{transform:perspective(30em) rotateY(0)}}
+@keyframes flipX{0%{transform:perspective(30em) rotateX(0)}50%{transform:perspective(30em) rotateX(90deg) scale(1.1)}100%{transform:perspective(30em) rotateX(0)}}
+.card.lost{filter:saturate(.7) brightness(.85)}
+.card.lost::after{content:"×0";position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
+.lostc{color:var(--danger)!important}

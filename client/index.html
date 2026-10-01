@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E0A1F" id="themeColor">
+<title>Leylines</title>
+<meta name="description" content="A 3×3 card game with 55 cards. Play the computer, a friend on the same screen, or online. Win cards and build your collection.">
+<meta property="og:title" content="Leylines">
+<meta property="og:description" content="A 3×3 card game with 55 cards. Play the computer, a friend on the same screen, or online.">
+<meta property="og:type" content="website">
+<link rel="icon" href="images/leylines-icon.svg" type="image/svg+xml">
+<link rel="icon" href="images/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..125,400..900&family=Geist:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/cards.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/howto.css">
+<link rel="stylesheet" href="css/collection.css">
+<link rel="stylesheet" href="css/online.css">
+</head>
+<body>
+
+<!-- MENU -->
+<section id="scr-menu" class="screen on">
+  <div class="menu">
+    <div class="brand">
+      <svg class="emblem" viewBox="36 36 224 224" aria-hidden="true">
+<defs><filter id="logoGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g transform="translate(48 48) scale(0.8333)">
+<g stroke-width="3">
+<rect x="26" y="26" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="92" y="26" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="158" y="26" width="56" height="56" rx="8" fill="#140C33" stroke="#3A2C6E"/>
+<rect x="26" y="92" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="158" y="92" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="26" y="158" width="56" height="56" rx="8" fill="#140C33" stroke="#3A2C6E"/>
+<rect x="92" y="158" width="56" height="56" rx="8" fill="#6A2BAE" stroke="#B894FF"/>
+<rect x="158" y="158" width="56" height="56" rx="8" fill="#C2469A" stroke="#FF86C4"/>
+<rect x="92" y="92" width="56" height="56" rx="8" fill="#EDE6FF" stroke="#FFFFFF" filter="url(#logoGlow)"/>
+</g>
+<g fill="#EDE6FF" fill-opacity="0.9">
+<polygon points="54,44 64,54 54,64 44,54"/>
+<polygon points="120,44 130,54 120,64 110,54"/>
+<polygon points="54,110 64,120 54,130 44,120"/>
+<polygon points="186,110 196,120 186,130 176,120"/>
+<polygon points="120,176 130,186 120,196 110,186"/>
+<polygon points="186,176 196,186 186,196 176,186"/>
+</g>
+<polygon points="120,104 136,120 120,136 104,120" fill="#1E1450"/>
+</g>
+</svg>
+      <div><h1 class="title"><span class="sr">Leylines</span><svg class="logo-word" viewBox="289 116 441 64" aria-hidden="true"><path fill="currentColor" d="M292 176.9V119.1H309.3V163.54H330.05V176.9Z M345.34 176.9V119.1H386.75V131.79H362.56V141.45H382.8V153.96H362.56V164.21H386.75V176.9Z M418 176.9V157.66L399.27 119.1H416.99L426.57 141.87H427.16L436.73 119.1H454.04L435.3 157.66V176.9Z M467.48 176.9V119.1H484.78V163.54H505.53V176.9Z M520.82 176.9V119.1H538.12V176.9Z M556.68 176.9V119.1H574.41L589.11 145.48H589.61V119.1H606.16V176.9H590.12L573.65 146.74H573.15V176.9Z M624.81 176.9V119.1H666.22V131.79H642.03V141.45H662.27V153.96H642.03V164.21H666.22V176.9Z M705.78 177.57Q702.34 177.57 698.31 177.36Q694.28 177.15 690.5 176.85Q686.72 176.56 683.78 176.14V163.96Q686.88 164.21 689.95 164.42Q693.02 164.63 695.75 164.76Q698.48 164.88 700.41 164.88Q704.02 164.88 705.91 164.67Q707.8 164.46 708.56 163.88Q709.14 163.46 709.35 162.91Q709.56 162.36 709.65 161.61Q709.73 160.85 709.73 159.93Q709.73 158.5 709.48 157.66Q709.23 156.82 708.56 156.32Q707.88 155.81 706.5 155.52Q705.11 155.22 702.76 154.97L692.01 153.63Q688.98 153.21 687.09 151.86Q685.2 150.52 684.07 148.29Q682.94 146.07 682.52 142.92Q682.1 139.77 682.1 135.99Q682.1 130.28 683.82 126.79Q685.54 123.3 688.61 121.5Q691.67 119.69 695.75 119.06Q699.82 118.43 704.52 118.43Q708.05 118.43 711.71 118.68Q715.36 118.94 718.64 119.27Q721.91 119.61 724.01 120.11V132.12Q721.91 131.87 719.06 131.62Q716.2 131.37 713.18 131.24Q710.15 131.12 707.46 131.12Q704.86 131.12 703.31 131.28Q701.75 131.45 700.91 131.96Q699.99 132.46 699.69 133.34Q699.4 134.22 699.4 135.48Q699.4 137.25 699.65 138.17Q699.9 139.1 701 139.43Q702.09 139.77 704.44 140.1L714.52 141.28Q716.7 141.53 718.68 142.12Q720.65 142.71 722.29 143.97Q723.93 145.23 725.19 147.58Q725.78 148.67 726.11 150.23Q726.45 151.78 726.7 153.88Q726.95 155.98 726.95 158.67Q726.95 163.79 725.94 167.24Q724.94 170.68 723 172.74Q721.07 174.8 718.43 175.85Q715.78 176.9 712.59 177.23Q709.4 177.57 705.78 177.57Z"/></svg></h1><p class="subtitle">Nine squares. Five cards. Every card you place redraws the lines of power.</p></div>
+    </div>
+    <div class="hero">
+      <div class="seg modeseg" id="modeSeg" role="group" aria-label="Game mode"></div>
+      <div class="hero-body" id="heroBody"></div>
+    </div>
+    <div class="m-right">
+      <nav class="tiles" aria-label="Main menu">
+        <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
+        <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
+      </nav>
+      <div class="mstats">
+        <div class="stat"><b id="stW">0</b><small>Wins</small></div>
+        <div class="stat"><b id="stL">0</b><small>Losses</small></div>
+        <div class="stat"><b id="stD">0</b><small>Draws</small></div>
+        <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="scr-setup" class="screen">
+  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
+  <div class="wrap setup">
+    <div id="diffBox" class="s-diff"><h3>Difficulty</h3><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
+    <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="trow" id="timerRow"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
+    <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
+    <p class="note" id="setupNote"></p>
+    <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
+  </div>
+</section>
+
+<!-- DECK -->
+<section id="scr-deck" class="screen">
+  <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
+  <div class="wrap">
+    <div class="dk-lo" id="deckLo">
+      <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="deckLoCancel">Cancel</button></div>
+      <div class="dk-lorow" id="deckLoRow"></div>
+      <div class="dk-lonote" id="deckLoNote" aria-live="polite"></div>
+    </div>
+    <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
+    <div class="grid" id="deckGrid"></div>
+    <div class="dk-tray">
+      <div class="dk-fan" id="deckSlots"></div>
+      <div class="dk-row">
+        <div class="dk-power">Power<b id="deckPower">0</b></div>
+        <div class="dk-sides" id="deckSides"></div>
+        <button class="btn primary" id="deckGo" disabled>Play</button>
+      </div>
+      <div class="dk-acts">
+        <button class="dk-act gold" id="deckBest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Best 5</button>
+        <button class="dk-act" id="deckSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save hand</button>
+        <button class="dk-act quiet" id="deckClear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Clear</button>
+      </div>
+      <div class="dk-hint">Tap a card in your hand to put it back</div>
+    </div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="scr-game" class="screen">
+  <div class="hud">
+    <button class="iconbtn" id="btnQuit" aria-label="Menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    <span class="wordmark" aria-hidden="true">Leylines</span>
+    <div class="turn"><div class="pill">
+      <div class="timer off" id="timer" role="timer" aria-live="off"><svg viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="17"/><circle class="prog" id="tProg" cx="20" cy="20" r="17"/></svg><span id="tNum">45</span></div>
+      <span id="turnMsg" aria-live="polite"></span>
+    </div></div>
+    <button class="iconbtn" id="btnHow" aria-label="How to play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
+    <button class="iconbtn" id="btnSnd" aria-label="Sound"></button>
+  </div>
+  <div class="tbar off" id="tbar"><i id="tFill"></i></div>
+  <div class="rulebar" id="ruleBar"></div>
+  <div class="arena">
+    <div class="side opp" id="sideTop"><div class="pname"><span class="av" id="avTop" aria-hidden="true">C</span><span class="who" id="nameTop">CPU</span><span class="sc" id="scTop">5</span></div><div class="hand" id="handTop"></div></div>
+    <div class="board" id="board" role="group" aria-label="Board"></div>
+    <div class="side me" id="sideBot"><div class="hand" id="handBot"></div><div class="pname"><span class="av" id="avBot" aria-hidden="true">Y</span><span class="who" id="nameBot">You</span><span class="sc" id="scBot">5</span></div></div>
+  </div>
+</section>
+
+<!-- COLLECTION -->
+<section id="scr-coll" class="screen">
+  <div class="topbar coll-top">
+    <button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="coll-title"><h2>Collection</h2><div class="meta" id="collMeta"></div></div>
+    <button class="iconbtn coll-reset" id="btnReset" aria-label="Reset all progress" title="Reset all progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+  </div>
+  <!-- one screen, no scrolling: the binder takes whatever height is left and its cards resize to fit -->
+  <div class="wrap coll-wrap">
+    <div class="coll-book" id="collBook">
+      <div class="bd-top">
+        <button class="iconbtn bd-arrow" id="bdPrev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="bd-tabs" id="bdTabs"></div>
+        <button class="iconbtn bd-arrow" id="bdNext" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="binder" id="binder">
+        <div class="bd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="bd-page l" id="bdL"></div>
+        <div class="bd-page r" id="bdR"></div>
+      </div>
+      <span class="vh" id="bdPos" aria-live="polite"></span>
+    </div>
+    <div class="coll-side">
+      <!-- build and save loadouts straight from the binder -->
+      <div class="dk-lo" id="collLo">
+        <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="collLoCancel">Cancel</button></div>
+        <div class="dk-lorow" id="collLoRow"></div>
+        <div class="dk-lonote" id="collLoNote" aria-live="polite"></div>
+      </div>
+      <div class="dk-tray coll-tray">
+        <div class="dk-fan" id="collSlots"></div>
+        <div class="dk-sides coll-sides" id="collSides"></div>
+        <div class="coll-row">
+          <div class="dk-power">Power<b id="collPower">0</b></div>
+          <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
+          <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="btn primary" id="collSave">Save hand</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ONLINE -->
+<section id="scr-online" class="screen">
+  <div class="topbar"><button class="iconbtn" id="onBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Online</h2></div>
+  <div class="wrap">
+    <div class="panel" id="onName">
+      <label class="or" for="myName">Your name</label>
+      <input class="namein" id="myName" maxlength="16" placeholder="Enter your name" autocomplete="nickname" spellcheck="false">
+    </div>
+    <div class="panel" id="onChoose">
+      <button class="btn primary" id="btnHost">Host a game</button>
+      <div class="or">or join a friend</div>
+      <input class="codein" id="joinCode" aria-label="Game code" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="btn" id="btnJoin">Join</button>
+    </div>
+    <div class="panel hidden" id="onHost">
+      <div class="or">Hosting as <b class="gold" id="hostAs"></b> · your game code</div>
+      <div class="codebox" id="hostCode">·····</div>
+      <input class="linkin" id="hostLink" readonly aria-label="Invite link">
+      <div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div>
+    </div>
+    <div class="status" id="onStatus" role="status" aria-live="polite"></div>
+    <div class="desc">Both players bring 5 cards from their own collection. The host's rules and trade rule apply. Cards won or lost are saved on each device.</div>
+  </div>
+</section>
+
+<!-- HOW TO PLAY -->
+<div id="how" role="dialog" aria-modal="true" aria-labelledby="hTitle">
+  <div class="hbox">
+    <div class="hhead">
+      <button class="iconbtn" id="hPrev" aria-label="Previous section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="htabs" id="hTabs" role="tablist" aria-label="How to play sections"></div>
+      <button class="iconbtn" id="hClose" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="hmain" id="hPanel" role="tabpanel">
+      <div class="hstage" id="hStage" aria-hidden="true"></div>
+      <div class="htext"><span class="tag" id="hTag"></span><h3 id="hTitle"></h3><ul id="hList"></ul></div>
+    </div>
+    <div class="hfoot"><div class="dots" id="hDots" aria-hidden="true"></div><button class="btn" id="hBack">Back</button><button class="btn primary" id="hNext">Next</button></div>
+  </div>
+</div>
+
+<div id="banners" aria-hidden="true"></div>
+<div id="modal" role="dialog" aria-modal="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="js/data.js"></script>
+<script src="js/save.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/setup.js"></script>
+<script src="js/deck.js"></script>
+<script src="js/match.js"></script>
+<script src="js/game.js"></script>
+<script src="js/collection.js"></script>
+<script src="js/howto.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/online.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
