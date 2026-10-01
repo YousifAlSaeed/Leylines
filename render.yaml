@@ -1,0 +1,29 @@
+# Render Blueprint: deploys the dev branch (game + API) as one web service.
+# Render dashboard → New → Blueprint → pick this repo; it reads this file.
+#
+# Free plan caveat: the disk is wiped on every deploy, restart and idle
+# spin-down (after 15 minutes without visitors), so accounts don't last.
+# For accounts that persist, switch to a paid plan and uncomment `disk`
+# plus the DB_FILE line, or move the database to Postgres.
+services:
+  - type: web
+    name: leylines-dev
+    runtime: node
+    branch: dev
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      # with a disk, also add:  - key: DB_FILE  value: /var/data/leylines.sqlite
+    # disk:
+    #   name: leylines-data
+    #   mountPath: /var/data
+    #   sizeGB: 1

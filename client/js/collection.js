@@ -263,7 +263,7 @@ const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classL
 
 if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#collBook'));else window.addEventListener('resize',bdFit);
 function confirmReset(after){
-  modal('<h2>Reset progress?</h2><p>Your collection, stats and settings will be erased and you will start over with the starter cards.</p>',[
+  modal('<h2>Reset progress?</h2><p>Your collection, stats and settings will be erased and you will start over with the starter cards.'+(ACCT.token?' This also resets your account.':'')+'</p>',[
     {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();after();toast('Progress reset.')}},
     {label:'Cancel',cls:'primary',esc:true}]);
 }

@@ -16,8 +16,7 @@ function lastDeckReady(){
   return d;
 }
 function renderMenu(){
-  const st=SAVE.stats;
-  $('#stW').textContent=st.w+st.ow;$('#stL').textContent=st.l+st.ol;$('#stD').textContent=st.d+st.od;
+  renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctAsk(ACCT.conflict),300);
   $('#collSub').textContent=SAVE.unlockAll?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();

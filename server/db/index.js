@@ -37,11 +37,13 @@ export async function openDatabase(file) {
     }
   }
 
+  // async on purpose: callers already await, so a networked database
+  // (Postgres) can replace this without touching the routes
   return {
-    all: query,
-    get: (sql, params) => query(sql, params)[0],
+    all: async (sql, params) => query(sql, params),
+    get: async (sql, params) => query(sql, params)[0],
     // for INSERT / UPDATE / DELETE; supports RETURNING
-    run(sql, params) {
+    async run(sql, params) {
       const rows = query(sql, params);
       const changes = db.getRowsModified();
       if (changes) persist();

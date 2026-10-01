@@ -86,6 +86,19 @@ The 55 cards are split into five rarities:
 - **Unlock all cards:** Off / On
 - **Reset progress:** erases your cards and stats
 
+## Accounts
+
+Playing as a guest works exactly as before: progress stays on that device. The profile card on the menu (where Wins / Losses / Draws were) offers **Create account**:
+
+- Sign-up takes a username, a password (8+ characters) and an optional email. Your current cards, stats, hands and settings are uploaded to the new account.
+- Signed in, every change syncs to the account a couple of seconds later. The card shows *Synced*, *Syncing…* or *Offline*.
+- Signing in on a device that already has different progress asks **which progress to keep**. A device that was never played just loads the account.
+- If two devices both change progress before syncing, the next sync asks the same question instead of overwriting.
+- **Settings** shows the account at the top, with **Sign out**. Signing out keeps the progress on that device.
+- **Reset progress** while signed in also resets the account.
+
+There's no password reset yet; the email is stored for when there is.
+
 ## Running locally
 
 **Just the game:** open `client/index.html` in any modern browser. There's no build step and nothing to install.
@@ -99,7 +112,7 @@ npm start
 
 Then open http://127.0.0.1:3000. `npm run dev` restarts on file changes, `npm run db:init` creates the database without starting the server. `PORT`, `HOST` and `DB_FILE` can be set as environment variables.
 
-Game progress is still saved in the browser's `localStorage`, so it stays on that device and browser. The server and database are groundwork for player accounts; the game doesn't use them yet.
+Game progress is saved in the browser's `localStorage`. Accounts (below) need the server; without it the game runs as guest only.
 
 An internet connection is needed for:
 - the fonts (Saira and Geist, from Google Fonts)
@@ -118,21 +131,45 @@ client/                 the game: static files, no build step
     engine.js           pure game rules (used by the UI, the AI and online sync)
     ai.js               computer opponent
     menu.js setup.js deck.js match.js game.js collection.js howto.js settings.js online.js
+    account.js          sign up / sign in, the menu's profile card, cloud save sync
                         one file per screen or feature
     main.js             boot: runs last, starts the app
   audio/ images/        music, logos, favicon and app icons
 server/                 optional Node server (Express)
   index.js              entry point
   app.js                static files + /api
-  routes/users.js       POST /api/users (create account), GET /api/users/:username
-  lib/password.js       scrypt password hashing
-  db/schema.sql         tables: users, user_saves
+  routes/auth.js        POST /api/auth/signup, /login, /logout
+  routes/me.js          GET /api/me, PUT /api/me/save (the cloud save)
+  routes/users.js       GET /api/users/:username (public profile)
+  lib/                  password hashing (scrypt), sessions, rate limiting, field checks
+  db/schema.sql         tables: users, sessions, user_saves
   db/index.js           SQLite via sql.js (WebAssembly, no native build)
   data/                 the database file (git-ignored)
 index.html              forwards to client/ (for GitHub Pages "deploy from branch")
+render.yaml             Render Blueprint for the dev branch
 ```
 
 A new script goes before `main.js` in `client/index.html`. Code that runs at load time (not inside a function) can only use things defined in earlier files.
+
+## API
+
+All under `/api`, JSON in and out. Signed-in requests send `Authorization: Bearer <token>` (tokens last 60 days of inactivity; only their SHA-256 is stored).
+
+| Route | Does |
+| --- | --- |
+| `POST /auth/signup` | `{ username, password, email?, displayName?, save? }` → `{ token, user, save }` |
+| `POST /auth/login` | `{ username, password }` → `{ token, user, save }` (save includes `data`) |
+| `POST /auth/logout` | Ends this session |
+| `GET /me` | `{ user, save: { data, rev, updatedAt } \| null }` |
+| `PUT /me/save` | `{ data, baseRev, force? }` → `{ rev, updatedAt }`, or **409** if another device saved since `baseRev` |
+| `GET /users/:username` | Public profile |
+| `GET /health` | `{ ok: true }` |
+
+Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
+
+Server settings (environment variables): `PORT`, `HOST`, `DB_FILE`, `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`.
+
+If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
 ## Deployment
 
@@ -142,3 +179,10 @@ The game is hosted on GitHub Pages: https://yousifalsaeed.github.io/Leylines/
 - **Deploy from a branch** (`main`, root): the root `index.html` forwards to `client/`, keeping `?join=` invite codes.
 
 GitHub Pages only serves static files, so the server is not deployed there. It needs a Node host of its own.
+
+### Render (dev branch)
+
+`render.yaml` describes the service: in the Render dashboard choose **New → Blueprint** and pick this repository. It deploys the `dev` branch (game and API on one URL) and redeploys on every push to `dev`.
+
+On Render's free plan the disk is wiped on every deploy, restart and idle spin-down (after 15 minutes without traffic), so accounts disappear then; players stay signed out with their device progress intact. The first visit after a spin-down takes about a minute. For lasting accounts use a paid plan with a disk (see the comments in `render.yaml`) or a hosted Postgres.
+

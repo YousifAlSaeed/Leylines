@@ -2,7 +2,7 @@
 /* =====================================================================
    BOOT
    ===================================================================== */
-applyTheme();updSnd();renderMenu();layout();
+applyTheme();updSnd();renderMenu();layout();acctBoot();
 (function(){
   const q=new URLSearchParams(location.search).get('join');
   if(q){

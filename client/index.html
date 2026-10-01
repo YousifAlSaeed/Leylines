@@ -9,6 +9,9 @@
 <meta property="og:title" content="Leylines">
 <meta property="og:description" content="A 3×3 card game with 55 cards. Play the computer, a friend on the same screen, or online.">
 <meta property="og:type" content="website">
+<!-- API server for accounts. Empty = the site serving this page. Set it to the server's URL
+     (e.g. https://leylines.onrender.com) when the client is hosted somewhere else. -->
+<meta name="leylines-api" content="">
 <link rel="icon" href="images/leylines-icon.svg" type="image/svg+xml">
 <link rel="icon" href="images/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -22,6 +25,7 @@
 <link rel="stylesheet" href="css/howto.css">
 <link rel="stylesheet" href="css/collection.css">
 <link rel="stylesheet" href="css/online.css">
+<link rel="stylesheet" href="css/account.css">
 </head>
 <body>
 
@@ -66,9 +70,7 @@
         <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
       </nav>
       <div class="mstats">
-        <div class="stat"><b id="stW">0</b><small>Wins</small></div>
-        <div class="stat"><b id="stL">0</b><small>Losses</small></div>
-        <div class="stat"><b id="stD">0</b><small>Draws</small></div>
+        <button class="pcard" id="pcard" type="button"></button>
         <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
       </div>
     </div>
@@ -237,6 +239,7 @@
 <script src="js/howto.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
+<script src="js/account.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
