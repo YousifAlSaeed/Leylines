@@ -20,7 +20,8 @@ let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 SAVE.rules.timer=timerSec(SAVE.rules.timer);
-function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
+// every change goes through here; account.js (loaded later) syncs it to a signed-in account
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}if(typeof acctChanged==='function')acctChanged()}
 // stable per-device id so the host can recognise a guest who reconnects
 if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 // 'seen' = every card ever owned, so lost cards still show in the collection.

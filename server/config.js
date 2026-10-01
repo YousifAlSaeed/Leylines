@@ -7,4 +7,10 @@ export const config = {
   host: process.env.HOST || '127.0.0.1',
   clientDir: here('../client'),
   dbFile: process.env.DB_FILE || here('./data/leylines.sqlite'),
+  // origins allowed to call the API from another site, comma-separated ("*" = any).
+  // Sign-in uses a bearer token, not cookies, so "*" doesn't open up CSRF.
+  corsOrigins: (process.env.CORS_ORIGINS || '*').split(',').map((s) => s.trim()).filter(Boolean),
+  // behind a proxy (Render, Fly...) set TRUST_PROXY=1 so rate limits see the real client IP
+  trustProxy: Number(process.env.TRUST_PROXY) || 0,
+  sessionDays: Number(process.env.SESSION_DAYS) || 60,
 };

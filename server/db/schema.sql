@@ -1,21 +1,35 @@
 -- Leylines database schema (SQLite). Applied on every start, so every
 -- statement must be idempotent (IF NOT EXISTS).
 
--- Player accounts. Not used by the client yet: today all progress lives in
--- the browser's localStorage (see client/js/save.js).
+-- Player accounts. Guests never touch the database: their progress lives only
+-- in the browser's localStorage (see client/js/save.js).
 CREATE TABLE IF NOT EXISTS users (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   username      TEXT    NOT NULL UNIQUE COLLATE NOCASE,
   display_name  TEXT    NOT NULL,
+  email         TEXT,
   password_hash TEXT    NOT NULL,
   created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
+CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users (email) WHERE email IS NOT NULL;
 
--- One cloud copy of a player's save (the same JSON the client keeps in
--- localStorage under "ninefold.save.v1"), for syncing progress across devices.
+-- Signed-in devices. Only a SHA-256 of each token is stored, so a leaked
+-- database can't be used to sign in.
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash TEXT    PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  expires_at TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user_id);
+
+-- The cloud copy of a player's save: the same JSON the client keeps in
+-- localStorage under "ninefold.save.v1". rev goes up by one on every write so
+-- two devices can't silently overwrite each other.
 CREATE TABLE IF NOT EXISTS user_saves (
   user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   data       TEXT    NOT NULL,
+  rev        INTEGER NOT NULL DEFAULT 1,
   updated_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
