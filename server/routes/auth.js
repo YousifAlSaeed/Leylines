@@ -23,16 +23,24 @@ export function authRouter(db) {
 
     const hash = await hashPassword(password);
     // checked after the await so two sign-ups racing for one name can't both pass
-    if (await db.get('SELECT 1 FROM users WHERE username = $u', { $u: username }))
+    if (await db.get('SELECT 1 FROM users WHERE lower(username) = lower($u)', { $u: username }))
       return res.status(409).json({ error: 'That username is taken. Try another.' });
     const mail = email ? email.trim().toLowerCase() : null;
     if (mail && await db.get('SELECT 1 FROM users WHERE email = $e', { $e: mail }))
       return res.status(409).json({ error: 'That email already has an account. Sign in instead.' });
 
-    const { rows: [user] } = await db.run(
-      'INSERT INTO users (username, display_name, email, password_hash) VALUES ($u, $d, $m, $h) RETURNING *',
-      { $u: username, $d: cleanName(displayName) || username.slice(0, 16), $m: mail, $h: hash },
-    );
+    let user;
+    try {
+      ({ rows: [user] } = await db.run(
+        'INSERT INTO users (username, display_name, email, password_hash) VALUES ($u, $d, $m, $h) RETURNING *',
+        { $u: username, $d: cleanName(displayName) || username.slice(0, 16), $m: mail, $h: hash },
+      ));
+    } catch (err) {
+      // Postgres runs requests side by side, so a sign-up racing this one can
+      // take the name (or email) between the check above and this insert
+      if (err.code !== '23505') throw err;
+      return res.status(409).json({ error: 'That username or email was just taken. Try another.' });
+    }
     let saved = null;
     if (save != null) {
       ({ rows: [saved] } = await db.run(
@@ -48,7 +56,7 @@ export function authRouter(db) {
     const { username, password } = req.body ?? {};
     if (typeof username !== 'string' || typeof password !== 'string' || !username || !password)
       return res.status(400).json({ error: 'Enter your username and password.' });
-    const user = await db.get('SELECT * FROM users WHERE username = $u', { $u: username.trim() });
+    const user = await db.get('SELECT * FROM users WHERE lower(username) = lower($u)', { $u: username.trim() });
     const ok = await verifyPassword(password, user ? user.password_hash : DUMMY_HASH);
     if (!user || !ok) return res.status(401).json({ error: 'Wrong username or password.' });
 

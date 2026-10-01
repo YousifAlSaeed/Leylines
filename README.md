@@ -142,9 +142,11 @@ server/                 optional Node server (Express)
   routes/me.js          GET /api/me, PUT /api/me/save (the cloud save)
   routes/users.js       GET /api/users/:username (public profile)
   lib/                  password hashing (scrypt), sessions, rate limiting, field checks
-  db/schema.sql         tables: users, sessions, user_saves
-  db/index.js           SQLite via sql.js (WebAssembly, no native build)
-  data/                 the database file (git-ignored)
+  db/index.js           picks the database: Postgres if DATABASE_URL is set, else SQLite
+  db/postgres.js        Postgres (Neon in production)
+  db/sqlite.js          SQLite via sql.js (WebAssembly, no native build), for local use
+  db/schema.*.sql       tables: users, sessions, user_saves (one file per database, kept in step)
+  data/                 the local SQLite file (git-ignored)
 index.html              forwards to client/ (for GitHub Pages "deploy from branch")
 render.yaml             Render Blueprint for the dev branch
 ```
@@ -167,7 +169,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
 
-Server settings (environment variables): `PORT`, `HOST`, `DB_FILE`, `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`.
+Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`.
 
 If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
@@ -184,5 +186,11 @@ GitHub Pages only serves static files, so the server is not deployed there. It n
 
 `render.yaml` describes the service: in the Render dashboard choose **New → Blueprint** and pick this repository. It deploys the `dev` branch (game and API on one URL) and redeploys on every push to `dev`.
 
-On Render's free plan the disk is wiped on every deploy, restart and idle spin-down (after 15 minutes without traffic), so accounts disappear then; players stay signed out with their device progress intact. The first visit after a spin-down takes about a minute. For lasting accounts use a paid plan with a disk (see the comments in `render.yaml`) or a hosted Postgres.
+Accounts are stored in a free [Neon](https://neon.tech) Postgres database, because Render's free plan wipes the server's disk on every deploy, restart and idle spin-down (after 15 minutes without traffic). To set it up:
+
+1. Create a Neon project and copy its connection string (`postgresql://...?sslmode=require`).
+2. In Render: the service → **Environment** → add `DATABASE_URL` with that string, then save (Render redeploys).
+3. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected.
+
+Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
 

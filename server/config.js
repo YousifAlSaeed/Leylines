@@ -6,6 +6,9 @@ export const config = {
   port: Number(process.env.PORT) || 3000,
   host: process.env.HOST || '127.0.0.1',
   clientDir: here('../client'),
+  // Postgres connection string (for example from Neon). When set it is used
+  // instead of the SQLite file, and accounts survive restarts and redeploys.
+  databaseUrl: process.env.DATABASE_URL || '',
   dbFile: process.env.DB_FILE || here('./data/leylines.sqlite'),
   // origins allowed to call the API from another site, comma-separated ("*" = any).
   // Sign-in uses a bearer token, not cookies, so "*" doesn't open up CSRF.
