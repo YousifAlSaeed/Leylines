@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://yousifalsaeed.github.io/Leylines/"><b>▶ Play online</b></a>
+  <a href="https://leylines.live/"><b>▶ Play online</b></a>
 </p>
 
 ---
