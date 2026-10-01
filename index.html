@@ -88,6 +88,10 @@ h2[tabindex="-1"]:focus,.mbox:focus{outline:none}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* ---------- screens ---------- */
+/* Big monitors: every screen is laid out at a ~1440x900 design size and zoomed up to fill the window.
+   --ui is set by layout(); anything sized in vw/vh inside a zoomed box divides by it to stay viewport-true. */
+:root{--ui:1}
+.screen,#modal,#how,#toast{zoom:var(--ui)}
 .screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;
   padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 .screen.on{display:flex}
@@ -396,7 +400,7 @@ body.nobn .board .nm{display:none}
 .cell.over{border-color:var(--hot);box-shadow:inset 0 0 24px color-mix(in srgb,var(--hot) 40%,transparent)}
 .ghost{position:fixed;z-index:var(--z-ghost);pointer-events:none;transform:translate(-50%,-55%) scale(1.06) rotate(-4deg);box-shadow:0 1.2em 2.4em rgba(var(--sh),calc(.8*var(--shk)+.2))!important}
 
-body.land .arena{flex-direction:row;justify-content:center;gap:max(16px,3.2vw)}
+body.land .arena{flex-direction:row;justify-content:center;gap:max(16px,calc(3.2vw / var(--ui)))}
 body.land .side{justify-content:center}
 body.land .side.me{flex-direction:column-reverse}
 body.land .pname{width:auto;min-width:170px;max-width:240px}
@@ -430,7 +434,7 @@ body.land .hand .card.sel{z-index:3}
 #modal.on,#how.on{display:flex}
 .mbox,.hbox{background:linear-gradient(170deg,var(--surf2),var(--surf) 62%);border:1px solid var(--line2);border-radius:24px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 80px rgba(var(--sh),calc(.8*var(--shk)));animation:mIn .34s var(--spring)}
-.mbox{width:100%;max-width:460px;max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px 20px 20px;text-align:center}
+.mbox{width:100%;max-width:460px;max-height:calc(100dvh / var(--ui) - 32px);overflow-y:auto;padding:24px 20px 20px;text-align:center}
 @keyframes mIn{from{transform:translateY(12px) scale(.95);opacity:0}}
 .mbox .kick{font:600 12.5px var(--body);color:var(--accent-ink)}
 .mbox h2{margin:2px 0 6px;font:900 36px/1.05 var(--display);font-style:italic;font-stretch:112%;text-transform:uppercase;text-wrap:balance;padding:0 .1em;
@@ -450,7 +454,7 @@ body.land .hand .card.sel{z-index:3}
 .stats b{color:var(--text);font-weight:600}
 
 /* how to play */
-.hbox{width:100%;max-width:440px;height:min(680px,calc(100dvh - 32px));display:flex;flex-direction:column;padding:12px}
+.hbox{width:100%;max-width:440px;height:min(680px,calc(100dvh / var(--ui) - 32px));display:flex;flex-direction:column;padding:12px}
 .hhead{display:flex;align-items:center;gap:6px}
 .htabs{flex:1;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:2px 8px;
   mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
@@ -525,7 +529,7 @@ body.land .hand .card.sel{z-index:3}
 
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,12px);z-index:var(--z-toast);
   background:var(--surf2);border:1px solid var(--line2);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;
-  transition:opacity .22s,transform .3s var(--spring);max-width:90vw;text-align:center;box-shadow:0 18px 40px rgba(var(--sh),calc(.7*var(--shk)))}
+  transition:opacity .22s,transform .3s var(--spring);max-width:calc(90vw / var(--ui));text-align:center;box-shadow:0 18px 40px rgba(var(--sh),calc(.7*var(--shk)))}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- deck & collection ---------- */
@@ -615,6 +619,13 @@ body.land .hand .card.sel{z-index:3}
 .grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
 .grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 .grid h4 small{order:1;font:500 11.5px var(--body);color:var(--muted)}
+
+/* desktop: a wider picker with bigger cards so the grid and hand don't sit in a thin strip */
+@media (min-width:920px) and (min-height:560px){
+  #scr-deck .topbar,#scr-deck .wrap{max-width:860px}
+  #scr-deck .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:14px 10px;font-size:19px}
+  #scr-deck .dk-fan{font-size:min(20px,calc(100cqw / 28.5))}
+}
 
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
@@ -757,7 +768,7 @@ body.land .hand .card.sel{z-index:3}
 /* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
 @container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
 @media (min-width:700px) and (orientation:landscape){
-  #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,34vw,380px);grid-template-rows:minmax(0,1fr)}
+  #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,calc(34vw / var(--ui)),380px);grid-template-rows:minmax(0,1fr)}
   #scr-coll .dk-lorow{grid-template-columns:1fr}
   #scr-coll .dk-loslot{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;min-height:54px;padding:6px 10px}
   #scr-coll .dk-loslot .stack{display:flex;grid-row:1/3}
@@ -2164,7 +2175,7 @@ window.addEventListener('pointermove',e=>{
     drag.moved=true;
     const r=drag.el.getBoundingClientRect();
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
-    g.style.fontSize='calc(var(--cell) / 5)';
+    g.style.fontSize='calc(var(--cell) * var(--ui) / 5)'; // the ghost lives on <body>, outside the zoomed screen
     document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
     // dragging picks this card, so drop the highlight from the one picked before
     $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
@@ -2196,8 +2207,13 @@ window.addEventListener('pointerup',e=>endDrag(e,false));
 window.addEventListener('pointercancel',e=>endDrag(e,true));
 
 /* ---------- responsive sizing ---------- */
+let UI=1; // current --ui zoom; rects from getBoundingClientRect are in window pixels, so divide by it before reusing them as CSS sizes inside a screen
 function layout(){
-  const W=window.innerWidth,H=window.innerHeight,land=W>H*1.08;
+  // UI scale: 1 up to a ~1440x900 window, then grows with whichever side is tighter (2K ≈ 1.45, 4K ≈ 2.2)
+  const ui=Math.min(2.4,Math.max(1,Math.floor(Math.min(innerWidth/1440,innerHeight/900)*20)/20));
+  UI=ui;document.documentElement.style.setProperty('--ui',ui);
+  // everything below is in the zoomed screen's own pixels
+  const W=innerWidth/ui,H=innerHeight/ui,land=W>H*1.08;
   document.body.classList.toggle('land',land);
   let cell,hc;
   if(!land){
@@ -2345,13 +2361,13 @@ function bdTurn(to){
   // Fractional rects keep the landing exact to the sub-pixel.
   const bR=binder.getBoundingClientRect(),sR=src.getBoundingClientRect();
   let pivot;
-  if(sp){const lR=L.getBoundingClientRect(),rR=R.getBoundingClientRect(),mid=(lR.right+rR.left)/2;pivot=mid-sR.left}
+  if(sp){const lR=L.getBoundingClientRect(),rR=R.getBoundingClientRect(),mid=(lR.right+rR.left)/2;pivot=(mid-sR.left)/UI}
   else pivot=0;
-  const shadeDir=pivot<sR.width/2?'to-r':'to-l',backDir=shadeDir==='to-r'?'to-l':'to-r';
+  const shadeDir=pivot<sR.width/UI/2?'to-r':'to-l',backDir=shadeDir==='to-r'?'to-l':'to-r';
   const leaf=document.createElement('div');
   leaf.className='bd-leaf';leaf.setAttribute('aria-hidden','true');
-  Object.assign(leaf.style,{left:(sR.left-bR.left-binder.clientLeft)+'px',top:(sR.top-bR.top-binder.clientTop)+'px',
-    width:sR.width+'px',height:sR.height+'px',transformOrigin:`${pivot}px 50%`});
+  Object.assign(leaf.style,{left:((sR.left-bR.left)/UI-binder.clientLeft)+'px',top:((sR.top-bR.top)/UI-binder.clientTop)+'px',
+    width:sR.width/UI+'px',height:sR.height/UI+'px',transformOrigin:`${pivot}px 50%`});
   leaf.innerHTML=`<div class="bd-face front"><div class="bd-page ${frontSide}">${front}</div><i class="bd-shade ${shadeDir}"></i></div>`+
     `<div class="bd-face back">${back?`<div class="bd-page ${backSide}">${back}</div>`:'<div class="bd-page bd-blank"></div>'}<i class="bd-shade ${backDir}"></i></div>`;
   binder.append(leaf);
@@ -2390,7 +2406,7 @@ function bdTurnSingle(from,to,fwd){
   const sheet=bdPage(fwd?from:to);
   const clip=document.createElement('div');
   clip.className='bd-clip';clip.setAttribute('aria-hidden','true');
-  Object.assign(clip.style,{left:(sR.left-bR.left-binder.clientLeft)+'px',top:(sR.top-bR.top-binder.clientTop)+'px',width:sR.width+'px',height:sR.height+'px'});
+  Object.assign(clip.style,{left:((sR.left-bR.left)/UI-binder.clientLeft)+'px',top:((sR.top-bR.top)/UI-binder.clientTop)+'px',width:sR.width/UI+'px',height:sR.height/UI+'px'});
   clip.innerHTML=`<div class="bd-leaf"><div class="bd-face front"><div class="bd-page r">${sheet}</div><i class="bd-shade to-r"></i></div></div>`;
   if(fwd)R.innerHTML=bdPage(to); // the next page waits underneath
   binder.append(clip);
