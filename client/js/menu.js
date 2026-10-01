@@ -17,7 +17,7 @@ function lastDeckReady(){
 }
 function renderMenu(){
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctAsk(ACCT.conflict),300);
-  $('#collSub').textContent=SAVE.unlockAll?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
+  $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();renderPackTile();
 }

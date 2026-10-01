@@ -135,6 +135,12 @@ function pickShowcase(){
 }
 
 /* ---------- account settings ---------- */
+// erase everything and start over (the account's copy too, when signed in)
+function confirmReset(after){
+  modal(`<h2>Reset progress?</h2><p>Your cards, stats, level, badges, packs and settings will be erased and you'll start over with the starter cards.${ACCT.token?' This also resets your account.':''}</p>`,[
+    {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();musicSync();renderProfile();after();toast('Progress reset.')}},
+    {label:'Cancel',cls:'primary',esc:true}]);
+}
 // a small form in a popup; run(values) throws to show an error and keep it open
 function pfForm({title,text='',fields,go,danger,run}){
   const box=modal(`<h2 class="nm2">${title}</h2>${text?`<p>${text}</p>`:''}<form class="authf" novalidate>${fields.map(f=>
@@ -297,6 +303,16 @@ function renderProfilePage(force){
     else acct=`<section class="pf-card"><h3>Account</h3>`+(ACCT.up
       ?`<p class="pf-hint left">Make an account to keep your cards, stats and badges on every device, and to share your profile.</p><div class="pf-two"><button class="btn primary" id="pfUp">Create account</button><button class="btn" id="pfIn">Sign in</button></div>`
       :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+`</section>`;
+    acct+=`<section class="pf-card"><h3>Progress</h3>`+
+      row('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>','Reset progress',`Start over with the starter cards${u?'. Your account is reset too':''}.`,'Reset','pfReset','danger')+`</section>`;
+    // developer tools: only for accounts in the server's DEV_USERS list, or on a local copy of the game
+    if(isDev())acct+=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
+      <div class="pf-row"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection.</small></span>
+        <div class="seg" id="pfUnlock" role="group" aria-label="Unlock all cards">${[[false,'Off'],[true,'On']].map(([k,l])=>
+          `<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
+      <div class="pf-row"><span class="rt"><b>Level up</b><small>Jump to level ${levelOf(SAVE.xp)+1} and get its pack.</small></span><button class="btn small" id="pfLvUp">+1 level</button></div>
+      <div class="pf-row"><span class="rt"><b>Daily pack</b><small>Make today's daily pack ready again.</small></span><button class="btn small" id="pfDaily">Refill</button></div>
+      </section>`;
   }
 
   $('#pfBody').innerHTML=hero+`<div class="pf-grid"><div class="pf-col">${record}${badges}</div><div class="pf-col">${coll}${show}${acct}</div></div>`;
@@ -306,4 +322,9 @@ function renderProfilePage(force){
   on('#pfAv',pickAvatar);on('[data-pin]',pickShowcase);on('#pfColl',openCollection);
   on('#pfShare',profShare);on('#pfJoin',()=>openAuth('up'));on('#pfUp',()=>openAuth('up'));on('#pfIn',()=>openAuth('in'));
   on('#pfName',editName);on('#pfEmail',editEmail);on('#pfPass',editPassword);on('#pfOut',acctSignOut);on('#pfDel',deleteAccount);
+  on('#pfReset',()=>confirmReset(renderProfilePage));
+  on('#pfUnlock button',b=>{const v=b.dataset.k==='true';if(!!SAVE.unlockAll===v)return;SAVE.unlockAll=v;save();renderProfilePage();toast(v?'All cards unlocked.':'Back to your own collection.')});
+  on('#pfLvUp',()=>{const lv=levelOf(SAVE.xp)+1;SAVE.xp=lvlXp(lv);const got=grantPacks(SAVE);profCheck();save();renderProfile();renderProfilePage();
+    toast(`Level ${lv}`+(got.length?` · ${PACKS[got[0].t].name} pack added`:''));freshToast()});
+  on('#pfDaily',()=>{SAVE.daily={at:yesterday(),n:SAVE.daily?SAVE.daily.n:0};save();toast('Daily pack is ready.')});
 }
