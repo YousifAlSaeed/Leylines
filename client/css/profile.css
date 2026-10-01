@@ -103,7 +103,9 @@
 .pf-row:first-of-type{border-top:0;padding-top:0}
 .pf-row .rt{flex:1;min-width:0}
 .pf-row b{display:block;font-weight:600;font-size:14.5px}
-.pf-row small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-row small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+/* a guest's Reset row sits under the sign-up buttons */
+.pf-two+.pf-row{margin-top:14px}
 .pf-row .btn{flex:none}
 .pf-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--well);color:var(--muted);flex:none}
 .pf-ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -142,3 +144,4 @@
 .pf-dev .pf-row{padding:10px 0}
 .pf-dev .seg{flex:none}
 .pf-dev .seg button{min-height:34px;padding:4px 12px;font-size:13px}
+.authf label b{color:var(--text);letter-spacing:.04em}
