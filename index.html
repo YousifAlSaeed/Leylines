@@ -695,12 +695,17 @@ body.land .hand .card.sel{z-index:3}
 
 /* + on an owned card's sleeve adds it to the hand below */
 .pk-cell{position:relative}
-.pk-add{position:absolute;right:-.35em;bottom:-.35em;z-index:2;width:1.9em;height:1.9em;min-width:28px;min-height:28px;border-radius:50%;padding:0;cursor:pointer;
-  display:grid;place-items:center;font:800 1.15em/1 var(--display);color:var(--on-accent);border:2px solid var(--surf);
+.pk-add{position:absolute;right:-.25em;bottom:-.25em;z-index:2;width:1.4em;height:1.4em;min-width:22px;min-height:22px;border-radius:50%;padding:0;cursor:pointer;
+  display:grid;place-items:center;font:800 .95em/1 var(--display);color:var(--on-accent);border:2px solid var(--surf);
   background:linear-gradient(180deg,var(--accent-hi),var(--accent));box-shadow:0 3px 8px rgba(var(--sh),calc(.5*var(--shk)));transition:transform .2s var(--spring),opacity .18s}
 .pk-add:hover:not(:disabled){transform:scale(1.12)}
 .pk-add:active:not(:disabled){transform:scale(.92)}
 .pk-add:disabled{opacity:.3;cursor:default;filter:grayscale(.6)}
+@media (pointer:coarse){.pk-add{min-width:26px;min-height:26px}}
+/* dragging a card from the binder onto the hand */
+.pocket.dragging{opacity:.3}
+.coll-tray{transition:border-color .18s,box-shadow .18s}
+.coll-tray.over{border-color:var(--accent-ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent),0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
 
 
 /* card detail popup: a single binder page, the card lifted out of its sleeve */
@@ -2286,7 +2291,7 @@ const BD_BOOK=(()=>{const out=[];for(let r=1;r<=5;r++){
   for(let i=0;i<n;i++)out.push({r,cards:cs.slice(i*BD_PER,(i+1)*BD_PER),part:i+1,parts:n})}return out})();
 const BD_PAGES=BD_BOOK.length;
 const bdFirst=r=>BD_BOOK.findIndex(pg=>pg.r===r);
-const BD={p:0,done:null,swiped:false};
+const BD={p:0,done:null,swiped:false,drag:null};
 // two pages side by side when the binder area is wide enough (it shares the width with the side column on big screens)
 const bdSpread=()=>$('#collBook').clientWidth>=540;
 const rarFound=r=>{const cs=CARDS.filter(c=>c.rar===r);return [cs.filter(c=>isSeen(c.id)).length,cs.length]};
@@ -2445,10 +2450,53 @@ $('#binder').addEventListener('click',e=>{
  $('#binder').addEventListener('pointerdown',e=>{down=true;sx=e.clientX;sy=e.clientY;BD.swiped=false});
  $('#binder').addEventListener('pointerup',e=>{
    if(!down)return;down=false;
+   if(BD.drag&&BD.drag.g)return; // a card was being dragged, not a page swiped
    const dx=e.clientX-sx,dy=e.clientY-sy;
    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){BD.swiped=true;bdStep(dx<0?1:-1);setTimeout(()=>{BD.swiped=false},0)}
  });
  $('#binder').addEventListener('pointercancel',()=>{down=false});
+}
+// drag an owned card from the binder onto the hand. Mouse: just drag. Touch: press and hold first,
+// so a quick swipe still turns the page.
+{const tray=$('#scr-coll .coll-tray'),overTray=(x,y)=>{const r=tray.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom};
+ const lift=d=>{
+   const card=d.el.querySelector('.card');if(!card){BD.drag=null;return}
+   const g=card.cloneNode(true);g.classList.add('ghost');
+   // the ghost lives on <body>, outside the zoomed screen
+   g.style.fontSize=parseFloat(getComputedStyle(card).fontSize)*UI+'px';
+   g.style.left=d.x+'px';g.style.top=d.y+'px';
+   document.body.append(g);d.g=g;d.el.classList.add('dragging');sfx('click');
+ };
+ const end=(e,cancel)=>{
+   const d=BD.drag;if(!d)return;BD.drag=null;clearTimeout(d.t);
+   if(!d.g)return;
+   d.g.remove();d.el.classList.remove('dragging');tray.classList.remove('over');
+   // swallow the click that follows, so the card's detail doesn't open
+   BD.swiped=true;setTimeout(()=>{BD.swiped=false},0);
+   if(!cancel&&overTray(e.clientX,e.clientY))handAdd(CH,d.id);
+ };
+ $('#binder').addEventListener('pointerdown',e=>{
+   const b=e.target.closest('.pocket[data-id]');
+   if(!b||e.button>0||BD.done)return;
+   const id=+b.dataset.id;if(CH.sel.length>=5||handRemaining(CH,id)<=0)return;
+   const d=BD.drag={id,el:b,x:e.clientX,y:e.clientY,g:null,touch:e.pointerType!=='mouse',t:0};
+   if(d.touch)d.t=setTimeout(()=>{if(BD.drag===d)lift(d)},280);
+ });
+ window.addEventListener('pointermove',e=>{
+   const d=BD.drag;if(!d)return;
+   if(!d.g){
+     if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
+     if(d.touch){clearTimeout(d.t);BD.drag=null;return} // moved before the hold: it's a swipe or scroll
+     lift(d);if(!d.g)return;
+   }
+   d.g.style.left=e.clientX+'px';d.g.style.top=e.clientY+'px';
+   tray.classList.toggle('over',overTray(e.clientX,e.clientY));
+ },{passive:true});
+ // once a held card is lifted, the finger moves it instead of scrolling the page
+ $('#binder').addEventListener('touchmove',e=>{if(BD.drag&&BD.drag.g&&e.cancelable)e.preventDefault()},{passive:false});
+ $('#binder').addEventListener('contextmenu',e=>{if(BD.drag)e.preventDefault()});
+ window.addEventListener('pointerup',e=>end(e,false));
+ window.addEventListener('pointercancel',e=>end(e,true));
 }
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
