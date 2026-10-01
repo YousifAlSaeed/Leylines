@@ -2,7 +2,10 @@
 /* =====================================================================
    ONLINE (PeerJS)
    ===================================================================== */
-const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,pendingDeck:null,closing:false,oppName:'',last:0,joining:false,joinT:0};
+const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0};
+// avatars travel as a card id; anything else means no avatar
+const netAv=v=>Number.isInteger(v)&&v>=0&&v<CARDS.length?v:null;
+const myAv=()=>SAVE.avatar?SAVE.avatar.c:null;
 const CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ';
 const peerId=code=>'ninefold-tt-'+code.toLowerCase();
 function loadPeerJS(){
@@ -13,7 +16,9 @@ function loadPeerJS(){
   })),Promise.reject()).catch(()=>{throw new Error('Could not load the networking library. Check your connection.')});
 }
 const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
-function myName(){return cleanName(SAVE.name)||(NET.role==='guest'?'Guest':'Host')}
+// your name: the account's display name when signed in, otherwise the name typed on this device
+function playerName(){return ACCT.token&&ACCT.user?cleanName(ACCT.user.displayName):cleanName(SAVE.name)}
+function myName(){return playerName()||(NET.role==='guest'?'Guest':'Host')}
 function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
 // which lobby panels are visible: 'choose' (name + host/join), 'host' (code & link), 'none'
@@ -26,13 +31,15 @@ function setJoining(on){NET.joining=on;$('#btnJoin').disabled=on;clearTimeout(NE
 function openOnline(code){
   netClose(true);
   onPanels('choose');
-  $('#myName').value=SAVE.name||'';
+  // signed in, the name comes from the account and is changed on the profile
+  const n=$('#myName'),acc=ACCT.token&&ACCT.user;
+  n.value=acc?acc.displayName:SAVE.name||'';n.readOnly=!!acc;n.title=acc?'Change your name on your profile':'';
   $('#joinCode').value=code||'';onStatus('');show('online');
 }
 $('#onBack').onclick=()=>{sfx('click');netClose(true);show('menu')};
 $('#btnHost').onclick=()=>{sfx('click');openSetup('online')};
 $('#btnJoin').onclick=()=>{sfx('click');joinGame($('#joinCode').value)};
-$('#myName').addEventListener('input',e=>{SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
+$('#myName').addEventListener('input',e=>{if(e.target.readOnly)return;SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
 $('#joinCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,5)});
 $('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(e.target.value)});
 function inviteLink(code){return location.href.split(/[?#]/)[0]+'?join='+code}
@@ -51,7 +58,7 @@ async function hostStart(){
   $('#hostCode').textContent='·····';$('#hostLink').value='';
   onStatus('<span class="spin"></span>Connecting…');
   try{await loadPeerJS()}catch(e){onStatus(e.message,true);return}
-  netClose(true);NET.closing=false;NET.role='host';NET.oppName='';
+  netClose(true);NET.closing=false;NET.role='host';NET.oppName='';NET.oppAv=null;
   $('#hostAs').textContent=myName();
   let tries=0;
   const attempt=()=>{
@@ -74,7 +81,7 @@ async function hostStart(){
       NET.conn=c;bindConn(c);
       c.on('open',()=>{
         if(NET.conn!==c)return;
-        NET.oppName=cleanName(meta.name)||'Guest';
+        NET.oppName=cleanName(meta.name)||'Guest';NET.oppAv=netAv(meta.av);
         const n=esc(NET.oppName);
         toast(rejoin?`${NET.oppName} reconnected — starting a new match`:`${NET.oppName} joined your game`);
         sfx('banner');
@@ -97,14 +104,14 @@ async function joinGame(code){
   setJoining(true);
   onStatus('<span class="spin"></span>Connecting…');
   try{await loadPeerJS()}catch(e){setJoining(false);onStatus(e.message,true);return}
-  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;NET.oppName='';
+  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;NET.oppName='';NET.oppAv=null;
   setJoining(true);
   const peer=new Peer();NET.peer=peer;
   const fail=msg=>{if(NET.peer!==peer)return;netClose(true);onPanels('choose');onStatus(msg,true)};
   NET.joinT=setTimeout(()=>fail('Couldn\'t reach game '+code+'. Check the code and try again.'),20000);
   peer.on('open',()=>{
     onStatus('<span class="spin"></span>Looking for game '+code+'…');
-    const c=peer.connect(peerId(code),{reliable:true,metadata:{name:myName(),cid:SAVE.cid}});NET.conn=c;bindConn(c);
+    const c=peer.connect(peerId(code),{reliable:true,metadata:{name:myName(),cid:SAVE.cid,av:myAv()}});NET.conn=c;bindConn(c);
     c.on('open',()=>{clearTimeout(NET.joinT);onPanels('none');onStatus('<span class="spin"></span>Connected as <b class="gold">'+esc(myName())+'</b>. Waiting for the host…')});
   });
   peer.on('error',err=>{
@@ -139,7 +146,7 @@ function netLost(msg){
   // host whose guest left before the match began: keep the code alive and wait for someone else
   if(NET.role==='host'&&(!G||G.mode!=='online'||!G.st)&&NET.peer&&!NET.peer.destroyed){hostBackToLobby(msg);return}
   netClose(true);
-  if(G&&G.mode==='online'&&!G.over){SAVE.stats.ow++;save();msg+=' The match counts as a win.'}
+  if(G&&G.mode==='online'&&!G.over){recordMatch('w',{online:true});freshToast();msg+=' The match counts as a win.'}
   G=null;
   modal(`<h2>Disconnected</h2><p>${esc(msg)}</p>`,[{label:'Menu',cls:'primary',fn:()=>show('menu')}]);
 }
@@ -151,7 +158,7 @@ function hostBackToLobby(msg){
 }
 function sendSetup(){
   const seed=rand32();
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,seed,name:myName()});
+  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,seed,name:myName(),av:myAv()});
   beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,seed});
 }
 function beginOnline(cfg){
@@ -179,7 +186,7 @@ function onNet(m){
     case 'setup':
       if(NET.role!=='guest')return;
       setJoining(false);
-      NET.oppName=cleanName(m.name)||'Host';
+      NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);
       {const r={...defSave().rules,...m.rules};r.timer=timerSec(r.timer);beginOnline({rules:r,trade:m.trade,seed:m.seed>>>0})}break;
     case 'deck':
       if(!validDeck(m.ids))return;

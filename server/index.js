@@ -3,19 +3,21 @@
 // Pages); the server is where accounts and other shared data will live.
 import { config } from './config.js';
 import { openDatabase } from './db/index.js';
+import { purgeExpiredSessions } from './lib/sessions.js';
 import { createApp } from './app.js';
 
-const db = await openDatabase(config.dbFile);
-const app = createApp({ db, clientDir: config.clientDir });
+const db = await openDatabase({ url: config.databaseUrl, file: config.dbFile });
+await purgeExpiredSessions(db);
+const app = createApp({ db, clientDir: config.clientDir, corsOrigins: config.corsOrigins, trustProxy: config.trustProxy });
 
 const server = app.listen(config.port, config.host, () => {
-  console.log(`Leylines running at http://${config.host}:${config.port}`);
+  console.log(`Leylines running at http://${config.host}:${config.port} (database: ${db.kind})`);
 });
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
-  process.on(sig, () => {
+  process.on(sig, async () => {
     server.close();
-    db.close();
+    await db.close();
     process.exit(0);
   });
 }

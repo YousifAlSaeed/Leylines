@@ -7,20 +7,52 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null]};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+    // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
+    pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
+    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
+    packs:[],packLv:1,daily:null,pity:0};
+}
+// fills in the profile fields; a save from before profiles gets XP for the matches it already played
+function fixProfile(p,s){
+  const ob=v=>v&&typeof v==='object'&&!Array.isArray(v);
+  if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
+  // the first time with packs: one for every level already reached
+  if(p.pv<2){p.packLv=1;p.pv=2}
+  for(const k of ['xp','streak','best','pity'])p[k]=Math.max(0,+p[k]|0);
+  p.packLv=Math.max(1,+p.packLv|0);
+  p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
+  p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  grantPacks(p);
+  p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
+  p.recent=(Array.isArray(p.recent)?p.recent:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
+  p.badges=ob(p.badges)?p.badges:{};
+  p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
+  p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
+  return p;
+}
+// a pack for every level reached since the last one that gave one; returns the new packs.
+// Worked out from the save alone, so two devices with the same save agree.
+function grantPacks(p){
+  const got=[],lv=levelOf(p.xp);
+  while(p.packLv<lv){const l=++p.packLv,k={t:packForLevel(l),lv:l};if(l%5===0)k.mile=1;p.packs.push(k);got.push(k)}
+  return got;
+}
+// a stored save with any missing fields filled in
+function normSave(s){
+  const d=defSave();
+  return fixProfile({...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll},s);
 }
 function loadSave(){
-  const d=defSave();
-  try{const s=JSON.parse(localStorage.getItem(SKEY)||'null'); if(s&&typeof s==='object'){
-    return {...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll};
-  }}catch(e){}
-  return d;
+  try{const s=JSON.parse(localStorage.getItem(SKEY)||'null');if(s&&typeof s==='object')return normSave(s)}catch(e){}
+  return defSave();
 }
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 SAVE.rules.timer=timerSec(SAVE.rules.timer);
-function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
+// every change goes through here; account.js (loaded later) syncs it to a signed-in account
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}if(typeof acctChanged==='function')acctChanged()}
 // stable per-device id so the host can recognise a guest who reconnects
 if(!SAVE.cid){SAVE.cid=Math.random().toString(36).slice(2,12);save()}
 // 'seen' = every card ever owned, so lost cards still show in the collection.
@@ -52,10 +84,17 @@ function deckable(pool){let lo=0,n4=0,n5=0;pool.forEach(e=>{const r=CARDS[e.id].
 function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,owned),over:rarOver(l.ids)}:null}
 // the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
 function preDeck(){const m=mainLoadout();return m&&!m.miss.length&&!m.over.length?m.l.ids:SAVE.lastDeck}
-// "Unlock all cards" (Settings) lends you at least 1 copy of every card while it's on; the real collection stays underneath
-const owned=id=>{const n=SAVE.coll[id]||0;return SAVE.unlockAll?Math.max(1,n):n};
-const isSeen=id=>SAVE.unlockAll||SAVE.seen.includes(id);
-const seenCount=()=>SAVE.unlockAll?CARDS.length:SAVE.seen.length;
+// developer tools (profile.js): for accounts the server lists in DEV_USERS, and on a local copy of the game
+function isDev(){
+  if(/^(localhost|127\.0\.0\.1|\[::1\]|)$/.test(location.hostname))return true;
+  try{return !!(ACCT.token&&ACCT.user&&ACCT.user.dev)}catch(e){return false}   // account.js loads later
+}
+// "Unlock all cards" (a developer tool) lends at least 1 copy of every card while it's on; the real collection stays underneath.
+// It's ignored for everyone else, even if an old save has it switched on.
+const unlocked=()=>!!SAVE.unlockAll&&isDev();
+const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
+const isSeen=id=>unlocked()||SAVE.seen.includes(id);
+const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;
 function collTotal(){return CARDS.reduce((a,c)=>a+owned(c.id),0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
