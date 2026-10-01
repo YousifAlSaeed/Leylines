@@ -16,7 +16,9 @@ function loadPeerJS(){
   })),Promise.reject()).catch(()=>{throw new Error('Could not load the networking library. Check your connection.')});
 }
 const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
-function myName(){return cleanName(SAVE.name)||(NET.role==='guest'?'Guest':'Host')}
+// your name: the account's display name when signed in, otherwise the name typed on this device
+function playerName(){return ACCT.token&&ACCT.user?cleanName(ACCT.user.displayName):cleanName(SAVE.name)}
+function myName(){return playerName()||(NET.role==='guest'?'Guest':'Host')}
 function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
 // which lobby panels are visible: 'choose' (name + host/join), 'host' (code & link), 'none'
@@ -29,13 +31,15 @@ function setJoining(on){NET.joining=on;$('#btnJoin').disabled=on;clearTimeout(NE
 function openOnline(code){
   netClose(true);
   onPanels('choose');
-  $('#myName').value=SAVE.name||'';
+  // signed in, the name comes from the account and is changed on the profile
+  const n=$('#myName'),acc=ACCT.token&&ACCT.user;
+  n.value=acc?acc.displayName:SAVE.name||'';n.readOnly=!!acc;n.title=acc?'Change your name on your profile':'';
   $('#joinCode').value=code||'';onStatus('');show('online');
 }
 $('#onBack').onclick=()=>{sfx('click');netClose(true);show('menu')};
 $('#btnHost').onclick=()=>{sfx('click');openSetup('online')};
 $('#btnJoin').onclick=()=>{sfx('click');joinGame($('#joinCode').value)};
-$('#myName').addEventListener('input',e=>{SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
+$('#myName').addEventListener('input',e=>{if(e.target.readOnly)return;SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
 $('#joinCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,5)});
 $('#joinCode').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(e.target.value)});
 function inviteLink(code){return location.href.split(/[?#]/)[0]+'?join='+code}

@@ -12,7 +12,7 @@ applyTheme();updSnd();renderMenu();layout();acctBoot();
     try{history.replaceState(null,'',location.pathname)}catch(e){}
     if(code.length===5){
       openOnline(code);
-      if(cleanName(SAVE.name))joinGame(code);
+      if(playerName())joinGame(code);
       else{onStatus("You've been invited. Enter your name, then tap <b>Join</b>.");const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
     }
   }

@@ -124,6 +124,8 @@ function acctSignedIn(r){
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
+  // the name belonged to the account: don't leave it behind for the next one to pick up
+  if(SAVE.name){SAVE.name='';save()}
   acctStore();renderProfile();renderProfilePage();
   if(msg)toast(msg,3500);
 }
@@ -178,8 +180,6 @@ function openAuth(mode='up'){
       if(mode==='up'){
         const r=await api('/auth/signup',{method:'POST',body:{username,password,email:email||undefined,displayName:cleanName(SAVE.name)||undefined,save:syncData()}});
         closeModal();acctSignedIn(r);
-        // the account name doubles as your name in online matches
-        if(!cleanName(SAVE.name)){SAVE.name=cleanName(r.user.displayName);save()}
         toast(`Welcome, ${r.user.displayName}. Your progress is saved to your account.`,3000);
       }else{
         const r=await api('/auth/login',{method:'POST',body:{username,password}});
