@@ -25,3 +25,6 @@ services:
       # Neon connection string; secret, so it is typed into the dashboard, not here
       - key: DATABASE_URL
         sync: false
+      # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
+      - key: DEV_USERS
+        sync: false

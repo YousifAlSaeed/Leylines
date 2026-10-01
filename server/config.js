@@ -16,4 +16,6 @@ export const config = {
   // behind a proxy (Render, Fly...) set TRUST_PROXY=1 so rate limits see the real client IP
   trustProxy: Number(process.env.TRUST_PROXY) || 0,
   sessionDays: Number(process.env.SESSION_DAYS) || 60,
+  // usernames that get the developer tools in the game (unlock all cards…), comma-separated
+  devUsers: (process.env.DEV_USERS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
 };

@@ -84,10 +84,17 @@ function deckable(pool){let lo=0,n4=0,n5=0;pool.forEach(e=>{const r=CARDS[e.id].
 function mainLoadout(){const l=SAVE.loadouts[SAVE.mainLo];return l?{l,miss:missingIn(l.ids,owned),over:rarOver(l.ids)}:null}
 // the hand the deck picker opens with: the main loadout when it's complete, otherwise the last deck played
 function preDeck(){const m=mainLoadout();return m&&!m.miss.length&&!m.over.length?m.l.ids:SAVE.lastDeck}
-// "Unlock all cards" (Settings) lends you at least 1 copy of every card while it's on; the real collection stays underneath
-const owned=id=>{const n=SAVE.coll[id]||0;return SAVE.unlockAll?Math.max(1,n):n};
-const isSeen=id=>SAVE.unlockAll||SAVE.seen.includes(id);
-const seenCount=()=>SAVE.unlockAll?CARDS.length:SAVE.seen.length;
+// developer tools (profile.js): for accounts the server lists in DEV_USERS, and on a local copy of the game
+function isDev(){
+  if(/^(localhost|127\.0\.0\.1|\[::1\]|)$/.test(location.hostname))return true;
+  try{return !!(ACCT.token&&ACCT.user&&ACCT.user.dev)}catch(e){return false}   // account.js loads later
+}
+// "Unlock all cards" (a developer tool) lends at least 1 copy of every card while it's on; the real collection stays underneath.
+// It's ignored for everyone else, even if an old save has it switched on.
+const unlocked=()=>!!SAVE.unlockAll&&isDev();
+const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
+const isSeen=id=>unlocked()||SAVE.seen.includes(id);
+const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;
 function collTotal(){return CARDS.reduce((a,c)=>a+owned(c.id),0)}
 function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}

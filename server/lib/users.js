@@ -1,4 +1,6 @@
 // Shared rules for account fields.
+import { config } from '../config.js';
+
 export const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -6,8 +8,8 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const cleanName = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
 
 export const publicUser = (u) => ({ id: u.id, username: u.username, displayName: u.display_name, createdAt: u.created_at });
-// what the signed-in player sees about themselves
-export const privateUser = (u) => ({ ...publicUser(u), email: u.email || null });
+// what the signed-in player sees about themselves; dev = listed in DEV_USERS
+export const privateUser = (u) => ({ ...publicUser(u), email: u.email || null, dev: config.devUsers.includes(u.username.toLowerCase()) });
 
 export const checkEmail = (email) => typeof email === 'string' && email.length <= 254 && EMAIL.test(email);
 export const checkPassword = (pw) => typeof pw === 'string' && pw.length >= 8 && pw.length <= 200;

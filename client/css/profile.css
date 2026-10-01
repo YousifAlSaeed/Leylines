@@ -135,3 +135,10 @@
 .pf-pick .pk.on{border-color:var(--hot);transform:translateY(-3px)}
 .pf-pick .pk.on::after{content:attr(data-n);position:absolute;top:-6px;left:-6px;z-index:5;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
   background:var(--accent);color:var(--on-accent);font:800 11px/1 var(--display)}
+
+/* developer tools: only shown to developer accounts and on a local copy */
+.pf-dev{border-style:dashed;border-color:color-mix(in srgb,var(--warn) 55%,transparent)}
+.pf-dev h3 em{color:var(--warn)}
+.pf-dev .pf-row{padding:10px 0}
+.pf-dev .seg{flex:none}
+.pf-dev .seg button{min-height:34px;padding:4px 12px;font-size:13px}
