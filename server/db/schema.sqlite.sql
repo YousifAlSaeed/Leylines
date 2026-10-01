@@ -1,4 +1,5 @@
--- Leylines database schema (SQLite). Applied on every start, so every
+-- Leylines database schema (SQLite, for local use; schema.pg.sql is the
+-- Postgres twin and must stay in step). Applied on every start, so every
 -- statement must be idempotent (IF NOT EXISTS).
 
 -- Player accounts. Guests never touch the database: their progress lives only

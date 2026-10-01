@@ -28,9 +28,9 @@ export function meRouter(db) {
     const { rows: [s] } = await db.run(
       `INSERT INTO user_saves (user_id, data) VALUES ($u, $d)
        ON CONFLICT (user_id) DO UPDATE SET data = excluded.data, rev = user_saves.rev + 1,
-         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+         updated_at = $now
        RETURNING rev, updated_at`,
-      { $u: req.user.id, $d: JSON.stringify(data) },
+      { $u: req.user.id, $d: JSON.stringify(data), $now: new Date().toISOString() },
     );
     res.json({ rev: s.rev, updatedAt: s.updated_at });
   });
