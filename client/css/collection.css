@@ -77,6 +77,11 @@
 .dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
 @media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
 @media (max-width:380px){.dk-sides{display:none}.dk-act{padding:6px;font-size:13px;gap:4px}}
+/* most phones (the tray is ~320–400px wide): slimmer bars and a narrower Play button, so the row fits */
+@container (max-width:420px){.dk-row{gap:10px}.dk-bar{width:24px}.dk-row .btn.primary{min-width:92px;padding-inline:12px}}
+/* and if it still doesn't fit (bigger text settings), the bars get clipped rather than pushing Play off the edge */
+.dk-sides{min-width:0;overflow:hidden}
+.dk-row .btn.primary{flex:none}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px 8px;justify-items:center;font-size:15px}
 .grid .gc{cursor:pointer;position:relative;border-radius:.6em;transition:transform .25s var(--spring)}
 @media (hover:hover){.grid .gc:not(.used):hover{transform:translateY(-4px) rotate(-1deg)}}
@@ -207,8 +212,6 @@
 .coll-title{flex:1;min-width:0;display:flex;flex-direction:column}
 .coll-title h2{margin:0}
 .coll-title .meta{text-align:left;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.coll-reset{color:var(--muted)}
-.coll-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
 #scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
 .coll-book{display:flex;flex-direction:column;min-height:0;min-width:0;container-type:inline-size}
 /* two pages side by side: never taller than the 3×3 sleeves need at this width, so tall windows get no empty strip */

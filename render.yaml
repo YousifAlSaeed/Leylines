@@ -1,0 +1,30 @@
+# Render Blueprint: deploys the dev branch (game + API) as one web service.
+# Render dashboard → New → Blueprint → pick this repo; it reads this file.
+#
+# Accounts live in Postgres (a free Neon project): set DATABASE_URL in the
+# Render dashboard (service → Environment). Without it the server falls back
+# to a SQLite file, which the free plan wipes on every deploy, restart and
+# idle spin-down, so accounts would disappear.
+services:
+  - type: web
+    name: leylines-dev
+    runtime: node
+    branch: dev
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      # Neon connection string; secret, so it is typed into the dashboard, not here
+      - key: DATABASE_URL
+        sync: false
+      # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
+      - key: DEV_USERS
+        sync: false

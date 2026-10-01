@@ -16,11 +16,10 @@ function lastDeckReady(){
   return d;
 }
 function renderMenu(){
-  const st=SAVE.stats;
-  $('#stW').textContent=st.w+st.ow;$('#stL').textContent=st.l+st.ol;$('#stD').textContent=st.d+st.od;
-  $('#collSub').textContent=SAVE.unlockAll?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
+  renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctAsk(ACCT.conflict),300);
+  $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  renderHero();
+  renderHero();renderPackTile();
 }
 const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
@@ -38,11 +37,8 @@ function heroDeck(random){
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
 const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online']];
-// the Play card: a 3-way mode switch, then what that mode needs
-function renderHero(anim){
-  const m=MODES.some(x=>x[0]===SAVE.menuMode)?SAVE.menuMode:'ai';
-  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}</button>`).join('');
-  $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
+// what the Play card shows for one mode
+function heroPane(m){
   let h,sub,side='',row;
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
@@ -61,8 +57,18 @@ function renderHero(anim){
     h='Online';sub=dk.sub+' · Host or join with a code';side=dk.fan;
     row=`<button class="btn primary full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
+  return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${esc(sub)}</p></div>${side}</div><div class="hero-row">${row}</div>`;
+}
+// the Play card: a 3-way mode switch, then what that mode needs
+function renderHero(anim){
+  const m=MODES.some(x=>x[0]===SAVE.menuMode)?SAVE.menuMode:'ai';
+  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}</button>`).join('');
+  $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
+  // the other modes sit invisibly in the same spot, so the card is always as tall as the tallest one
+  // and the menu doesn't jump when you switch
+  const ghosts=MODES.filter(x=>x[0]!==m).map(([k])=>`<div class="hero-pane hero-ghost" aria-hidden="true" inert>${heroPane(k).replace(/ id="[^"]*"/g,'')}</div>`).join('');
   const body=$('#heroBody');
-  body.innerHTML=`<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${esc(sub)}</p></div>${side}</div><div class="hero-row">${row}</div>`;
+  body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
   $$('#menuDiff button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderHero();refocus('#menuDiff',b)});
@@ -76,20 +82,21 @@ function renderHero(anim){
 // online from the menu: the online screen still asks for a name if we don't have one yet
 function askName(msg){onStatus(msg);const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
 function heroHost(){
-  if(cleanName(SAVE.name)){openSetup('online');return}
+  if(playerName()){openSetup('online');return}
   openOnline();askName('Enter your name, then tap <b>Host a game</b>.');
 }
 function heroJoin(){
   const code=$('#heroCode').value.toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){toast('Enter the 5-letter code from your friend.');$('#heroCode').focus();return}
   openOnline(code);
-  if(cleanName(SAVE.name))joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
+  if(playerName())joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
 }
 $$('[data-go]').forEach(b=>b.onclick=()=>{
   sfx('click');const g=b.dataset.go;
   if(g==='ai'||g==='local')openSetup(g);
   else if(g==='online')openOnline();
   else if(g==='coll')openCollection();
+  else if(g==='packs')openPacks();
   else if(g==='howto')openHow(0);
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});

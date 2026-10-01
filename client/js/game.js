@@ -43,7 +43,9 @@ function renderHud(){
   const lab=p=>esc(G.names[p])+(G.mode==='online'?`<small class="tag">${p===0?'HOST':'GUEST'}</small>`:'');
   $('#nameBot').innerHTML=lab(bot);$('#nameTop').innerHTML=lab(1-bot);
   const ini=p=>(String(G.names[p]||'?').trim()[0]||'?').toUpperCase();
-  $('#avBot').textContent=ini(bot);$('#avTop').textContent=ini(1-bot);
+  // your avatar card (and an online opponent's) instead of the initial
+  const av=p=>G.mode==='local'?null:p===G.me?myAv():G.mode==='online'?NET.oppAv:null;
+  for(const[el,p]of[[$('#avBot'),bot],[$('#avTop'),1-bot]]){const a=av(p);el.textContent=a!=null?CARDS[a].art:ini(p);el.classList.toggle('art',a!=null)}
   setScores([score(st,0),score(st,1)]);
   $('#sideBot').classList.toggle('active',!G.over&&st.turn===bot);
   $('#sideTop').classList.toggle('active',!G.over&&st.turn!==bot);

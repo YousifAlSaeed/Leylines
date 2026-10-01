@@ -8,7 +8,7 @@ function renderCollHand(){renderHand(CH);bdSyncAdd()}
 wireHand('coll',()=>CH);
 function openCollection(){
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
-  $('#collMeta').innerHTML=(SAVE.unlockAll?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:'');
+  $('#collMeta').innerHTML=(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:'');
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
   CH.pool=collPool();
   const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
@@ -262,9 +262,4 @@ $('#binder').addEventListener('click',e=>{
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
 
 if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#collBook'));else window.addEventListener('resize',bdFit);
-function confirmReset(after){
-  modal('<h2>Reset progress?</h2><p>Your collection, stats and settings will be erased and you will start over with the starter cards.</p>',[
-    {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();after();toast('Progress reset.')}},
-    {label:'Cancel',cls:'primary',esc:true}]);
-}
-$('#btnReset').onclick=()=>confirmReset(openCollection);
+

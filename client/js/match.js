@@ -79,6 +79,7 @@ async function execMove(hi,cell){
   G.busy=true;G.sel=null;G.timeUp=false;stopTurnTimer();
   const sc=[score(st,0),score(st,1)];
   const ev=[];play(st,G.rules,hi,cell,ev);
+  if(G.mode!=='local'&&p===G.me)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
   CELLS[cell].innerHTML=cardHTML(id,colorOf(p),{mod:st.m[cell],cls:'drop'});
   sfx('place');
@@ -133,14 +134,12 @@ function finish(s0,s1){
   let title;
   if(G.mode==='local')title=w<0?'Draw':w===0?'Blue wins':'Red wins';
   else title=w<0?'Draw':w===G.me?'You win':'You lose';
-  if(G.mode!=='local'){
-    const k=G.mode==='online'?'o':'';
-    const key=w<0?k+'d':w===G.me?k+'w':k+'l';
-    SAVE.stats[key]=(SAVE.stats[key]||0)+1;save();
-  }
+  let reward='';
+  if(G.mode!=='local')reward=rewardHTML(recordMatch(w<0?'d':w===G.me?'w':'l',
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(w),sd:G.sd>0,elemental:!!G.rules.elemental}));
   sfx(w<0?'draw':(G.mode==='local'||w===G.me)?'win':'lose');
   let head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
-    `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`;
+    `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`+reward;
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
   setTimeout(()=>{
@@ -151,9 +150,9 @@ function finish(s0,s1){
     const loser=1-w,loserDeck=G.decks[loser];
     if(w===G.me){
       const take=idx=>{
-        const ids=idx.map(i=>loserDeck[i]);ids.forEach(collAdd);save();
+        const ids=idx.map(i=>loserDeck[i]);ids.forEach(collAdd);earn('spoils');profCheck();save();
         if(G.mode==='online'&&n<5)netSend({t:'trade',idx});
-        resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue'));
+        resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue')+freshHTML());
       };
       if(n>=loserDeck.length)take(loserDeck.map((_,i)=>i));
       else pickCards(head,loserDeck,n).then(take);
@@ -215,7 +214,7 @@ $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;
   if(G.over){leaveMatch();return}
   modal(`<h2>Leave match?</h2><p>${G.mode==='local'?'The game will be abandoned.':'Leaving counts as a loss (no cards are traded).'}</p>`,[
-    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'){const k=G.mode==='online'?'ol':'l';SAVE.stats[k]++;save()}leaveMatch()}},
+    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'){recordMatch('l',{online:G.mode==='online'});freshToast()}leaveMatch()}},
     {label:'Keep playing',cls:'primary',esc:true}]);
 };
 $('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};

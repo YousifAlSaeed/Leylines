@@ -75,9 +75,12 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .modeseg{position:relative}
 .modeseg button{white-space:nowrap;font-size:13px;padding:6px;gap:6px;display:flex;align-items:center;justify-content:center}
 .modeseg svg{display:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.hero-body{position:relative}
+.hero-body{position:relative;display:grid}
+.hero-pane{grid-area:1/1;display:flex;flex-direction:column;min-width:0}
+.hero-pane.hero-ghost{visibility:hidden;pointer-events:none}
 .hero-body.fade{animation:rise .3s var(--ease)}
-.hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-top:14px}
+/* centred in whatever room the tallest mode leaves (hero-pane in menu.js) */
+.hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-top:14px;margin:auto 0}
 .vsav{display:flex;align-items:center;gap:8px;padding:2px 6px 0 0;flex:none}
 .vsav .av{width:44px;height:44px;border-radius:12px;font-size:18px}
 .vsav em{font:900 16px var(--display);color:var(--muted);font-style:italic}
@@ -91,7 +94,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .fan .card{margin-right:-1.3em}
 .fan .card:nth-child(1){transform:rotate(-9deg) translateY(.4em)} .fan .card:nth-child(2){transform:rotate(-4deg)}
 .fan .card:nth-child(4){transform:rotate(4deg)} .fan .card:nth-child(5){transform:rotate(9deg) translateY(.4em)}
-.hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;padding-top:16px}
 .hero-row .btn.primary{flex:1 1 130px;min-height:52px;font-size:18px}
 .hero-row .seg{flex:1 1 210px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -117,8 +120,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .title .logo-word{height:38px}
   .subtitle{font-size:17px;margin:12px 0 0}
   .hero{padding:24px;display:flex;flex-direction:column}
-  .hero-body{flex:1;display:flex;flex-direction:column}
-  .hero-row{margin-top:auto;padding-top:18px}
+  .hero-body{flex:1}
+  .hero-row{padding-top:18px}
   .hero-h{font-size:30px}
   .fan{font-size:14px}
   .modeseg svg{display:block}
