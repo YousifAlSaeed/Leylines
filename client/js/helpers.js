@@ -93,7 +93,7 @@ function sfx(k){
 // final hit and its ring play on top of it, fading out, instead of leaving a second of silence.
 // Replace these numbers if the track changes.
 const MUSIC={src:'audio/theme.mp3',max:.5,first:0,loopAt:167.4085,
-  buf:null,loading:null,node:null,gain:null,want:false};
+  buf:null,loading:null,node:null,gain:null,want:false,pos:null,t0:0,off:0};
 function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
 const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
 // download now; decoding needs the audio context, which waits for the first interaction
@@ -125,17 +125,23 @@ function musicPlay(){
     if(!MUSIC.want||!musicOn()||MUSIC.node)return;
     if(AC.state==='suspended')AC.resume();
     const src=AC.createBufferSource(),g=AC.createGain(),t=AC.currentTime+.05;
+    // after a mute, carry on from where it stopped (fading in), not from the top
+    const off=MUSIC.pos??MUSIC.first,resume=MUSIC.pos!=null;MUSIC.pos=null;
     src.buffer=b;src.loop=true;src.loopStart=MUSIC.loopStart;src.loopEnd=MUSIC.loopEnd;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+.03);
-    src.connect(g).connect(AC.destination);src.start(t,MUSIC.first);
-    MUSIC.node=src;MUSIC.gain=g;
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+(resume?.6:.03));
+    src.connect(g).connect(AC.destination);src.start(t,off);
+    Object.assign(MUSIC,{node:src,gain:g,t0:t,off});
   }).catch(()=>{});
 }
 function musicStop(keepWant){
   if(!keepWant)MUSIC.want=false;
   const src=MUSIC.node,g=MUSIC.gain;if(!src)return;
   MUSIC.node=MUSIC.gain=null;
-  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);
+  const t=AC.currentTime;
+  // where in the track we are: past the loop end it wraps back to the loop start
+  let p=MUSIC.off+Math.max(0,t-MUSIC.t0);
+  if(p>=MUSIC.loopEnd)p=MUSIC.loopStart+(p-MUSIC.loopEnd)%(MUSIC.loopEnd-MUSIC.loopStart);
+  MUSIC.pos=p;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);
   src.stop(t+.65);
 }
 function musicSync(){
