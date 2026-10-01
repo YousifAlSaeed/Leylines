@@ -42,3 +42,9 @@
 /* account row at the top of Settings */
 .acctrow .rt{flex:1;min-width:0}
 .acctrow .rt small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* the card avatar (profile.js) and the level line */
+.pc-av.art{background:var(--surf2);font:400 20px/1 var(--body);border-color:transparent;box-shadow:0 0 0 2px var(--ring)}
+.pc-main .pc-lv{color:var(--accent-ink);font-weight:600}
+.pcard .pc-go{flex:none;width:18px;height:18px;color:var(--muted)}
+.acctrow .pc-av.art{margin-left:2px}

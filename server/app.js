@@ -16,7 +16,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
       res.set('Access-Control-Allow-Origin', corsOrigins.includes('*') ? '*' : origin);
       res.set('Vary', 'Origin');
       res.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-      res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
       res.set('Access-Control-Max-Age', '86400');
     }
     if (req.method === 'OPTIONS') return res.status(204).end();

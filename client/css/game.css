@@ -34,6 +34,7 @@
 .av{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font:800 15px var(--display);color:#fff;flex:none;transition:box-shadow .25s}
 .side.me .av{background:linear-gradient(160deg,var(--blue1),var(--blue2))}
 .side.opp .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
+.av.art{font:400 19px/1 var(--body)}
 .pname .who{flex:1;min-width:0;font:600 14px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s}
 .pname .sc{font:900 28px/1 var(--display);min-width:1.1em;text-align:right}
 .side.me .sc{color:var(--blue-ink)} .side.opp .sc{color:var(--red-ink)}
