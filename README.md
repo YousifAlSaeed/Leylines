@@ -1,12 +1,12 @@
 <h1 align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="images/leylines-vertical.svg">
-    <img src="images/leylines-vertical-on-dark.png" alt="Leylines" width="320">
+    <source media="(prefers-color-scheme: dark)" srcset="client/images/leylines-vertical.svg">
+    <img src="client/images/leylines-vertical-on-dark.png" alt="Leylines" width="320">
   </picture>
 </h1>
 
 <p align="center">
-  A card game of nine squares: a single-file 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
+  A card game of nine squares: a 3×3 card game in the style of Triple Triad (Final Fantasy VIII), with 55 original cards.
 </p>
 
 <p align="center">
@@ -88,9 +88,18 @@ The 55 cards are split into five rarities:
 
 ## Running locally
 
-Open `index.html` in any modern browser. There's no build step and nothing to install.
+**Just the game:** open `client/index.html` in any modern browser. There's no build step and nothing to install.
 
-Everything is saved in the browser's `localStorage`, so progress stays on that device and browser.
+**With the server** (Node 20+), which serves the game plus the `/api` routes and the database:
+
+```bash
+npm install
+npm start
+```
+
+Then open http://127.0.0.1:3000. `npm run dev` restarts on file changes, `npm run db:init` creates the database without starting the server. `PORT`, `HOST` and `DB_FILE` can be set as environment variables.
+
+Game progress is still saved in the browser's `localStorage`, so it stays on that device and browser. The server and database are groundwork for player accounts; the game doesn't use them yet.
 
 An internet connection is needed for:
 - the fonts (Saira and Geist, from Google Fonts)
@@ -99,12 +108,37 @@ An internet connection is needed for:
 ## Project structure
 
 ```
-index.html        the whole game: markup, styles and scripts
-audio/theme.mp3   background music
-images/          logos, favicon and app icons
+client/                 the game: static files, no build step
+  index.html            markup for every screen
+  css/                  styles, one file per area (base, menu, cards, game, howto, collection, online)
+  js/                   scripts, loaded in order as plain <script> tags sharing one global scope:
+    data.js             cards, rules, trades
+    save.js             localStorage save
+    helpers.js          DOM helpers, audio, layout
+    engine.js           pure game rules (used by the UI, the AI and online sync)
+    ai.js               computer opponent
+    menu.js setup.js deck.js match.js game.js collection.js howto.js settings.js online.js
+                        one file per screen or feature
+    main.js             boot: runs last, starts the app
+  audio/ images/        music, logos, favicon and app icons
+server/                 optional Node server (Express)
+  index.js              entry point
+  app.js                static files + /api
+  routes/users.js       POST /api/users (create account), GET /api/users/:username
+  lib/password.js       scrypt password hashing
+  db/schema.sql         tables: users, user_saves
+  db/index.js           SQLite via sql.js (WebAssembly, no native build)
+  data/                 the database file (git-ignored)
+index.html              forwards to client/ (for GitHub Pages "deploy from branch")
 ```
+
+A new script goes before `main.js` in `client/index.html`. Code that runs at load time (not inside a function) can only use things defined in earlier files.
 
 ## Deployment
 
-The game is hosted on GitHub Pages from the `main` branch:
-https://yousifalsaeed.github.io/Leylines/
+The game is hosted on GitHub Pages: https://yousifalsaeed.github.io/Leylines/
+
+- **Settings → Pages → Source: GitHub Actions** (recommended): `.github/workflows/pages.yml` publishes `client/` as the site root on every push to `main`.
+- **Deploy from a branch** (`main`, root): the root `index.html` forwards to `client/`, keeping `?join=` invite codes.
+
+GitHub Pages only serves static files, so the server is not deployed there. It needs a Node host of its own.

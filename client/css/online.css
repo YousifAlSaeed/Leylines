@@ -1,0 +1,31 @@
+/* ---------- online ---------- */
+.panel{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:18px 16px 20px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center}
+.codebox{font:900 44px/1 var(--display);letter-spacing:.3em;color:var(--accent-ink);padding:10px 0 6px .3em}
+.codein,.namein{background:var(--well);color:var(--text);border:1px solid var(--line2);border-radius:12px;padding:10px;width:100%;text-align:center}
+.codein{font:900 30px var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--accent-ink)}
+.namein{font:700 20px var(--display);user-select:text;-webkit-user-select:text}
+.codein::placeholder,.namein::placeholder{color:var(--muted);opacity:.6}
+.namein:focus,.codein:focus{outline:2px solid var(--accent-ink);outline-offset:1px}
+.namein.need{animation:need .5s 2}
+@keyframes need{50%{border-color:var(--accent);box-shadow:0 0 14px var(--accent-glow)}}
+.gold{color:var(--accent-ink)}
+.linkin{width:100%;background:var(--well);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:13px;user-select:all;-webkit-user-select:all}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.or{color:var(--muted);font-size:13px;margin:4px 0}
+.status{min-height:22px;color:var(--accent-ink);text-align:center;font-size:14px}
+.status.err{color:var(--danger)}
+.desc{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;color:var(--muted);line-height:1.55}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+.htabs{position:relative;justify-content:flex-start!important}
+.htabs button:first-child{margin-left:auto}.htabs button:last-child{margin-right:auto}
+.ring{--p:72;--rc:var(--accent);width:2.3em;height:2.3em;border-radius:50%;display:grid;place-items:center;font:800 .8em var(--display);position:relative;flex:none;
+  background:conic-gradient(var(--rc) 0 calc(var(--p)*1%),rgba(var(--tint),.12) 0)}
+.hstage .pill.big{font-size:1.25em}
+.ring::before{content:"";position:absolute;inset:.24em;border-radius:50%;background:var(--surf2)}
+.ring span{position:relative}
+.hstage .pill{min-height:0;font:700 .9em var(--display);padding:.25em 1em .25em .25em}
