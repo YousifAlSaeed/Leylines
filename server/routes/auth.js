@@ -4,7 +4,7 @@ import { Router } from 'express';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { createSession, deleteSession, requireAuth } from '../lib/sessions.js';
 import { rateLimit } from '../lib/rateLimit.js';
-import { checkSave, checkSignup, cleanName, publicUser } from '../lib/users.js';
+import { checkSave, checkSignup, cleanName, privateUser } from '../lib/users.js';
 
 // compared against when the username doesn't exist, so both cases take as long
 const DUMMY_HASH = await hashPassword('not-a-real-password');
@@ -48,7 +48,7 @@ export function authRouter(db) {
         { $u: user.id, $d: JSON.stringify(save) },
       ));
     }
-    res.status(201).json({ token: await createSession(db, user.id), user: publicUser(user), save: saveInfo(saved) });
+    res.status(201).json({ token: await createSession(db, user.id), user: privateUser(user), save: saveInfo(saved) });
   });
 
   // { username, password } → { token, user, save: { data, rev, updatedAt } | null }
@@ -61,7 +61,7 @@ export function authRouter(db) {
     if (!user || !ok) return res.status(401).json({ error: 'Wrong username or password.' });
 
     const save = await db.get('SELECT * FROM user_saves WHERE user_id = $u', { $u: user.id });
-    res.json({ token: await createSession(db, user.id), user: publicUser(user), save: saveInfo(save, true) });
+    res.json({ token: await createSession(db, user.id), user: privateUser(user), save: saveInfo(save, true) });
   });
 
   r.post('/logout', requireAuth(db), async (req, res) => {

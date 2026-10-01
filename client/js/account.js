@@ -34,7 +34,9 @@ async function api(path,{method='GET',body,timeout=20000}={}){
 /* ---------- what gets synced ---------- */
 // the whole save except cid, which identifies this device in online matches
 const syncData=()=>{const d={...SAVE};delete d.cid;return d};
-const sameSave=d=>JSON.stringify(d)===JSON.stringify(syncData());
+// compared after filling in defaults (an older save gains its profile fields) and with keys sorted
+const stable=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,x[k]])):x);
+const sameSave=d=>{const n=normSave(d);delete n.cid;return stable(n)===stable(syncData())};
 // a device that has never really been played: signing in just loads the account
 const isFresh=()=>Object.values(SAVE.stats).every(v=>!v)&&SAVE.seen.length<=STARTER.length&&!(SAVE.loadouts||[]).some(Boolean);
 const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
@@ -55,7 +57,7 @@ function acctApply(data,rev){
   ACCT.applying=false;
   Object.assign(ACCT,{rev,dirty:false,syncedAt:Date.now(),state:''});acctStore();
   applyTheme();updSnd();musicSync();
-  if($('#scr-menu').classList.contains('on'))renderMenu();else renderProfile();
+  if($('#scr-menu').classList.contains('on'))renderMenu();else{renderProfile();renderProfilePage()}
 }
 
 /* ---------- syncing ---------- */
@@ -63,7 +65,8 @@ function acctApply(data,rev){
 function acctChanged(){
   if(!ACCT.token||ACCT.applying)return;
   if(!ACCT.dirty){ACCT.dirty=true;acctStore()}
-  clearTimeout(ACCT.pushT);ACCT.pushT=setTimeout(acctPush,2500);
+  // while the player hasn't picked which progress to keep, don't overwrite the account's
+  clearTimeout(ACCT.pushT);if(!ACCT.conflict)ACCT.pushT=setTimeout(acctPush,2500);
   renderProfile();
 }
 async function acctPush(force){
@@ -90,7 +93,7 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();acctReconcile(r.save,false)}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false)}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
@@ -102,8 +105,8 @@ function acctReconcile(s,justSignedIn){
 }
 // both sides changed: the player picks one
 function acctAsk(s){
-  // never mid-match or over another popup; renderMenu asks again later
-  if(G||!$('#scr-menu').classList.contains('on')||$('#modal').classList.contains('on')){ACCT.conflict=s;return}
+  // only on the menu or your profile, never mid-match or over another popup; renderMenu asks again later
+  if(G||!['#scr-menu','#scr-profile'].some(id=>$(id).classList.contains('on'))||$('#modal').classList.contains('on')){ACCT.conflict=s;return}
   ACCT.conflict=null;
   modal(`<h2 class="nm2">Which progress to keep?</h2><p>This device and your account have different progress. The one you don't keep is replaced.</p>
     <div class="pick2"><div class="pk2"><b>Your account</b><small>${saveSummary(s.data)} · ${ago(s.updatedAt)}</small></div>
@@ -116,12 +119,12 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();
+  acctStore();renderProfile();renderProfilePage();
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
-  acctStore();renderProfile();
+  acctStore();renderProfile();renderProfilePage();
   if(msg)toast(msg,3500);
 }
 function acctSignOut(){
@@ -192,27 +195,31 @@ function openAuth(mode='up'){
 
 /* ---------- the profile card (menu) and the account row (settings) ---------- */
 const USER_ICON='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>';
-const avatar=u=>`<span class="pc-av${u?' on':''}" aria-hidden="true">${u?esc([...u.displayName][0].toUpperCase()):USER_ICON}</span>`;
+// your chosen card (profile.js), else your initial, else a person icon for a nameless guest
+function avatar(u){
+  const a=SAVE.avatar,name=u?u.displayName:cleanName(SAVE.name);
+  if(a)return `<span class="pc-av art" style="--ring:${RINGS[a.r]}" aria-hidden="true">${artOf(a)}</span>`;
+  return `<span class="pc-av${name?' on':''}" aria-hidden="true">${name?initialOf(name):USER_ICON}</span>`;
+}
 function acctStatus(){
   if(!ACCT.token)return API!=null&&ACCT.up?'Saved on this device only':'Saved on this device';
   return {syncing:'Syncing…',offline:'Offline · syncs when you reconnect',error:"Couldn't sync · will retry"}[ACCT.state]
     ||(ACCT.dirty?'Not synced yet':ACCT.syncedAt?'Synced · '+ago(ACCT.syncedAt):'Synced');
 }
+// the menu card: who you are and your level; your record lives on the profile it opens
 function renderProfile(){
   const el=$('#pcard');if(!el)return;
-  const st=SAVE.stats,u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up;
+  const u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up,lv=levelOf(SAVE.xp),name=u?u.displayName:profName();
   el.innerHTML=avatar(u)+
-    `<span class="pc-main"><b>${u?esc(u.displayName):'Guest'}</b><small>${st.w+st.ow} W · ${st.l+st.ol} L · ${st.d+st.od} D</small>`+
+    `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
-    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'');
-  el.setAttribute('aria-label',(u?`${u.displayName}, signed in. `:'Guest. ')+`${st.w+st.ow} wins, ${st.l+st.ol} losses, ${st.d+st.od} draws. ${acctStatus()}.`+(cta?' Create account':''));
+    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>'
+      :'<svg class="i pc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
+  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${acctStatus()}. Open profile.`);
+  // the profile's sync line, when it's open
+  const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
 }
-$('#pcard').onclick=()=>{
-  sfx('click');
-  if(ACCT.token)openSettings();
-  else if(ACCT.up)openAuth('up');
-  else toast(API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.');
-};
+$('#pcard').onclick=()=>{sfx('click');openProfile()};
 // the first row of Settings; empty when there's no server to sign in to
 function acctSettingsRow(){
   const u=ACCT.token&&ACCT.user;

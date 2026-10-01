@@ -7,14 +7,30 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null]};
+    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+    // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
+    pv:1,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[]};
+}
+// fills in the profile fields; a save from before profiles gets XP for the matches it already played
+function fixProfile(p,s){
+  const ob=v=>v&&typeof v==='object'&&!Array.isArray(v);
+  if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
+  for(const k of ['xp','streak','best'])p[k]=Math.max(0,+p[k]|0);
+  p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
+  p.recent=(Array.isArray(p.recent)?p.recent:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
+  p.badges=ob(p.badges)?p.badges:{};
+  p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
+  p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
+  return p;
+}
+// a stored save with any missing fields filled in
+function normSave(s){
+  const d=defSave();
+  return fixProfile({...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll},s);
 }
 function loadSave(){
-  const d=defSave();
-  try{const s=JSON.parse(localStorage.getItem(SKEY)||'null'); if(s&&typeof s==='object'){
-    return {...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll};
-  }}catch(e){}
-  return d;
+  try{const s=JSON.parse(localStorage.getItem(SKEY)||'null');if(s&&typeof s==='object')return normSave(s)}catch(e){}
+  return defSave();
 }
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;

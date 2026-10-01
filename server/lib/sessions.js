@@ -42,3 +42,8 @@ export function requireAuth(db) {
     next();
   };
 }
+
+// signs out every other device (after a password change)
+export async function deleteOtherSessions(db, userId, keepToken) {
+  await db.run('DELETE FROM sessions WHERE user_id = $u AND token_hash <> $h', { $u: userId, $h: sha256(keepToken) });
+}

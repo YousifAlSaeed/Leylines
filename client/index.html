@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="css/collection.css">
 <link rel="stylesheet" href="css/online.css">
 <link rel="stylesheet" href="css/account.css">
+<link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
 
@@ -181,6 +182,12 @@
   </div>
 </section>
 
+<!-- PROFILE (yours, or someone's from a shared link); profile.js draws it -->
+<section id="scr-profile" class="screen">
+  <div class="topbar pf-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="pfTitle">Profile</h2></div>
+  <div class="wrap pf-wrap" id="pfBody"></div>
+</section>
+
 <!-- ONLINE -->
 <section id="scr-online" class="screen">
   <div class="topbar"><button class="iconbtn" id="onBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Online</h2></div>
@@ -239,6 +246,7 @@
 <script src="js/howto.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
+<script src="js/profile.js"></script>
 <script src="js/account.js"></script>
 <script src="js/main.js"></script>
 </body>
