@@ -137,25 +137,29 @@ function pickShowcase(){
 /* ---------- account settings ---------- */
 // erase everything and start over (the account's copy too, when signed in)
 function confirmReset(after){
-  modal(`<h2>Reset progress?</h2><p>Your cards, stats, level, badges, packs and settings will be erased and you'll start over with the starter cards.${ACCT.token?' This also resets your account.':''}</p>`,[
-    {label:'Erase everything',cls:'danger',fn:()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();musicSync();renderProfile();after();toast('Progress reset.')}},
-    {label:'Cancel',cls:'primary',esc:true}]);
+  pfForm({title:'Reset progress?',text:`Your cards, stats, level, badges, packs and settings will be erased and you'll start over with the starter cards.${ACCT.token?' This also resets your account.':''} This can't be undone.`,
+    go:'Erase everything',danger:true,confirm:'RESET',fields:[],
+    run:async()=>{const cid=SAVE.cid;SAVE=defSave();SAVE.cid=cid;save();applyTheme();updSnd();musicSync();renderProfile();after();toast('Progress reset.')}});
 }
 // a small form in a popup; run(values) throws to show an error and keep it open
-function pfForm({title,text='',fields,go,danger,run}){
+// confirm: a word the player has to type before the button works (for things that can't be undone)
+function pfForm({title,text='',fields,go,danger,run,confirm}){
+  if(confirm)fields=[...fields,{label:`<span>Type <b>${confirm}</b> to confirm</span>`,name:'confirm',attrs:'autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"'}];
   const box=modal(`<h2 class="nm2">${title}</h2>${text?`<p>${text}</p>`:''}<form class="authf" novalidate>${fields.map(f=>
     `<label>${f.label}<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value||'')}" ${f.attrs||''}></label>`).join('')}
     <p class="auerr" role="alert"></p><button class="btn ${danger?'danger':'primary'} full" type="submit">${go}</button></form>`,
     [{label:'Cancel',cls:'text',esc:true}]);
   const f=box.querySelector('form'),err=f.querySelector('.auerr'),b=f.querySelector('[type=submit]');
-  f.oninput=()=>{err.textContent=''};
+  const typed=()=>!confirm||f.elements.confirm.value.trim().toUpperCase()===confirm;
+  b.disabled=!typed();
+  f.oninput=()=>{err.textContent='';b.disabled=!typed()};
   setTimeout(()=>f.elements[0].focus(),50);
   f.onsubmit=async e=>{
-    e.preventDefault();sfx('click');b.disabled=true;
+    e.preventDefault();if(!typed())return;sfx('click');b.disabled=true;
     try{await run(Object.fromEntries(new FormData(f)));closeModal()}
     catch(x){
       if(x.status===401){closeModal();acctSignedOut('Your session ended. Sign in again.');return}
-      err.textContent=x.message;b.disabled=false;
+      err.textContent=x.message;b.disabled=!typed();
     }
   };
 }
@@ -192,7 +196,7 @@ function editPassword(){
     }});
 }
 function deleteAccount(){
-  pfForm({title:'Delete account?',text:`This removes <b>@${esc(ACCT.user.username)}</b> and its cloud save for good. Your progress stays on this device.`,go:'Delete account',danger:true,
+  pfForm({title:'Delete account?',text:`This removes <b>@${esc(ACCT.user.username)}</b> and its cloud save for good. Your progress stays on this device. This can't be undone.`,go:'Delete account',danger:true,confirm:'DELETE',
     fields:[{label:'Password',name:'password',type:'password',attrs:'maxlength="200" autocomplete="current-password"'}],
     run:async v=>{
       if(!v.password)throw new Error('Enter your password.');
@@ -293,18 +297,18 @@ function renderProfilePage(force){
   if(mine){
     const ic=p=>`<span class="pf-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${p}</svg></span>`;
     const row=(icon,b,small,btn,id,cls='')=>`<div class="pf-row">${ic(icon)}<span class="rt"><b>${b}</b><small${id==='pfOut'?' id="pfSync"':''}>${small}</small></span><button class="btn small ${cls}" id="${id}">${btn}</button></div>`;
+    const resetRow=row('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>','Reset progress',`Start over with the starter cards${u?'. Your account is reset too':''}.`,'Reset','pfReset','danger');
     if(u)acct=`<section class="pf-card"><h3>Account</h3>`+
       row('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>','Display name',esc(u.displayName),'Edit','pfName')+
       row('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>','Email',u.email?esc(u.email):'Not set',u.email?'Change':'Add','pfEmail')+
       row('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>','Password','••••••••','Change','pfPass')+
       row('<path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"/>','Sign out',acctStatus(),'Sign out','pfOut')+
-      row('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>','Delete account','Removes your cloud save. This device keeps its copy.','Delete','pfDel','danger')+
+      resetRow+
+      row('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>','Delete account','Removes your account and cloud save. This device keeps its copy.','Delete','pfDel','danger')+
       `</section>`;
     else acct=`<section class="pf-card"><h3>Account</h3>`+(ACCT.up
       ?`<p class="pf-hint left">Make an account to keep your cards, stats and badges on every device, and to share your profile.</p><div class="pf-two"><button class="btn primary" id="pfUp">Create account</button><button class="btn" id="pfIn">Sign in</button></div>`
-      :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+`</section>`;
-    acct+=`<section class="pf-card"><h3>Progress</h3>`+
-      row('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>','Reset progress',`Start over with the starter cards${u?'. Your account is reset too':''}.`,'Reset','pfReset','danger')+`</section>`;
+      :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+resetRow+`</section>`;
     // developer tools: only for accounts in the server's DEV_USERS list, or on a local copy of the game
     if(isDev())acct+=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
       <div class="pf-row"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection.</small></span>
