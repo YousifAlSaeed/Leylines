@@ -2,6 +2,10 @@
 /* =====================================================================
    ENGINE  (pure — used by UI, AI search and online sync)
    ===================================================================== */
+// seeded random numbers: the same seed gives the same sequence on both online players' devices
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rand32=()=>(Math.random()*4294967296)>>>0;
+function shuffle(a,r=Math.random){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 // neighbours: [top,right,bottom,left]; side index d touches opposite side (d+2)&3
 const NB=[...Array(9)].map((_,i)=>[i>=3?i-3:-1,i%3<2?i+1:-1,i<6?i+3:-1,i%3>0?i-1:-1]);
 function newState(h0,h1,first,el){return{b:Array(9).fill(-1),o:Array(9).fill(-1),m:Array(9).fill(0),h:[h0.slice(),h1.slice()],turn:first,el}}
@@ -70,6 +74,10 @@ function play(s,R,hi,cell,ev){
   }
   s.turn=q;
 }
+// Chaos: which hand card the player to move must play
+const chaosPick=(s,rng)=>Math.floor(rng()*s.h[s.turn].length);
+// a best-of series is over once every match is played or the leader can't be caught (a draw counts for nobody)
+const seriesDone=(bo,played,wins)=>played>=bo||Math.abs(wins[0]-wins[1])>bo-played;
 function genElements(R,rng){
   const el=Array(9).fill(null);
   if(!R.elemental)return el;
