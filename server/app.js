@@ -8,6 +8,31 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
   app.disable('x-powered-by');
   app.set('trust proxy', trustProxy);
 
+  // browser safety headers: no framing (clickjacking), scripts only from this site and the PeerJS CDNs,
+  // network calls only to this site and the PeerJS server used for online play
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' https://unpkg.com https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob:",
+    "media-src 'self' data: blob:",
+    "connect-src 'self' https://*.peerjs.com wss://*.peerjs.com",
+    "frame-ancestors 'none'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
+  ].join('; ');
+  app.use((req, res, next) => {
+    res.set({
+      'Content-Security-Policy': csp,
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    });
+    if (req.secure) res.set('Strict-Transport-Security', 'max-age=31536000');
+    next();
+  });
+
   const api = express.Router();
   // lets a copy of the client hosted elsewhere (GitHub Pages) call this API
   api.use((req, res, next) => {

@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 -- usernames are unique ignoring case (SQLite: COLLATE NOCASE)
 CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users (lower(username));
-CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users (email) WHERE email IS NOT NULL;
+-- Emails are not unique: a unique email would let anyone test whether an
+-- address has an account. They are stored encrypted (server/lib/emailCrypto.js).
+DROP INDEX IF EXISTS users_email;
 
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash TEXT    PRIMARY KEY,
