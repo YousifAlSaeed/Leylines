@@ -120,6 +120,14 @@ An internet connection is needed for:
 - the fonts (Saira and Geist, from Google Fonts)
 - **Online** mode, which loads [PeerJS](https://peerjs.com/) from a CDN and connects players peer to peer
 
+### Tests
+
+```bash
+npm test
+```
+
+`test/rules.test.js` checks the game rules (captures, Same, Same wall, Plus, Combo, Elemental, Chaos, series) by loading the browser's rule files into Node. `test/api.test.js` runs the server on a throwaway in-memory database and checks accounts, encrypted emails, password resets and the security headers. GitHub runs them on every push to `dev` or `main` and on every pull request (`.github/workflows/test.yml`).
+
 ## Project structure
 
 ```

@@ -1,0 +1,18 @@
+# Runs the tests (npm test) on every push to dev or main and on every pull
+# request; a red ✗ on GitHub means something broke.
+name: Tests
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test

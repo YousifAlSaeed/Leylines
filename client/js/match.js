@@ -59,7 +59,7 @@ function nextTurn(){
   if(!G)return;
   // Chaos: the card that must be played this turn. Drawn from the match's seeded random numbers, so both online players get the same one
   G.sel=null;G.forced=null;
-  if(G.rules.chaos&&!isFull(G.st)){G.forced=Math.floor(G.rng()*G.st.h[G.st.turn].length);if(isHuman(G.st.turn))G.sel=G.forced}
+  if(G.rules.chaos&&!isFull(G.st)){G.forced=chaosPick(G.st,G.rng);if(isHuman(G.st.turn))G.sel=G.forced}
   renderGame();
   if(isFull(G.st)){endRound();return}
   startTurnTimer();
@@ -158,8 +158,7 @@ function finish(s0,s1){
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
   const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
-  // a series goes on until every match is played or the leader can't be caught
-  if(G.bo>1&&G.bo-ser.n>=Math.abs(ser.wins[0]-ser.wins[1])&&ser.n<G.bo){
+  if(G.bo>1&&!seriesDone(G.bo,ser.n,ser.wins)){
     const g=G;
     setTimeout(()=>{if(G===g)seriesNextModal(`<div class="kick">Best of ${G.bo} · Match ${ser.n}</div><h2>${resultTitle(mw)}</h2>`+vs+big(m[0],m[1])+
       `<p class="serscore">Series <b class="b">${sw[0]}</b> – <b class="r">${sw[1]}</b></p>`+reward)},600);
