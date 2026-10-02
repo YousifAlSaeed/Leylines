@@ -1,6 +1,8 @@
 /* ---------- game ---------- */
 #scr-game{padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:hidden}
-@media (display-mode: standalone){#scr-game{padding-top:calc(env(safe-area-inset-top) + 10px)}}
+.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-short #scr-game{padding-bottom:6px}
+/* a match never scrolls: everything is sized to fit (layout, fitGame) */
+#scr-game{overscroll-behavior:none}
 .hud{display:flex;align-items:center;gap:8px;width:100%;max-width:1240px;height:52px;flex:none;position:relative}
 .wordmark{display:none;font:900 18px var(--display);font-style:italic;font-stretch:120%;text-transform:uppercase;padding-right:.1em;
   background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -97,7 +99,7 @@ body.land .hand .card.sel{z-index:3}
 @keyframes pop{0%{transform:scale(.2) rotate(-6deg);opacity:0}18%{transform:scale(1.16) rotate(1deg);opacity:1}32%{transform:scale(1) rotate(0)}78%{opacity:1;transform:scale(1.02)}100%{opacity:0;transform:scale(1.1)}}
 
 /* ---------- dialogs ---------- */
-#modal,#how{position:fixed;top:0;left:0;right:0;height:var(--app-h,100%);display:none;align-items:center;justify-content:center;padding:16px;
+#modal,#how{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;
   background:rgba(var(--sh),var(--dim));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #modal{z-index:var(--z-modal)} #how{z-index:var(--z-how)}
 #modal.on,#how.on{display:flex}

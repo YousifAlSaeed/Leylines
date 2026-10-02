@@ -98,7 +98,7 @@ function rewardHTML(r){
 // shows which way reaches the real bottom of the screen. Tap anywhere to close.
 function screenInfo(){
   const bars=[['inset 0','top:0;bottom:0','#ff4d6d'],['100vh','top:0;height:100vh','#3ddc84'],['100dvh','top:0;height:100dvh','#4da3ff'],
-    ['100lvh','top:0;height:100lvh','#ffd23f'],['app-h','top:0;height:var(--app-h,100%)','#c77dff']];
+    ['100lvh','top:0;height:100lvh','#ffd23f'],['100svh','top:0;height:100svh','#c77dff']];
   const d=document.createElement('div');
   d.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100lvh;z-index:999;background:#0b0820;color:#fff;font:12px/1.45 ui-monospace,monospace;overflow:hidden';
   d.innerHTML=bars.map(([l,css,c],i)=>`<div data-bar="${l}" style="position:fixed;${css};right:${8+i*22}px;width:14px;background:${c};opacity:.85">`+
@@ -116,7 +116,7 @@ function screenInfo(){
     'html client      '+document.documentElement.clientWidth+' x '+document.documentElement.clientHeight,
     'safe areas       top '+sa.paddingTop+'  bottom '+sa.paddingBottom+'  left '+sa.paddingLeft+'  right '+sa.paddingRight,
     'bars (height)    '+bars.map(([l])=>l+' '+barH(l)).join('  '),
-    'APP_H '+APP_H+'   --app-h '+(document.documentElement.style.getPropertyValue('--app-h')||'(not set)')+'   --ui '+UI,
+    'classes '+(document.documentElement.className||'(none)')+'   --ui '+UI,
     'game padding     top '+gp.paddingTop+'  bottom '+gp.paddingBottom,
     'offline helper   '+(navigator.serviceWorker&&navigator.serviceWorker.controller?'on':'off'),
     navigator.userAgent].join(String.fromCharCode(10));
