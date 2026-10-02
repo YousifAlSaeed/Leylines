@@ -179,15 +179,22 @@ If the client is hosted somewhere other than the server (for example GitHub Page
 
 The game is hosted on: https://leylines.live/ !
 
-### Render (dev branch)
+### Render
 
-`render.yaml` describes the service: in the Render dashboard choose **New → Blueprint** and pick this repository. It deploys the `dev` branch (game and API on one URL) and redeploys on every push to `dev`.
+There are two Render services in the **Leylines** project, both made by hand in the dashboard (`render.yaml` records their settings):
 
-Accounts are stored in a free [Neon](https://neon.tech) Postgres database, because Render's free plan wipes the server's disk on every deploy, restart and idle spin-down (after 15 minutes without traffic). To set it up:
+| Service | Site | Branch | Use |
+| --- | --- | --- | --- |
+| `leylines` (Production) | https://leylines.live/ | `main` | the live game |
+| `Leylines-dev` (Dev) | https://leylines.onrender.com/ | `dev` | testing new work |
+
+Each redeploys when its branch gets a push. New work goes on `dev`, gets checked on the test site, then goes live through a pull request from `dev` into `main`.
+
+Accounts are stored in a free [Neon](https://neon.tech) Postgres database, because Render's free plan wipes the server's disk on every deploy, restart and idle spin-down (after 15 minutes without traffic). Both services use the same database. To set it up:
 
 1. Create a Neon project and copy its connection string (`postgresql://...?sslmode=require`).
-2. In Render: the service → **Environment** → add `DATABASE_URL` with that string, then save (Render redeploys).
-3. Add `EMAIL_KEY` too: click **Generate** for a random value. Stored emails are encrypted with it, so a leaked database doesn't reveal them. Keep a copy somewhere safe: if it's lost, saved emails can't be read (accounts still work).
+2. In Render, on **each** service → **Environment**: add `DATABASE_URL` with that string.
+3. Add `EMAIL_KEY` too: on the first service click **Generate**, then copy that exact value to the other service. Stored emails are encrypted with it, so a leaked database doesn't reveal them; with different keys, one site can't read the emails the other saved. Keep a copy somewhere safe: if it's lost, saved emails can't be read (accounts still work).
 4. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected, and `Encrypted N stored emails` shows old emails being encrypted the first time.
 
 Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
