@@ -47,6 +47,7 @@ Each rule can be turned on or off in match setup.
 | **Elemental** | 1 to 4 squares get an element. A card of the same element gets +1 on every side; any other card gets −1. |
 | **Sudden death** | A draw restarts the match. Each player keeps the cards they owned at the end (up to 5 extra rounds). |
 | **Random** | Your 5 cards are dealt at random from your collection. |
+| **Chaos** | Each turn the game picks a random card from your hand, and you must play it. You only choose the square. |
 | **Turn timer** | Off, or 10 to 90 seconds per turn. When time runs out, a random card is played to a random empty square. |
 | **Series** | Single match, best of 3 or best of 5. Same 5 cards all series, and whoever went first goes second next match. A draw counts for nobody; most wins takes the series. Cards are traded once, at the end. |
 

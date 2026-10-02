@@ -28,12 +28,16 @@ function renderBoard(){
 function renderHands(){
   const st=G.st,bot=G.bottom,top=1-bot;
   for(const[p,el] of [[top,$('#handTop')],[bot,$('#handBot')]]){
-    const hide=!viewerSees(p),can=canAct(p);
-    el.innerHTML=st.h[p].map((id,i)=>hide
-      ?cardHTML(id,null,{back:true})
-      :cardHTML(id,colorOf(p),{cls:(can?'play ':'')+(can&&G.sel===i?'sel':''),
-        attrs:`data-p="${p}" data-i="${i}"`+(can?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join('');
-    if(can)el.querySelectorAll('.card').forEach(c=>c.addEventListener('pointerdown',onHandDown));
+    const hide=!viewerSees(p),can=canAct(p),chaos=G.forced!=null&&p===st.turn&&!G.over;
+    // with Chaos only the picked card can be played; it's marked in either hand
+    el.classList.toggle('chaos',chaos);
+    el.innerHTML=st.h[p].map((id,i)=>{
+      const ok=can&&(G.forced==null||i===G.forced),fc=chaos&&i===G.forced?'forced ':'';
+      return hide
+      ?cardHTML(id,null,{back:true,cls:fc})
+      :cardHTML(id,colorOf(p),{cls:fc+(ok?'play ':'')+(ok&&G.sel===i?'sel':''),
+        attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${fc?', picked by Chaos':''}"`:'')})}).join('');
+    if(can)el.querySelectorAll('.card.play').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
   // in same-screen mode the active player is shown at the bottom side's highlight
 }
@@ -104,7 +108,7 @@ function endDrag(e,cancel){
     renderGame();return;
   }
   if(cancel)return;
-  G.sel=G.sel===d.hi?null:d.hi;sfx('click');
+  G.sel=G.forced!=null?G.forced:G.sel===d.hi?null:d.hi;sfx('click');
   renderHands();renderBoard();
 }
 window.addEventListener('pointerup',e=>endDrag(e,false));

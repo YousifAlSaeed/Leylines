@@ -73,6 +73,15 @@ const HOW=[
     const deal=()=>{row.innerHTML='';shuffle(pool.slice()).slice(0,5).forEach((id,i)=>setTimeout(()=>row.insertAdjacentHTML('beforeend',cardHTML(id,'blue',{name:false,cls:'drop'})),i*180))};
     return demoLoop([[0,deal]],3000)},
   list:['Your 5 cards are dealt at random from your collection','You skip the card picker','Good for quick games, and for trying cards you never pick','<b>Example:</b> start a match and 5 random cards from your collection land in your hand']},
+ {tab:'Chaos',tag:'Rule · Chaos',title:'The game picks your card',
+  stage:()=>`<div class="demo-col"><span class="lbl2">Chaos picks the card you play</span><div class="hand-row chaos" id="hChaos"></div></div>`,
+  run:st=>{
+    const row=st.querySelector('#hChaos'),ids=[46,17,1,26,9];let last=-1;
+    row.innerHTML=ids.map(id=>cardHTML(id,'blue',{name:false})).join('');
+    const pick=()=>{let i;do i=Math.floor(Math.random()*ids.length);while(i===last);last=i;
+      [...row.children].forEach((c,k)=>c.classList.toggle('forced',k===i))};
+    pick();return demoLoop([[0,pick]],1400)},
+  list:['Each turn, one card from your hand is picked at random','You <b>must</b> play that card. You only choose the square','A new card is picked every turn, for both players','Every card in your 5 can come up, so pick them well','<b>Example:</b> Chaos picks your weakest card, so you tuck its weak sides against the walls']},
  {tab:'Turn timer',tag:'Rule · Turn timer',title:'Up to 90 seconds a turn',
   stage:()=>`<span class="pill big"><span class="ring" id="hRing"><span>45</span></span><span id="hTmsg">Your turn</span></span>`,
   run:st=>{
