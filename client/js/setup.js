@@ -68,6 +68,10 @@ function renderSetup(flipKey){
   $$('#tradeSeg button').forEach(b=>b.onclick=()=>{SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
   const tr=TRADES.find(t=>t[0]===SAVE.trade);
   $('#tradeDesc').textContent=tr[2];
+  const bo=boOf(SAVE.bo);
+  $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
+  $$('#seriesSeg button').forEach(b=>b.onclick=()=>{SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});
+  $('#seriesDesc').textContent=SERIES.find(s=>s[0]===bo)[2]+(bo>1&&setupMode!=='local'&&SAVE.trade!=='none'?' Cards are traded once, at the end.':'');
   if(setupMode!=='online')$('#setupGo').textContent=R.random?'Start match':'Choose cards';
 }
 $('#setupGo').onclick=()=>{

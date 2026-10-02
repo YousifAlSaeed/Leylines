@@ -43,7 +43,7 @@ function heroPane(m){
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
     h='vs Computer';
-    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
+    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(boOf(SAVE.bo)>1?' · Best of '+SAVE.bo:'');
     side=dk.fan;
     row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
       DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;

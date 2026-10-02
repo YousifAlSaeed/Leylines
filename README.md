@@ -48,6 +48,7 @@ Each rule can be turned on or off in match setup.
 | **Sudden death** | A draw restarts the match. Each player keeps the cards they owned at the end (up to 5 extra rounds). |
 | **Random** | Your 5 cards are dealt at random from your collection. |
 | **Turn timer** | Off, or 10 to 90 seconds per turn. When time runs out, a random card is played to a random empty square. |
+| **Series** | Single match, best of 3 or best of 5. Same 5 cards all series, and whoever went first goes second next match. A draw counts for nobody; most wins takes the series. Cards are traded once, at the end. |
 
 ## Trade rules
 
