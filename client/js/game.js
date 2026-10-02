@@ -116,23 +116,20 @@ window.addEventListener('pointercancel',e=>endDrag(e,true));
 
 /* ---------- responsive sizing ---------- */
 let UI=1; // current --ui zoom; rects from getBoundingClientRect are in window pixels, so divide by it before reusing them as CSS sizes inside a screen
-// The page's real height. An iPhone home-screen app drawn under the clock reports itself shorter than the
-// screen by the clock's strip, which leaves a dead band at the bottom; then the whole screen height is used
-// (and --app-h stretches the screens, popups and grain to it).
-let APP_H=0;
-function appHeight(){
-  const top=parseFloat(getComputedStyle($('#safe')).paddingTop)||0;
-  const full=innerWidth<innerHeight?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
-  const gap=full-innerHeight;
-  return APP_H=navigator.standalone&&top>0&&gap>0&&gap<=top+8?full:innerHeight;
+// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css). On an iPhone 16 Pro Max with iOS 26: the
+// screen is 956 tall, the page only 894, short by exactly the clock's strip (safe-area top 62), with the rest at the bottom.
+function iosFlags(){
+  const app=navigator.standalone===true,top=parseFloat(getComputedStyle($('#safe')).paddingTop)||0;
+  const full=innerWidth<innerHeight?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height),gap=full-innerHeight;
+  const de=document.documentElement.classList;
+  de.toggle('ios-app',app);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
 function layout(){
-  const vh=appHeight();
+  iosFlags();
+  const vh=innerHeight;
   // UI scale: 1 up to a ~1440x900 window, then grows with whichever side is tighter (2K ≈ 1.45, 4K ≈ 2.2)
   const ui=Math.min(2.4,Math.max(1,Math.floor(Math.min(innerWidth/1440,vh/900)*20)/20));
   UI=ui;document.documentElement.style.setProperty('--ui',ui);
-  // the screens are zoomed by --ui (always 1 on phones, where this happens)
-  if(vh!==innerHeight)document.documentElement.style.setProperty('--app-h',vh/ui+'px');else document.documentElement.style.removeProperty('--app-h');
   // everything below is in the zoomed screen's own pixels. The notch and home bar (safe areas) make the game
   // screen's padding bigger than the usual 6px top/bottom and 10px sides; the extra comes off the space
   const pad=getComputedStyle($('#scr-game')),p=k=>parseFloat(pad['padding'+k])||0;
@@ -163,7 +160,7 @@ function layout(){
 // onto two lines), shrink the board and hands until it fits
 function fitGame(){
   const sg=$('#scr-game');if(!sg.classList.contains('on'))return;
-  const rs=document.documentElement.style,limit=(APP_H||innerHeight)-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
+  const rs=document.documentElement.style,limit=innerHeight-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
   for(let k=0;k<3;k++){
     const parts=[$('#sideTop'),$('#board'),$('#sideBot')].map(e=>e.getBoundingClientRect());
     const top=Math.min(...parts.map(r=>r.top)),over=Math.max(...parts.map(r=>r.bottom))-limit;
