@@ -8,6 +8,10 @@ const PREFIX = 'enc1:';
 // any long random string works as EMAIL_KEY; hashing it gives the 32-byte key
 const key = config.emailKey ? crypto.createHash('sha256').update('leylines-email:' + config.emailKey).digest() : null;
 export const emailKeySet = !!key;
+const macKey = crypto.createHash('sha256').update('leylines-email-hash:' + (config.emailKey || 'local')).digest();
+
+// the same email always gives the same hash, which is what accounts are looked up by
+export const emailHash = (email) => email ? crypto.createHmac('sha256', macKey).update(String(email).trim().toLowerCase()).digest('hex') : null;
 
 export function sealEmail(email) {
   if (!email || !key) return email || null;
@@ -32,11 +36,16 @@ export function openEmail(stored) {
   }
 }
 
-// encrypts any emails saved before EMAIL_KEY was set; returns how many
-export async function sealStoredEmails(db) {
-  if (!key) return 0;
-  const rows = await db.all("SELECT id, email FROM users WHERE email IS NOT NULL AND email NOT LIKE 'enc1:%'");
-  for (const r of rows)
-    await db.run('UPDATE users SET email = $e WHERE id = $u AND email = $old', { $e: sealEmail(r.email), $u: r.id, $old: r.email });
-  return rows.length;
+// encrypts emails saved before EMAIL_KEY was set and fills in missing email hashes; returns how many it encrypted
+export async function upgradeStoredEmails(db) {
+  let sealed = 0;
+  for (const r of await db.all('SELECT id, email, email_hash FROM users WHERE email IS NOT NULL')) {
+    const plain = openEmail(r.email);
+    if (!plain) continue;
+    const email = key && !r.email.startsWith(PREFIX) ? sealEmail(plain) : r.email, hash = emailHash(plain);
+    if (email === r.email && hash === r.email_hash) continue;
+    await db.run('UPDATE users SET email = $e, email_hash = $h WHERE id = $u AND email = $old', { $e: email, $h: hash, $u: r.id, $old: r.email });
+    if (email !== r.email) sealed++;
+  }
+  return sealed;
 }

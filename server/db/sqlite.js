@@ -13,6 +13,10 @@ export async function openSqlite(file) {
   const SQL = await initSqlJs();
   const db = file && fs.existsSync(file) ? new SQL.Database(fs.readFileSync(file)) : new SQL.Database();
   db.run('PRAGMA foreign_keys = ON');
+  // columns added after a table was first made (SQLite has no ADD COLUMN IF NOT EXISTS)
+  const cols = (t) => (db.exec(`PRAGMA table_info(${t})`)[0]?.values || []).map((v) => v[1]);
+  const userCols = cols('users');
+  if (userCols.length && !userCols.includes('email_hash')) db.run('ALTER TABLE users ADD COLUMN email_hash TEXT');
   db.exec(SCHEMA);
 
   function persist() {

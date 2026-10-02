@@ -42,6 +42,12 @@ services:
       # somewhere safe: if it's lost, saved emails can't be read (accounts still work)
       - key: EMAIL_KEY
         sync: false
+      # sends password reset emails (resend.com → API Keys); the same key works for both services
+      - key: RESEND_API_KEY
+        sync: false
+      # this site's address, used in emailed links
+      - key: APP_URL
+        value: https://leylines.live
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
         sync: false
@@ -69,6 +75,12 @@ services:
       # somewhere safe: if it's lost, saved emails can't be read (accounts still work)
       - key: EMAIL_KEY
         sync: false
+      # sends password reset emails (resend.com → API Keys); the same key works for both services
+      - key: RESEND_API_KEY
+        sync: false
+      # this site's address, used in emailed links
+      - key: APP_URL
+        value: https://leylines.onrender.com
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
         sync: false
