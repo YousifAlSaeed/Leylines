@@ -4,7 +4,8 @@ const here = (p) => fileURLToPath(new URL(p, import.meta.url));
 
 export const config = {
   port: Number(process.env.PORT) || 3000,
-  host: process.env.HOST || '127.0.0.1',
+  // Render sets RENDER=true; it can only reach the app on 0.0.0.0
+  host: process.env.HOST || (process.env.RENDER ? '0.0.0.0' : '127.0.0.1'),
   clientDir: here('../client'),
   // Postgres connection string (for example from Neon). When set it is used
   // instead of the SQLite file, and accounts survive restarts and redeploys.
