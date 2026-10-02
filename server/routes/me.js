@@ -4,7 +4,7 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { rateLimit } from '../lib/rateLimit.js';
 import { deleteOtherSessions, requireAuth } from '../lib/sessions.js';
 import { checkEmail, checkPassword, checkSave, cleanName, privateUser } from '../lib/users.js';
-import { sealEmail } from '../lib/emailCrypto.js';
+import { emailHash, sealEmail } from '../lib/emailCrypto.js';
 
 export function meRouter(db) {
   const r = Router();
@@ -35,8 +35,8 @@ export function meRouter(db) {
       const mail = email ? String(email).trim().toLowerCase() : null;
       if (mail && !checkEmail(mail)) return res.status(400).json({ error: 'That email address doesn\'t look right.' });
       if (typeof password !== 'string' || !await verifyPassword(password, user.password_hash)) return wrongPassword(res);
-      ({ rows: [user] } = await db.run('UPDATE users SET email = $e, updated_at = $now WHERE id = $u RETURNING *',
-        { $e: sealEmail(mail), $now: now(), $u: user.id }));
+      ({ rows: [user] } = await db.run('UPDATE users SET email = $e, email_hash = $eh, updated_at = $now WHERE id = $u RETURNING *',
+        { $e: sealEmail(mail), $eh: emailHash(mail), $now: now(), $u: user.id }));
     }
     res.json({ user: privateUser(user) });
   });

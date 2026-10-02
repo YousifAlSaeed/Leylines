@@ -171,7 +171,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
 
-Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails).
+Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails), `RESEND_API_KEY` (sends password reset emails; without it they are printed to the console locally), `MAIL_FROM` (default `Leylines <noreply@leylines.live>`), `APP_URL` (the site address put in emailed links).
 
 If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
@@ -196,6 +196,16 @@ Accounts are stored in a free [Neon](https://neon.tech) Postgres database, becau
 2. In Render, on **each** service → **Environment**: add `DATABASE_URL` with that string.
 3. Add `EMAIL_KEY` too: on the first service click **Generate**, then copy that exact value to the other service. Stored emails are encrypted with it, so a leaked database doesn't reveal them; with different keys, one site can't read the emails the other saved. Keep a copy somewhere safe: if it's lost, saved emails can't be read (accounts still work).
 4. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected, and `Encrypted N stored emails` shows old emails being encrypted the first time.
+
+#### Password reset emails
+
+"Forgot password?" emails go out through [Resend](https://resend.com) (free for 3,000 emails a month). One-time setup:
+
+1. Make a Resend account → **Domains** → add `leylines.live`, then add the DNS records it shows where the domain is registered, and wait for it to say **Verified**.
+2. Resend → **API Keys** → create a key with sending access.
+3. In Render, on **each** service → **Environment**: add `RESEND_API_KEY` with that key, and `APP_URL` with that service's address (`https://leylines.live` for the live one, `https://leylines.onrender.com` for the dev one).
+
+Reset links work once, for 30 minutes; an account gets at most 3 a hour. Without `RESEND_API_KEY` no email is sent on Render.
 
 Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
 

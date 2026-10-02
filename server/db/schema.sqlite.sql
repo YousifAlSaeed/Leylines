@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   username      TEXT    NOT NULL UNIQUE COLLATE NOCASE,
   display_name  TEXT    NOT NULL,
   email         TEXT,
+  email_hash    TEXT,
   password_hash TEXT    NOT NULL,
   created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -16,6 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
 -- Emails are not unique: a unique email would let anyone test whether an
 -- address has an account. They are stored encrypted (server/lib/emailCrypto.js).
 DROP INDEX IF EXISTS users_email;
+-- a keyed hash of the email, so an account can be found by email without
+-- decrypting every row (sqlite.js adds the column to older databases)
+CREATE INDEX IF NOT EXISTS users_email_hash ON users (email_hash);
 
 -- Signed-in devices. Only a SHA-256 of each token is stored, so a leaked
 -- database can't be used to sign in.
@@ -36,3 +40,13 @@ CREATE TABLE IF NOT EXISTS user_saves (
   rev        INTEGER NOT NULL DEFAULT 1,
   updated_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
+
+-- Forgotten-password links. Only a SHA-256 of each token is stored; a link
+-- works once, for 30 minutes (server/lib/resets.js).
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash TEXT    PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT    NOT NULL,
+  expires_at TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets (user_id);
