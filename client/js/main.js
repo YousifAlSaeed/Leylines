@@ -3,6 +3,8 @@
    BOOT
    ===================================================================== */
 applyTheme();updSnd();renderMenu();layout();acctBoot();
+// offline support (sw.js); service workers only run on https and localhost
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 (function(){
   // a password reset link from an email: #reset=token (after #, so the token never reaches a server log)
   const rs=/^#reset=([\w-]{20,})$/.exec(location.hash);

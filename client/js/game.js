@@ -65,7 +65,7 @@ function renderHud(){
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
-  $('#ruleBar').innerHTML=chips;
+  if($('#ruleBar').innerHTML!==chips){$('#ruleBar').innerHTML=chips;fitGame()}
   updSnd();
 }
 
@@ -120,16 +120,21 @@ function layout(){
   // UI scale: 1 up to a ~1440x900 window, then grows with whichever side is tighter (2K ≈ 1.45, 4K ≈ 2.2)
   const ui=Math.min(2.4,Math.max(1,Math.floor(Math.min(innerWidth/1440,innerHeight/900)*20)/20));
   UI=ui;document.documentElement.style.setProperty('--ui',ui);
-  // everything below is in the zoomed screen's own pixels
-  const W=innerWidth/ui,H=innerHeight/ui,land=W>H*1.08;
+  // everything below is in the zoomed screen's own pixels. A phone's notch and home bar (safe areas) take
+  // room beyond the screen's own padding (6px top/bottom, 10px sides), so they come off the space too
+  const sa=getComputedStyle($('#safe')),inset=k=>(parseFloat(sa['padding'+k])||0)/ui;
+  const W=innerWidth/ui-Math.max(0,inset('Left')-10)-Math.max(0,inset('Right')-10);
+  const H=innerHeight/ui-Math.max(0,inset('Top')-6)-Math.max(0,inset('Bottom')-6),land=W>H*1.08;
   document.body.classList.toggle('land',land);
   let cell,hc;
   if(!land){
-    const extra=52+10+22+2*46+22; // hud + timer bar + rulebar + player strips + gaps/padding
+    // hud 52, timer bar + rule bar 30, two player strips 46, gaps 8, screen padding 12, spare 4;
+    // the board is 3 cells of 1.2 × --cell tall plus 26px of gaps, padding and border
+    const extra=52+30+2*46+8+12+4+26;
     hc=Math.min((W-36)/5,120);
-    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.7,190);
+    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
     hc=Math.min(hc,cell*.7);
-    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.7,190);
+    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
   }else{
     const avail=H-52-10-22-24; // hud + timer bar + rulebar + padding
     cell=Math.min(avail/3.7,(W-80-2*180)/3.25,200);
@@ -139,5 +144,20 @@ function layout(){
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
   document.body.classList.toggle('nohn',hc<88);
   document.body.classList.toggle('nobn',cell<82);
+  fitGame();
+}
+// the sizes above are worked out ahead of time; if the game still runs past the bottom (say the rule bar wrapped
+// onto two lines), shrink the board and hands until it fits
+function fitGame(){
+  const sg=$('#scr-game');if(!sg.classList.contains('on'))return;
+  const rs=document.documentElement.style,limit=innerHeight-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
+  for(let k=0;k<3;k++){
+    const parts=[$('#sideTop'),$('#board'),$('#sideBot')].map(e=>e.getBoundingClientRect());
+    const top=Math.min(...parts.map(r=>r.top)),over=Math.max(...parts.map(r=>r.bottom))-limit;
+    if(over<=1)return;
+    const f=1-over/(Math.max(...parts.map(r=>r.bottom))-top),cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
+    if(cell<=48&&hc<=40)return;
+    rs.setProperty('--cell',Math.max(48,Math.floor(cell*f))+'px');rs.setProperty('--hc',Math.max(40,Math.floor(hc*f))+'px');
+  }
 }
 window.addEventListener('resize',layout);
