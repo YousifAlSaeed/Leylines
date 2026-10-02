@@ -4,10 +4,14 @@
 import { config } from './config.js';
 import { openDatabase } from './db/index.js';
 import { purgeExpiredSessions } from './lib/sessions.js';
+import { emailKeySet, sealStoredEmails } from './lib/emailCrypto.js';
 import { createApp } from './app.js';
 
 const db = await openDatabase({ url: config.databaseUrl, file: config.dbFile });
 await purgeExpiredSessions(db);
+const sealed = await sealStoredEmails(db);
+if (sealed) console.log(`Encrypted ${sealed} stored email${sealed > 1 ? 's' : ''}`);
+if (!emailKeySet && db.kind === 'postgres') console.warn('EMAIL_KEY is not set: emails are stored as plain text');
 const app = createApp({ db, clientDir: config.clientDir, corsOrigins: config.corsOrigins, trustProxy: config.trustProxy });
 
 const server = app.listen(config.port, config.host, () => {

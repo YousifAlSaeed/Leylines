@@ -171,7 +171,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
 
-Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`.
+Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails).
 
 If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
@@ -187,7 +187,8 @@ Accounts are stored in a free [Neon](https://neon.tech) Postgres database, becau
 
 1. Create a Neon project and copy its connection string (`postgresql://...?sslmode=require`).
 2. In Render: the service → **Environment** → add `DATABASE_URL` with that string, then save (Render redeploys).
-3. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected.
+3. Add `EMAIL_KEY` too: click **Generate** for a random value. Stored emails are encrypted with it, so a leaked database doesn't reveal them. Keep a copy somewhere safe: if it's lost, saved emails can't be read (accounts still work).
+4. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected, and `Encrypted N stored emails` shows old emails being encrypted the first time.
 
 Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
 

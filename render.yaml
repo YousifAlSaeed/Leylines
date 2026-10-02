@@ -25,6 +25,10 @@ services:
       # Neon connection string; secret, so it is typed into the dashboard, not here
       - key: DATABASE_URL
         sync: false
+      # secret for encrypting stored emails; Render generates it once. Keep a copy somewhere
+      # safe: if it's lost, saved emails can't be read (accounts still work)
+      - key: EMAIL_KEY
+        generateValue: true
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
         sync: false

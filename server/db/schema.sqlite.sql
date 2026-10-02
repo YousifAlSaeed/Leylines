@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
-CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users (email) WHERE email IS NOT NULL;
+-- Emails are not unique: a unique email would let anyone test whether an
+-- address has an account. They are stored encrypted (server/lib/emailCrypto.js).
+DROP INDEX IF EXISTS users_email;
 
 -- Signed-in devices. Only a SHA-256 of each token is stored, so a leaked
 -- database can't be used to sign in.

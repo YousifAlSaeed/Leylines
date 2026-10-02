@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { createSession, deleteSession, requireAuth } from '../lib/sessions.js';
 import { rateLimit } from '../lib/rateLimit.js';
 import { checkSave, checkSignup, cleanName, privateUser } from '../lib/users.js';
+import { sealEmail } from '../lib/emailCrypto.js';
 
 // compared against when the username doesn't exist, so both cases take as long
 const DUMMY_HASH = await hashPassword('not-a-real-password');
@@ -25,21 +26,20 @@ export function authRouter(db) {
     // checked after the await so two sign-ups racing for one name can't both pass
     if (await db.get('SELECT 1 FROM users WHERE lower(username) = lower($u)', { $u: username }))
       return res.status(409).json({ error: 'That username is taken. Try another.' });
+    // emails aren't checked for duplicates: that would tell anyone whether an address has an account
     const mail = email ? email.trim().toLowerCase() : null;
-    if (mail && await db.get('SELECT 1 FROM users WHERE email = $e', { $e: mail }))
-      return res.status(409).json({ error: 'That email already has an account. Sign in instead.' });
 
     let user;
     try {
       ({ rows: [user] } = await db.run(
         'INSERT INTO users (username, display_name, email, password_hash) VALUES ($u, $d, $m, $h) RETURNING *',
-        { $u: username, $d: cleanName(displayName) || username.slice(0, 16), $m: mail, $h: hash },
+        { $u: username, $d: cleanName(displayName) || username.slice(0, 16), $m: sealEmail(mail), $h: hash },
       ));
     } catch (err) {
       // Postgres runs requests side by side, so a sign-up racing this one can
-      // take the name (or email) between the check above and this insert
+      // take the name between the check above and this insert
       if (err.code !== '23505') throw err;
-      return res.status(409).json({ error: 'That username or email was just taken. Try another.' });
+      return res.status(409).json({ error: 'That username was just taken. Try another.' });
     }
     let saved = null;
     if (save != null) {
