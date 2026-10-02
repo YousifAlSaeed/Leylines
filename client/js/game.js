@@ -59,6 +59,7 @@ function renderHud(){
   let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
   if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
+  if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   $('#ruleBar').innerHTML=chips;
   updSnd();

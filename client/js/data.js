@@ -87,6 +87,11 @@ const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards'
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
+// best-of series: [matches, label, description]; whoever went first in one match goes second in the next
+const SERIES=[[1,'Single','One match decides it.'],
+ [3,'Best of 3','Up to 3 matches with the same 5 cards. Whoever goes first swaps each match. Most wins takes the series; a drawn match counts for nobody.'],
+ [5,'Best of 5','Up to 5 matches with the same 5 cards. Whoever goes first swaps each match. Most wins takes the series; a drawn match counts for nobody.']];
+const boOf=v=>SERIES.some(s=>s[0]===v)?v:1;
 
 // player levels (profile.js): the total XP to reach level n is 0, 100, 300, 600…
 const lvlXp=n=>50*n*(n-1);

@@ -2,7 +2,7 @@
 /* =====================================================================
    ONLINE (PeerJS)
    ===================================================================== */
-const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0};
+const NET={peer:null,conn:null,role:null,code:null,meRe:false,oppRe:false,meNext:0,oppNext:0,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0};
 // avatars travel as a card id; anything else means no avatar
 const netAv=v=>Number.isInteger(v)&&v>=0&&v<CARDS.length?v:null;
 const myAv=()=>SAVE.avatar?SAVE.avatar.c:null;
@@ -138,7 +138,7 @@ function netClose(silent){
   try{if(NET.conn&&NET.conn.open)NET.conn.send({t:'bye'})}catch(e){}
   try{NET.conn&&NET.conn.close()}catch(e){}
   try{NET.peer&&NET.peer.destroy()}catch(e){}
-  NET.conn=null;NET.peer=null;NET.meRe=false;NET.oppRe=false;NET.pendingDeck=null;
+  NET.conn=null;NET.peer=null;NET.meRe=false;NET.oppRe=false;NET.meNext=NET.oppNext=0;NET.pendingDeck=null;
   setJoining(false);
 }
 function netLost(msg){
@@ -157,15 +157,15 @@ function hostBackToLobby(msg){
   onStatus(esc(msg)+'<br><span class="spin"></span>Waiting for a friend to join…');
 }
 function sendSetup(){
-  const seed=rand32();
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,seed,name:myName(),av:myAv()});
-  beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,seed});
+  const seed=rand32(),bo=boOf(SAVE.bo);
+  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,bo,seed,name:myName(),av:myAv()});
+  beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,bo,seed});
 }
 function beginOnline(cfg){
   closeModal();
-  NET.meRe=false;NET.oppRe=false;
+  NET.meRe=false;NET.oppRe=false;NET.meNext=NET.oppNext=0;
   const me=NET.role==='host'?0:1,other=NET.oppName||(me===0?'Guest':'Host');
-  G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,seed:cfg.seed,me,bottom:me,names:me===0?[myName(),other]:[other,myName()]});
+  G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,bo:cfg.bo,seed:cfg.seed,me,bottom:me,names:me===0?[myName(),other]:[other,myName()]});
   if(NET.pendingDeck){G.decks[1-me]=NET.pendingDeck;NET.pendingDeck=null}
   if(deckable(collPool())<5)ensureMinimum();
   const done=ids=>{
@@ -187,7 +187,7 @@ function onNet(m){
       if(NET.role!=='guest')return;
       setJoining(false);
       NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);
-      {const r={...defSave().rules,...m.rules};r.timer=timerSec(r.timer);beginOnline({rules:r,trade:m.trade,seed:m.seed>>>0})}break;
+      {const r={...defSave().rules,...m.rules};r.timer=timerSec(r.timer);beginOnline({rules:r,trade:m.trade,bo:boOf(m.bo),seed:m.seed>>>0})}break;
     case 'deck':
       if(!validDeck(m.ids))return;
       if(G&&G.mode==='online'&&!G.st){G.decks[1-G.me]=m.ids;tryStartOnline()}
@@ -200,6 +200,8 @@ function onNet(m){
       {const idx=m.idx.filter(i=>Number.isInteger(i)&&i>=0&&i<5);
       if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(idx)}else G.pendingTrade=idx;}
       break;
+    case 'next':
+      if(Number.isInteger(m.n)){NET.oppNext=m.n;checkNext()}break;
     case 'rematch':NET.oppRe=true;checkRematch();if(!NET.meRe)toast(`${oppName()} wants a rematch`);break;
     case 'bye':netLost(`${oppName()} left the game.`);break;
   }

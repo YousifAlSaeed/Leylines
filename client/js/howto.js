@@ -81,6 +81,18 @@ const HOW=[
     [45,30,20,15,10,6,3,1,0].forEach((v,i)=>steps.push([i*420,()=>set(v)]));
     return demoLoop(steps,5200)},
   list:['Set the limit in match setup: <b>Off</b>, or <b>10 to 90 seconds</b>','The ring turns orange, then red, as time runs low','At 0, a random card goes to a random empty square','<b>Example:</b> the clock hits 0 → one of your cards is played for you']},
+ {tab:'Series',tag:'Match setup · Series',title:'Best of 3 or 5',
+  stage:()=>`<div class="demo-col"><span class="lbl2" id="hSerLbl"></span><div class="serlog" id="hSer"><span></span><span></span><span></span></div><div class="bigscore" id="hSerSc"></div></div>`,
+  run:st=>{
+    const lbl=st.querySelector('#hSerLbl'),chips=[...st.querySelectorAll('#hSer span')],sc=st.querySelector('#hSerSc');
+    const score=(b,r)=>sc.innerHTML=`<span class="b">${b}</span> – <span class="r">${r}</span>`;
+    // Blue wins 6–4, then a 5–5 draw counts for nobody, then Blue wins 7–3; who goes first swaps each match
+    const res=(i,txt,cls)=>{chips[i].textContent=txt;chips[i].className=cls};
+    const reset=()=>{chips.forEach((c,i)=>{c.textContent='M'+(i+1);c.className=''});score(0,0);lbl.textContent='Match 1 · Blue goes first'};
+    reset();
+    return demoLoop([[0,reset],[900,()=>{res(0,'M1 6–4','b');score(1,0)}],[1500,()=>lbl.textContent='Match 2 · Red goes first'],
+      [2400,()=>res(1,'M2 5–5','d')],[3000,()=>lbl.textContent='Match 3 · Blue goes first'],[3900,()=>{res(2,'M3 7–3','b');score(2,0);lbl.textContent='Blue wins the series'}]],5800)},
+  list:['Pick <b>Single</b>, <b>Best of 3</b> or <b>Best of 5</b> in match setup','Both players keep the <b>same 5 cards</b> all series','Whoever went first goes <b>second</b> in the next match','A draw counts for nobody (with Sudden death on, it replays first)','<b>Most wins</b> takes the series. Equal wins is a tie','It ends early once nobody can catch up','Cards are traded <b>once</b>, at the end','<b>Example:</b> Blue wins 6–4, draws 5–5, then wins 7–3 → Blue takes the series 2–0']},
  {tab:'Trade',tag:'Trade · Collection',title:'Win cards, lose cards',
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
   list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
