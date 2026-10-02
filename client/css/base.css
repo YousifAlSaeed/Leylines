@@ -54,17 +54,15 @@ html,body{margin:0;height:100%;overflow:hidden}
 #safe{position:fixed;inset:0;z-index:-1;visibility:hidden;pointer-events:none;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 /* iPhone home-screen app (layout() sets these classes; measured on an iPhone with iOS 26):
-   .ios-app   the page runs under the clock and battery. iOS blurs about 90px from the top, deeper than the clock's
-              strip, so screens start below the blur. The clock is always white: in light mode a soft shade keeps it readable.
-   .ios-short the page stops 62px short of the bottom of the screen and iOS fills that strip with the manifest's
-              background_color (#08061a), which no page can draw over. The page fades into that colour so the strip
-              doesn't show as a hard edge, and needs no room for the home bar, which sits inside the strip. */
+   .ios-app   the page runs under the clock and battery (iOS picks a light or dark clock by itself). iOS blurs about
+              90px from the top, deeper than the clock's strip, so screens start below the blur.
+   .ios-short the page stops 62px short of the bottom of the screen and iOS fills that strip with the page's background
+              colour (--bg0, so it follows the theme), which no page can draw over. The page fades into that colour so the
+              strip doesn't show as a hard edge, and needs no room for the home bar, which sits inside the strip. */
 .ios-app .screen{padding-top:calc(env(safe-area-inset-top) + 30px)}
-.ios-app[data-theme="light"]::before{content:"";position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top) + 30px);
-  z-index:var(--z-grain);pointer-events:none;background:linear-gradient(rgba(14,10,31,.5),rgba(14,10,31,0))}
 .ios-short .screen{padding-bottom:20px}
 .ios-short body::before{content:"";position:fixed;left:0;right:0;bottom:0;height:110px;pointer-events:none;
-  background:linear-gradient(rgba(8,6,26,0),#08061a)}
+  background:linear-gradient(transparent,var(--bg0))}
 .ios-short body::after{-webkit-mask-image:linear-gradient(to top,transparent,#000 110px);mask-image:linear-gradient(to top,transparent,#000 110px)}
 body{
   color:var(--text);font:400 15px/1.5 var(--body);touch-action:manipulation;-webkit-touch-callout:none;
