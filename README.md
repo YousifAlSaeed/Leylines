@@ -175,12 +175,7 @@ If the client is hosted somewhere other than the server (for example GitHub Page
 
 ## Deployment
 
-The game is hosted on GitHub Pages: https://yousifalsaeed.github.io/Leylines/
-
-- **Settings → Pages → Source: GitHub Actions** (recommended): `.github/workflows/pages.yml` publishes `client/` as the site root on every push to `main`.
-- **Deploy from a branch** (`main`, root): the root `index.html` forwards to `client/`, keeping `?join=` invite codes.
-
-GitHub Pages only serves static files, so the server is not deployed there. It needs a Node host of its own.
+The game is hosted on: https://leylines.live/ !
 
 ### Render (dev branch)
 
