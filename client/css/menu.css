@@ -57,10 +57,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .setup .setup-foot{margin-top:20px}
   .setup .rc b{font-size:14px}
   .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0}
+  .setup .setup-foot::after{display:none}
   .setup .setup-foot .btn{width:280px}
 }
 .setup-foot{position:sticky;bottom:0;padding:14px 0 4px;background:linear-gradient(transparent,var(--bg0) 45%);margin-top:auto}
 .setup-foot .btn{width:100%}
+/* fills the screen's bottom padding under the pinned button, so the page doesn't show through as it scrolls */
+.setup-foot::after{content:"";position:absolute;left:0;right:0;top:100%;height:max(24px,env(safe-area-inset-bottom));background:var(--bg0)}
 /* online waiting room (the setup screen with the code and players on top) */
 .s-room{display:flex;flex-direction:column;gap:10px}
 .s-room h3{margin-bottom:-2px}
