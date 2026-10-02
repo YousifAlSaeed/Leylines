@@ -82,7 +82,7 @@ function renderHero(anim){
 // online from the menu: the online screen still asks for a name if we don't have one yet
 function askName(msg){onStatus(msg);const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
 function heroHost(){
-  if(playerName()){openSetup('online');return}
+  if(playerName()){hostStart();return}
   openOnline();askName('Enter your name, then tap <b>Host a game</b>.');
 }
 function heroJoin(){

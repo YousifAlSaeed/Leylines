@@ -237,18 +237,14 @@ function checkNext(){
 }
 function resultModal(html){
   modal(html,[
-    {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',keep:G.mode==='online',fn:playAgain},
+    {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',fn:playAgain},
     {label:'Menu',fn:leaveMatch}
   ]);
 }
 function playAgain(){
   if(G.mode==='ai')startAI();
   else if(G.mode==='local')startLocal();
-  else{
-    NET.meRe=true;netSend({t:'rematch'});
-    const b=$('#modal .mbtns .btn.primary');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Waiting…'}
-    checkRematch();
-  }
+  else backToRoom();
 }
 function leaveMatch(){
   closeModal();
