@@ -120,13 +120,17 @@ An internet connection is needed for:
 - the fonts (Saira and Geist, from Google Fonts)
 - **Online** mode, which loads [PeerJS](https://peerjs.com/) from a CDN and connects players peer to peer
 
+### As a phone app
+
+On iPhone, Safari → Share → **Add to Home Screen** (or **Install** on Android) turns the site into an app: full screen, with the game laid out around the notch and home bar. `client/sw.js` keeps a copy of the game's files, so the app still opens without a connection (vs Computer and Same screen work offline) and doesn't wait long when the server is waking up. The screen stays on during a match.
+
 ### Tests
 
 ```bash
 npm test
 ```
 
-`test/rules.test.js` checks the game rules (captures, Same, Same wall, Plus, Combo, Elemental, Chaos, series) by loading the browser's rule files into Node. `test/api.test.js` runs the server on a throwaway in-memory database and checks accounts, encrypted emails, password resets and the security headers. GitHub runs them on every push to `dev` or `main` and on every pull request (`.github/workflows/test.yml`).
+`test/rules.test.js` checks the game rules (captures, Same, Same wall, Plus, Combo, Elemental, Chaos, series) by loading the browser's rule files into Node. `test/api.test.js` runs the server on a throwaway in-memory database and checks accounts, encrypted emails, password resets and the security headers. `test/sw.test.js` checks the offline support against a fake network. GitHub runs them on every push to `dev` or `main` and on every pull request (`.github/workflows/test.yml`).
 
 ## Project structure
 

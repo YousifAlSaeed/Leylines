@@ -5,6 +5,7 @@
 function show(id){
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
+  keepAwake(id==='game');
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }

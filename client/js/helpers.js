@@ -6,6 +6,15 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const fmt=v=>v===10?'A':String(v);
+// keeps the screen from dimming during a match, where the browser allows it (it lets go when the app is hidden)
+let wakeLock=null;
+async function keepAwake(on){
+  try{
+    if(on&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}
+    else if(!on&&wakeLock){const w=wakeLock;wakeLock=null;await w.release()}
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)keepAwake($('#scr-game').classList.contains('on'))});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
 

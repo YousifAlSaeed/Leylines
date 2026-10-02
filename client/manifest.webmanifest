@@ -1,0 +1,14 @@
+{
+  "name": "Leylines",
+  "short_name": "Leylines",
+  "description": "A 3×3 card game with 55 cards. Play the computer, a friend on the same screen, or online.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08061a",
+  "theme_color": "#0E0A1F",
+  "icons": [
+    { "src": "images/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "images/leylines-icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
