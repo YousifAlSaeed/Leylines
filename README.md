@@ -31,7 +31,7 @@ The in-game **How to play** screen shows every rule with an animated example.
 | --- | --- |
 | **vs Computer** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
 | **Same Screen** | Two players on one device. |
-| **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share. |
+| **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
 
 ## Rules
 
@@ -47,7 +47,9 @@ Each rule can be turned on or off in match setup.
 | **Elemental** | 1 to 4 squares get an element. A card of the same element gets +1 on every side; any other card gets −1. |
 | **Sudden death** | A draw restarts the match. Each player keeps the cards they owned at the end (up to 5 extra rounds). |
 | **Random** | Your 5 cards are dealt at random from your collection. |
+| **Chaos** | Each turn the game picks a random card from your hand, and you must play it. You only choose the square. |
 | **Turn timer** | Off, or 10 to 90 seconds per turn. When time runs out, a random card is played to a random empty square. |
+| **Series** | Single match, best of 3 or best of 5. Same 5 cards all series, and whoever went first goes second next match. A draw counts for nobody; most wins takes the series. Cards are traded once, at the end. |
 
 ## Trade rules
 
@@ -118,6 +120,18 @@ An internet connection is needed for:
 - the fonts (Saira and Geist, from Google Fonts)
 - **Online** mode, which loads [PeerJS](https://peerjs.com/) from a CDN and connects players peer to peer
 
+### As a phone app
+
+On iPhone, Safari → Share → **Add to Home Screen** (or **Install** on Android) turns the site into an app: full screen, with the game laid out around the notch and home bar. `client/sw.js` keeps a copy of the game's files, so the app still opens without a connection (vs Computer and Same screen work offline) and doesn't wait long when the server is waking up. The screen stays on during a match.
+
+### Tests
+
+```bash
+npm test
+```
+
+`test/rules.test.js` checks the game rules (captures, Same, Same wall, Plus, Combo, Elemental, Chaos, series) by loading the browser's rule files into Node. `test/api.test.js` runs the server on a throwaway in-memory database and checks accounts, encrypted emails, password resets and the security headers. `test/sw.test.js` checks the offline support against a fake network. GitHub runs them on every push to `dev` or `main` and on every pull request (`.github/workflows/test.yml`).
+
 ## Project structure
 
 ```
@@ -169,7 +183,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
 
-Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`.
+Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails), `RESEND_API_KEY` (sends password reset emails; without it they are printed to the console locally), `MAIL_FROM` (default `Leylines <noreply@leylines.live>`), `APP_URL` (the site address put in emailed links).
 
 If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
@@ -177,15 +191,33 @@ If the client is hosted somewhere other than the server (for example GitHub Page
 
 The game is hosted on: https://leylines.live/ !
 
-### Render (dev branch)
+### Render
 
-`render.yaml` describes the service: in the Render dashboard choose **New → Blueprint** and pick this repository. It deploys the `dev` branch (game and API on one URL) and redeploys on every push to `dev`.
+There are two Render services in the **Leylines** project, both made by hand in the dashboard (`render.yaml` records their settings):
 
-Accounts are stored in a free [Neon](https://neon.tech) Postgres database, because Render's free plan wipes the server's disk on every deploy, restart and idle spin-down (after 15 minutes without traffic). To set it up:
+| Service | Site | Branch | Use |
+| --- | --- | --- | --- |
+| `leylines` (Production) | https://leylines.live/ | `main` | the live game |
+| `Leylines-dev` (Dev) | https://leylines.onrender.com/ | `dev` | testing new work |
+
+Each redeploys when its branch gets a push. New work goes on `dev`, gets checked on the test site, then goes live through a pull request from `dev` into `main`.
+
+Accounts are stored in a free [Neon](https://neon.tech) Postgres database, because Render's free plan wipes the server's disk on every deploy, restart and idle spin-down (after 15 minutes without traffic). Both services use the same database. To set it up:
 
 1. Create a Neon project and copy its connection string (`postgresql://...?sslmode=require`).
-2. In Render: the service → **Environment** → add `DATABASE_URL` with that string, then save (Render redeploys).
-3. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected.
+2. In Render, on **each** service → **Environment**: add `DATABASE_URL` with that string.
+3. Add `EMAIL_KEY` too: on the first service click **Generate**, then copy that exact value to the other service. Stored emails are encrypted with it, so a leaked database doesn't reveal them; with different keys, one site can't read the emails the other saved. Keep a copy somewhere safe: if it's lost, saved emails can't be read (accounts still work).
+4. The server creates the tables on start. The log line `Leylines running ... (database: postgres)` confirms it's connected, and `Encrypted N stored emails` shows old emails being encrypted the first time.
+
+#### Password reset emails
+
+"Forgot password?" emails go out through [Resend](https://resend.com) (free for 3,000 emails a month). One-time setup:
+
+1. Make a Resend account → **Domains** → add `leylines.live`, then add the DNS records it shows where the domain is registered, and wait for it to say **Verified**.
+2. Resend → **API Keys** → create a key with sending access.
+3. In Render, on **each** service → **Environment**: add `RESEND_API_KEY` with that key, and `APP_URL` with that service's address (`https://leylines.live` for the live one, `https://leylines.onrender.com` for the dev one).
+
+Reset links work once, for 30 minutes; an account gets at most 3 a hour. Without `RESEND_API_KEY` no email is sent on Render.
 
 Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
 

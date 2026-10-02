@@ -1,13 +1,59 @@
-# Render Blueprint: deploys the dev branch (game + API) as one web service.
-# Render dashboard → New → Blueprint → pick this repo; it reads this file.
+# Render setup for Leylines: two web services (game + API each) from this repo.
 #
-# Accounts live in Postgres (a free Neon project): set DATABASE_URL in the
-# Render dashboard (service → Environment). Without it the server falls back
-# to a SQLite file, which the free plan wipes on every deploy, restart and
-# idle spin-down, so accounts would disappear.
+#   leylines      live site: leylines.live (also leylines-dev.onrender.com)  deploys main
+#   Leylines-dev  test site: leylines.onrender.com                           deploys dev
+#
+# In the dashboard they are the Production and Dev environments of the
+# "Leylines" project.
+#
+# Both services were made by hand in the Render dashboard, so Render doesn't
+# read this file; it records how they are set up. It also works as a Blueprint
+# (Render → New → Blueprint) to recreate them. The names below match the
+# dashboard; Render pairs services by name, so keep them in step if one is renamed.
+#
+# Both services use the same Neon database, so DATABASE_URL and EMAIL_KEY must
+# be the same on both: copy the values from one service to the other. With a
+# different EMAIL_KEY a site can't read the emails the other one saved.
+# Without DATABASE_URL a service falls back to a SQLite file, which the free
+# plan wipes on every deploy, restart and idle spin-down.
 services:
   - type: web
-    name: leylines-dev
+    name: leylines
+    runtime: node
+    branch: main
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    domains:
+      - leylines.live
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      # Neon connection string; secret, so it is typed into the dashboard, not here
+      - key: DATABASE_URL
+        sync: false
+      # secret for encrypting stored emails (any long random string). Keep a copy
+      # somewhere safe: if it's lost, saved emails can't be read (accounts still work)
+      - key: EMAIL_KEY
+        sync: false
+      # sends password reset emails (resend.com → API Keys); the same key works for both services
+      - key: RESEND_API_KEY
+        sync: false
+      # this site's address, used in emailed links
+      - key: APP_URL
+        value: https://leylines.live
+      # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
+      - key: DEV_USERS
+        sync: false
+
+  - type: web
+    name: Leylines-dev
     runtime: node
     branch: dev
     plan: free
@@ -25,6 +71,16 @@ services:
       # Neon connection string; secret, so it is typed into the dashboard, not here
       - key: DATABASE_URL
         sync: false
+      # secret for encrypting stored emails (any long random string). Keep a copy
+      # somewhere safe: if it's lost, saved emails can't be read (accounts still work)
+      - key: EMAIL_KEY
+        sync: false
+      # sends password reset emails (resend.com → API Keys); the same key works for both services
+      - key: RESEND_API_KEY
+        sync: false
+      # this site's address, used in emailed links
+      - key: APP_URL
+        value: https://leylines.onrender.com
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
         sync: false

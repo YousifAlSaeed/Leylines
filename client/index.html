@@ -9,12 +9,27 @@
 <meta property="og:title" content="Leylines">
 <meta property="og:description" content="A 3×3 card game with 55 cards. Play the computer, a friend on the same screen, or online.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Leylines">
+<meta property="og:url" content="https://leylines.live/">
+<!-- the picture chat apps show for a shared link; it needs a full address, so it always comes from the live site -->
+<meta property="og:image" content="https://leylines.live/images/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Leylines: a 3×3 board with cards from the game">
+<meta name="twitter:card" content="summary_large_image">
 <!-- API server for accounts. Empty = the site serving this page. Set it to the server's URL
      (e.g. https://leylines.onrender.com) when the client is hosted somewhere else. -->
 <meta name="leylines-api" content="">
 <link rel="icon" href="images/leylines-icon.svg" type="image/svg+xml">
 <link rel="icon" href="images/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<!-- Add to Home Screen: opens full screen like an app, drawn under the clock and battery -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Leylines">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..125,400..900&family=Geist:wght@400..700&display=swap" rel="stylesheet">
@@ -30,6 +45,7 @@
 <link rel="stylesheet" href="css/packs.css">
 </head>
 <body>
+<div id="safe" aria-hidden="true"></div>
 
 <!-- MENU -->
 <section id="scr-menu" class="screen on">
@@ -82,12 +98,19 @@
 
 <!-- SETUP -->
 <section id="scr-setup" class="screen">
-  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
+  <div class="topbar"><button class="iconbtn" id="setupBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
   <div class="wrap setup">
+    <div id="roomBox" class="s-room hidden">
+      <h3>Room</h3>
+      <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="hostCode">·····</div></div>
+        <div class="room-share" id="roomShare"><div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div><input class="linkin" id="hostLink" readonly aria-label="Invite link"></div></div>
+      <ul class="room-pl" id="roomPlayers" aria-label="Players"></ul>
+    </div>
     <div id="diffBox" class="s-diff"><h3>Difficulty</h3><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
     <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="trow" id="timerRow"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
+    <div class="s-series"><h3>Series</h3><div class="tgrid sgrid" id="seriesSeg" role="group" aria-label="Series length"></div><p class="note" id="seriesDesc"></p></div>
     <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
-    <p class="note" id="setupNote"></p>
+    <p class="note" id="setupNote" aria-live="polite"></p>
     <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
   </div>
 </section>
@@ -209,14 +232,8 @@
       <input class="codein" id="joinCode" aria-label="Game code" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
       <button class="btn" id="btnJoin">Join</button>
     </div>
-    <div class="panel hidden" id="onHost">
-      <div class="or">Hosting as <b class="gold" id="hostAs"></b> · your game code</div>
-      <div class="codebox" id="hostCode">·····</div>
-      <input class="linkin" id="hostLink" readonly aria-label="Invite link">
-      <div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div>
-    </div>
     <div class="status" id="onStatus" role="status" aria-live="polite"></div>
-    <div class="desc">Both players bring 5 cards from their own collection. The host's rules and trade rule apply. Cards won or lost are saved on each device.</div>
+    <div class="desc">Both players bring 5 cards from their own collection. The host picks the rules in the waiting room. Cards won or lost are saved on each device.</div>
   </div>
 </section>
 

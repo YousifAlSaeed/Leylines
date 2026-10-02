@@ -3,7 +3,12 @@
    BOOT
    ===================================================================== */
 applyTheme();updSnd();renderMenu();layout();acctBoot();
+// offline support (sw.js); service workers only run on https and localhost
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 (function(){
+  // a password reset link from an email: #reset=token (after #, so the token never reaches a server log)
+  const rs=/^#reset=([\w-]{20,})$/.exec(location.hash);
+  if(rs){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}openReset(rs[1]);return}
   const P=new URLSearchParams(location.search),q=P.get('join'),u=P.get('u');
   // a shared profile link: ?u=username
   if(u&&!q){try{history.replaceState(null,'',location.pathname)}catch(e){}if(/^[A-Za-z0-9_]{3,20}$/.test(u))openPlayer(u);return}

@@ -5,6 +5,7 @@
 function show(id){
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
+  keepAwake(id==='game');
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }
@@ -43,7 +44,7 @@ function heroPane(m){
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
     h='vs Computer';
-    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]);
+    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(boOf(SAVE.bo)>1?' · Best of '+SAVE.bo:'');
     side=dk.fan;
     row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
       DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;
@@ -82,7 +83,7 @@ function renderHero(anim){
 // online from the menu: the online screen still asks for a name if we don't have one yet
 function askName(msg){onStatus(msg);const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
 function heroHost(){
-  if(playerName()){openSetup('online');return}
+  if(playerName()){hostStart();return}
   openOnline();askName('Enter your name, then tap <b>Host a game</b>.');
 }
 function heroJoin(){

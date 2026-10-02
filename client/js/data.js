@@ -76,7 +76,8 @@ const RULES=[
  ['combo','Combo','Cards flipped by Same or Plus then flip their weaker enemy neighbours, chaining on.'],
  ['elemental','Elemental','Some squares carry an element. A matching card gets +1 on every side; any other card gets −1.'],
  ['suddenDeath','Sudden death','A draw restarts the game; each player keeps the cards they owned at the end (up to 5 extra rounds).'],
- ['random','Random','Your 5 cards are dealt at random from your collection.']
+ ['random','Random','Your 5 cards are dealt at random from your collection.'],
+ ['chaos','Chaos','Each turn the game picks a random card from your hand, and you must play it. You only choose the square.']
 ];
 // turn timer: 0 = off, otherwise 10–90 seconds in steps of 5 (older saves stored true/false)
 const TIMER_MAX=90;
@@ -84,9 +85,14 @@ function timerSec(v){if(v===true)return 45;const n=Math.round(+v/5)*5;return n>=
 const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.round(t*.22));
 function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as A for Same',plus:'Equal sums flip cards',
-  combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you'};
+  combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you',chaos:'You must play a random card each turn'};
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5).'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
+// best-of series: [matches, label, description]; whoever went first in one match goes second in the next
+const SERIES=[[1,'Single','One match decides it.'],
+ [3,'Best of 3','Up to 3 matches. Most wins takes the series.'],
+ [5,'Best of 5','Up to 5 matches. Most wins takes the series.']];
+const boOf=v=>SERIES.some(s=>s[0]===v)?v:1;
 
 // player levels (profile.js): the total XP to reach level n is 0, 100, 300, 600…
 const lvlXp=n=>50*n*(n-1);

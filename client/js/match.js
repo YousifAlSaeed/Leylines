@@ -3,9 +3,10 @@
    MATCH FLOW
    ===================================================================== */
 let G=null;
-/* G = {mode, rules, trade, diff, me, bottom, names[], decks[[],[]], seed, rng, st, first, sd, sel, busy, over, inbox[]} */
+/* G = {mode, rules, trade, diff, bo, ser, me, bottom, names[], decks[[],[]], seed, rng, st, first, sd, sel, busy, over, inbox[]}
+   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[]} */
 function baseMatch(mode,extra){
-  return{mode,rules:{...SAVE.rules},trade:'none',diff:SAVE.diff,me:0,bottom:0,names:['You','CPU'],decks:[null,null],
+  return{mode,rules:{...SAVE.rules},trade:'none',diff:SAVE.diff,bo:boOf(SAVE.bo),ser:null,me:0,bottom:0,names:['You','CPU'],decks:[null,null],
     seed:rand32(),sd:0,sel:null,busy:false,over:false,inbox:[],...extra};
 }
 function startAI(){
@@ -28,8 +29,15 @@ function startLocal(){
 function startMatch(){
   G.rng=mulberry32(G.seed);G.sd=0;G.over=false;
   const first=G.rng()<.5?0:1;
+  G.ser={n:1,first,wins:[0,0],log:[]};
   show('game');buildBoard();
   newRound(G.decks[0],G.decks[1],first);
+}
+// the next match of a series: same decks, and whoever went first last time goes second
+function nextMatch(){
+  const s=G.ser;s.n++;
+  G.sd=0;G.over=false;G.pendingTrade=null;
+  newRound(G.decks[0],G.decks[1],s.n%2?s.first:1-s.first);
 }
 async function newRound(h0,h1,first){
   const g=G;
@@ -37,6 +45,7 @@ async function newRound(h0,h1,first){
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
   renderGame();
   const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
+  if(G.bo>1&&!G.sd){await banner(`Match ${G.ser.n}`);if(G!==g)return}
   await banner(who,'small');await wait(250);
   if(G!==g)return;
   G.busy=false;nextTurn();
@@ -48,7 +57,10 @@ function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===
 
 function nextTurn(){
   if(!G)return;
-  G.sel=null;renderGame();
+  // Chaos: the card that must be played this turn. Drawn from the match's seeded random numbers, so both online players get the same one
+  G.sel=null;G.forced=null;
+  if(G.rules.chaos&&!isFull(G.st)){G.forced=chaosPick(G.st,G.rng);if(isHuman(G.st.turn))G.sel=G.forced}
+  renderGame();
   if(isFull(G.st)){endRound();return}
   startTurnTimer();
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
@@ -59,7 +71,7 @@ function aiTurn(){
   const t0=performance.now();
   setTimeout(async()=>{
     if(G!==g)return;
-    const[hi,cell]=aiChoose(G.st,G.rules,G.diff);
+    const[hi,cell]=aiChoose(G.st,G.rules,G.diff,G.forced);
     const el=$('#handTop').children[hi];
     await wait(Math.max(0,450-(performance.now()-t0)));
     if(G!==g)return;
@@ -70,7 +82,7 @@ function aiTurn(){
   },80);
 }
 function requestMove(hi,cell){
-  if(!canAct(G.st.turn)||G.st.b[cell]>=0)return;
+  if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
   execMove(hi,cell);
 }
@@ -125,27 +137,45 @@ async function endRound(){
 /* ---------- results & trading ---------- */
 // sweep: the winner must own all 9 squares at the end
 const swept=w=>w>=0&&G.st.o.every(o=>o===w);
-function tradeCount(s0,s1,w){return{one:1,diff:Math.min(5,Math.abs(s0-s1)),all:5,sweep:swept(w)?5:0}[G.trade]||0}
+// in a series: Diff uses the series winner's last win, Sweep counts if any of their wins was a sweep
+function tradeCount(s0,s1,w){
+  const won=G.ser.log.filter(m=>m.w===w),last=won[won.length-1];
+  const diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),sw=G.bo>1?won.some(m=>m.sweep):swept(w);
+  return{one:1,diff:Math.min(5,diff),all:5,sweep:sw?5:0}[G.trade]||0;
+}
 function rowHTML(ids,color){return`<div class="cardrow">${ids.map(id=>cardHTML(id,color)).join('')}</div>`}
+const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
-  G.over=true;G.busy=true;renderHud();
-  const w=s0>s1?0:s1>s0?1:-1;
-  const sb=G.bottom===0?s0:s1,sr=G.bottom===0?s1:s0;
-  let title;
-  if(G.mode==='local')title=w<0?'Draw':w===0?'Blue wins':'Red wins';
-  else title=w<0?'Draw':w===G.me?'You win':'You lose';
+  G.over=true;G.busy=true;
+  const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
+  ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1]});
+  if(mw>=0)ser.wins[mw]++;
+  renderHud();
   let reward='';
-  if(G.mode!=='local')reward=rewardHTML(recordMatch(w<0?'d':w===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(w),sd:G.sd>0,elemental:!!G.rules.elemental}));
-  sfx(w<0?'draw':(G.mode==='local'||w===G.me)?'win':'lose');
-  let head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${title}</h2>`+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'')+
-    `<div class="bigscore"><span class="b">${sb}</span> – <span class="r">${sr}</span></div>`+reward;
+  if(G.mode!=='local')reward=rewardHTML(recordMatch(mw<0?'d':mw===G.me?'w':'l',
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental}));
+  sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
+  const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'';
+  const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
+  const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
+  if(G.bo>1&&!seriesDone(G.bo,ser.n,ser.wins)){
+    const g=G;
+    setTimeout(()=>{if(G===g)seriesNextModal(`<div class="kick">Best of ${G.bo} · Match ${ser.n}</div><h2>${resultTitle(mw)}</h2>`+vs+big(m[0],m[1])+
+      `<p class="serscore">Series <b class="b">${sw[0]}</b> – <b class="r">${sw[1]}</b></p>`+reward)},600);
+    return;
+  }
+  let w=mw,head;
+  if(G.bo>1){
+    w=ser.wins[0]>ser.wins[1]?0:ser.wins[1]>ser.wins[0]?1:-1;
+    head=`<div class="kick">Best of ${G.bo} · ${G.mode==='online'?'Online series':'Series over'}</div><h2>${w<0?'Series tied':resultTitle(w,' the series')}</h2>`+vs+big(sw[0],sw[1])+
+      `<div class="serlog">${ser.log.map((x,i)=>`<span class="${x.w<0?'d':x.w===G.bottom?'b':'r'}">M${i+1} ${x.sb}–${x.sr}</span>`).join('')}</div>`+reward;
+  }else head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
   setTimeout(()=>{
     if(G!==g)return;
-    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?'<p>No cards change hands on a draw.</p>':
-      G.trade==='sweep'?'<p>No sweep: cards only change hands when the winner owns the whole board.</p>':''));return}
+    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?`<p>No cards change hands on a ${G.bo>1?'tied series':'draw'}.</p>`:
+      G.trade==='sweep'?`<p>No sweep: cards only change hands when the winner owns the whole board${G.bo>1?' in a match they won':''}.</p>`:''));return}
     if(G.trade==='sweep')head+='<p class="gold"><b>Full board sweep!</b></p>';
     const loser=1-w,loserDeck=G.decks[loser];
     if(w===G.me){
@@ -190,20 +220,33 @@ function pickCards(head,deck,n){
     });
   });
 }
+function seriesNextModal(html){
+  modal(html,[
+    {label:'Next match',cls:'primary',keep:G.mode==='online',fn:readyNext},
+    {label:'Menu',fn:leaveMatch}
+  ]);
+}
+// online, both players press Next match before it starts; the match itself is the same on both sides
+function readyNext(){
+  if(G.mode!=='online'){nextMatch();return}
+  NET.meNext=G.ser.n;netSend({t:'next',n:G.ser.n});
+  const b=$('#modal .mbtns .btn.primary');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Waiting…'}
+  checkNext();
+}
+function checkNext(){
+  if(!G||G.mode!=='online'||!G.over||!G.ser||NET.meNext!==G.ser.n||NET.oppNext!==G.ser.n)return;
+  closeModal();nextMatch();
+}
 function resultModal(html){
   modal(html,[
-    {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',keep:G.mode==='online',fn:playAgain},
+    {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',fn:playAgain},
     {label:'Menu',fn:leaveMatch}
   ]);
 }
 function playAgain(){
   if(G.mode==='ai')startAI();
   else if(G.mode==='local')startLocal();
-  else{
-    NET.meRe=true;netSend({t:'rematch'});
-    const b=$('#modal .mbtns .btn.primary');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Waiting…'}
-    checkRematch();
-  }
+  else backToRoom();
 }
 function leaveMatch(){
   closeModal();
@@ -281,7 +324,9 @@ async function onTimeUp(p){
   await banner("Time's up!",'small');
   if(G!==g||G.busy||G.over||G.st.turn!==p)return;
   G.timeUp=false;
-  const moves=genMoves(G.st),[hi,cell]=moves[Math.floor(Math.random()*moves.length)];
+  const moves=genMoves(G.st).filter(m=>G.forced==null||m[0]===G.forced),pick=moves[Math.floor(Math.random()*moves.length)];
+  // genMoves skips a second copy of the same card, so the Chaos card picks a random empty square itself
+  const hi=G.forced!=null?G.forced:pick[0],cell=G.forced!=null?(e=>e[Math.floor(Math.random()*e.length)])(G.st.b.flatMap((x,i)=>x<0?[i]:[])):pick[1];
   if(G.mode==='online')netSend({t:'move',hi,cell});
   execMove(hi,cell);
 }

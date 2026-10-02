@@ -6,8 +6,8 @@ const SKEY='ninefold.save.v1';
 const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
-  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,timer:45},
-    trade:'one',diff:'normal',stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,timer:45},
+    trade:'one',diff:'normal',bo:1,stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★

@@ -93,6 +93,36 @@ function rewardHTML(r){
     Object.entries((r.packs||[]).reduce((n,k)=>(n[k.t]=(n[k.t]||0)+1,n),{})).map(([t,n])=>`<span class="pf-pack">🎁 ${PACKS[t].name} pack${n>1?' ×'+n:''}</span>`).join('')+`</div>`+freshHTML();
 }
 
+/* ---------- screen info (developer tool) ---------- */
+// Full-screen panel with the sizes the device reports, and coloured bars sized five different ways, so a screenshot
+// shows which way reaches the real bottom of the screen. Tap anywhere to close.
+function screenInfo(){
+  const bars=[['inset 0','top:0;bottom:0','#ff4d6d'],['100vh','top:0;height:100vh','#3ddc84'],['100dvh','top:0;height:100dvh','#4da3ff'],
+    ['100lvh','top:0;height:100lvh','#ffd23f'],['100svh','top:0;height:100svh','#c77dff']];
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100lvh;z-index:999;background:#0b0820;color:#fff;font:12px/1.45 ui-monospace,monospace;overflow:hidden';
+  d.innerHTML=bars.map(([l,css,c],i)=>`<div data-bar="${l}" style="position:fixed;${css};right:${8+i*22}px;width:14px;background:${c};opacity:.85">`+
+    `<span style="position:absolute;bottom:${4+i*18}px;right:${110-i*22}px;white-space:nowrap;color:${c};font-weight:700">${l} ▸</span></div>`).join('')+'<pre id="siTxt" style="margin:0;padding:calc(env(safe-area-inset-top) + 8px) 130px 0 12px;white-space:pre-wrap"></pre>';
+  document.body.append(d);
+  const sa=getComputedStyle($('#safe')),g=$('#scr-game'),gp=getComputedStyle(g);
+  const barH=l=>Math.round(d.querySelector(`[data-bar="${l}"]`).getBoundingClientRect().height);
+  const vv=window.visualViewport;
+  d.querySelector('#siTxt').textContent=[
+    'Leylines screen info  (tap to close)','',
+    'home-screen app  '+(navigator.standalone===true)+'   display-mode standalone  '+matchMedia('(display-mode: standalone)').matches,
+    'screen           '+screen.width+' x '+screen.height+'   dpr '+devicePixelRatio,
+    'window inner     '+innerWidth+' x '+innerHeight+'   outer '+outerWidth+' x '+outerHeight,
+    'visualViewport   '+(vv?Math.round(vv.width)+' x '+Math.round(vv.height)+'  top '+Math.round(vv.offsetTop):'none'),
+    'html client      '+document.documentElement.clientWidth+' x '+document.documentElement.clientHeight,
+    'safe areas       top '+sa.paddingTop+'  bottom '+sa.paddingBottom+'  left '+sa.paddingLeft+'  right '+sa.paddingRight,
+    'bars (height)    '+bars.map(([l])=>l+' '+barH(l)).join('  '),
+    'classes '+(document.documentElement.className||'(none)')+'   --ui '+UI,
+    'game padding     top '+gp.paddingTop+'  bottom '+gp.paddingBottom,
+    'offline helper   '+(navigator.serviceWorker&&navigator.serviceWorker.controller?'on':'off'),
+    navigator.userAgent].join(String.fromCharCode(10));
+  d.onclick=()=>d.remove();
+}
+
 /* ---------- avatar ---------- */
 const initialOf=name=>esc(([...String(name||'?').trim()][0]||'?').toUpperCase());
 const artOf=a=>a&&CARDS[a.c]?CARDS[a.c].art:'';
@@ -316,6 +346,7 @@ function renderProfilePage(force){
           `<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
       <div class="pf-row"><span class="rt"><b>Level up</b><small>Jump to level ${levelOf(SAVE.xp)+1} and get its pack.</small></span><button class="btn small" id="pfLvUp">+1 level</button></div>
       <div class="pf-row"><span class="rt"><b>Daily pack</b><small>Make today's daily pack ready again.</small></span><button class="btn small" id="pfDaily">Refill</button></div>
+      <div class="pf-row"><span class="rt"><b>Screen info</b><small>Sizes this device reports, for fixing layout on phones.</small></span><button class="btn small" id="pfScreen">Show</button></div>
       </section>`;
   }
 
@@ -330,5 +361,6 @@ function renderProfilePage(force){
   on('#pfUnlock button',b=>{const v=b.dataset.k==='true';if(!!SAVE.unlockAll===v)return;SAVE.unlockAll=v;save();renderProfilePage();toast(v?'All cards unlocked.':'Back to your own collection.')});
   on('#pfLvUp',()=>{const lv=levelOf(SAVE.xp)+1;SAVE.xp=lvlXp(lv);const got=grantPacks(SAVE);profCheck();save();renderProfile();renderProfilePage();
     toast(`Level ${lv}`+(got.length?` · ${PACKS[got[0].t].name} pack added`:''));freshToast()});
+  on('#pfScreen',screenInfo);
   on('#pfDaily',()=>{SAVE.daily={at:yesterday(),n:SAVE.daily?SAVE.daily.n:0};save();toast('Daily pack is ready.')});
 }

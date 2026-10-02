@@ -1,5 +1,8 @@
 /* ---------- game ---------- */
 #scr-game{padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:hidden}
+.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-short #scr-game{padding-bottom:6px}
+/* a match never scrolls: everything is sized to fit (layout, fitGame) */
+#scr-game{overscroll-behavior:none}
 .hud{display:flex;align-items:center;gap:8px;width:100%;max-width:1240px;height:52px;flex:none;position:relative}
 .wordmark{display:none;font:900 18px var(--display);font-style:italic;font-stretch:120%;text-transform:uppercase;padding-right:.1em;
   background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -28,6 +31,9 @@
 .rulebar{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;flex:none;min-height:20px;max-width:1240px}
 .rulebar span{font:500 11.5px/18px var(--body);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 7px}
 .rulebar span.sd{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 50%,transparent)}
+.hand.chaos .card:not(.forced){opacity:.45;filter:saturate(.5)}
+.card.forced{box-shadow:0 0 0 2px var(--hot),0 0 22px var(--accent-glow)}
+.rulebar span.ser{color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
 .arena{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:4px}
 .side{display:flex;flex-direction:column;align-items:center;gap:6px}
 .pname{display:flex;align-items:center;gap:10px;height:40px;width:min(100%,calc(var(--hc)*5 + 24px));padding:0 4px}
@@ -111,6 +117,10 @@ body.land .hand .card.sel{z-index:3}
 .mbtns .btn{flex:1 1 130px}
 .bigscore{font:900 40px var(--display);margin:4px 0}
 .bigscore .b{color:var(--blue-ink)} .bigscore .r{color:var(--red-ink)}
+.serscore{font:700 15px var(--display)} .serscore .b{color:var(--blue-ink)} .serscore .r{color:var(--red-ink)}
+.serlog{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:2px 0 8px}
+.serlog span{font:600 12px/22px var(--body);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:6px;padding:0 8px;color:var(--muted)}
+.serlog .b{color:var(--blue-ink);border-color:color-mix(in srgb,var(--blue-ink) 45%,transparent)} .serlog .r{color:var(--red-ink);border-color:color-mix(in srgb,var(--red-ink) 45%,transparent)}
 .cardrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0;font-size:13px}
 .cardrow .pk{cursor:pointer;border-radius:10px;padding:3px;border:2px solid transparent;transition:transform .2s var(--spring),border-color .15s}
 .cardrow .pk.on{border-color:var(--hot);transform:translateY(-5px);box-shadow:0 10px 20px -8px var(--hot-glow)}

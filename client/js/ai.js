@@ -32,8 +32,9 @@ function negamax(s,R,depth,a,b,ctx){
   }
   return best;
 }
-function aiChoose(st,R,level){
-  const s=cloneS(st),p=s.turn,moves=genMoves(s);
+// forced = the hand index Chaos picked: only squares are chosen for it (deeper turns still look at every card)
+function aiChoose(st,R,level,forced){
+  const s=cloneS(st),p=s.turn,moves=forced==null?genMoves(s):s.b.flatMap((x,c)=>x<0?[[forced,c]]:[]);
   const scored=moves.map(m=>{const ch=cloneS(s);play(ch,R,m[0],m[1],null);return{m,v:evalFor(ch,p)+Math.random()*.01}});
   scored.sort((x,y)=>y.v-x.v);
   if(level==='easy'){

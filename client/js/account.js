@@ -148,7 +148,8 @@ function openAuth(mode='up'){
     <form class="authf" id="authf" novalidate>
       <label>Username<input name="username" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="vael_99" required></label>
       <label>Password<input name="password" type="password" maxlength="200" required></label>
-      <label class="su">Email <small>optional, for recovering your account later</small><input name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
+      <button type="button" class="forgot si" id="auForgot">Forgot password?</button>
+      <label class="su">Email <small>optional, lets you reset a forgotten password</small><input name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
       <p class="auerr" role="alert"></p>
       <button class="btn primary full" type="submit" id="auGo"></button>
       <p class="note su">Your ${plural(n,'card')}, stats and settings come with you.</p>
@@ -165,6 +166,7 @@ function openAuth(mode='up'){
   };
   box.querySelectorAll('#auTabs button').forEach(b=>b.onclick=()=>{sfx('click');set(b.dataset.k)});
   f.oninput=()=>{err.textContent=''};
+  f.querySelector('#auForgot').onclick=()=>{sfx('click');openForgot(f.elements.username.value.trim())};
   set(mode);
   setTimeout(()=>f.elements.username.focus(),50);
 
@@ -190,6 +192,55 @@ function openAuth(mode='up'){
     }catch(x){
       err.textContent=x.message;go.disabled=false;go.textContent=mode==='up'?'Create account':'Sign in';
     }
+  };
+}
+
+/* ---------- forgotten password ---------- */
+// asks for a reset email; the answer is the same whether or not the account exists
+function openForgot(who=''){
+  const box=modal(`<h2 class="nm2">Reset your password</h2><p>Enter your username or the email on your account. We'll email you a link to choose a new password.</p>
+    <form class="authf" id="fgf" novalidate>
+      <label>Username or email<input name="who" maxlength="254" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+      <p class="auerr" role="alert"></p>
+      <button class="btn primary full" type="submit">Send link</button>
+    </form>`,[{label:'Back',cls:'text',esc:true,fn:()=>openAuth('in')}]);
+  const f=box.querySelector('#fgf'),err=f.querySelector('.auerr'),go=f.querySelector('button[type=submit]'),inp=f.elements.who;
+  inp.value=who;setTimeout(()=>inp.focus(),50);
+  f.oninput=()=>{err.textContent=''};
+  f.onsubmit=async e=>{
+    e.preventDefault();
+    const v=inp.value.trim();
+    if(!v){err.textContent='Enter your username or email.';return}
+    sfx('click');go.disabled=true;go.textContent='Sending…';
+    try{
+      await api('/auth/forgot',{method:'POST',body:{who:v}});
+      modal(`<h2 class="nm2">Check your email</h2><p>If an account matches, we sent a link to its email. It works once, for 30 minutes. Check your spam folder too.</p>
+        <p class="note">No email on your account? Then it can't be reset, but your progress is still saved on any device where you're signed in.</p>`,
+        [{label:'OK',cls:'primary'}]);
+    }catch(x){err.textContent=x.message;go.disabled=false;go.textContent='Send link'}
+  };
+}
+// opened from the emailed link (#reset=…): choose a new password, then you're signed in
+function openReset(token){
+  const box=modal(`<h2 class="nm2">Choose a new password</h2><p>You'll be signed out on every other device.</p>
+    <form class="authf" id="rsf" novalidate>
+      <label>New password<input name="password" type="password" maxlength="200" autocomplete="new-password" placeholder="At least 8 characters" required></label>
+      <p class="auerr" role="alert"></p>
+      <button class="btn primary full" type="submit">Save password</button>
+    </form>`,[{label:'Cancel',cls:'text',esc:true}]);
+  const f=box.querySelector('#rsf'),err=f.querySelector('.auerr'),go=f.querySelector('button[type=submit]'),pw=f.elements.password;
+  setTimeout(()=>pw.focus(),50);
+  f.oninput=()=>{err.textContent=''};
+  f.onsubmit=async e=>{
+    e.preventDefault();
+    if(pw.value.length<8){err.textContent='Passwords need at least 8 characters.';return}
+    sfx('click');go.disabled=true;go.textContent='Saving…';
+    try{
+      const r=await api('/auth/reset',{method:'POST',body:{token,password:pw.value}});
+      closeModal();acctSignedIn(r);
+      toast(`Password changed. Signed in as ${r.user.displayName}.`,3000);
+      acctReconcile(r.save,true);
+    }catch(x){err.textContent=x.message;go.disabled=false;go.textContent='Save password'}
   };
 }
 

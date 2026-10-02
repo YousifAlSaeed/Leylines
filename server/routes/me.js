@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { rateLimit } from '../lib/rateLimit.js';
 import { deleteOtherSessions, requireAuth } from '../lib/sessions.js';
 import { checkEmail, checkPassword, checkSave, cleanName, privateUser } from '../lib/users.js';
+import { emailHash, sealEmail } from '../lib/emailCrypto.js';
 
 export function meRouter(db) {
   const r = Router();
@@ -34,15 +35,8 @@ export function meRouter(db) {
       const mail = email ? String(email).trim().toLowerCase() : null;
       if (mail && !checkEmail(mail)) return res.status(400).json({ error: 'That email address doesn\'t look right.' });
       if (typeof password !== 'string' || !await verifyPassword(password, user.password_hash)) return wrongPassword(res);
-      if (mail && await db.get('SELECT 1 FROM users WHERE email = $e AND id <> $u', { $e: mail, $u: user.id }))
-        return res.status(409).json({ error: 'That email is already used by another account.' });
-      try {
-        ({ rows: [user] } = await db.run('UPDATE users SET email = $e, updated_at = $now WHERE id = $u RETURNING *',
-          { $e: mail, $now: now(), $u: user.id }));
-      } catch (err) {
-        if (err.code !== '23505' && !/UNIQUE/.test(err.message)) throw err;
-        return res.status(409).json({ error: 'That email is already used by another account.' });
-      }
+      ({ rows: [user] } = await db.run('UPDATE users SET email = $e, email_hash = $eh, updated_at = $now WHERE id = $u RETURNING *',
+        { $e: sealEmail(mail), $eh: emailHash(mail), $now: now(), $u: user.id }));
     }
     res.json({ user: privateUser(user) });
   });
