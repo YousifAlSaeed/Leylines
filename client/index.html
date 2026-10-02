@@ -82,13 +82,19 @@
 
 <!-- SETUP -->
 <section id="scr-setup" class="screen">
-  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
+  <div class="topbar"><button class="iconbtn" id="setupBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="setupTitle">Match setup</h2></div>
   <div class="wrap setup">
+    <div id="roomBox" class="s-room hidden">
+      <h3>Room</h3>
+      <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="hostCode">·····</div></div>
+        <div class="room-share" id="roomShare"><div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div><input class="linkin" id="hostLink" readonly aria-label="Invite link"></div></div>
+      <ul class="room-pl" id="roomPlayers" aria-label="Players"></ul>
+    </div>
     <div id="diffBox" class="s-diff"><h3>Difficulty</h3><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div>
     <div class="s-rules"><h3>Rules<em id="ruleCount"></em></h3><div class="rgrid" id="ruleChips" role="group" aria-label="Rules"></div><div class="trow" id="timerRow"></div><div class="rinfo" id="ruleInfo" aria-live="polite"></div></div>
     <div class="s-series"><h3>Series</h3><div class="tgrid sgrid" id="seriesSeg" role="group" aria-label="Series length"></div><p class="note" id="seriesDesc"></p></div>
     <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p></div>
-    <p class="note" id="setupNote"></p>
+    <p class="note" id="setupNote" aria-live="polite"></p>
     <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
   </div>
 </section>
@@ -210,14 +216,8 @@
       <input class="codein" id="joinCode" aria-label="Game code" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false">
       <button class="btn" id="btnJoin">Join</button>
     </div>
-    <div class="panel hidden" id="onHost">
-      <div class="or">Hosting as <b class="gold" id="hostAs"></b> · your game code</div>
-      <div class="codebox" id="hostCode">·····</div>
-      <input class="linkin" id="hostLink" readonly aria-label="Invite link">
-      <div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div>
-    </div>
     <div class="status" id="onStatus" role="status" aria-live="polite"></div>
-    <div class="desc">Both players bring 5 cards from their own collection. The host's rules and trade rule apply. Cards won or lost are saved on each device.</div>
+    <div class="desc">Both players bring 5 cards from their own collection. The host picks the rules in the waiting room. Cards won or lost are saved on each device.</div>
   </div>
 </section>
 

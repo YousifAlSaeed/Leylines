@@ -31,7 +31,7 @@ The in-game **How to play** screen shows every rule with an animated example.
 | --- | --- |
 | **vs Computer** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
 | **Same Screen** | Two players on one device. |
-| **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share. |
+| **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
 
 ## Rules
 

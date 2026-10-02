@@ -89,8 +89,8 @@ const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','O
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 // best-of series: [matches, label, description]; whoever went first in one match goes second in the next
 const SERIES=[[1,'Single','One match decides it.'],
- [3,'Best of 3','Up to 3 matches with the same 5 cards. Whoever goes first swaps each match. Most wins takes the series; a drawn match counts for nobody.'],
- [5,'Best of 5','Up to 5 matches with the same 5 cards. Whoever goes first swaps each match. Most wins takes the series; a drawn match counts for nobody.']];
+ [3,'Best of 3','Up to 3 matches. Most wins takes the series.'],
+ [5,'Best of 5','Up to 5 matches. Most wins takes the series.']];
 const boOf=v=>SERIES.some(s=>s[0]===v)?v:1;
 
 // player levels (profile.js): the total XP to reach level n is 0, 100, 300, 600…

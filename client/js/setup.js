@@ -2,17 +2,22 @@
 /* =====================================================================
    SETUP
    ===================================================================== */
+// 'ai', 'local', or 'room': the online waiting room, where the host sets the rules and the guest sees them
 let setupMode='ai';
+const inRoom=()=>setupMode==='room';
+const roomGuest=()=>inRoom()&&NET.role==='guest';
+const roomOpen=()=>inRoom()&&$('#scr-setup').classList.contains('on');
+// the settings on show: your own, or the host's when you're the guest in the room
+const SR=()=>roomGuest()&&NET.room?NET.room:{rules:SAVE.rules,trade:SAVE.trade,bo:boOf(SAVE.bo)};
 function openSetup(mode){
   setupMode=mode;
-  $('#setupTitle').textContent={ai:'vs Computer',local:'Same screen',online:'Host an online game'}[mode];
+  $('#setupTitle').textContent={ai:'vs Computer',local:'Same screen',room:'Waiting room'}[mode];
   $('#diffBox').classList.toggle('hidden',mode!=='ai');
   $('#tradeBox').classList.toggle('hidden',mode==='local');
-  $('#setupGo').textContent=mode==='online'?'Create game':SAVE.rules.random?'Start match':'Choose cards';
-  $('#setupNote').innerHTML=mode==='local'
-    ?'Free play: each player picks any 5 cards from the full set. No cards are traded.'
-    :mode==='ai'?''
-    :'You will get a 5-letter code and an invite link to send to a friend.';
+  $('#roomBox').classList.toggle('hidden',mode!=='room');
+  $('#scr-setup').classList.toggle('ro',roomGuest());
+  $('#setupGo').disabled=false;
+  $('#setupNote').innerHTML=mode==='local'?'Free play: each player picks any 5 cards from the full set. No cards are traded.':'';
   setupLast=null;renderSetup();show('setup');
 }
 function refocus(host,old){const a=document.activeElement;if(!a||a===document.body||!a.isConnected){const n=$(`${host} [data-k="${old.dataset.k}"]`);n&&n.focus()}}
@@ -31,52 +36,90 @@ const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</s
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
-const ruleCountText=()=>`${RULES.filter(r=>SAVE.rules[r[0]]).length+(SAVE.rules.timer?1:0)} on`;
-function timerInfo(){const t=SAVE.rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
+const ruleCountText=()=>{const R=SR().rules;return`${RULES.filter(r=>R[r[0]]).length+(R.timer?1:0)} on`};
+function timerInfo(){const t=SR().rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
 // slider positions: 0 = off, 1..17 = 10..90 seconds
 function renderTimerRow(){
-  const row=$('#timerRow'),t=SAVE.rules.timer;
+  const row=$('#timerRow'),t=SR().rules.timer;
   if(!row.firstChild){
     row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
       `<input type="range" class="rng" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
       `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
     const sl=$('#timerSl');
-    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
-      renderTimerRow();$('#ruleInfo').innerHTML=timerInfo()};
+    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(roomGuest()||n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
+      renderTimerRow();$('#ruleInfo').innerHTML=timerInfo();if(inRoom()){roomSync();renderRoom()}};
   }
   const sl=$('#timerSl'),pos=t?t/5-1:0;
-  sl.value=pos;sl.style.setProperty('--f',(pos/(+sl.max)*100)+'%');
+  sl.disabled=roomGuest();sl.value=pos;sl.style.setProperty('--f',(pos/(+sl.max)*100)+'%');
   sl.setAttribute('aria-valuetext',t?t+' seconds per turn':'Off, no time limit');
   $('#timerOut').textContent=t?t+' s':'Off';
   row.classList.toggle('off',!t);
   $('#ruleCount').textContent=ruleCountText();
 }
 function renderSetup(flipKey){
+  const ro=roomGuest(),cur=SR();
   $('#diffSeg').innerHTML=DIFFS.map(([k,l])=>{const[n,sub]=DIFF_INFO[k];
     return`<button class="dc ${SAVE.diff===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.diff===k}"><span class="pips" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><b>${l}</b><small>${sub}</small></button>`}).join('');
   $$('#diffSeg button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderSetup();refocus('#diffSeg',b)});
-  const R=SAVE.rules;
+  const R=cur.rules;
   $('#ruleChips').innerHTML=RULES.map(([k,l])=>{
     const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus);
-    return`<button class="rc ${R[k]?'on':''} ${dim?'dim':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}" aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
-  $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
+    return`<button class="rc ${R[k]?'on':''} ${dim?'dim':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}"${ro?' aria-readonly="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
+  // the guest can tap a card to read about it, but not turn it on or off
+  $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+    if(ro){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
+    R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
   renderTimerRow();
   const lr=RULES.find(r=>r[0]===setupLast);
   $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
-    :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>Violet cards are on. Tap one to turn it on or off and see what it does.</span></div>`;
-  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${SAVE.trade===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.trade===k}"><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
-  $$('#tradeSeg button').forEach(b=>b.onclick=()=>{SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
-  const tr=TRADES.find(t=>t[0]===SAVE.trade);
+    :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${ro?'Violet cards are on. Only the host can change them. Tap one to see what it does.':'Violet cards are on. Tap one to turn it on or off and see what it does.'}</span></div>`;
+  const lock=ro?' aria-disabled="true"':'';
+  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${lock}><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
+  $$('#tradeSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
+  const tr=TRADES.find(t=>t[0]===cur.trade);
   $('#tradeDesc').textContent=tr[2];
-  const bo=boOf(SAVE.bo);
-  $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
-  $$('#seriesSeg button').forEach(b=>b.onclick=()=>{SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});
-  $('#seriesDesc').textContent=SERIES.find(s=>s[0]===bo)[2]+(bo>1&&setupMode!=='local'&&SAVE.trade!=='none'?' Cards are traded once, at the end.':'');
-  if(setupMode!=='online')$('#setupGo').textContent=R.random?'Start match':'Choose cards';
+  const bo=cur.bo;
+  $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"${lock}><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
+  $$('#seriesSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});
+  $('#seriesDesc').textContent=SERIES.find(s=>s[0]===bo)[2];
+  if(inRoom()){roomSync();renderRoom()}
+  else $('#setupGo').textContent=R.random?'Start match':'Choose cards';
+}
+// the room's players, status line and button
+function renderRoom(){
+  const host=NET.role==='host',on=!!(NET.conn&&NET.conn.open&&NET.oppName),opp=esc(NET.oppName||'your friend');
+  $('#hostCode').textContent=NET.code||'·····';
+  $('#hostLink').value=host&&NET.code?inviteLink(NET.code):'';
+  $('#roomShare').classList.toggle('hidden',!host);
+  const av=(a,name)=>a!=null&&CARDS[a]?`<span class="av art">${CARDS[a].art}</span>`:`<span class="av">${initialOf(name)}</span>`;
+  const row=(cls,a,name,you,tag,st,ok)=>`<li class="${cls}">${av(a,name)}<b>${esc(name)}${you?' <small>(you)</small>':''}</b>${tag?'<span class="rtag">HOST</span>':''}<span class="st ${ok?'ok':''}">${st}</span></li>`;
+  const ready=host?NET.oppReady:NET.meReady;
+  const hostRow=row('h',host?myAv():NET.oppAv,host?myName():NET.oppName||'Host',host,true,host||NET.oppIn?'':'Still on results',false);
+  const guestRow=on?row('g',host?NET.oppAv:myAv(),host?NET.oppName:myName(),!host,false,ready?'✓ Ready':host&&!NET.oppIn?'Still on results':'Not ready',ready)
+    :'<li class="empty"><span class="av">?</span><b>Waiting for a friend…</b><span class="spin"></span></li>';
+  $('#roomPlayers').innerHTML=hostRow+guestRow;
+  const go=$('#setupGo');
+  if(host){
+    go.textContent='Start match';go.disabled=!(on&&NET.oppReady);
+    $('#setupNote').innerHTML=NET.roomMsg||(!NET.code?'<span class="spin"></span>Connecting…'
+      :!on?'Send the code or the invite link to a friend. You can set the rules while you wait.'
+      :NET.oppReady?`<b class="gold">${opp}</b> is ready. Start when you are.`:`Waiting for <b class="gold">${opp}</b> to tap Ready. Changing a rule asks them again.`);
+  }else{
+    go.textContent=NET.meReady?'Not ready':'Ready';go.disabled=false;
+    $('#setupNote').innerHTML=NET.meReady?`You're ready. Waiting for <b class="gold">${opp}</b> to start.`:`Only <b class="gold">${opp}</b> can change the rules. Tap Ready when you're happy with them.`;
+  }
 }
 $('#setupGo').onclick=()=>{
   sfx('click');
   if(setupMode==='ai')startAI();
   else if(setupMode==='local')startLocal();
-  else hostStart();
+  else if(NET.role==='host'){if(NET.oppReady&&NET.conn&&NET.conn.open)sendSetup()}
+  else{NET.meReady=!NET.meReady;netSend({t:'ready',on:NET.meReady,rv:NET.room?NET.room.rv:0});renderRoom()}
+};
+$('#setupBack').onclick=()=>{
+  sfx('click');
+  if(!inRoom()){show('menu');return}
+  if(!NET.conn||!NET.conn.open){leaveRoom();return}
+  modal(`<h2>${NET.role==='host'?'Close the room?':'Leave the room?'}</h2><p>${esc(oppName())} will be told you left.</p>`,
+    [{label:'Leave',cls:'danger',fn:leaveRoom},{label:'Stay',cls:'primary',esc:true}]);
 };
