@@ -8,7 +8,7 @@ h3 em{font-style:normal;color:var(--accent-ink);font-weight:600;margin-left:6px}
 .dc b{font:700 15px/1.1 var(--display)} .dc small{color:var(--muted);font-size:11.5px;line-height:1.3}
 .pips{display:flex;gap:3px}.pips i{width:14px;height:5px;border-radius:3px;background:rgba(var(--tint),.14)}.pips i.f{background:var(--red1)}
 .dc.on,.tc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px -10px var(--accent-glow)}
-.rgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .trow{margin-top:8px;border-radius:14px;padding:10px 14px 8px;border:1px solid var(--line2);background:var(--surf);display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:10px;row-gap:4px}
 .trow svg{width:20px;height:20px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .trow b{font:700 14px var(--display)} .trow output{font:800 15px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right}
@@ -25,7 +25,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .setrow.muted .vpct{color:var(--muted)}
 .trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
 .trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
-.rc{position:relative;aspect-ratio:5/5.4;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
+.rc{position:relative;aspect-ratio:5/3.6;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
   background:repeating-linear-gradient(45deg,var(--surf2) 0 6px,var(--surf) 6px 12px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 6px;text-align:center;
   transition:transform .25s var(--spring),box-shadow .2s,border-color .2s,opacity .2s}

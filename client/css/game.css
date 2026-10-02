@@ -28,6 +28,8 @@
 .rulebar{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;flex:none;min-height:20px;max-width:1240px}
 .rulebar span{font:500 11.5px/18px var(--body);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 7px}
 .rulebar span.sd{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 50%,transparent)}
+.hand.chaos .card:not(.forced){opacity:.45;filter:saturate(.5)}
+.card.forced{box-shadow:0 0 0 2px var(--hot),0 0 22px var(--accent-glow)}
 .rulebar span.ser{color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
 .arena{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:4px}
 .side{display:flex;flex-direction:column;align-items:center;gap:6px}

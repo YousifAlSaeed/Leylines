@@ -263,6 +263,6 @@ function pump(){
   if(!G||G.mode!=='online'||G.busy||G.over||!G.st)return;
   if(G.st.turn===G.me||!G.inbox.length)return;
   const m=G.inbox.shift(),st=G.st;
-  if(!Number.isInteger(m.hi)||!Number.isInteger(m.cell)||m.hi<0||m.hi>=st.h[st.turn].length||m.cell<0||m.cell>8||st.b[m.cell]>=0)return pump();
+  if(!Number.isInteger(m.hi)||!Number.isInteger(m.cell)||m.hi<0||m.hi>=st.h[st.turn].length||m.cell<0||m.cell>8||st.b[m.cell]>=0||(G.forced!=null&&m.hi!==G.forced))return pump();
   execMove(m.hi,m.cell);
 }

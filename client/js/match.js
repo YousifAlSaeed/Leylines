@@ -57,7 +57,10 @@ function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===
 
 function nextTurn(){
   if(!G)return;
-  G.sel=null;renderGame();
+  // Chaos: the card that must be played this turn. Drawn from the match's seeded random numbers, so both online players get the same one
+  G.sel=null;G.forced=null;
+  if(G.rules.chaos&&!isFull(G.st)){G.forced=Math.floor(G.rng()*G.st.h[G.st.turn].length);if(isHuman(G.st.turn))G.sel=G.forced}
+  renderGame();
   if(isFull(G.st)){endRound();return}
   startTurnTimer();
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
@@ -68,7 +71,7 @@ function aiTurn(){
   const t0=performance.now();
   setTimeout(async()=>{
     if(G!==g)return;
-    const[hi,cell]=aiChoose(G.st,G.rules,G.diff);
+    const[hi,cell]=aiChoose(G.st,G.rules,G.diff,G.forced);
     const el=$('#handTop').children[hi];
     await wait(Math.max(0,450-(performance.now()-t0)));
     if(G!==g)return;
@@ -79,7 +82,7 @@ function aiTurn(){
   },80);
 }
 function requestMove(hi,cell){
-  if(!canAct(G.st.turn)||G.st.b[cell]>=0)return;
+  if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
   execMove(hi,cell);
 }
@@ -322,7 +325,9 @@ async function onTimeUp(p){
   await banner("Time's up!",'small');
   if(G!==g||G.busy||G.over||G.st.turn!==p)return;
   G.timeUp=false;
-  const moves=genMoves(G.st),[hi,cell]=moves[Math.floor(Math.random()*moves.length)];
+  const moves=genMoves(G.st).filter(m=>G.forced==null||m[0]===G.forced),pick=moves[Math.floor(Math.random()*moves.length)];
+  // genMoves skips a second copy of the same card, so the Chaos card picks a random empty square itself
+  const hi=G.forced!=null?G.forced:pick[0],cell=G.forced!=null?(e=>e[Math.floor(Math.random()*e.length)])(G.st.b.flatMap((x,i)=>x<0?[i]:[])):pick[1];
   if(G.mode==='online')netSend({t:'move',hi,cell});
   execMove(hi,cell);
 }
