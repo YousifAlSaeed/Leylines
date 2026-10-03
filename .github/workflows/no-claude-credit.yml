@@ -1,0 +1,28 @@
+# Fails if a pushed commit credits Claude with a "Co-Authored-By: Claude"
+# line, which would add Claude to the repo's Contributors list. A red ✗ here
+# means: reword that commit without the line, then push again.
+name: No Claude credit
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Look for Co-Authored-By Claude lines
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if git cat-file -e "$BASE" 2>/dev/null; then range="$BASE..$HEAD"; else range="$HEAD^!"; fi
+          bad=$(git log --format='%h %s%n%b' "$range" | grep -i '^co-authored-by:.*\(claude\|anthropic\)' || true)
+          if [ -n "$bad" ]; then
+            echo "These commits credit Claude:"
+            git log --format='%h %s' -i --grep='co-authored-by:.*\(claude\|anthropic\)' "$range"
+            exit 1
+          fi
+          echo "No Claude credit lines found."
