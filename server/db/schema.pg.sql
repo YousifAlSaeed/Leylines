@@ -80,8 +80,11 @@ CREATE TABLE IF NOT EXISTS leaderboard (
   cards      INTEGER NOT NULL DEFAULT 0,
   recent     TEXT    NOT NULL DEFAULT '',
   hand       TEXT    NOT NULL DEFAULT '',
+  v          INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT    NOT NULL DEFAULT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 );
+-- the version of board.js that wrote the row; older rows are redone from their save
+ALTER TABLE leaderboard ADD COLUMN IF NOT EXISTS v INTEGER NOT NULL DEFAULT 0;
 CREATE INDEX IF NOT EXISTS leaderboard_xp ON leaderboard (xp);
 CREATE INDEX IF NOT EXISTS leaderboard_wins ON leaderboard (wins);
 CREATE INDEX IF NOT EXISTS leaderboard_best ON leaderboard (best);

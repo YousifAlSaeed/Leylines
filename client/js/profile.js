@@ -69,6 +69,10 @@ function recordMatch(res,o={}){
   // a draw doesn't break a streak, it just doesn't add to it
   if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
   SAVE.recent=[...SAVE.recent,res].slice(-10);
+  if(o.online){
+    if(res==='w'){SAVE.ostreak++;SAVE.obest=Math.max(SAVE.obest,SAVE.ostreak)}else if(res==='l')SAVE.ostreak=0;
+    SAVE.orecent=[...SAVE.orecent,res].slice(-10);
+  }
   if(res==='w'){
     const di=DIFFS.findIndex(d=>d[0]===o.diff);
     if(!o.online&&di>SAVE.beat)SAVE.beat=di;

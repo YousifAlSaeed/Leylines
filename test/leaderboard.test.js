@@ -13,7 +13,8 @@ const { boardRow } = await import('../server/lib/board.js');
 
 let db, server, base;
 const T = {};
-const save = (xp, ow, best, seen, more = {}) => ({ xp, stats: { w: 0, l: 0, d: 0, ow, ol: 2, od: 1 }, best, seen, recent: ['w', 'l', 'w'], ...more });
+// best and recent count every match; the board only uses the online ones (obest, orecent)
+const save = (xp, ow, best, seen, more = {}) => ({ xp, stats: { w: 9, l: 0, d: 0, ow, ol: 2, od: 1 }, best: 50, obest: best, seen, recent: ['d', 'd'], orecent: ['w', 'l', 'w'], ...more });
 before(async () => {
   db = await openSqlite(null);
   server = createApp({ db, clientDir: fileURLToPath(new URL('../client', import.meta.url)) }).listen(0);
@@ -122,12 +123,15 @@ describe('leaderboard', () => {
   test('saves from before the leaderboard are added', async () => {
     const { rows: [u] } = await db.run("INSERT INTO users (username, display_name, password_hash) VALUES ('old', 'old', 'x') RETURNING id");
     await db.run('INSERT INTO user_saves (user_id, data) VALUES ($u, $d)', { $u: u.id, $d: JSON.stringify(save(10, 0, 0, [0])) });
+    // a row written before streaks and results were online-only is redone
+    await db.run("UPDATE leaderboard SET best = 99, v = 0 WHERE user_id = (SELECT id FROM users WHERE username = 'ana')");
     // a fresh server fills in rows it hasn't seen
     const s2 = createApp({ db, clientDir: '.' }).listen(0);
     await new Promise((r) => s2.once('listening', r));
     const b = await (await fetch(`http://127.0.0.1:${s2.address().port}/api/leaderboard?q=old`)).json();
     s2.close();
     assert.deepEqual(order(b), ['5 old']); // above eve, who has no XP
+    assert.equal((await board('?q=ana')).rows[0].best, 2);
   });
 
   test('deleting an account takes it off the board', async () => {
@@ -138,7 +142,7 @@ describe('leaderboard', () => {
 
 describe('boardRow', () => {
   test('keeps only sane values', () => {
-    assert.deepEqual(boardRow({ xp: -5, stats: { ow: 'lots' }, best: 2.5, seen: [1, 1, 99, 'x'], recent: ['w', 'z'], lastDeck: [1, 2, 3] }),
+    assert.deepEqual(boardRow({ xp: -5, stats: { ow: 'lots' }, obest: 2.5, seen: [1, 1, 99, 'x'], orecent: ['w', 'z'], lastDeck: [1, 2, 3] }),
       { xp: 0, wins: 0, losses: 0, draws: 0, best: 0, cards: 1, recent: 'w', hand: '' });
     assert.equal(boardRow(null).xp, 0);
   });

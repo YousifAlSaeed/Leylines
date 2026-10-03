@@ -8,7 +8,7 @@
    ===================================================================== */
 const LB={by:'level',show:'all',q:'',data:null,sel:'',err:'',loading:false,seq:0,qT:0};
 // [key, tab name, short name for phones]
-const LB_BY=[['level','Level','Level'],['wins','Online wins','Wins'],['streak','Best streak','Streak'],['cards','Cards found','Cards']];
+const LB_BY=[['level','Level','Level'],['wins','Online wins','Wins'],['streak','Online streak','Streak'],['cards','Cards found','Cards']];
 
 /* ---------- the menu tile ---------- */
 // no server to rank anyone (a copy opened from a file): leave the tile out
@@ -44,7 +44,7 @@ function openLeaderboard(){
 function lbShell(){
   $('#lbBody').innerHTML=`<div class="lb-grid">
     <div class="lb-left"><section class="pf-card lb-me" id="lbMe"></section><section class="pf-card lb-show" id="lbShow"></section>
-      <p class="lb-note">Ranks update each time a signed-in player's progress is saved.</p></div>
+      <p class="lb-note">Wins, streaks and results count online matches only. Ranks update each time a signed-in player's progress is saved.</p></div>
     <div class="lb-mid">
       <div class="lb-tools"><div class="seg lb-by" role="group" aria-label="Rank by">${LB_BY.map(([k,n,sh])=>`<button data-by="${k}" aria-pressed="false" aria-label="${n}"><span class="lb-l">${n}</span><span class="lb-s" aria-hidden="true">${sh}</span></button>`).join('')}</div>
         <label class="lb-find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
@@ -95,13 +95,13 @@ function lbPaintSide(){const p=lbFind(LB.sel);$('#lbSide').innerHTML=p?`<section
 
 /* ---------- pieces ---------- */
 const lbTier=lv=>`<span class="lb-tier t${TITLES.filter(t=>lv>=t[0]).length-1}">${titleOf(lv)}</span>`;
-const lbLast=(r,n=5)=>{const l=[...(r||'')].slice(-n);return l.length?`<span class="lb-l5" role="img" aria-label="Last ${plural(l.length,'result')}: ${l.map(x=>({w:'win',l:'loss',d:'draw'})[x]).join(', ')}">${l.map(x=>`<i class="${x}"></i>`).join('')}</span>`:'<span class="lb-none">—</span>'};
+const lbLast=(r,n=5)=>{const l=[...(r||'')].slice(-n);return l.length?`<span class="lb-l5" role="img" aria-label="Last ${plural(l.length,'online result')}: ${l.map(x=>({w:'win',l:'loss',d:'draw'})[x]).join(', ')}">${l.map(x=>`<i class="${x}"></i>`).join('')}</span>`:'<span class="lb-none">—</span>'};
 const lbRate=(w,l,d)=>{const n=w+l+d;return n?Math.round(w/n*100)+'%':'—'};
 // the number the board is ranked by, and what it counts
 function lbStat(p){
   if(LB.by==='level')return [levelOf(p.xp),`${p.xp.toLocaleString()} XP`];
   if(LB.by==='wins')return [p.wins,p.wins===1?'win':'wins'];
-  if(LB.by==='streak')return [p.best,'in a row'];
+  if(LB.by==='streak')return [p.best,'wins in a row'];
   return [p.cards,`of ${CARDS.length}`];
 }
 const lbRankCls=r=>r===1?' g':r===2?' s':r===3?' b':'';
@@ -120,7 +120,7 @@ function lbTableHTML(){
   const d=LB.data,cur=LB_BY.find(b=>b[0]===LB.by)[1];
   if(!d)return LB.err?lbErr():'<p class="pf-wait"><span class="spin"></span>Loading the leaderboard…</p>';
   if(LB.err)return lbErr();
-  const head=`<div class="lb-head" aria-hidden="true"><span>#</span><span>Player</span><span class="lb-stat">${cur}</span><span class="lb-c">Title</span><span class="lb-c lb-wl">Online W–L</span><span class="lb-c">Last 5</span></div>`;
+  const head=`<div class="lb-head" aria-hidden="true"><span>#</span><span>Player</span><span class="lb-stat">${cur}</span><span class="lb-c">Title</span><span class="lb-c lb-wl">Online W–L</span><span class="lb-c">Last 5 online</span></div>`;
   const inList=d.me&&d.rows.some(p=>p.username===d.me.username);
   const pin=d.me&&!inList&&!LB.q?`<div class="lb-gap" aria-hidden="true">···</div>${lbRow(d.me,true)}`:'';
   const empty=!d.rows.length?`<p class="pf-hint">${LB.q?`No player whose name starts with “${esc(LB.q)}”.`:'Nobody here yet.'}</p>`:'';
@@ -142,7 +142,7 @@ function lbMeHTML(){
     <p class="lb-tiny">${hi-s.xp} XP to LV ${lv+1}</p>
     <div class="lb-kv"><span>Online W / L / D</span><b>${st.ow} / ${st.ol} / ${st.od}</b></div>
     <div class="lb-kv"><span>Online win rate</span><b>${lbRate(st.ow,st.ol,st.od)}</b></div>
-    <div class="lb-kv"><span>Best streak</span><b>${s.best}</b></div>
+    <div class="lb-kv"><span>Best online streak</span><b>${s.obest}</b></div>
     <div class="lb-kv"><span>Cards found</span><b>${s.seen.length} / ${CARDS.length}</b></div>`;
 }
 function lbShowHTML(){
@@ -152,9 +152,9 @@ function lbShowHTML(){
 function lbPlayerHTML(p){
   const lv=levelOf(p.xp),me=lbIsMe(p),hand=(p.hand||[]).filter(i=>CARDS[i]);
   return `<div class="lb-pp">${frAvatar(p)}<div><b>${esc(p.displayName)}${me?' <em>(you)</em>':''}</b><div>${lbTier(lv)}<small>#${p.rank} · LV ${lv} · @${esc(p.username)}</small></div></div></div>
-    <div class="lb-trio"><div><b>${lv}</b><small>Level</small></div><div><b>${lbRate(p.wins,p.losses,p.draws)}</b><small>Online win rate</small></div><div><b>${p.best}</b><small>Best streak</small></div></div>
+    <div class="lb-trio"><div><b>${lv}</b><small>Level</small></div><div><b>${lbRate(p.wins,p.losses,p.draws)}</b><small>Online win rate</small></div><div><b>${p.best}</b><small>Best online streak</small></div></div>
     <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,'blue',{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
-    <h4>Recent results</h4>${p.recent?`<span class="pf-form">${[...p.recent].map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<p class="lb-none">No matches yet.</p>'}
+    <h4>Recent online results</h4>${p.recent?`<span class="pf-form">${[...p.recent].map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<p class="lb-none">No online matches yet.</p>'}
     <div class="lb-kv"><span>Online W / L / D</span><b>${p.wins} / ${p.losses} / ${p.draws}</b></div>
     <div class="lb-kv"><span>Cards found</span><b>${p.cards} / ${CARDS.length}</b></div>
     ${me?'':`<div class="lb-fr">${friendBtn(p.username)}</div>`}`;

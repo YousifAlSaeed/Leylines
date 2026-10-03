@@ -17,6 +17,8 @@ export async function openSqlite(file) {
   const cols = (t) => (db.exec(`PRAGMA table_info(${t})`)[0]?.values || []).map((v) => v[1]);
   const userCols = cols('users');
   if (userCols.length && !userCols.includes('email_hash')) db.run('ALTER TABLE users ADD COLUMN email_hash TEXT');
+  const boardCols = cols('leaderboard');
+  if (boardCols.length && !boardCols.includes('v')) db.run('ALTER TABLE leaderboard ADD COLUMN v INTEGER NOT NULL DEFAULT 0');
   db.exec(SCHEMA);
 
   function persist() {

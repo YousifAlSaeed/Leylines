@@ -52,7 +52,7 @@
 /* the table */
 .lb-table{container-type:inline-size;padding:8px;transition:opacity .2s}
 .lb-table.busy{opacity:.6}
-.lb-head,.lb-row{display:grid;grid-template-columns:34px minmax(0,1fr) 96px 118px 92px 72px;align-items:center;gap:10px;padding:8px 10px}
+.lb-head,.lb-row{display:grid;grid-template-columns:34px minmax(0,1fr) 96px 118px 92px 76px;align-items:center;gap:10px;padding:8px 10px}
 .lb-head{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
 .lb-head .lb-stat{color:var(--accent-ink)}
 .lb-row{width:100%;background:none;border:0;border-top:1px solid var(--line);border-radius:0;color:inherit;font:inherit;text-align:left;cursor:pointer}

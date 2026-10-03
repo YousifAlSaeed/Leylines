@@ -72,7 +72,9 @@ CREATE INDEX IF NOT EXISTS friend_requests_to ON friend_requests (to_id);
 -- The leaderboard: the numbers it ranks by, copied out of each player's save
 -- whenever it is written (server/lib/board.js), so ranking is plain SQL.
 -- recent is the last results as letters ("wwlwd"); hand is a JSON list of the
--- 5 card ids in their main loadout, or ''.
+-- 5 card ids in their main loadout, or ''. best and recent count online
+-- matches only. v is the version of board.js that wrote the row (sqlite.js adds
+-- the column to older databases).
 CREATE TABLE IF NOT EXISTS leaderboard (
   user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   xp         INTEGER NOT NULL DEFAULT 0,
@@ -83,6 +85,7 @@ CREATE TABLE IF NOT EXISTS leaderboard (
   cards      INTEGER NOT NULL DEFAULT 0,
   recent     TEXT    NOT NULL DEFAULT '',
   hand       TEXT    NOT NULL DEFAULT '',
+  v          INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 CREATE INDEX IF NOT EXISTS leaderboard_xp ON leaderboard (xp);

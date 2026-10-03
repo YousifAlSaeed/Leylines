@@ -20,6 +20,7 @@ export const checkPassword = (pw) => typeof pw === 'string' && pw.length >= 8 &&
 const CARD_COUNT = 55;
 const nat = (v, max = 1e9) => (Number.isInteger(v) && v >= 0 ? Math.min(v, max) : 0);
 export const cardId = (v) => Number.isInteger(v) && v >= 0 && v < CARD_COUNT;
+const results = (v) => (Array.isArray(v) ? v : []).filter((r) => r === 'w' || r === 'l' || r === 'd').slice(-10);
 export function publicProfile(save) {
   const s = save && typeof save === 'object' ? save : {};
   const st = s.stats && typeof s.stats === 'object' ? s.stats : {};
@@ -28,8 +29,10 @@ export function publicProfile(save) {
     xp: nat(s.xp),
     stats: Object.fromEntries(['w', 'l', 'd', 'ow', 'ol', 'od'].map((k) => [k, nat(st[k])])),
     streak: nat(s.streak), best: nat(s.best),
+    // online matches only
+    ostreak: nat(s.ostreak), obest: nat(s.obest),
     beat: Number.isInteger(s.beat) && s.beat >= 0 && s.beat <= 2 ? s.beat : -1,
-    recent: (Array.isArray(s.recent) ? s.recent : []).filter((r) => r === 'w' || r === 'l' || r === 'd').slice(-10),
+    recent: results(s.recent), orecent: results(s.orecent),
     badges: Object.fromEntries(Object.entries(s.badges && typeof s.badges === 'object' ? s.badges : {})
       .filter(([k, v]) => /^[a-z0-9]{1,16}$/.test(k) && typeof v === 'string').slice(0, 50).map(([k, v]) => [k, v.slice(0, 24)])),
     showcase: (Array.isArray(s.showcase) ? s.showcase : []).filter(cardId).slice(0, 3),
