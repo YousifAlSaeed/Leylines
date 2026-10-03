@@ -56,11 +56,6 @@
 .pf-wld b{display:block;font:800 26px/1.1 var(--display);font-variant-numeric:tabular-nums}
 .pf-wld small{color:var(--muted);font-size:12px}
 .pf-wld .w b{color:var(--pf-win)} .pf-wld .l b{color:var(--red-ink)} .pf-wld .d b{color:var(--muted)}
-.pf-split{display:flex;align-items:center;gap:10px;font-size:13px;margin-top:8px}
-.pf-split:first-of-type{margin-top:14px}
-.pf-split>span:first-child{width:92px;color:var(--muted);flex:none}
-.pf-sbar{flex:1;height:8px;border-radius:99px;background:var(--well);overflow:hidden;display:flex}
-.pf-split em{font-style:normal;font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
 .pf-mini{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:16px}
 .pf-mini b{display:block;font:800 18px/1.1 var(--display)}
 .pf-mini small{color:var(--muted);font-size:12px}
@@ -70,6 +65,11 @@
 .pf-form .w{background:color-mix(in srgb,var(--pf-win) 18%,transparent);color:var(--pf-win)}
 .pf-form .l{background:color-mix(in srgb,var(--red-ink) 16%,transparent);color:var(--red-ink)}
 .pf-form .d{background:var(--well);color:var(--muted)}
+/* games against the computer: one quiet line under the online record */
+.pf-cpu{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.pf-cpu svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:-4px}
+.pf-cpu b{color:var(--text);font-weight:600}
+.pf-empty{margin:14px 0 0;color:var(--muted);font-size:13px}
 
 /* badges */
 .pf-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}

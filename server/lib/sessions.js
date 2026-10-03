@@ -47,3 +47,9 @@ export function requireAuth(db) {
 export async function deleteOtherSessions(db, userId, keepToken) {
   await db.run('DELETE FROM sessions WHERE user_id = $u AND token_hash <> $h', { $u: userId, $h: sha256(keepToken) });
 }
+
+// like requireAuth when a token is sent; without one the request goes on as a guest
+export function optionalAuth(db) {
+  const auth = requireAuth(db);
+  return (req, res, next) => (bearer(req) ? auth(req, res, next) : next());
+}

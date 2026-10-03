@@ -281,7 +281,7 @@ function netLost(msg){
 function netGone(msg){
   if(NET.closing)return;
   const playing=liveMatch()&&!G.over;
-  if(playing){recordMatch('w',{online:true});freshToast();msg+=' The match counts as a win.'}
+  if(playing){histXp(recordMatch('w',{online:true}));histAdd('w','them');save();freshToast();msg+=' The match counts as a win.'}
   clearRejoin();hideAway();
   if(NET.role==='host'&&NET.code){hostBackToRoom(msg);return}
   netClose(true);G=null;stopTurnTimer();
@@ -339,7 +339,7 @@ function comeBack(){
 }
 function abandonMatch(){
   const playing=G&&!G.over;
-  if(playing){recordMatch('w',{online:true});freshToast()}
+  if(playing){histXp(recordMatch('w',{online:true}));histAdd('w','them');save();freshToast()}
   const msg=playing?'You ended the match. It counts as a win.':'You ended the match.';
   clearRejoin();hideAway();
   // the host keeps the room open; if the other player comes back they're told the match is over

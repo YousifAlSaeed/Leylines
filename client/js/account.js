@@ -57,7 +57,7 @@ function acctApply(data,rev){
   ACCT.applying=false;
   Object.assign(ACCT,{rev,dirty:false,syncedAt:Date.now(),state:''});acctStore();
   applyTheme();updSnd();musicSync();
-  if($('#scr-menu').classList.contains('on'))renderMenu();else{renderProfile();renderProfilePage()}
+  if($('#scr-menu').classList.contains('on'))renderMenu();else{renderProfile();renderProfilePage();lbAcct()}
 }
 
 /* ---------- syncing ---------- */
@@ -119,14 +119,14 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();renderProfilePage();frLoad();
+  acctStore();renderProfile();renderProfilePage();frLoad();lbAcct();
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
   // the name belonged to the account: don't leave it behind for the next one to pick up
   if(SAVE.name){SAVE.name='';save()}
-  acctStore();renderProfile();renderProfilePage();frReset();
+  acctStore();renderProfile();renderProfilePage();frReset();lbAcct();
   if(msg)toast(msg,3500);
 }
 function acctSignOut(){

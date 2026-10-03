@@ -153,11 +153,12 @@ function finish(s0,s1){
   G.over=true;G.busy=true;
   const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1]});
+  if(G.sd>0)ser.sd=1;
   if(mw>=0)ser.wins[mw]++;
   renderHud();
   let reward='';
-  if(G.mode!=='local')reward=rewardHTML(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental}));
+  if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
@@ -174,6 +175,7 @@ function finish(s0,s1){
     head=`<div class="kick">Best of ${G.bo} · ${G.mode==='online'?'Online series':'Series over'}</div><h2>${w<0?'Series tied':resultTitle(w,' the series')}</h2>`+vs+big(sw[0],sw[1])+
       `<div class="serlog">${ser.log.map((x,i)=>`<span class="${x.w<0?'d':x.w===G.bottom?'b':'r'}">M${i+1} ${x.sb}–${x.sr}</span>`).join('')}</div>`+reward;
   }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
+  if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
@@ -185,7 +187,7 @@ function finish(s0,s1){
     const loser=1-w,loserDeck=G.decks[loser];
     if(w===G.me){
       const take=idx=>{
-        const ids=idx.map(i=>loserDeck[i]);ids.forEach(collAdd);earn('spoils');profCheck();save();
+        const ids=idx.map(i=>loserDeck[i]);ids.forEach(collAdd);earn('spoils');profCheck();histTrade('won',ids);save();
         if(G.mode==='online'&&n<5)netSend({t:'trade',idx});
         resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue')+freshHTML());
       };
@@ -193,7 +195,7 @@ function finish(s0,s1){
       else pickCards(head,loserDeck,n).then(take);
     }else{
       const lose=idx=>{
-        const ids=idx.map(i=>G.decks[G.me][i]);ids.forEach(collRemove);save();
+        const ids=idx.map(i=>G.decks[G.me][i]);ids.forEach(collRemove);histTrade('lost',ids);save();
         const added=ensureMinimum();
         resultModal(head+`<p>${G.mode==='ai'?'The CPU':esc(oppName())} took:</p>`+rowHTML(ids,'red')+
           (added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(added,'blue'):''));
@@ -259,6 +261,8 @@ function playAgain(){
 }
 function leaveMatch(){
   closeModal();
+  // left between the matches of a series: it goes in the history as it stood
+  if(G&&G.over&&G.ser&&G.ser.log.length&&!G.hist){const sw=G.ser.wins,a=sw[G.me],b=sw[1-G.me];if(histAdd(a>b?'w':a<b?'l':'d','early'))save()}
   if(G&&G.mode==='online'){clearRejoin();netClose(true)}
   G=null;show('menu');
 }
@@ -266,7 +270,7 @@ $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;
   if(G.over){leaveMatch();return}
   modal(`<h2>Leave match?</h2><p>${G.mode==='local'?'The game will be abandoned.':'Leaving counts as a loss (no cards are traded).'}</p>`,[
-    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'&&!(G.daily&&G.daily.kind==='puzzle')){recordMatch('l',{online:G.mode==='online'});freshToast()}dailyLeave();leaveMatch()}},
+    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'&&!(G.daily&&G.daily.kind==='puzzle')){histXp(recordMatch('l',{online:G.mode==='online'}));histAdd('l','you');save();freshToast()}dailyLeave();leaveMatch()}},
     {label:'Keep playing',cls:'primary',esc:true}]);
 };
 $('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};
