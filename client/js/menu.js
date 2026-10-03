@@ -4,8 +4,8 @@
    ===================================================================== */
 function show(id){
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
-  if(id==='menu'&&G){if(G.mode==='online')netClose(true);G=null;stopTurnTimer()}
-  keepAwake(id==='game');
+  if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
+  keepAwake(id==='game');closeEmotes();
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }
@@ -54,9 +54,10 @@ function heroPane(m){
     row='<button class="btn primary full" id="heroGo">Play</button>';
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
-    const dk=heroDeck(false);
+    const dk=heroDeck(false),rj=readRejoin();
     h='Online';sub=dk.sub+' · Host or join with a code';side=dk.fan;
-    row=`<button class="btn primary full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
+    // a game this device was in when the app closed: one tap back in
+    row=(rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+`<button class="btn ${rj?'':'primary '}full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
   return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${esc(sub)}</p></div>${side}</div><div class="hero-row">${row}</div>`;
 }
@@ -72,6 +73,8 @@ function renderHero(anim){
   body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
+  const rb=$('#heroRejoin');
+  if(rb)rb.onclick=()=>{sfx('click');const rj=readRejoin();if(!rj){renderHero();return}$('#heroCode').value=rj.code;heroJoin()};
   $$('#menuDiff button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderHero();refocus('#menuDiff',b)});
   const ci=$('#heroCode');
   if(ci){

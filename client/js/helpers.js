@@ -5,7 +5,7 @@
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const fmt=v=>v===10?'A':String(v);
+const fmt=v=>v===10?'X':String(v);
 // keeps the screen from dimming during a match, where the browser allows it (it lets go when the app is hidden)
 let wakeLock=null;
 async function keepAwake(on){
@@ -61,7 +61,8 @@ function modal(html,btns=[]){
 }
 function closeModal(){
   const m=$('#modal');m.classList.remove('on');m.innerHTML='';
-  $$('.screen').forEach(s=>s.inert=false);
+  // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
+  const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
   modalReturn=null;
 }
@@ -76,7 +77,7 @@ function banner(text,cls=''){
 /* ---------- sound ---------- */
 let AC=null;
 const SFX={place:[[300,.07,'triangle']],flip:[[620,.05,'square'],[930,.07,'triangle']],banner:[[523,.08],[659,.08],[784,.08],[1047,.16]],
-  win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]]};
+  win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]],emote:[[660,.05],[990,.09]]};
 function sfx(k){
   const v=SAVE.sfxVol/100;
   if(!SAVE.sound||!v)return;

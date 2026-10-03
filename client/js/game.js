@@ -58,7 +58,11 @@ function renderHud(){
   else if(G.mode==='local')msg=(st.turn===0?'Blue':'Red')+"'s turn";
   else if(st.turn===G.me)msg='Your turn';
   else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
-  $('#turnMsg').textContent=msg;
+  $('#turnMsg').textContent=msg; // read out by screen readers
+  $('#turnTxt').textContent=msg; // the pill at the top in landscape
+  // whose turn it is: a tag next to that player's name
+  const tag=p=>G.over||st.turn!==p?'':isHuman(p)?'Your turn':G.mode==='ai'?'Thinking…':'Their turn';
+  for(const[el,p]of[[$('#tagBot'),bot],[$('#tagTop'),1-bot]]){const t=tag(p);if(el.textContent!==t){el.textContent=t;el.classList.toggle('on',!!t)}}
   const R=G.rules;
   let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
   if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
@@ -66,7 +70,7 @@ function renderHud(){
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   if($('#ruleBar').innerHTML!==chips){$('#ruleBar').innerHTML=chips;fitGame()}
-  updSnd();
+  updSnd();emoteSync();
 }
 
 let drag=null;
@@ -152,6 +156,10 @@ function layout(){
   }
   cell=Math.max(48,Math.floor(cell));hc=Math.max(40,Math.floor(hc));
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
+  // the emote button (36 + a 10px gap) hangs off the left of the player rows; when the space beside them is
+  // smaller than that, the rows start further in by the difference (screen padding is 10px a side)
+  const row=Math.min(W-20,hc*5+24);
+  rs.setProperty('--pin',Math.ceil(Math.max(0,46-(W-20-row)/2))+'px');
   document.body.classList.toggle('nohn',hc<88);
   document.body.classList.toggle('nobn',cell<82);
   fitGame();
