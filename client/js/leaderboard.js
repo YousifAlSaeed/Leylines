@@ -120,7 +120,7 @@ function lbTableHTML(){
   const d=LB.data,cur=LB_BY.find(b=>b[0]===LB.by)[1];
   if(!d)return LB.err?lbErr():'<p class="pf-wait"><span class="spin"></span>Loading the leaderboard…</p>';
   if(LB.err)return lbErr();
-  const head=`<div class="lb-head" aria-hidden="true"><span>#</span><span>Player</span><span class="lb-stat">${cur}</span><span class="lb-c">Title</span><span class="lb-c lb-wl">Online W–L</span><span class="lb-c">Last 5 online</span></div>`;
+  const head=`<div class="lb-head" aria-hidden="true"><span>#</span><span>Player</span><span class="lb-stat">${cur}</span><span class="lb-c">Title</span><span class="lb-c lb-wl">Online W–L</span><span class="lb-c">Last 5</span></div>`;
   const inList=d.me&&d.rows.some(p=>p.username===d.me.username);
   const pin=d.me&&!inList&&!LB.q?`<div class="lb-gap" aria-hidden="true">···</div>${lbRow(d.me,true)}`:'';
   const empty=!d.rows.length?`<p class="pf-hint">${LB.q?`No player whose name starts with “${esc(LB.q)}”.`:'Nobody here yet.'}</p>`:'';
