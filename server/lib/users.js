@@ -41,6 +41,37 @@ export function publicProfile(save) {
   };
 }
 
+// A save's match history (client/js/history.js) as others may see it: null when
+// the player hid it, otherwise each entry rebuilt from checked fields only.
+const RULE_KEYS = ['open', 'same', 'sameWall', 'plus', 'combo', 'elemental', 'suddenDeath', 'random', 'chaos'];
+const TRADE_KEYS = ['none', 'one', 'diff', 'all', 'sweep'];
+const cards = (v, n = 5) => (Array.isArray(v) ? v.filter(cardId).slice(0, n) : []);
+export function publicHistory(save) {
+  const s = save && typeof save === 'object' ? save : {};
+  if (s.hideHist) return null;
+  return (Array.isArray(s.history) ? s.history : []).slice(-30).filter((h) => h && typeof h === 'object').map((h) => {
+    const e = {
+      t: Number.isFinite(h.t) ? h.t : 0, m: h.m === 'online' ? 'online' : 'ai', bo: [3, 5].includes(h.bo) ? h.bo : 1,
+      r: ['w', 'l', 'd'].includes(h.r) ? h.r : 'd',
+      log: (Array.isArray(h.log) ? h.log : []).slice(-5).filter((m) => Array.isArray(m)).map((m) => [nat(m[0], 10), nat(m[1], 10)]),
+      me: cards(h.me), op: cards(h.op), ru: (Array.isArray(h.ru) ? h.ru : []).filter((k) => RULE_KEYS.includes(k)),
+      tm: nat(h.tm, 90), tr: TRADE_KEYS.includes(h.tr) ? h.tr : 'none', xp: nat(h.xp, 10000),
+    };
+    if (e.m === 'ai') e.d = ['easy', 'normal', 'hard'].includes(h.d) ? h.d : 'normal';
+    else {
+      e.n = cleanName(h.n) || 'Player';
+      if (typeof h.u === 'string' && USERNAME.test(h.u)) e.u = h.u;
+      if (cardId(h.av)) e.av = h.av;
+    }
+    if (cards(h.won).length) e.won = cards(h.won);
+    if (cards(h.lost).length) e.lost = cards(h.lost);
+    if (h.sw) e.sw = 1;
+    if (h.sd) e.sd = 1;
+    if (['you', 'them', 'early'].includes(h.q)) e.q = h.q;
+    return e;
+  });
+}
+
 // returns an error message, or null when the sign-up fields are fine
 export function checkSignup({ username, password, email }) {
   if (typeof username !== 'string' || !USERNAME.test(username)) return 'Usernames are 3 to 20 letters, numbers or underscores.';

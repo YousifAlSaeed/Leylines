@@ -248,7 +248,7 @@ async function profShare(){
 /* ---------- the screen ---------- */
 // view = null for your own profile, or {user, profile} from /api/users/:name; back = the screen its Back button returns to
 const profBack=back=>{$('#scr-profile [data-back]').dataset.back=back};
-function openProfile(view=null,back='menu'){PROF.view=view;profBack(back);renderProfilePage(true);show('profile');$('#scr-profile').scrollTop=0}
+function openProfile(view=null,back='menu'){PROF.view=view;Object.assign(HIST,{f:'all',n:HIST_PAGE,open:-1});profBack(back);renderProfilePage(true);show('profile');$('#scr-profile').scrollTop=0}
 // opened from a shared link, or from your friend list (back = 'friends')
 async function openPlayer(name,back='menu'){
   if(ACCT.token&&ACCT.user&&ACCT.user.username.toLowerCase()===name.toLowerCase())return openProfile(null,back);
@@ -355,7 +355,10 @@ function renderProfilePage(force){
       </section>`;
   }
 
-  $('#pfBody').innerHTML=hero+`<div class="pf-grid"><div class="pf-col">${record}${badges}</div><div class="pf-col">${coll}${show}${acct}</div></div>`;
+  // match history: yours, or theirs from the server (null when they hid it)
+  const hist=()=>mine?SAVE.history:s.history===undefined?[]:s.history;
+  $('#pfBody').innerHTML=hero+`<div class="pf-grid"><div class="pf-col">${record}${histCardHTML(hist(),mine,name)}${badges}</div><div class="pf-col">${coll}${show}${acct}</div></div>`;
+  histWire(hist,mine,name);
   const on=(sel,fn)=>$$('#pfBody '+sel).forEach(b=>b.onclick=()=>{sfx('click');fn(b)});
   on('.pf-bdg',b=>{const x=BADGE[b.dataset.b],d=s.badges[x[0]];toast(`${x[1]} ${x[2]}: ${x[3]}`+(d?` · earned ${new Date(d).toLocaleDateString()}`:''),2600)});
   if(!mine)return;

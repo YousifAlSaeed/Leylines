@@ -1,0 +1,65 @@
+/* ---------- match history on the profile (history.js) ---------- */
+.mh-card{container-type:inline-size}
+.mh-priv{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:-4px 0 12px;font-size:12.5px;color:var(--muted)}
+.mh-priv svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mh-priv span{flex:1;min-width:160px}
+.mh-seg{margin-bottom:8px}
+.mh-seg button{min-height:34px;font-size:13px}
+
+.mh{border-top:1px solid var(--line)}
+.mh:first-of-type{border-top:0}
+.mh-row{width:100%;display:grid;grid-template-columns:30px 36px minmax(0,1fr) auto auto 18px;align-items:center;gap:10px;padding:9px 6px;
+  background:none;border:0;border-radius:12px;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.mh-row:hover,.mh.open .mh-row{background:var(--well)}
+.mh-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:-2px}
+.mh-row .fr-chev{transition:transform .2s var(--ease)}
+.mh.open .fr-chev{transform:rotate(90deg)}
+.mh-res{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font:800 13px/1 var(--display)}
+.mh-res.w{background:color-mix(in srgb,var(--pf-win) 18%,transparent);color:var(--pf-win)}
+.mh-res.l{background:color-mix(in srgb,var(--red-ink) 16%,transparent);color:var(--red-ink)}
+.mh-res.d{background:var(--well);color:var(--muted)}
+.mh-cpu{color:var(--muted)}
+.mh-who{min-width:0}
+.mh-who b{display:block;font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mh-who small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mh-sc{font:800 17px/1 var(--display);white-space:nowrap;text-align:right}
+.mh-sc .b{color:var(--blue-ink)}.mh-sc .r{color:var(--red-ink)}
+.mh-tr{font:600 12px/1 var(--body);padding:4px 8px;border-radius:999px;white-space:nowrap}
+.mh-tr.won{color:var(--pf-win);background:color-mix(in srgb,var(--pf-win) 14%,transparent)}
+.mh-tr.lost{color:var(--red-ink);background:color-mix(in srgb,var(--red-ink) 14%,transparent)}
+.mh-trn{display:none}
+.mh-more{display:block;width:100%;margin-top:4px;padding:10px;border:0;background:none;color:var(--accent-ink);font:600 13px var(--body);cursor:pointer;border-radius:10px}
+.mh-more:hover{background:var(--well)}
+
+/* an opened match */
+.mh-body{padding:4px 6px 16px 46px}
+.mh-quit{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+.mh-h{margin:12px 0 6px;font:700 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mh-log{display:flex;flex-wrap:wrap;gap:6px}
+.mh-log span{font:700 12px/1 var(--display);padding:5px 8px;border-radius:8px;background:var(--well)}
+.mh-log .w{color:var(--pf-win)}.mh-log .l{color:var(--red-ink)}.mh-log .d{color:var(--muted)}
+.mh-hand{display:flex;align-items:center;gap:8px;margin-top:6px}
+.mh-hand>span{width:60px;flex:none;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mh-cards{display:flex;gap:4px;flex:1;min-width:0;font-size:min(10px,calc((100cqi - 140px) / 27))}
+.mh-cards .card{flex:none}
+.mh-cards .card.mh-taken{outline:.22em solid var(--warn);outline-offset:.1em}
+.mh-cards .card.mh-taken::after{content:"TAKEN";position:absolute;left:0;right:0;bottom:0;z-index:3;background:var(--warn);color:#1a1238;
+  font:800 .75em/1.6 var(--display);letter-spacing:.08em;text-align:center}
+.mh-rules{display:flex;flex-wrap:wrap;gap:5px}
+.mh-rules span{font:600 11.5px/1 var(--body);padding:5px 9px;border-radius:999px;border:1px solid var(--line2)}
+.mh-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.mh-facts div{background:var(--well);border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;min-width:0}
+.mh-facts b{display:block;font:800 15px/1.2 var(--display);overflow-wrap:anywhere}
+.mh-facts b.w{color:var(--pf-win)}.mh-facts b.l{color:var(--red-ink)}
+.mh-facts small{font-size:11px;color:var(--muted)}
+.mh-btns{display:flex;margin-top:12px}
+
+/* narrow card: the cards-traded tag moves under the name */
+@container (max-width:439px){
+  .mh-row{grid-template-columns:28px 34px minmax(0,1fr) auto 16px;gap:8px;padding:9px 4px}
+  .mh-trw{display:none}
+  .mh-trn:not(:empty){display:inline;margin-right:6px}
+  .mh-trn .mh-tr{padding:0;background:none}
+  .mh-body{padding-left:4px;padding-right:4px}
+  .mh-cards{font-size:min(10px,calc((100cqi - 84px) / 27))}
+}

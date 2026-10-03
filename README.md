@@ -179,7 +179,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 | `POST /auth/logout` | Ends this session |
 | `GET /me` | `{ user, save: { data, rev, updatedAt } \| null }` |
 | `PUT /me/save` | `{ data, baseRev, force? }` → `{ rev, updatedAt }`, or **409** if another device saved since `baseRev` |
-| `GET /users/:username` | Public profile |
+| `GET /users/:username` | Public profile, with match history unless the player hid it (`profile.history` is then `null`) |
 | `GET /leaderboard` | `?by=level\|wins\|streak\|cards&show=all\|friends&q=name` → `{ rows, me, counts }`: the top 50, and your own rank when signed in. `show=friends` needs you signed in |
 | `GET /health` | `{ ok: true }` |
 

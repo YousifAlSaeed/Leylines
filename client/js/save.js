@@ -12,6 +12,8 @@ function defSave(){
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // the same for online matches only (the leaderboard ranks these): win streak, best streak, last results
     ostreak:0,obest:0,orecent:[],
+    // match history (history.js): the last 30 games, and whether others may see it
+    history:[],hideHist:false,
     // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
     packs:[],packLv:1,daily:null,pity:0};
 }
@@ -29,6 +31,8 @@ function fixProfile(p,s){
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
   p.recent=res(p.recent);p.orecent=res(p.orecent);
+  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
+  p.hideHist=!!p.hideHist;
   p.badges=ob(p.badges)?p.badges:{};
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
