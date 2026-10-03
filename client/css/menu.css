@@ -113,7 +113,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .av.b{background:linear-gradient(160deg,var(--blue1),var(--blue2))} .av.r{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .joinrow{display:flex;gap:8px;flex:1 1 100%}
 .joinrow .codein{flex:1;min-width:0;font-size:20px;padding:6px 8px;min-height:48px;border-radius:14px}
-.hero-row .btn.primary.full{flex-basis:100%}
+.hero-row .btn.primary.full,.hero-row .btn.full{flex-basis:100%}
 .hero-h{margin:0;font:800 24px/1.1 var(--display);white-space:nowrap}
 .hero-sub{margin:3px 0 0;color:var(--muted);font-size:13px}
 .fan{display:flex;padding:4px 10px 6px 0;font-size:7.5px;flex:none}

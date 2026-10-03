@@ -61,7 +61,8 @@ function modal(html,btns=[]){
 }
 function closeModal(){
   const m=$('#modal');m.classList.remove('on');m.innerHTML='';
-  $$('.screen').forEach(s=>s.inert=false);
+  // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
+  const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
   modalReturn=null;
 }

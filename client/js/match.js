@@ -238,6 +238,8 @@ function checkNext(){
   closeModal();nextMatch();
 }
 function resultModal(html){
+  // the match is fully settled (trade included); online, a dropped player can no longer come back to it
+  G.done=true;
   modal(html,[
     {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',fn:playAgain},
     {label:'Menu',fn:leaveMatch}
@@ -250,7 +252,7 @@ function playAgain(){
 }
 function leaveMatch(){
   closeModal();
-  if(G&&G.mode==='online')netClose(true);
+  if(G&&G.mode==='online'){clearRejoin();netClose(true)}
   G=null;show('menu');
 }
 $('#btnQuit').onclick=()=>{
@@ -269,7 +271,7 @@ function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.s
 // The ring and bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
 // The interval below handles the logic (seconds, warnings, time-up), because animation frames pause in a background tab.
 const RING=106.8;
-let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0};
+let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0,lt:0};
 function startTurnTimer(){
   // the CPU doesn't need a clock; everyone else gets the chosen time per turn
   if(!G||!G.rules.timer||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
@@ -302,6 +304,11 @@ function drawTimer(now){
 function tickTimer(){
   if(!TMR.g)return;
   if(TMR.g!==G||G.over){stopTurnTimer();return}
+  // a phone that slept or went to another app froze this page: the clock doesn't run while frozen,
+  // so nobody comes back to a random card already played for them
+  const now=performance.now();
+  if(TMR.lt&&now-TMR.lt>2000)TMR.end+=now-TMR.lt-100;
+  TMR.lt=now;
   const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.dur/1000;
   if(sec!==TMR.sec){
     TMR.sec=sec;
