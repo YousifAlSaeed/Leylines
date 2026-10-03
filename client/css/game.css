@@ -127,3 +127,37 @@ body.land .hand .card.sel{z-index:3}
 .bigcard{font-size:30px;display:flex;justify-content:center;margin:6px 0 10px}
 .stats{display:grid;grid-template-columns:auto auto;gap:4px 16px;justify-content:center;text-align:left;font-size:14px;color:var(--muted)}
 .stats b{color:var(--text);font-weight:600}
+
+/* ---------- quick emotes ---------- */
+.side .pname{position:relative}
+.emb{position:relative;width:36px;height:36px;flex:none;border-radius:11px;border:1px solid var(--line2);background:var(--surf2);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer}
+.emb svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.emb.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.emb.cool{opacity:.55}
+.emb.cool::after{content:"";position:absolute;inset:-3px;border-radius:13px;border:2px solid var(--accent);animation:emCool 4s linear forwards}
+@keyframes emCool{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(0 0 0 100%)}}
+.etray{position:absolute;right:0;bottom:calc(100% + 8px);z-index:30;width:max(100%,280px);box-sizing:border-box;background:var(--surf);border:1px solid var(--line2);border-radius:20px;padding:10px;
+  box-shadow:0 20px 50px rgba(var(--sh),calc(.7*var(--shk)));transform-origin:90% 100%;animation:emPop .26s var(--spring)}
+body.land .etray{bottom:auto;top:calc(100% + 8px);transform-origin:90% 0}
+@keyframes emPop{from{transform:scale(.6) translateY(16px);opacity:0}}
+.egrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.em{border:1px solid var(--line);background:rgba(var(--tint),.04);border-radius:14px;padding:6px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--text);font:600 11px var(--body);white-space:nowrap}
+.em b{font-size:26px;line-height:1.15;font-weight:400}
+@media (hover:hover){.em:hover{border-color:var(--accent)}}
+.em:active{transform:scale(.94)}
+.efoot{display:flex;justify-content:flex-end;margin-top:8px}
+.emute{border:1px solid var(--line2);background:none;color:var(--muted);border-radius:99px;padding:5px 12px;font:600 11.5px var(--body);cursor:pointer}
+.emute[aria-pressed="true"]{color:var(--accent-ink);border-color:var(--accent)}
+/* the bubble: pops from the player's avatar, below the name at the top, above it at the bottom */
+.ebub{position:absolute;left:0;z-index:25;display:flex;align-items:center;gap:6px;background:#fff;color:#1a1238;border:1px solid var(--line2);border-radius:16px;
+  padding:6px 13px 6px 9px;font:800 15px var(--display);white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(var(--sh),calc(.5*var(--shk)));
+  animation:emPop .34s var(--spring);transition:opacity .3s,transform .3s}
+.ebub b{font-size:24px;line-height:1;font-weight:400;animation:emWig .5s .2s 2}
+.ebub.out{opacity:0;transform:scale(.8)}
+.ebub::before{content:"";position:absolute;left:10px;border:7px solid transparent}
+.side.me .ebub{bottom:calc(100% + 6px);transform-origin:12% 100%}
+.side.me .ebub::before{bottom:-7px;border-bottom:0;border-top-color:#fff}
+/* in landscape your name sits above your cards, so yours drops down too */
+.side.opp .ebub,body.land .side.me .ebub{top:calc(100% + 6px);bottom:auto;transform-origin:12% 0}
+.side.opp .ebub::before,body.land .side.me .ebub::before{top:-7px;bottom:auto;border:7px solid transparent;border-top:0;border-bottom-color:#fff}
+@keyframes emWig{50%{transform:rotate(-12deg) scale(1.12)}}
