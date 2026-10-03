@@ -269,7 +269,7 @@ const SND_ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4
 function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off');$$('[data-vol]').forEach(r=>r.paint&&r.paint())}
 
 /* ---------- turn timer ---------- */
-// The ring and bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
+// The ring (landscape) and the bar under the top bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
 // The interval below handles the logic (seconds, warnings, time-up), because animation frames pause in a background tab.
 const RING=106.8;
 let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0,lt:0};
@@ -313,9 +313,9 @@ function tickTimer(){
   const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.dur/1000;
   if(sec!==TMR.sec){
     TMR.sec=sec;
-    $('#tNum').textContent=sec;
     setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
-    $('#timer').setAttribute('aria-label',`${sec} seconds left`);
+    $('#tNum').textContent=sec;
+    $('#tbar').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }
   if(rem<=0&&!TMR.fired){TMR.fired=true;onTimeUp(TMR.p)}
