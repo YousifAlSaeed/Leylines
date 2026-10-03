@@ -1,0 +1,37 @@
+/* ---------- friends (friends.js) ---------- */
+.fr-wrap{gap:14px}
+.fr-addf{display:flex;gap:8px}
+.fr-addf input{flex:1;min-width:0;background:var(--well);color:var(--text);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;font:500 16px var(--body);min-height:44px}
+.fr-addf input::placeholder{color:var(--muted);opacity:.6}
+.fr-addf input:focus{outline:2px solid var(--accent-ink);outline-offset:1px}
+.fr-addf .btn{flex:none;min-height:44px}
+.fr-err{margin:6px 0 0;min-height:1.3em;color:var(--danger);font-size:13px}
+.fr-tip{margin:2px 0 0}
+.fr-tip b{color:var(--text);font-weight:600}
+
+.fr-list{display:flex;flex-direction:column}
+.fr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.fr-row:first-child{border-top:0;padding-top:0}
+.fr-row:last-child{padding-bottom:0}
+.fr-row .rt{flex:1;min-width:0}
+.fr-row b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-row small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button.fr-row{width:100%;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:0}
+button.fr-row:first-child{border-top:0}
+button.fr-row:hover b{color:var(--accent-ink)}
+button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px;border-radius:10px}
+.fr-chev{flex:none;width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fr-two{display:flex;gap:6px;flex:none}
+
+/* the Add friend button next to a name (room, result screen, profile) */
+.fr-slot{display:inline-flex;align-items:center;gap:8px;flex:none}
+.fr-slot:empty{display:none}
+.fr-tag{font:600 12.5px var(--body);color:var(--muted);white-space:nowrap}
+.fr-tag.ok{color:var(--accent-ink)}
+.room-pl .fr-slot .btn{min-height:30px;padding:4px 10px;font-size:12.5px;border-radius:10px}
+.fr-res{display:flex;justify-content:center;margin:-2px 0 8px}
+.fr-res:has(.fr-slot:empty){display:none}
+
+/* the menu tile's request count */
+#friendDot{position:absolute;top:12px;right:12px}
+#friendDot[hidden]{display:none}

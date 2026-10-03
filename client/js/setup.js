@@ -93,7 +93,8 @@ function renderRoom(){
   $('#hostLink').value=host&&NET.code?inviteLink(NET.code):'';
   $('#roomShare').classList.toggle('hidden',!host);
   const av=(a,name)=>a!=null&&CARDS[a]?`<span class="av art">${CARDS[a].art}</span>`:`<span class="av">${initialOf(name)}</span>`;
-  const row=(cls,a,name,you,tag,st,ok)=>`<li class="${cls}">${av(a,name)}<b>${esc(name)}${you?' <small>(you)</small>':''}</b>${tag?'<span class="rtag">HOST</span>':''}<span class="st ${ok?'ok':''}">${st}</span></li>`;
+  // the other player's row gets an Add friend button when they're signed in (friends.js)
+  const row=(cls,a,name,you,tag,st,ok)=>`<li class="${cls}">${av(a,name)}<b>${esc(name)}${you?' <small>(you)</small>':''}</b>${tag?'<span class="rtag">HOST</span>':''}${you?'':friendBtn(NET.oppUser)}<span class="st ${ok?'ok':''}">${st}</span></li>`;
   const ready=host?NET.oppReady:NET.meReady;
   const hostRow=row('h',host?myAv():NET.oppAv,host?myName():NET.oppName||'Host',host,true,host||NET.oppIn?'':'Still on results',false);
   const guestRow=on?row('g',host?NET.oppAv:myAv(),host?NET.oppName:myName(),!host,false,ready?'✓ Ready':host&&!NET.oppIn?'Still on results':'Not ready',ready)
