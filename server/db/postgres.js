@@ -25,6 +25,10 @@ function positional(sql, params = {}) {
 }
 
 export async function openPostgres(url) {
+  // Neon's URL says sslmode=require. pg already treats that as verify-full but
+  // logs a warning on every start; asking for verify-full by name keeps the
+  // same behaviour without the warning.
+  url = url.replace(/([?&]sslmode=)(prefer|require|verify-ca)\b/, '$1verify-full');
   const pool = new pg.Pool({ connectionString: url, max: 5, idleTimeoutMillis: 30_000 });
   // Neon closes idle connections when it scales to zero; without a listener
   // that error would crash the server. The pool reconnects on the next query.
