@@ -13,7 +13,7 @@ const emoteOn=()=>!!G&&G.mode!=='local';
 const emoteOpp=()=>G.mode==='ai'?'CPU':oppName();
 // the button only shows vs Computer and online; a new match starts with the opponent unmuted
 function emoteSync(){
-  $('#btnEmote').classList.toggle('hidden',!emoteOn());
+  $('#btnEmote').classList.toggle('hidden',!emoteOn());$('#scr-game').classList.toggle('emo',emoteOn());
   if(EMO.g!==G){EMO.g=G;EMO.muted=false;closeEmotes()}
 }
 function openEmotes(){
