@@ -286,25 +286,25 @@ function renderProfilePage(force){
       mine&&!u&&ACCT.up?'<button class="btn primary small" id="pfJoin">Create account</button>':''}${!mine&&u?friendBtn(u.username,{remove:true}):''}</div>
   </div>`;
 
-  // record
-  const rate=t.n?Math.round(t.w/t.n*100):0,W=t.n?t.w/t.n*100:0,L=t.n?t.l/t.n*100:0,D=t.n?t.d/t.n*100:0;
+  // record: online matches only, like the leaderboard; games against the computer get one line at the bottom
+  const st=s.stats,ol={w:st.ow,l:st.ol,d:st.od},n=ol.w+ol.l+ol.d;
+  const rate=n?Math.round(ol.w/n*100):0,W=n?ol.w/n*100:0,L=n?ol.l/n*100:0,D=n?ol.d/n*100:0;
   const seg=(len,off,col,op='')=>len?`<circle cx="21" cy="21" r="16" pathLength="100" stroke="${col}" ${op} stroke-dasharray="${len} ${100-len}" stroke-dashoffset="${-off}"/>`:'';
-  const split=(label,w,l,d)=>{const n=w+l+d;return `<div class="pf-split"><span>${label}</span><span class="pf-sbar">${n?
-    `<i style="width:${w/n*100}%;background:var(--pf-win)"></i><i style="width:${l/n*100}%;background:var(--red-ink)"></i><i style="width:${d/n*100}%;background:var(--muted);opacity:.45"></i>`:''}</span><em>${w} · ${l} · ${d}</em></div>`};
-  const rec=s.recent.length?`<span class="pf-form">${s.recent.map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<span class="muted">—</span>';
-  const record=`<section class="pf-card"><h3>Record</h3>
+  const rec=`<span class="pf-form">${s.orecent.map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`;
+  const cpu=st.w+st.l+st.d||s.beat>=0?`<div class="pf-cpu"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>`+
+    `<span>vs Computer <b>${st.w} W · ${st.l} L · ${st.d} D</b></span>${s.beat>=0?`<span>Toughest beaten <b>${DIFFS[s.beat][1]}</b></span>`:''}</div>`:'';
+  const record=`<section class="pf-card"><h3>Online record</h3>
     <div class="pf-rec">
-      <div class="pf-ring" role="img" aria-label="${rate}% win rate"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="16" stroke="var(--well)"/>${seg(W,0,'var(--pf-win)')}${seg(L,W,'var(--red-ink)')}${seg(D,W+L,'var(--muted)','stroke-opacity=".45"')}</svg>
-        <div><b>${t.n?rate+'%':'—'}</b><small>win rate</small></div></div>
-      <div class="pf-wld"><div class="w"><b>${t.w}</b><small>Wins</small></div><div class="l"><b>${t.l}</b><small>Losses</small></div><div class="d"><b>${t.d}</b><small>Draws</small></div></div>
+      <div class="pf-ring" role="img" aria-label="${n?rate+'% online win rate':'No online matches yet'}"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="16" stroke="var(--well)"/>${seg(W,0,'var(--pf-win)')}${seg(L,W,'var(--red-ink)')}${seg(D,W+L,'var(--muted)','stroke-opacity=".45"')}</svg>
+        <div><b>${n?rate+'%':'—'}</b><small>win rate</small></div></div>
+      <div class="pf-wld"><div class="w"><b>${ol.w}</b><small>Wins</small></div><div class="l"><b>${ol.l}</b><small>Losses</small></div><div class="d"><b>${ol.d}</b><small>Draws</small></div></div>
     </div>
-    ${split('vs Computer',s.stats.w,s.stats.l,s.stats.d)}${split('Online',s.stats.ow,s.stats.ol,s.stats.od)}
-    <div class="pf-mini">
-      <div><b>${s.streak?'🔥 ':''}${s.streak}</b><small>Win streak</small></div>
-      <div><b>${s.best}</b><small>Best streak</small></div>
-      <div><b>${s.beat>=0?DIFFS[s.beat][1]:'—'}</b><small>Toughest CPU beaten</small></div>
-      <div><small class="pf-rl">Recent</small>${rec}</div>
-    </div></section>`;
+    ${n?`<div class="pf-mini">
+      <div><b>${s.ostreak?'🔥 ':''}${s.ostreak}</b><small>Win streak</small></div>
+      <div><b>${s.obest}</b><small>Best streak</small></div>
+      ${s.orecent.length?`<div><small class="pf-rl">Recent</small>${rec}</div>`:''}
+    </div>`:`<p class="pf-empty">No online matches yet.${mine?' Play a friend online to start your record and get on the leaderboard.':''}</p>`}
+    ${cpu}</section>`;
 
   // badges
   const got=BADGES.filter(b=>hasBadge(s,b)).length;
