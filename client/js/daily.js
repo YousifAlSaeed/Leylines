@@ -53,8 +53,10 @@ const dailyBox=(chips,note='')=>`<div class="dly-res">${chips?`<div class="pf-re
 const DIFF_NAME={easy:'Easy',normal:'Normal',hard:'Hard',challenger:'Challenger',boss:'Boss'};
 function duelSetup(n=dayNo()){
   const rng=mulberry32(daySeed(1,n));
-  const on={};
-  shuffle(['same','plus','elemental','chaos','suddenDeath'],rng).slice(0,2).forEach(k=>on[k]=true);
+  // Sudden death is always on: a draw replays instead of costing the try.
+  // (The list keeps its old length so the rest of the day's draw, the hands included, stays the same.)
+  const on={suddenDeath:true};
+  shuffle(['same','plus','elemental','chaos','suddenDeath'],rng).filter(k=>k!=='suddenDeath').slice(0,2).forEach(k=>on[k]=true);
   if((on.same||on.plus)&&rng()<.5)on.combo=true;
   if(on.same&&rng()<.35)on.sameWall=true;
   const bands=[[2,3],[3,4],[4,5],[5,6],[6,7]];

@@ -34,7 +34,7 @@ function negamax(s,R,depth,a,b,ctx){
 }
 // the Daily tab's opponents (daily.js): a fixed look-ahead that sometimes takes its second-best move,
 // so a well-planned game can beat them. Hard searches to the end, which with open hands is perfect play.
-const AI_SEARCH={challenger:{depth:2,slip:.25},boss:{depth:3,slip:.1,fair:true}};
+const AI_SEARCH={challenger:{depth:2,slip:.4},boss:{depth:3,slip:.1,fair:true}};
 const STAND_IN=CARDS.find(c=>c.s.every(v=>v===5)).id; // an average card, for hands it can't see
 // forced = the hand index Chaos picked: only squares are chosen for it (deeper turns still look at every card)
 function aiChoose(st,R,level,forced){
