@@ -106,6 +106,7 @@ async function execMove(hi,cell){
     await wait(520);
   }
   if(G!==g)return;
+  emoteMove(p,ev);
   G.busy=false;nextTurn();
 }
 function flipCells(cells,p,origin){

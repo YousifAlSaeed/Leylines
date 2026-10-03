@@ -66,7 +66,7 @@ function renderHud(){
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   if($('#ruleBar').innerHTML!==chips){$('#ruleBar').innerHTML=chips;fitGame()}
-  updSnd();
+  updSnd();emoteSync();
 }
 
 let drag=null;

@@ -457,6 +457,7 @@ function onNet(m){
       {const idx=m.idx.filter(i=>Number.isInteger(i)&&i>=0&&i<5);
       if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(idx)}else G.pendingTrade=idx;}
       break;
+    case 'emote':emoteIn(m.i);break;
     case 'next':
       if(Number.isInteger(m.n)){NET.oppNext=m.n;checkNext()}break;
     case 'away':netLost(`${oppName()} closed the game or switched apps.`);break;
