@@ -5,7 +5,7 @@
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const fmt=v=>v===10?'A':String(v);
+const fmt=v=>v===10?'X':String(v);
 // keeps the screen from dimming during a match, where the browser allows it (it lets go when the app is hidden)
 let wakeLock=null;
 async function keepAwake(on){

@@ -19,7 +19,7 @@
 
 Each player brings **5 cards**. You take turns placing one card on the **3×3 board**.
 
-- Every card has 4 numbers: top, right, bottom and left. **A** means 10.
+- Every card has 4 numbers: top, right, bottom and left. **X** means 10.
 - When you place a card next to an enemy card and your touching side is **higher**, that card flips to your colour.
 - When the board is full, your score is the cards you own on the board plus the cards still in your hand. The **higher score wins**.
 
@@ -41,7 +41,7 @@ Each rule can be turned on or off in match setup.
 | --- | --- |
 | **Open** | Both hands are played face up. |
 | **Same** | When two or more sides of your card equal the touching sides of the cards next to it, those enemy cards flip. |
-| **Same wall** | The board edge counts as an A (10) for Same. |
+| **Same wall** | The board edge counts as an X (10) for Same. |
 | **Plus** | When two or more touching pairs add up to the same total, those enemy cards flip. |
 | **Combo** | Cards flipped by Same or Plus then flip their weaker enemy neighbours, and it can keep chaining. |
 | **Elemental** | 1 to 4 squares get an element. A card of the same element gets +1 on every side; any other card gets −1. |
