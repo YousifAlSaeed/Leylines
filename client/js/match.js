@@ -63,6 +63,8 @@ function nextTurn(){
   renderGame();
   if(isFull(G.st)){endRound();return}
   startTurnTimer();
+  // the Daily Puzzle is a single move: it ends as soon as it's placed
+  if(G.daily&&G.daily.kind==='puzzle'&&G.st.turn!==G.me){puzzleDone();return}
   if(G.mode==='ai'&&G.st.turn===1)aiTurn();
   else if(G.mode==='online'&&G.st.turn!==G.me)pump();
 }
@@ -84,6 +86,7 @@ function aiTurn(){
 function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
+  if(G.daily)dailyMoved();
   execMove(hi,cell);
 }
 async function execMove(hi,cell){
@@ -170,7 +173,8 @@ function finish(s0,s1){
     w=ser.wins[0]>ser.wins[1]?0:ser.wins[1]>ser.wins[0]?1:-1;
     head=`<div class="kick">Best of ${G.bo} · ${G.mode==='online'?'Online series':'Series over'}</div><h2>${w<0?'Series tied':resultTitle(w,' the series')}</h2>`+vs+big(sw[0],sw[1])+
       `<div class="serlog">${ser.log.map((x,i)=>`<span class="${x.w<0?'d':x.w===G.bottom?'b':'r'}">M${i+1} ${x.sb}–${x.sr}</span>`).join('')}</div>`+reward;
-  }else head=`<div class="kick">${G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
+  }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
+  if(G.daily)head+=dailyFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   const g=G;
   setTimeout(()=>{
@@ -241,9 +245,11 @@ function checkNext(){
 function resultModal(html){
   // the match is fully settled (trade included); online, a dropped player can no longer come back to it
   G.done=true;
+  // a Daily challenge says what comes next (try again, next opponent), or nothing
+  const again=G.daily?G.daily.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
   modal(html,[
-    {label:G.mode==='online'?'Rematch':'Play again',cls:'primary',fn:playAgain},
-    {label:'Menu',fn:leaveMatch}
+    ...(again?[{label:again.label,cls:'primary',fn:again.fn}]:[]),
+    {label:'Menu',cls:again?'':'primary',fn:leaveMatch}
   ]);
 }
 function playAgain(){
@@ -260,7 +266,7 @@ $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;
   if(G.over){leaveMatch();return}
   modal(`<h2>Leave match?</h2><p>${G.mode==='local'?'The game will be abandoned.':'Leaving counts as a loss (no cards are traded).'}</p>`,[
-    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'){recordMatch('l',{online:G.mode==='online'});freshToast()}leaveMatch()}},
+    {label:'Leave',cls:'danger',fn:()=>{if(G&&G.mode!=='local'&&!(G.daily&&G.daily.kind==='puzzle')){recordMatch('l',{online:G.mode==='online'});freshToast()}dailyLeave();leaveMatch()}},
     {label:'Keep playing',cls:'primary',esc:true}]);
 };
 $('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};

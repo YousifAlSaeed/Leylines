@@ -11,7 +11,9 @@ function defSave(){
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
-    packs:[],packLv:1,daily:null,pity:0};
+    packs:[],packLv:1,daily:null,pity:0,
+    // the Daily tab (daily.js): today's challenge progress, reset at local midnight
+    trial:null};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -23,6 +25,7 @@ function fixProfile(p,s){
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
   grantPacks(p);
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   p.recent=(Array.isArray(p.recent)?p.recent:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);

@@ -9,7 +9,8 @@ const EMOTES=[['👋','Hi!'],['👍','Nice move!'],['😂','Haha!'],['😮','Wow
 const EMO={sent:[],cool:0,coolT:0,got:[],muted:false,g:null,cpuAt:0};
 // 3 in a row are fine; the 3rd (within 5 seconds) starts a 4 second wait
 const EMO_BURST=3,EMO_WINDOW=5000,EMO_COOL=4000;
-const emoteOn=()=>!!G&&G.mode!=='local';
+// no emotes in the Daily Puzzle: there's nobody to talk to
+const emoteOn=()=>!!G&&G.mode!=='local'&&!(G.daily&&G.daily.kind==='puzzle');
 const emoteOpp=()=>G.mode==='ai'?'CPU':oppName();
 // the button only shows vs Computer and online; a new match starts with the opponent unmuted
 function emoteSync(){
@@ -73,7 +74,7 @@ function showEmote(side,i){
 /* ---------- the CPU's emotes ---------- */
 // now and then, never more than one every 8 seconds
 function cpuEmote(i,chance,delay=500){
-  if(!G||G.mode!=='ai'||EMO.muted||Math.random()>chance||Date.now()<EMO.cpuAt)return;
+  if(!G||G.mode!=='ai'||!emoteOn()||EMO.muted||Math.random()>chance||Date.now()<EMO.cpuAt)return;
   EMO.cpuAt=Date.now()+8000;
   const g=G;setTimeout(()=>{if(G===g)emoteIn(i)},delay);
 }
