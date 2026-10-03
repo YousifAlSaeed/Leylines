@@ -156,7 +156,7 @@ function finish(s0,s1){
   if(G.mode!=='local')reward=rewardHTML(recordMatch(mw<0?'d':mw===G.me?'w':'l',
     {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental}));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
-  const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p>`:'';
+  const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
   const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
   if(G.bo>1&&!seriesDone(G.bo,ser.n,ser.wins)){

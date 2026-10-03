@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/packs.css">
+<link rel="stylesheet" href="css/friends.css">
 </head>
 <body>
 <!-- shared by the menu logo and the small one in a match; outside the screens, so the glow still works when the menu is hidden -->
@@ -88,6 +89,7 @@
         <button class="tile ptile" id="packTile" data-go="packs"><span class="pk-mini t-arcane" aria-hidden="true"></span><div><b>Packs</b><small id="packSub"></small></div><span class="ptdot" id="packDot" aria-hidden="true" hidden></span></button>
         <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
         <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
+        <button class="tile" data-go="friends" id="friendTile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/></svg><div><b>Friends</b><small id="friendSub"></small></div><span class="ptdot" id="friendDot" aria-hidden="true" hidden></span></button>
       </nav>
       <div class="mstats">
         <button class="pcard" id="pcard" type="button"></button>
@@ -215,6 +217,12 @@
   <div class="wrap pf-wrap" id="pfBody"></div>
 </section>
 
+<!-- FRIENDS: requests and your friend list; friends.js draws it -->
+<section id="scr-friends" class="screen">
+  <div class="topbar"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Friends</h2></div>
+  <div class="wrap fr-wrap" id="frBody"></div>
+</section>
+
 <!-- PACKS: the daily pack, unopened packs and the level road; packs.js draws it -->
 <section id="scr-packs" class="screen">
   <div class="topbar pk-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Packs</h2></div>
@@ -299,6 +307,7 @@
 <script src="js/profile.js"></script>
 <script src="js/packs.js"></script>
 <script src="js/account.js"></script>
+<script src="js/friends.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

@@ -93,7 +93,7 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false)}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad()}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
@@ -119,14 +119,14 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();renderProfilePage();
+  acctStore();renderProfile();renderProfilePage();frLoad();
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
   // the name belonged to the account: don't leave it behind for the next one to pick up
   if(SAVE.name){SAVE.name='';save()}
-  acctStore();renderProfile();renderProfilePage();
+  acctStore();renderProfile();renderProfilePage();frReset();
   if(msg)toast(msg,3500);
 }
 function acctSignOut(){
@@ -288,7 +288,7 @@ function acctWireSettings(box){
 async function acctBoot(){
   if(API==null)return;
   try{await api('/health',{timeout:60000});ACCT.up=true}catch(e){ACCT.up=false;if(ACCT.token)ACCT.state='offline'}
-  renderProfile();
+  renderProfile();renderFriendTile();renderFriends();
   if(ACCT.up&&ACCT.token)acctRefresh();
 }
 // a closing tab gets one last try at sending unsynced changes

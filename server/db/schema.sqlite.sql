@@ -50,3 +50,22 @@ CREATE TABLE IF NOT EXISTS password_resets (
   expires_at TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS password_resets_user ON password_resets (user_id);
+
+-- Friends. A friendship is stored twice, once from each side, so a player's
+-- list is one simple lookup. Deleting an account removes its friendships.
+CREATE TABLE IF NOT EXISTS friends (
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  friend_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  PRIMARY KEY (user_id, friend_id)
+);
+
+-- Friend requests waiting for an answer. Accepting one turns it into two
+-- friends rows; declining or cancelling just deletes it.
+CREATE TABLE IF NOT EXISTS friend_requests (
+  from_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  to_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  PRIMARY KEY (from_id, to_id)
+);
+CREATE INDEX IF NOT EXISTS friend_requests_to ON friend_requests (to_id);

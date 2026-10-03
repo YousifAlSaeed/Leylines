@@ -1,5 +1,6 @@
 import express from 'express';
 import { authRouter } from './routes/auth.js';
+import { friendsRouter } from './routes/friends.js';
 import { meRouter } from './routes/me.js';
 import { usersRouter } from './routes/users.js';
 
@@ -52,6 +53,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
   api.use('/auth', authRouter(db));
   api.use('/me', meRouter(db));
   api.use('/users', usersRouter(db));
+  api.use('/friends', friendsRouter(db));
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   // malformed JSON and other request errors come back as JSON, not an HTML page
   api.use((err, req, res, next) => {

@@ -242,15 +242,16 @@ async function profShare(){
 }
 
 /* ---------- the screen ---------- */
-// view = null for your own profile, or {user, profile} from /api/users/:name
-function openProfile(view=null){PROF.view=view;renderProfilePage(true);show('profile');$('#scr-profile').scrollTop=0}
-// opened from a shared link
-async function openPlayer(name){
-  if(ACCT.token&&ACCT.user&&ACCT.user.username.toLowerCase()===name.toLowerCase())return openProfile();
-  PROF.view={loading:true};show('profile');
+// view = null for your own profile, or {user, profile} from /api/users/:name; back = the screen its Back button returns to
+const profBack=back=>{$('#scr-profile [data-back]').dataset.back=back};
+function openProfile(view=null,back='menu'){PROF.view=view;profBack(back);renderProfilePage(true);show('profile');$('#scr-profile').scrollTop=0}
+// opened from a shared link, or from your friend list (back = 'friends')
+async function openPlayer(name,back='menu'){
+  if(ACCT.token&&ACCT.user&&ACCT.user.username.toLowerCase()===name.toLowerCase())return openProfile(null,back);
+  PROF.view={loading:true};profBack(back);show('profile');
   $('#pfTitle').textContent='Profile';
   $('#pfBody').innerHTML='<p class="pf-wait"><span class="spin"></span>Loading profile…</p>';
-  try{const j=await api('/users/'+encodeURIComponent(name),{timeout:60000});if(PROF.view&&PROF.view.loading)openProfile({user:j,profile:j.profile})}
+  try{const j=await api('/users/'+encodeURIComponent(name),{timeout:60000});if(PROF.view&&PROF.view.loading)openProfile({user:j,profile:j.profile},back)}
   catch(e){
     if(!PROF.view||!PROF.view.loading)return;
     $('#pfBody').innerHTML=`<p class="pf-wait">${esc(e.status===404?`There's no player called ${name}.`:e.message)}</p>`;
@@ -278,7 +279,7 @@ function renderProfilePage(force){
       <div class="pf-xp" role="img" aria-label="${s.xp} XP. ${hi-s.xp} XP to level ${lv+1}"><div class="pf-xpbar"><i style="width:${pct.toFixed(1)}%"></i></div><small>${s.xp-lo} / ${hi-lo} XP to Lv ${lv+1}</small></div>
     </div>
     <div class="pf-acts">${mine&&u?'<button class="btn small" id="pfShare"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12h.01M4 12a8 8 0 1016 0 8 8 0 00-16 0"/><path d="M10 14l4-4M9 7h8v8"/></svg>Share</button>':''}${
-      mine&&!u&&ACCT.up?'<button class="btn primary small" id="pfJoin">Create account</button>':''}</div>
+      mine&&!u&&ACCT.up?'<button class="btn primary small" id="pfJoin">Create account</button>':''}${!mine&&u?friendBtn(u.username,{remove:true}):''}</div>
   </div>`;
 
   // record

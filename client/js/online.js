@@ -30,6 +30,9 @@ const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').r
 // your name: the account's display name when signed in, otherwise the name typed on this device
 function playerName(){return ACCT.token&&ACCT.user?cleanName(ACCT.user.displayName):cleanName(SAVE.name)}
 function myName(){return playerName()||(NET.role==='guest'?'Guest':'Host')}
+// account usernames travel with the names, so each side can add the other as a friend ('' for a guest)
+function myUser(){return ACCT.token&&ACCT.user?ACCT.user.username:''}
+const netUser=u=>typeof u==='string'&&/^[A-Za-z0-9_]{3,20}$/.test(u)?u:'';
 function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
 // which lobby panels are visible: 'choose' (name + host/join) or 'none'
@@ -85,7 +88,7 @@ $('#btnShare').onclick=()=>{
 // hosting opens the waiting room straight away; the code shows up there once the connection is made
 async function hostStart(){
   clearRejoin();
-  netClose(true);NET.closing=false;NET.role='host';NET.code=null;NET.oppName='';NET.oppAv=null;
+  netClose(true);NET.closing=false;NET.role='host';NET.code=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';
   openRoom();
   try{await loadPeerJS()}catch(e){if(!NET.closing){NET.roomMsg=esc(e.message);renderRoom()}return}
   if(NET.closing||NET.role!=='host')return; // left the room while the library loaded
@@ -139,7 +142,7 @@ function seat(c,meta){
   const go=()=>{
     if(NET.conn!==c)return;
     NET.last=Date.now();
-    NET.oppName=cleanName(meta.name)||'Guest';NET.oppAv=netAv(meta.av);
+    NET.oppName=cleanName(meta.name)||'Guest';NET.oppAv=netAv(meta.av);NET.oppUser=netUser(meta.user);
     // the same player and the same pairing, with the match still on: pick up where we left off
     if(NET.sid&&meta.sid===NET.sid&&meta.cid===NET.gcid&&liveMatch()){
       rawSend({t:'hello',sid:NET.sid,resume:true,got:NET.got});
@@ -147,6 +150,7 @@ function seat(c,meta){
     }
     const back=!!meta.cid&&meta.cid===NET.gcid,lost=liveMatch(),ended=!!meta.sid&&meta.sid===NET.ended;
     newSession();NET.gcid=typeof meta.cid==='string'?meta.cid.slice(0,20):'';
+    frLoad(); // a player just sat down: their Add friend button should show the real state
     rawSend({t:'hello',sid:NET.sid,ended});
     toast(lost?`${NET.oppName} is back, but your match couldn't be picked up again`:back?`${NET.oppName} reconnected`:`${NET.oppName} joined your game`,lost?4000:2200);
     sfx('banner');
@@ -169,7 +173,7 @@ async function joinGame(code){
   setJoining(true);
   onStatus('<span class="spin"></span>Connecting…');
   try{await loadPeerJS()}catch(e){setJoining(false);onStatus(e.message,true);return}
-  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;NET.oppName='';NET.oppAv=null;
+  netClose(true);NET.closing=false;NET.role='guest';NET.code=code;NET.oppName='';NET.oppAv=null;NET.oppUser='';
   setJoining(true);
   const fail=(msg,gone)=>{if(NET.code!==code||NET.sid)return;if(gone)clearRejoin();netClose(true);onPanels('choose');onStatus(msg,true)};
   NET.joinT=setTimeout(()=>fail('Couldn\'t reach game '+code+'. Check the code and try again.'),20000);
@@ -181,7 +185,7 @@ function guestPeer(onErr){
   peer.on('open',()=>{
     if(NET.peer!==peer)return;
     if(!NET.sid)onStatus('<span class="spin"></span>Looking for game '+NET.code+'…');
-    const c=peer.connect(peerId(NET.code),{reliable:true,metadata:{name:myName(),cid:SAVE.cid,av:myAv(),sid:NET.sid,got:NET.got}});NET.conn=c;bindConn(c);
+    const c=peer.connect(peerId(NET.code),{reliable:true,metadata:{name:myName(),user:myUser(),cid:SAVE.cid,av:myAv(),sid:NET.sid,got:NET.got}});NET.conn=c;bindConn(c);
     c.on('open',()=>{
       if(NET.conn!==c)return;
       if(NET.sid){clearTimeout(NET.retryT);return}
@@ -285,7 +289,7 @@ function netGone(msg){
 }
 function hostBackToRoom(msg){
   const c=NET.conn;NET.conn=null;try{c&&c.close()}catch(e){}
-  NET.pendingDeck=null;NET.oppName='';NET.oppAv=null;NET.oppReady=NET.oppIn=false;G=null;stopTurnTimer();
+  NET.pendingDeck=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';NET.oppReady=NET.oppIn=false;G=null;stopTurnTimer();
   NET.sid=null;NET.out=[];NET.got=0;NET.away=NET.waiting=false;
   hideAway();closeModal();toast(msg,4000);
   if(roomOpen())renderRoom();else openRoom();
@@ -363,7 +367,7 @@ function backToRoom(){
 }
 function sendRoom(){
   NET.roomCfg=JSON.stringify([SAVE.rules,SAVE.trade,boOf(SAVE.bo)]);
-  netSend({t:'room',v:1,rv:NET.rv,rules:{...SAVE.rules},trade:SAVE.trade,bo:boOf(SAVE.bo),name:myName(),av:myAv()});
+  netSend({t:'room',v:1,rv:NET.rv,rules:{...SAVE.rules},trade:SAVE.trade,bo:boOf(SAVE.bo),name:myName(),user:myUser(),av:myAv()});
 }
 // the host changed something: tell the guest, and their Ready no longer counts
 function roomSync(){
@@ -373,7 +377,7 @@ function roomSync(){
 }
 function sendSetup(){
   const seed=rand32(),bo=boOf(SAVE.bo);
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,bo,seed,name:myName(),av:myAv()});
+  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,bo,seed,name:myName(),user:myUser(),av:myAv()});
   beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,bo,seed});
 }
 function beginOnline(cfg){
@@ -415,14 +419,14 @@ function onNet(m){
       // a new seat in the room: anything from before is gone
       const had=liveMatch();
       NET.sid=typeof m.sid==='string'?m.sid.slice(0,20):'';NET.out=[];NET.got=0;NET.away=NET.waiting=false;NET.meReady=false;
-      hideAway();saveRejoin();
+      hideAway();saveRejoin();frLoad(); // in a room with the host: get the real friend state for their button
       if(had){G=null;stopTurnTimer();closeModal();toast(m.ended?`${oppName()} ended the match while you were away.`:`Your match couldn't be picked up again. Back to the room.`,4000)}
       break;
     }
     case 'room':{
       if(NET.role!=='guest')return;
       setJoining(false);
-      NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);NET.oppIn=true;
+      NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);NET.oppUser=netUser(m.user);NET.oppIn=true;
       const rv=Number.isInteger(m.rv)?m.rv:0;
       if(NET.room&&NET.room.rv!==rv)NET.meReady=false;
       NET.room={rules:netRules(m),trade:netTrade(m.trade),bo:boOf(m.bo),rv};
@@ -443,7 +447,7 @@ function onNet(m){
     case 'setup':
       if(NET.role!=='guest')return;
       setJoining(false);
-      NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);
+      NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);NET.oppUser=netUser(m.user);
       beginOnline({rules:netRules(m),trade:netTrade(m.trade),bo:boOf(m.bo),seed:m.seed>>>0});break;
     case 'deck':
       if(!validDeck(m.ids))return;
@@ -458,6 +462,7 @@ function onNet(m){
       if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(idx)}else G.pendingTrade=idx;}
       break;
     case 'emote':emoteIn(m.i);break;
+    case 'friend':frLoad();break; // they sent or accepted a friend request: refresh the Add friend button
     case 'next':
       if(Number.isInteger(m.n)){NET.oppNext=m.n;checkNext()}break;
     case 'away':netLost(`${oppName()} closed the game or switched apps.`);break;
