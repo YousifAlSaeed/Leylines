@@ -6,7 +6,8 @@
    button anywhere a username shows up: the online room, the result screen,
    someone's profile. Every one of those buttons repaints when the list changes.
    ===================================================================== */
-const FR={friends:[],incoming:[],outgoing:[],loaded:false,loading:null};
+const FR={friends:[],incoming:[],outgoing:[],loaded:false,loading:null,again:false};
+const FR_POLL=30000; // how often an open game checks for new requests and removals
 const frKey=n=>String(n||'').toLowerCase();
 const frIn=(list,name)=>list.some(u=>frKey(u.username)===frKey(name));
 // 'friends' | 'incoming' (they asked you) | 'sent' (you asked them) | ''
@@ -15,15 +16,19 @@ const frMe=name=>!!(ACCT.user&&frKey(ACCT.user.username)===frKey(name));
 
 function frLoad(){
   if(!ACCT.token||API==null)return Promise.resolve();
-  if(!FR.loading)FR.loading=api('/friends')
+  // asked again while a check is out: that answer may be from before the change, so check once more after it
+  if(FR.loading){FR.again=true;return FR.loading}
+  FR.loading=api('/friends')
     .then(r=>{Object.assign(FR,{friends:r.friends,incoming:r.incoming,outgoing:r.outgoing,loaded:true});frChanged()})
     .catch(e=>{if(e.status===401)acctSignedOut('Your session ended. Sign in again.');else if(!FR.loaded)renderFriends()})
-    .finally(()=>{FR.loading=null});
+    .finally(()=>{FR.loading=null;if(FR.again){FR.again=false;frLoad()}});
   return FR.loading;
 }
 // signing out: nothing about the old account stays on screen
 function frReset(){Object.assign(FR,{friends:[],incoming:[],outgoing:[],loaded:false});frChanged()}
-function frChanged(){renderFriendTile();renderFriends();frPaint()}
+function frChanged(){renderFriendTile();renderFriends();frPaint();frNotify()}
+// keep the list current while the game is open and in front: new requests, and friends who removed you
+setInterval(()=>{if(ACCT.token&&ACCT.up&&document.visibilityState==='visible')frLoad()},FR_POLL);
 
 /* ---------- the button that goes next to a name ---------- */
 // remove: also offer "Remove" once you're friends (on their profile)
@@ -63,7 +68,12 @@ async function frAdd(name,btn){
   }
 }
 async function frDrop(path,msg){
-  try{await api(path,{method:'DELETE'});await frLoad();if(msg)toast(msg)}
+  try{
+    await api(path,{method:'DELETE'});
+    // the last path part is the other player's username; if you're facing them online, their button updates too
+    if(frKey(decodeURIComponent(path.split('/').pop()))===frKey(NET.oppUser))rawSend({t:'friend'});
+    await frLoad();if(msg)toast(msg)
+  }
   catch(e){if(e.status===401)acctSignedOut('Your session ended. Sign in again.');else toast(e.message,3000)}
 }
 function frRemove(name){
@@ -72,6 +82,62 @@ function frRemove(name){
     {label:'Remove',cls:'danger',fn:()=>frDrop('/friends/'+encodeURIComponent(name),`${frName(name)} removed from your friends.`)},
     {label:'Cancel',cls:'primary',esc:true}]);
 }
+
+/* ---------- the pop-up when a request comes in ---------- */
+// Each request pops up once; the ones already shown are remembered per account on this device.
+// It never covers a match in progress: it waits for the match to end.
+const frSeenKey=()=>'leylines.frSeen.'+(ACCT.user?ACCT.user.id:'');
+const frReqKey=u=>frKey(u.username)+'|'+u.since;
+function frSeen(){try{return new Set(JSON.parse(localStorage.getItem(frSeenKey())||'[]'))}catch(e){return new Set()}}
+function frSeenSave(keys){try{localStorage.setItem(frSeenKey(),JSON.stringify(keys))}catch(e){}}
+const frBusy=()=>!!(G&&G.st&&!G.over);
+let frPopT=0,frWaitT=0;
+function frNotify(){
+  clearTimeout(frWaitT);
+  if(!ACCT.token||!FR.loaded){frPopHide();return}
+  // its request was answered somewhere else, or cancelled: take the card down
+  const p=$('#frPop');
+  if(p&&p.dataset.who&&!frIn(FR.incoming,p.dataset.who))frPopHide();
+  const seen=frSeen(),fresh=FR.incoming.filter(u=>!seen.has(frReqKey(u)));
+  if(!fresh.length)return;
+  if(frBusy()){frWaitT=setTimeout(frNotify,4000);return}
+  // only requests still waiting are kept, so the list can't grow forever
+  frSeenSave(FR.incoming.map(frReqKey));
+  frPopShow(fresh);
+}
+function frPopShow(list){
+  let p=$('#frPop');
+  if(!p){
+    p=document.createElement('div');p.id='frPop';p.className='fr-pop';
+    p.setAttribute('role','region');p.setAttribute('aria-label','Friend request');p.setAttribute('aria-live','polite');
+    // stays up while the pointer or keyboard focus is on it
+    p.addEventListener('mouseenter',()=>clearTimeout(frPopT));p.addEventListener('focusin',()=>clearTimeout(frPopT));
+    p.addEventListener('mouseleave',frPopTimer);p.addEventListener('focusout',frPopTimer);
+    document.body.append(p);
+  }
+  const u=list[0],one=list.length===1;
+  p.dataset.who=one?u.username:'';
+  // several at once: one card that leads to the Friends screen (not from the result screen of a match)
+  const acts=one?'<button class="btn small primary" data-k="acc">Accept</button><button class="btn small" data-k="dec">Decline</button>'
+    :G?'':'<button class="btn small primary" data-k="view">View</button>';
+  p.innerHTML=`${frAvatar(u)}<span class="rt"><b>${one?esc(u.displayName):plural(list.length,'friend request')}</b>`+
+    `<small>${one?`@${esc(u.username)} wants to be friends`:`${esc(u.displayName)} and ${plural(list.length-1,'other')} want to be friends`}</small></span>`+
+    (acts?`<span class="fr-two">${acts}</span>`:'')+
+    '<button class="iconbtn fr-x" data-k="x" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+  p.onclick=e=>{
+    const b=e.target.closest('button[data-k]');if(!b)return;
+    sfx('click');frPopHide();
+    const k=b.dataset.k;
+    if(k==='acc')frAdd(u.username);
+    else if(k==='dec')frDrop('/friends/requests/'+encodeURIComponent(u.username),'Request declined.');
+    else if(k==='view')openFriends();
+  };
+  // read its layout first so it slides in (no requestAnimationFrame: that never runs while the tab is in the background)
+  void p.offsetWidth;p.classList.add('on');
+  frPopTimer();
+}
+function frPopTimer(){clearTimeout(frPopT);frPopT=setTimeout(frPopHide,10000)}
+function frPopHide(){clearTimeout(frPopT);const p=$('#frPop');if(p){p.classList.remove('on');p.dataset.who=''}}
 
 /* ---------- the menu tile ---------- */
 function renderFriendTile(){

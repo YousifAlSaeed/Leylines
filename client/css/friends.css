@@ -32,6 +32,24 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 .fr-res{display:flex;justify-content:center;margin:-2px 0 8px}
 .fr-res:has(.fr-slot:empty){display:none}
 
+/* the card that slides up when a friend request comes in */
+.fr-pop{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));z-index:var(--z-toast);width:min(460px,calc(100vw - 24px));
+  display:flex;align-items:center;gap:12px;padding:12px 8px 12px 14px;border-radius:18px;background:var(--surf2);border:1px solid var(--line2);
+  box-shadow:0 18px 40px -12px rgba(var(--sh),calc(.9*var(--shk)));
+  transform:translate(-50%,calc(100% + 40px));opacity:0;visibility:hidden;transition:transform .35s var(--spring),opacity .2s,visibility 0s .35s}
+.fr-pop.on{transform:translate(-50%,0);opacity:1;visibility:visible;transition:transform .35s var(--spring),opacity .2s}
+.fr-pop .rt{flex:1;min-width:0}
+.fr-pop b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-pop small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.fr-pop .fr-x{flex:none;width:34px;height:34px;min-height:0}
+.fr-pop .fr-x svg{width:16px;height:16px}
+@media (max-width:440px){
+  .fr-pop{flex-wrap:wrap;row-gap:10px}
+  .fr-pop .fr-two{order:3;width:100%}
+  .fr-pop .fr-two .btn{flex:1}
+}
+@media (prefers-reduced-motion:reduce){.fr-pop,.fr-pop.on{transition:opacity .2s,visibility 0s}}
+
 /* the menu tile's request count */
 #friendDot{position:absolute;top:12px;right:12px}
 #friendDot[hidden]{display:none}

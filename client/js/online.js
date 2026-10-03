@@ -150,6 +150,7 @@ function seat(c,meta){
     }
     const back=!!meta.cid&&meta.cid===NET.gcid,lost=liveMatch(),ended=!!meta.sid&&meta.sid===NET.ended;
     newSession();NET.gcid=typeof meta.cid==='string'?meta.cid.slice(0,20):'';
+    frLoad(); // a player just sat down: their Add friend button should show the real state
     rawSend({t:'hello',sid:NET.sid,ended});
     toast(lost?`${NET.oppName} is back, but your match couldn't be picked up again`:back?`${NET.oppName} reconnected`:`${NET.oppName} joined your game`,lost?4000:2200);
     sfx('banner');
@@ -418,7 +419,7 @@ function onNet(m){
       // a new seat in the room: anything from before is gone
       const had=liveMatch();
       NET.sid=typeof m.sid==='string'?m.sid.slice(0,20):'';NET.out=[];NET.got=0;NET.away=NET.waiting=false;NET.meReady=false;
-      hideAway();saveRejoin();
+      hideAway();saveRejoin();frLoad(); // in a room with the host: get the real friend state for their button
       if(had){G=null;stopTurnTimer();closeModal();toast(m.ended?`${oppName()} ended the match while you were away.`:`Your match couldn't be picked up again. Back to the room.`,4000)}
       break;
     }
