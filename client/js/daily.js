@@ -48,7 +48,9 @@ const aPack=t=>(/^[AEIOU]/.test(PACKS[t].name)?'an ':'a ')+PACKS[t].name+' pack'
 const rewardText=r=>[r.pack&&PACKS[r.pack].name+' pack',r.xp&&r.xp+' XP'].filter(Boolean).join(' + ');
 const dailyBox=(chips,note='')=>`<div class="dly-res">${chips?`<div class="pf-reward">${chips}</div>`:''}${note?`<p>${note}</p>`:''}</div>`;
 
-/* ---------- Daily Duel: everyone gets the same lent hands, rules and Hard CPU ---------- */
+/* ---------- Daily Duel: everyone gets the same lent hands, rules and Challenger CPU ---------- */
+// the CPU levels shown in briefings; Challenger and Boss are the Daily-only opponents in ai.js
+const DIFF_NAME={easy:'Easy',normal:'Normal',hard:'Hard',challenger:'Challenger',boss:'Boss'};
 function duelSetup(n=dayNo()){
   const rng=mulberry32(daySeed(1,n));
   const on={};
@@ -60,7 +62,7 @@ function duelSetup(n=dayNo()){
 }
 function startDuel(){
   const d=duelSetup(),t=trial();t.dt++;save();
-  G=baseMatch('ai',{rules:d.rules,trade:'none',diff:'hard',bo:1,names:['You','CPU · Daily Duel'],seed:d.seed,daily:{kind:'duel',at:t.at}});
+  G=baseMatch('ai',{rules:d.rules,trade:'none',diff:'challenger',bo:1,names:['You','Challenger · Daily Duel'],seed:d.seed,daily:{kind:'duel',at:t.at}});
   G.decks=[d.you,d.cpu];startMatch();
 }
 
@@ -122,8 +124,8 @@ function puzzleDone(){
 /* ---------- Gauntlet: your own deck against 3 CPUs, a rule more each time ---------- */
 const GAUNT=[
   {diff:'normal',on:{},bands:[[1,2],[1,3],[2,3],[2,4],[3,4]]},
-  {diff:'hard',on:{same:true},bands:[[2,3],[3,4],[3,5],[4,5],[5,6]]},
-  {diff:'hard',on:{same:true,plus:true,combo:true,open:false},bands:[[4,5],[5,6],[5,6],[6,7],[7,8]],boss:true}];
+  {diff:'challenger',on:{same:true},bands:[[2,3],[3,4],[3,5],[4,5],[5,6]]},
+  {diff:'boss',on:{same:true,plus:true,combo:true,open:false},bands:[[4,5],[5,6],[5,6],[6,7],[7,8]],boss:true}];
 function gauntStage(i,n=dayNo()){
   const S=GAUNT[i],rng=mulberry32(daySeed(3+i,n)),hand=bandHand(rng,S.bands);
   // the opponent is named after its strongest card
@@ -224,7 +226,7 @@ function dailyBrief(k){
   if(k==='duel'){
     const d=duelSetup();
     modal(`<div class="kick">Daily Duel #${n}</div><h2>${t.duel?'Won today':'Today\'s duel'}</h2>${ruleChips(d.rules)}
-      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,'blue')}<p class="dly-lab">Hard CPU</p>${rowHTML(d.cpu,'red')}
+      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,'blue')}<p class="dly-lab">Challenger CPU</p>${rowHTML(d.cpu,'red')}
       <p class="dly-note">${t.duel?'You already won today. Play again for fun; there\'s no reward.':`First win: <b>${rewardText(DAILY_REWARD.duel)}</b>. Lose and you can try again, as often as you like.`} Same hands and rules for every player.</p>`,
       [{label:t.duel?'Play again':t.dt?'Try again':'Start',cls:'primary',fn:startDuel},{label:'Close',esc:true}]);
   }else if(k==='puzzle'){
@@ -237,7 +239,7 @@ function dailyBrief(k){
   }else{
     const g=t.g,act=gauntActive(g),first=g.run===0||(g.run===1&&act);
     const st=[0,1,2].map(i=>{const S=gauntStage(i),r=DAILY_REWARD.gauntlet[i],state=act&&i<g.stage||g.over&&g.stage>i?'won':act&&i===g.stage?'now':'';
-      return `<div class="dly-st ${state}"><span class="dly-art">${S.art}</span><div><b>${esc(S.name)}${S.boss?' <em>Boss</em>':''}</b><small>${DIFFS.find(x=>x[0]===S.diff)[1]} · ${RULES.filter(x=>S.rules[x[0]]).map(x=>x[1]).join(' + ')||'Basic'}${S.rules.open?'':' · hidden hand'}</small></div><span class="dly-rw">${state==='won'?'✓':rewardText(r)}</span></div>`}).join('');
+      return `<div class="dly-st ${state}"><span class="dly-art">${S.art}</span><div><b>${esc(S.name)}${S.boss?' <em>Boss</em>':''}</b><small>${DIFF_NAME[S.diff]} · ${RULES.filter(x=>S.rules[x[0]]).map(x=>x[1]).join(' + ')||'Basic'}${S.rules.open?'':' · hidden hand'}</small></div><span class="dly-rw">${state==='won'?'✓':rewardText(r)}</span></div>`}).join('');
     const note=first?'Your own deck, no cards traded. Each win on your <b>first run</b> pays its reward. A loss ends the run.'
       :g.xp?'Your first run is over, so new runs give no rewards today. Play for fun.':`Your first run is over. Win the first stage of a new run for today's <b>${DAILY_REWARD.gauntlet[0].xp} XP</b>; packs only come on the first run.`;
     const cleared=g.run&&g.over&&g.stage>=3;
