@@ -5,7 +5,7 @@ import { loadGame } from './client.js';
 
 const g = loadGame();
 const NONE = {};
-// a made-up card with these sides [top, right, bottom, left] (10 = A), added to the card list
+// a made-up card with these sides [top, right, bottom, left] (10 = X), added to the card list
 const card = (t, r, b, l, e = null) => (g.CARDS.push({ id: g.CARDS.length, name: 'test', s: [t, r, b, l], e, lv: 1, sum: t + r + b + l }), g.CARDS.length - 1);
 
 // board cells:  0 1 2 / 3 4 5 / 6 7 8. Puts cards on the board, then player 0 places `id` on `cell`
@@ -58,7 +58,7 @@ describe('Same and Same wall', () => {
     const { owners } = place([[1, up, 1], [3, other, 1]], placed, 4, { same: true });
     assert.deepEqual([owners[1], owners[3]], [1, 1]);
   });
-  test('Same wall: an A facing the board edge counts as a match', () => {
+  test('Same wall: an X facing the board edge counts as a match', () => {
     // placed on 1 (top middle): its top A faces the wall, its left touches cell 0's right
     const corner = card(1, 4, 1, 1), astra = card(10, 1, 1, 4);
     assert.equal(place([[0, corner, 1]], astra, 1, { same: true }).owners[0], 1);
