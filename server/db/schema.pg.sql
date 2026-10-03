@@ -68,3 +68,24 @@ CREATE TABLE IF NOT EXISTS friend_requests (
   PRIMARY KEY (from_id, to_id)
 );
 CREATE INDEX IF NOT EXISTS friend_requests_to ON friend_requests (to_id);
+-- The leaderboard: the numbers it ranks by, copied out of each player's save
+-- whenever it is written (server/lib/board.js), so ranking is plain SQL.
+CREATE TABLE IF NOT EXISTS leaderboard (
+  user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  xp         INTEGER NOT NULL DEFAULT 0,
+  wins       INTEGER NOT NULL DEFAULT 0,
+  losses     INTEGER NOT NULL DEFAULT 0,
+  draws      INTEGER NOT NULL DEFAULT 0,
+  best       INTEGER NOT NULL DEFAULT 0,
+  cards      INTEGER NOT NULL DEFAULT 0,
+  recent     TEXT    NOT NULL DEFAULT '',
+  hand       TEXT    NOT NULL DEFAULT '',
+  v          INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT    NOT NULL DEFAULT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+);
+-- the version of board.js that wrote the row; older rows are redone from their save
+ALTER TABLE leaderboard ADD COLUMN IF NOT EXISTS v INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS leaderboard_xp ON leaderboard (xp);
+CREATE INDEX IF NOT EXISTS leaderboard_wins ON leaderboard (wins);
+CREATE INDEX IF NOT EXISTS leaderboard_best ON leaderboard (best);
+CREATE INDEX IF NOT EXISTS leaderboard_cards ON leaderboard (cards);

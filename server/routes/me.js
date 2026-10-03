@@ -5,6 +5,7 @@ import { rateLimit } from '../lib/rateLimit.js';
 import { deleteOtherSessions, requireAuth } from '../lib/sessions.js';
 import { checkEmail, checkPassword, checkSave, cleanName, privateUser } from '../lib/users.js';
 import { emailHash, sealEmail } from '../lib/emailCrypto.js';
+import { syncBoard } from '../lib/board.js';
 
 export function meRouter(db) {
   const r = Router();
@@ -79,6 +80,7 @@ export function meRouter(db) {
        RETURNING rev, updated_at`,
       { $u: req.user.id, $d: JSON.stringify(data), $now: now() },
     );
+    await syncBoard(db, req.user.id, data);
     res.json({ rev: s.rev, updatedAt: s.updated_at });
   });
 
