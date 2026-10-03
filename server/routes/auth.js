@@ -7,6 +7,7 @@ import { rateLimit } from '../lib/rateLimit.js';
 import { checkPassword, checkSave, checkSignup, cleanName, privateUser } from '../lib/users.js';
 import { emailHash, sealEmail } from '../lib/emailCrypto.js';
 import { sendResetEmails, useReset } from '../lib/resets.js';
+import { syncBoard } from '../lib/board.js';
 
 // compared against when the username doesn't exist, so both cases take as long
 const DUMMY_HASH = await hashPassword('not-a-real-password');
@@ -49,6 +50,7 @@ export function authRouter(db) {
         { $u: user.id, $d: JSON.stringify(save) },
       ));
     }
+    await syncBoard(db, user.id, save);
     res.status(201).json({ token: await createSession(db, user.id), user: privateUser(user), save: saveInfo(saved) });
   });
 

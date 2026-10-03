@@ -19,7 +19,7 @@ export const checkPassword = (pw) => typeof pw === 'string' && pw.length >= 8 &&
 // fields leave the server, each forced into a safe shape.
 const CARD_COUNT = 55;
 const nat = (v, max = 1e9) => (Number.isInteger(v) && v >= 0 ? Math.min(v, max) : 0);
-const cardId = (v) => Number.isInteger(v) && v >= 0 && v < CARD_COUNT;
+export const cardId = (v) => Number.isInteger(v) && v >= 0 && v < CARD_COUNT;
 export function publicProfile(save) {
   const s = save && typeof save === 'object' ? save : {};
   const st = s.stats && typeof s.stats === 'object' ? s.stats : {};

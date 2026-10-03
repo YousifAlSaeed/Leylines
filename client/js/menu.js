@@ -20,7 +20,7 @@ function renderMenu(){
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctAsk(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  renderHero();renderPackTile();renderFriendTile();
+  renderHero();renderPackTile();renderFriendTile();renderLbTile();
 }
 const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
@@ -103,5 +103,6 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='packs')openPacks();
   else if(g==='howto')openHow(0);
   else if(g==='friends')openFriends();
+  else if(g==='leaders')openLeaderboard();
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});

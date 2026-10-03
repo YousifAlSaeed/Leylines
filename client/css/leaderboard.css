@@ -1,0 +1,140 @@
+/* ---------- leaderboard (leaderboard.js) ---------- */
+:root{--lb-gold:#f0c35c;--lb-silver:#c9c4dc;--lb-bronze:#d08a5a;--lb-win:var(--ley-success);--lb-loss:var(--ley-danger);--lb-me:rgba(139,108,255,.16)}
+:root[data-theme="light"]{--lb-gold:#a87708;--lb-silver:#6f6a8a;--lb-bronze:#9a5226;--lb-win:#13865c;--lb-loss:#c8324f;--lb-me:rgba(106,43,174,.09)}
+
+.lb-top,.lb-wrap{max-width:1200px}
+.lb-wrap{container-type:inline-size}
+.lb-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.lb-left,.lb-mid{display:flex;flex-direction:column;gap:14px;min-width:0}
+.lb-side{display:none}
+@container (min-width:760px){.lb-grid{grid-template-columns:240px minmax(0,1fr)}}
+@container (min-width:1080px){
+  .lb-grid{grid-template-columns:240px minmax(0,1fr) 280px}
+  .lb-side{display:block;position:sticky;top:0}
+}
+
+/* you */
+.lb-who{display:flex;align-items:center;gap:10px}
+.lb-who .rt,.lb-pp>div{min-width:0}
+.lb-who b{display:block;font:700 16px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-who small{display:block;color:var(--muted);font-size:12px}
+.lb-big{display:flex;align-items:baseline;gap:8px;margin:12px 0 6px}
+.lb-big b{font:800 44px/1 var(--display);letter-spacing:-.01em}
+.lb-big small{color:var(--muted);font-size:13px}
+.lb-lvl{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.lb-lvl b{font:800 18px/1 var(--display)}
+.lb-tiny{margin:5px 0 10px;color:var(--muted);font-size:12px}
+.lb-kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0}
+.lb-kv span{color:var(--muted)}
+.lb-kv b{font-weight:600;white-space:nowrap}
+.lb-note{margin:0 4px;color:var(--muted);font-size:12px}
+
+/* everyone / friends */
+.lb-opts{display:flex;flex-direction:column;gap:4px}
+.lb-opt{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:42px;padding:8px 12px;border-radius:12px;
+  background:none;border:1px solid transparent;color:var(--text);font:500 14px var(--body);cursor:pointer;text-align:left}
+.lb-opt span{color:var(--muted);font-size:13px}
+.lb-opt:hover:not(.on){background:var(--well)}
+.lb-opt.on{background:var(--lb-me);border-color:var(--line2);color:var(--accent-ink);font-weight:600}
+.lb-opt:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+
+/* tabs and search */
+.lb-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.lb-by{flex:1 1 380px}
+.lb-by button{white-space:nowrap}
+.lb-by .lb-s{display:none}
+.lb-find{flex:1 1 180px;display:flex;align-items:center;gap:8px;padding:0 12px;min-height:46px;border-radius:14px;background:var(--well);border:1px solid var(--line)}
+.lb-find:focus-within{outline:2px solid var(--accent-ink);outline-offset:1px}
+.lb-find svg{flex:none;width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.lb-find input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:500 16px var(--body)}
+.lb-find input::placeholder{color:var(--muted);opacity:.7}
+
+/* the table */
+.lb-table{container-type:inline-size;padding:8px;transition:opacity .2s}
+.lb-table.busy{opacity:.6}
+.lb-head,.lb-row{display:grid;grid-template-columns:34px minmax(0,1fr) 96px 118px 92px 72px;align-items:center;gap:10px;padding:8px 10px}
+.lb-head{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+.lb-head .lb-stat{color:var(--accent-ink)}
+.lb-row{width:100%;background:none;border:0;border-top:1px solid var(--line);border-radius:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.lb-rows .lb-row:first-child{border-top:0}
+.lb-row:hover .lb-pl b{color:var(--accent-ink)}
+.lb-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:-2px;border-radius:12px}
+.lb-row.sel{background:var(--lb-me);border-radius:12px;box-shadow:inset 3px 0 var(--accent)}
+.lb-row.me{background:color-mix(in srgb,var(--cta) 11%,transparent);border-radius:12px}
+.lb-row.me .lb-pl b{color:var(--cta)}
+.lb-row.sel+.lb-row,.lb-row.me+.lb-row{border-top-color:transparent}
+.lb-row.pin{position:sticky;bottom:0;border:1px solid var(--line2);background:color-mix(in srgb,var(--cta) 12%,var(--surf));box-shadow:0 -10px 20px -14px rgba(var(--sh),calc(.9*var(--shk)))}
+.lb-gap{text-align:center;color:var(--muted);letter-spacing:.3em;font-size:13px;padding:4px 0}
+.lb-rk{font:700 16px/1 var(--display);color:var(--muted);text-align:center}
+.lb-rk.g{color:var(--lb-gold)}.lb-rk.s{color:var(--lb-silver)}.lb-rk.b{color:var(--lb-bronze)}
+.lb-pl{display:flex;align-items:center;gap:10px;min-width:0}
+.lb-pl .rt{min-width:0}
+.lb-pl b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-pl b em,.lb-pp b em{font-style:normal;font-weight:500;color:var(--muted)}
+.lb-pl small{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden}
+.lb-stat{text-align:right}
+.lb-stat b{display:block;font:700 17px/1.1 var(--display)}
+.lb-stat small{display:block;color:var(--muted);font-size:11px;white-space:nowrap}
+.lb-wl{text-align:right;font:600 14px var(--display);color:var(--muted)}
+.lb-head .lb-wl{font:inherit}
+.lb-narrow{display:none;align-items:center;gap:6px}
+.lb-retry{display:flex;justify-content:center;margin:-24px 0 24px}
+.lb-none{color:var(--muted);font-size:13px;margin:0}
+.lb-table .pf-hint{margin:14px 0 8px}
+/* a narrow table: rank, player, number; the title and last results move under the name */
+@container (max-width:599px){
+  .lb-head,.lb-row{grid-template-columns:26px minmax(0,1fr) auto;gap:8px;padding:8px 6px}
+  .lb-c{display:none}
+  .lb-narrow{display:inline-flex}
+}
+
+/* titles, from Wanderer to Ley Sovereign */
+.lb-tier{--t:var(--muted);display:inline-flex;align-items:center;font:700 10px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:999px;white-space:nowrap;
+  color:var(--t);border:1px solid color-mix(in srgb,var(--t) 55%,transparent);background:color-mix(in srgb,var(--t) 12%,transparent)}
+.lb-tier.t1{--t:var(--lb-bronze)}.lb-tier.t2{--t:var(--lb-silver)}.lb-tier.t3{--t:var(--blue-ink)}
+.lb-tier.t4{--t:var(--lb-gold)}.lb-tier.t5{--t:var(--accent-ink)}.lb-tier.t6{--t:var(--cta)}
+
+/* last results */
+.lb-l5{display:inline-flex;gap:3px}
+.lb-l5 i{width:9px;height:9px;border-radius:2.5px;background:var(--lb-win)}
+.lb-l5 i.l{background:var(--lb-loss)}
+.lb-l5 i.d{background:var(--muted);opacity:.5}
+
+/* the player you picked (third column, or the pop-up) */
+.lb-side .pf-card{display:flex;flex-direction:column;gap:12px}
+.lb-pp{display:flex;align-items:center;gap:12px}
+.lb-pp .pc-av{width:56px;height:56px;font-size:24px}
+.lb-pp .pc-av.art{font-size:30px}
+.lb-pp b{display:block;font:700 20px/1.15 var(--display);overflow-wrap:anywhere;margin-bottom:4px}
+.lb-pp div div{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.lb-pp small{color:var(--muted);font-size:12px}
+.lb-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lb-trio div{background:var(--well);border:1px solid var(--line);border-radius:12px;padding:9px 4px;text-align:center}
+.lb-trio b{display:block;font:800 19px/1.1 var(--display)}
+.lb-trio small{display:block;font-size:11px;color:var(--muted);line-height:1.25;margin-top:2px}
+.lb-side h4,.lb-pop h4{margin:4px 0 -4px;font:700 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lb-hand{display:flex;gap:4px;font-size:8.4px}
+.lb-hand .card{flex:1 1 0;width:auto;min-width:0}
+.lb-fr{display:flex;justify-content:center}
+.lb-fr .fr-slot:empty{display:none}
+.lb-acts .btn{flex:1}
+.lb-pop{display:flex;flex-direction:column;gap:12px;text-align:left;margin-bottom:16px}
+.lb-pop .lb-hand{font-size:min(10px,calc((100vw / var(--ui) - 96px) / 27))}
+.lb-pop .lb-pp b{padding-right:8px}
+
+/* phones: a short "you" card, and Everyone / Friends side by side */
+@container (max-width:759px){
+  .lb-me .lb-kv,.lb-me .lb-tiny,.lb-note,.lb-show h3{display:none}
+  .lb-me:not(.guest){display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:4px 14px}
+  .lb-me .lb-who{grid-column:1/-1}
+  .lb-me.guest .pf-hint{margin-bottom:10px}
+  .lb-me .lb-big{margin:0;grid-row:2/4}
+  .lb-me .lb-lvl{margin:0}
+  .lb-show{padding:4px;border-radius:14px}
+  .lb-opts{flex-direction:row;gap:2px}
+  .lb-opt{justify-content:center;gap:6px}
+}
+/* small phones: the short tab names */
+@container (max-width:519px){.lb-by .lb-l{display:none}.lb-by .lb-s{display:inline}}
+/* without the third column there's nothing to show which player is picked */
+@container (max-width:1079px){.lb-row.sel:not(.me){background:none;box-shadow:none}.lb-row.sel+.lb-row{border-top-color:var(--line)}}

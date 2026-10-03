@@ -155,11 +155,12 @@ server/                 optional Node server (Express)
   routes/auth.js        POST /api/auth/signup, /login, /logout
   routes/me.js          GET /api/me, PUT /api/me/save (the cloud save)
   routes/users.js       GET /api/users/:username (public profile)
+  routes/leaderboard.js GET /api/leaderboard (ranks players from the leaderboard table)
   lib/                  password hashing (scrypt), sessions, rate limiting, field checks
   db/index.js           picks the database: Postgres if DATABASE_URL is set, else SQLite
   db/postgres.js        Postgres (Neon in production)
   db/sqlite.js          SQLite via sql.js (WebAssembly, no native build), for local use
-  db/schema.*.sql       tables: users, sessions, user_saves (one file per database, kept in step)
+  db/schema.*.sql       tables: users, sessions, user_saves, friends, leaderboard… (one file per database, kept in step)
   data/                 the local SQLite file (git-ignored)
 index.html              forwards to client/ (for GitHub Pages "deploy from branch")
 render.yaml             Render Blueprint for the dev branch
@@ -179,6 +180,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 | `GET /me` | `{ user, save: { data, rev, updatedAt } \| null }` |
 | `PUT /me/save` | `{ data, baseRev, force? }` → `{ rev, updatedAt }`, or **409** if another device saved since `baseRev` |
 | `GET /users/:username` | Public profile |
+| `GET /leaderboard` | `?by=level\|wins\|streak\|cards&show=all\|friends&q=name` → `{ rows, me, counts }`: the top 50, and your own rank when signed in. `show=friends` needs you signed in |
 | `GET /health` | `{ ok: true }` |
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
