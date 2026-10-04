@@ -52,6 +52,8 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
   });
   api.use(express.json({ limit: '100kb' }));
   api.get('/health', (req, res) => res.json({ ok: true }));
+  // the game's clock: daily packs and the Daily tab go by this, not the device's clock
+  api.get('/time', (req, res) => { res.set('Cache-Control', 'no-store'); res.json({ now: Date.now() }); });
   api.use('/auth', authRouter(db));
   api.use('/me', meRouter(db));
   api.use('/users', usersRouter(db));

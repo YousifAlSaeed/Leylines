@@ -4,7 +4,7 @@
    ===================================================================== */
 let DK=null;
 function openDeck(o){
-  // o: {title, pool:[{id,count}], color, pre:[ids], onDone(ids), onBack()}
+  // o: {title, pool:[{id,count}], color, pre:[ids], free (Same screen: count kinds, not copies), onDone(ids), onBack()}
   DK={...o,pfx:'deck',sel:[],f:'all',deal:-1,saving:false,note:'',render:()=>renderDeck()};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0&&!rarBlock(DK.sel,id))DK.sel.push(id)}
   $('#deckTitle').textContent=o.title;
@@ -34,7 +34,7 @@ function renderDeck(){
   }
   $('#deckGrid').innerHTML=html;
   $$('#deckGrid .gc').forEach(g=>g.onclick=()=>handAdd(DK,+g.dataset.id));
-  const total=DK.pool.reduce((a,e)=>a+e.count,0);
+  const total=DK.free?DK.pool.length:DK.pool.reduce((a,e)=>a+e.count,0);
   $('#deckMeta').textContent=`${total} cards`;
   $('#deckGo').disabled=n!==5;
   $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
@@ -156,4 +156,5 @@ wireHand('deck',()=>DK);
 $('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 $('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return legalDeck(shuffle(all))}
-const fullPool=()=>CARDS.map(c=>({id:c.id,count:1}));
+// Same screen: any card this account has ever found (even if lost since), up to 5 copies
+const foundPool=()=>CARDS.filter(c=>isSeen(c.id)).map(c=>({id:c.id,count:5}));

@@ -12,20 +12,14 @@ const rarCol=r=>r===5?'#ffd76a':RC[r-1];
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const PK={src:null,ids:[],fresh:[],i:0,state:'',ret:null,tear:{on:false}};
 
-/* ---------- the daily pack: one per calendar day; 7 days in a row ends with an Arcane ---------- */
-const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const today=()=>ymd(new Date());
-const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return ymd(d)};
+/* ---------- the daily pack: one per game day (clock.js); 7 days in a row ends with an Arcane ---------- */
 function dailyState(){
-  const d=SAVE.daily;
-  if(d&&d.at===today())return {ready:false,day:(d.n-1)%7+1,n:d.n};
+  const d=SAVE.daily,t=today();
+  // no game day until the server has told the time
+  if(!t)return {ready:false,wait:true,day:d?(d.n-1)%7+1:1,n:d?d.n:0};
+  if(d&&d.at>=t)return {ready:false,day:(d.n-1)%7+1,n:d.n};
   const n=d&&d.at===yesterday()?d.n+1:1,day=(n-1)%7+1;
   return {ready:true,day,n,t:day===7?'arcane':'spark'};
-}
-function untilMidnight(){
-  const now=new Date(),m=new Date(now);m.setHours(24,0,0,0);
-  const s=Math.max(0,Math.round((m-now)/1000)),h=Math.floor(s/3600),min=Math.floor(s%3600/60);
-  return h?`${h}h ${min}m`:`${Math.max(1,min)}m`;
 }
 const packsToOpen=()=>SAVE.packs.length+(dailyState().ready?1:0);
 
@@ -311,7 +305,7 @@ function renderPacks(){
   const daily=`<section class="pk-card pk-daily t-${d.ready?d.t:'spark'}">
     ${miniPack(d.ready?d.t:'spark','big'+(d.ready?' ready':' spent'))}
     <div class="pk-dtext"><h3>Daily pack</h3>
-      <p>${d.ready?(d.day===7?'Day 7: today it\'s an <b>Arcane</b> pack.':'A free Spark pack, every day.'):`Opened today. The next one is ready in <b id="pkWait">${untilMidnight()}</b>.`}</p>
+      <p>${d.wait?'Checking the time with the server…':d.ready?(d.day===7?'Day 7: today it\'s an <b>Arcane</b> pack.':'A free Spark pack, every day.'):`Opened today. The next one is ready in <b id="pkWait">${untilMidnight()}</b>.`}</p>
       <div class="pk-streak" aria-label="Daily streak: day ${d.day} of 7">${[1,2,3,4,5,6,7].map(k=>
         `<i class="${k<d.day||(!d.ready&&k===d.day)?'on':''}${d.ready&&k===d.day?' today':''}${k===7?' gift':''}">${k}</i>`).join('')}</div>
       <small>Open one every day in a row. Day 7 is an Arcane pack.</small>
@@ -355,7 +349,7 @@ function renderPacks(){
 }
 function renderPackTile(){
   const d=dailyState(),n=SAVE.packs.length,all=n+(d.ready?1:0);
-  $('#packSub').textContent=[d.ready?'Daily ready':'',n?`${n} to open`:''].filter(Boolean).join(' · ')||`Next daily in ${untilMidnight()}`;
+  $('#packSub').textContent=[d.ready?'Daily ready':'',n?`${n} to open`:''].filter(Boolean).join(' · ')||(d.wait?'Daily pack: connecting…':`Next daily in ${untilMidnight()}`);
   const dot=$('#packDot');dot.textContent=all;dot.hidden=!all;
   $('#packTile').classList.toggle('hot',!!all);
   $('#packTile').setAttribute('aria-label',`Packs. ${$('#packSub').textContent}`);

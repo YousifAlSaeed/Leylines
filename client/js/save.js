@@ -14,9 +14,9 @@ function defSave(){
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
-    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
+    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, packs since a 5★
     packs:[],packLv:1,daily:null,pity:0,
-    // the Daily tab (daily.js): today's challenge progress, reset at local midnight
+    // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
     // a match vs Computer the app closed on (match.js), online matches you may still lose cards from,
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)
