@@ -113,3 +113,4 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='leaders')openLeaderboard();
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
+$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP and coins could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};

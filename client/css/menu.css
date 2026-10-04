@@ -138,6 +138,14 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .stat b{display:block;font:800 20px/1 var(--display)}
 .stat small{color:var(--muted);font-size:11.5px}
 .mstats .iconbtn{height:auto;width:54px;border-radius:14px}
+/* alpha notice: a pill under the title on phones (tap for the full text), a box under the tiles on PC */
+.alpha-pill{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font:700 10.5px/1 var(--body);letter-spacing:.08em;color:var(--warn);cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 12%,transparent);border-radius:999px;padding:5px 9px}
+.alpha-pill i{font-style:normal;letter-spacing:0;font-weight:500;color:var(--muted)}
+.alpha-bar{display:none;gap:10px;align-items:flex-start;margin:0;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.4;color:var(--muted);
+  border:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.alpha-bar b{color:var(--warn);font:700 11px/1.5 var(--body);letter-spacing:.08em;margin-right:6px}
+.alpha-bar svg{width:18px;height:18px;flex:none;color:var(--warn);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @media (min-width:920px) and (min-height:560px){
   /* title across the top; Play card and tiles share one top and bottom edge */
   .menu{max-width:1180px;display:grid;grid-template-columns:1.15fr 1fr;align-items:stretch;column-gap:40px;row-gap:28px}
@@ -154,4 +162,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .m-right .tiles{flex:1;grid-auto-rows:1fr}
   .tile{min-height:122px;padding:18px}
   .tile b{font-size:19px}
+  .alpha-pill{display:none}
+  .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }
