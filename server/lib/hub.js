@@ -7,6 +7,7 @@
 import crypto from 'node:crypto';
 
 export const ONLINE_MS = 15 * 1000;  // a game without the live line that hasn't checked in for this long is gone
+export const AWAY_MS = 3 * 60 * 1000;  // a minimised game counts as online this long after its last check-in (a phone may be asleep)
 export const MAX_LINES = 5;          // live lines per player (tabs, devices)
 export const INVITE_MS = 2 * 60 * 1000; // how long an invite waits for an answer (time to pick up the phone after an alert)
 export const MAX_INVITES = 5;        // waiting for any one player
@@ -15,7 +16,7 @@ export const MAX_INVITES = 5;        // waiting for any one player
 export function createHub(push = null) {
   const boot = crypto.randomBytes(6).toString('hex');
   const vers = new Map();     // user id → { fr, fo, gi }
-  const seen = new Map();     // user id → { at, menu }
+  const seen = new Map();     // user id → { at, menu, away } (away: the game is minimised or in the background)
   const invites = new Map();  // user id → [{ fromId, from, name, code, at }]
   const declined = new Map(); // user id → [display names who said no]
   const friends = new Map();  // user id → [{ id, username }], until their friends change
@@ -32,7 +33,14 @@ export function createHub(push = null) {
   }, 60 * 1000).unref();
 
   const hasLine = (id) => (lines.get(id)?.size ?? 0) > 0;
-  const onMenu = (id) => { const s = seen.get(id); return !!s && s.menu && (hasLine(id) || Date.now() - s.at < ONLINE_MS); };
+  const isAway = (id) => !!seen.get(id)?.away;
+  // free to play. A minimised game keeps its line open, so it also has to have checked in lately: a phone asleep in a pocket can't answer
+  const onMenu = (id) => {
+    const s = seen.get(id);
+    if (!s || !s.menu) return false;
+    const ago = Date.now() - s.at;
+    return hasLine(id) ? !s.away || ago < AWAY_MS : ago < ONLINE_MS;
+  };
   const notify = (id, msg) => { for (const send of lines.get(id) ?? []) send(msg); };
 
   return {
@@ -40,10 +48,13 @@ export function createHub(push = null) {
     ver,
     notify,
     hasLine,
-    // the game isn't open (no live line), but the player turned alerts on: they can still be reached
+    isAway,
+    // the player turned alerts on (alerts.js)
     canAlert: (id) => !!push && push.has(id),
-    // a push alert, only when the game isn't open (an open game shows it itself)
-    alert(id, msg) { if (push && !hasLine(id)) push.notify(id, msg); },
+    // the game is closed or minimised but alerts are on: an alert reaches them
+    byAlert: (id) => !!push && push.has(id) && (!hasLine(id) || isAway(id)),
+    // a push alert, unless the game is open in front of them (it shows the news itself)
+    alert(id, msg) { if (push && (!hasLine(id) || isAway(id))) push.notify(id, msg); },
     // a live line opened; the returned function closes it. → whether they stopped being free (their friends should hear)
     listen(id, send) {
       const set = lines.get(id) ?? new Set();
@@ -65,8 +76,12 @@ export function createHub(push = null) {
       if (kind === 'fr') friends.delete(id);
       notify(id, { k: kind, v: v[kind] });
     },
-    // → whether they just became free or stopped being free (their friends should hear)
-    checkIn(id, menu) { const was = onMenu(id); seen.set(id, { at: Date.now(), menu: !!menu }); return was !== onMenu(id); },
+    // → whether they became free, stopped being free, or went away or came back (their friends should hear)
+    checkIn(id, menu, away = false) {
+      const was = onMenu(id), wasAway = isAway(id);
+      seen.set(id, { at: Date.now(), menu: !!menu, away: !!away });
+      return was !== onMenu(id) || (onMenu(id) && wasAway !== !!away);
+    },
     onMenu,
     friendsOf: (id) => friends.get(id),
     keepFriends: (id, list) => friends.set(id, list),

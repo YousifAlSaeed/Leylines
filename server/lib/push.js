@@ -49,14 +49,19 @@ export function createPusher(db, { send } = {}) {
       await recount(id);
     },
     // { title, body, tag, url, ttl } to every device of theirs on this site. Never throws.
+    // → { devices, sent, failed: [reasons] }
     async notify(id, { ttl = 24 * 3600, ...msg }) {
-      if (!users.has(id)) return;
+      const out = { devices: 0, sent: 0, failed: [] };
+      if (!users.has(id)) return out;
       try {
         const rows = await db.all('SELECT * FROM push_subs WHERE user_id = $u AND site = $s', { $u: id, $s: site });
         const body = JSON.stringify(msg);
         let gone = false;
+        out.devices = rows.length;
         await Promise.all(rows.map((r) => send({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } }, body, { TTL: ttl, urgency: 'high' })
+          .then(() => { out.sent++; })
           .catch(async (e) => {
+            out.failed.push(`${new URL(r.endpoint).hostname} ${e?.statusCode ?? ''} ${String(e?.body || e?.message || '').slice(0, 120)}`.trim());
             // the device turned alerts off, or the browser dropped it: forget it
             if (e?.statusCode === 404 || e?.statusCode === 410) {
               gone = true;
@@ -64,7 +69,8 @@ export function createPusher(db, { send } = {}) {
             } else console.error('push: send failed', e?.statusCode ?? '', e?.message ?? e);
           })));
         if (gone) await recount(id);
-      } catch (e) { console.error('push:', e.message); }
+      } catch (e) { console.error('push:', e.message); out.failed.push(e.message); }
+      return out;
     },
   };
 }

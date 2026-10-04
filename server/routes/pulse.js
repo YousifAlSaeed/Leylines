@@ -29,17 +29,18 @@ export function pulseRouter(db, hub) {
   const tellFriends = async (id) => { for (const f of await friendsOf(id)) hub.notify(f.id, { k: 'on' }); };
   const findFriend = async (me, name) => (await friendsOf(me)).find((f) => f.username.toLowerCase() === String(name ?? '').toLowerCase());
 
-  // { menu } → { boot, fr, fo, online: [usernames], alerts: [usernames of friends not in the game who get alerts], invites: [{ from, name, code, left }], declined: [names] }
+  // { menu, away } → { boot, fr, fo, online: [usernames], away: [the online ones who minimised the game], alerts: [usernames of friends not online who get alerts], invites: [{ from, name, code, left }], declined: [names] }
   r.post('/', async (req, res) => {
     const me = req.user.id;
-    if (hub.checkIn(me, req.body?.menu === true)) await tellFriends(me);
+    if (hub.checkIn(me, req.body?.menu === true, req.body?.away === true)) await tellFriends(me);
     const mine = await friendsOf(me);
     const online = mine.filter((f) => hub.onMenu(f.id)).map((f) => f.username);
-    const alerts = mine.filter((f) => !hub.hasLine(f.id) && hub.canAlert(f.id)).map((f) => f.username);
+    const away = mine.filter((f) => hub.onMenu(f.id) && hub.isAway(f.id)).map((f) => f.username);
+    const alerts = mine.filter((f) => !hub.onMenu(f.id) && hub.byAlert(f.id)).map((f) => f.username);
     const now = Date.now();
     res.set('Cache-Control', 'no-store');
     res.json({
-      boot: hub.boot, ...hub.ver(me), online, alerts,
+      boot: hub.boot, ...hub.ver(me), online, away, alerts,
       invites: hub.invitesFor(me).map((i) => ({ from: i.from, name: i.name, code: i.code, left: Math.max(0, Math.round((i.at + INVITE_MS - now) / 1000)) })),
       declined: hub.takeDeclined(me),
     });
@@ -64,8 +65,8 @@ export function pulseRouter(db, hub) {
     if (typeof code !== 'string' || !CODE_RE.test(code)) return res.status(400).json({ error: 'Bad game code.' });
     const f = await findFriend(req.user.id, to);
     if (!f) return res.status(404).json({ error: 'You can only invite your friends.' });
-    const reach = hub.onMenu(f.id) || (!hub.hasLine(f.id) && hub.canAlert(f.id));
-    if (!reach) return res.status(409).json({ error: hub.hasLine(f.id) ? 'They just started a match. Try again later.' : 'They went offline. Try again later.' });
+    const reach = hub.onMenu(f.id) || hub.byAlert(f.id);
+    if (!reach) return res.status(409).json({ error: hub.hasLine(f.id) && !hub.isAway(f.id) ? 'They just started a match. Try again later.' : 'They went offline. Try again later.' });
     if (!hub.invite(f.id, { fromId: req.user.id, from: req.user.username, name: req.user.display_name, code }))
       return res.status(429).json({ error: 'They have too many invites waiting.' });
     hub.alert(f.id, { title: `${req.user.display_name} invited you to play`, body: 'Tap to join their match.', tag: 'invite', url: './?invite=1', ttl: INVITE_MS / 1000 });

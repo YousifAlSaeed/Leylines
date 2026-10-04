@@ -16,26 +16,37 @@ async function alertsKey(){
   if(ALERTS.key===undefined&&API!=null)try{ALERTS.key=(await api('/push/key')).key||null}catch(e){return null}
   return ALERTS.key||null;
 }
-// this device's push registration, if alerts are on here
-async function alertsSub(){
+// a promise that gives up: some browsers never answer about push (a privacy setting, push turned off)
+const alertsWithin=(p,ms,msg)=>Promise.race([p,wait(ms).then(()=>{throw new Error(msg)})]);
+async function alertsReg(){
   if(!alertsCan())return null;
-  try{
-    const reg=await Promise.race([navigator.serviceWorker.ready,wait(5000).then(()=>null)]);
-    return reg?await reg.pushManager.getSubscription():null;
-  }catch(e){return null}
+  return alertsWithin(navigator.serviceWorker.ready,5000,'The game\'s offline helper isn\'t running. Reload and try again.');
+}
+// this device's push registration, if alerts are on here (null when off, or the browser won't say)
+async function alertsSub(){
+  try{const reg=await alertsReg();return reg?await alertsWithin(reg.pushManager.getSubscription(),4000,'no answer'):null}
+  catch(e){return null}
 }
 function b64bytes(s){const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+// remembered on this device, so Settings can show the switch straight away
+const AL_KEY='leylines.alerts';
+const alertsMark=on=>{try{on?localStorage.setItem(AL_KEY,'1'):localStorage.removeItem(AL_KEY)}catch(e){}};
+const alertsMarked=()=>{try{return localStorage.getItem(AL_KEY)==='1'}catch(e){return false}};
 
 async function alertsOn(){
   const key=await alertsKey();if(!key)throw new Error('Alerts aren\'t set up on this server yet.');
   const perm=await Notification.requestPermission();
   if(perm!=='granted')throw new Error(perm==='denied'?'Alerts are blocked. Allow notifications for this site in your browser settings.':'Alerts stay off.');
-  const reg=await Promise.race([navigator.serviceWorker.ready,wait(5000).then(()=>null)]);
-  if(!reg)throw new Error('Alerts need the game to be installed. Reload and try again.');
-  const sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64bytes(key)});
+  const reg=await alertsReg();
+  let sub=await alertsWithin(reg.pushManager.getSubscription(),4000,'This browser didn\'t answer. Try again, or try another browser.');
+  if(!sub)sub=await alertsWithin(reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64bytes(key)}),15000,'This browser didn\'t answer. Try again, or try another browser.')
+    .catch(e=>{throw new Error(/push service|AbortError|not supported/i.test(e.name+' '+e.message)
+      ?'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).':e.message)});
   await api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}});
+  alertsMark(true);
 }
 async function alertsOff(token=ACCT.token){
+  alertsMark(false);
   const sub=await alertsSub();if(!sub)return;
   // told with the token directly: when signing out, the account is already gone from ACCT
   if(token&&API!=null)fetch(API+'/api/push/unsubscribe',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
@@ -46,13 +57,21 @@ async function alertsOff(token=ACCT.token){
 async function alertsSync(){
   if(!ACCT.token||!alertsCan()||Notification.permission!=='granted')return;
   const sub=await alertsSub();
+  alertsMark(!!sub);
   if(sub)api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}}).catch(()=>{});
+}
+// Settings → Alerts → Test: the server sends one to each of your devices and says how it went
+async function alertsTest(){
+  const r=await api('/push/test',{method:'POST'});
+  if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
+  if(r.failed.length)throw new Error(`The alert didn't go through (${r.failed[0]}).`);
+  toast(r.devices>1?`Test alert sent to your ${r.devices} devices`:'Test alert sent. It should show up in a moment.',3500);
 }
 
 /* ---------- the Settings row ---------- */
 function alertsRow(){
   if(API==null)return '';
-  return `<div class="setrow" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests and match news, even with the game closed</small></span><span id="alertsCtl"></span></div>`;
+  return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests and match news, even with the game closed</small></span><span id="alertsCtl"></span></div>`;
 }
 async function alertsPaint(box){
   const row=box.querySelector('#setAlerts');if(!row)return;
@@ -63,18 +82,32 @@ async function alertsPaint(box){
   if(!ACCT.token)return say('Sign in to get alerts for invites and friend requests.');
   if(!alertsCan())return say(alertsIOS()&&!alertsHome()?'Add Leylines to your home screen, then turn alerts on in the app.':'This browser can\'t show alerts.');
   if(Notification.permission==='denied')return say('Blocked. Allow notifications for this site in your browser settings.');
+  const draw=on=>{
+    say(on?'On for this device. Invites, friend requests and match news reach you even with the game closed.':'Invites, friend requests and match news, even with the game closed',
+      `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
+      (on?'<button class="btn small" id="alertsTest">Test</button>':''));
+    ctl.querySelectorAll('.seg button').forEach(b=>b.onclick=async()=>{
+      if(ALERTS.busy||(b.dataset.k==='on')===on)return;
+      sfx('click');ALERTS.busy=true;ctl.querySelectorAll('button').forEach(x=>x.disabled=true);
+      try{
+        if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on. Tap Test to try one.',3000)}
+        else{await alertsOff();toast('Alerts are off')}
+      }catch(e){toast(e.message,4500)}
+      finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
+    });
+    const t=ctl.querySelector('#alertsTest');
+    if(t)t.onclick=async()=>{
+      if(ALERTS.busy)return;
+      sfx('click');ALERTS.busy=true;t.disabled=true;
+      try{await alertsTest()}catch(e){toast(e.message,5000)}
+      finally{ALERTS.busy=false;t.disabled=false}
+    };
+  };
+  // the switch shows at once from what this device remembers, then from what the browser says
+  draw(alertsMarked()&&Notification.permission==='granted');
   const on=!!(await alertsSub())&&Notification.permission==='granted';
-  say('Invites, friend requests and match news, even with the game closed',
-    `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`);
-  ctl.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
-    if(ALERTS.busy||(b.dataset.k==='on')===on)return;
-    sfx('click');ALERTS.busy=true;ctl.querySelectorAll('button').forEach(x=>x.disabled=true);
-    try{
-      if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on')}
-      else{await alertsOff();toast('Alerts are off')}
-    }catch(e){toast(e.message,3500)}
-    finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
-  });
+  alertsMark(on);
+  if(box.isConnected&&!ALERTS.busy)draw(on);
 }
 
 /* ---------- tapping an alert ---------- */

@@ -32,6 +32,12 @@ export function pushRouter(db, push) {
     res.status(204).end();
   });
 
+  // → { devices, sent, failed }: a test alert to every device of yours (Settings → Alerts → Test)
+  r.post('/test', limit, requireAuth(db), async (req, res) => {
+    if (!push) return res.status(503).json({ error: 'Alerts are not set up on this server.' });
+    res.json(await push.notify(req.user.id, { title: 'Leylines', body: 'Alerts work on this device.', tag: 'test', url: './', ttl: 600 }));
+  });
+
   // { endpoint } → 204
   r.post('/unsubscribe', limit, requireAuth(db), async (req, res) => {
     const { endpoint } = req.body ?? {};

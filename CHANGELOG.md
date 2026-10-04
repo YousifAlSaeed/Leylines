@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.3 (2026-10-04)
+- The Alerts switch in Settings now always shows up. Once alerts are on, a **Test** button sends one to check they reach you
+- Minimising the game no longer makes you go offline. Friends see you as **Away**, can still invite you, and you get an alert if you turned them on
+
 ## 0.17.2 (2026-10-04)
 - How to play: **Sudden death** now has its own tab with an example. After a draw, your new hand is every card in your colour, so cards you flipped come with you
 - How to play's tabs are back in one row you can swipe, with the arrow

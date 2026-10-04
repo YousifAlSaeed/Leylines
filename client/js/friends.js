@@ -164,7 +164,7 @@ function frAvatar(u){
   return a&&CARDS[a.c]?`<span class="pc-av art" style="--ring:${RINGS[a.r]||RINGS[0]}" aria-hidden="true">${CARDS[a.c].art}</span>`
     :`<span class="pc-av on" aria-hidden="true">${initialOf(u.displayName)}</span>`;
 }
-const frMeta=u=>{const lv=levelOf(u.xp||0);return (frFree(u.username)?'<span class="fr-on">Online</span> · ':frAlerted(u.username)?'Gets alerts · ':'')+`@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
+const frMeta=u=>{const lv=levelOf(u.xp||0);return (frFree(u.username)?frOnTag(u.username)+' · ':frAlerted(u.username)?'Gets alerts · ':'')+`@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
 function renderFriends(){
   const el=$('#frBody');if(!el||!$('#scr-friends').classList.contains('on'))return;
   if(!ACCT.token){

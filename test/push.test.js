@@ -113,6 +113,38 @@ describe('push alerts', () => {
     await settle();
   });
 
+  test('a minimised game stays online as away, and still gets alerts', async () => {
+    const ctl = new AbortController();
+    const r = await fetch(base + '/api/pulse/stream', { signal: ctl.signal, headers: { Authorization: `Bearer ${T.bob}` } });
+    await r.body.getReader().read();
+    await api('/pulse', { method: 'POST', token: T.bob, body: { menu: true, away: true } });
+    const p = await pulse('ana');
+    assert.deepEqual(p.online, ['bob']);
+    assert.deepEqual(p.away, ['bob']);
+    assert.equal((await api('/pulse/invite', { method: 'POST', token: T.ana, body: { to: 'bob', code: 'MINIM' } })).status, 204);
+    await settle();
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].tag, 'invite');
+    // back in front: online, not away, and no more alerts
+    await api('/pulse', { method: 'POST', token: T.bob, body: { menu: true, away: false } });
+    assert.deepEqual((await pulse('ana')).away, []);
+    await api('/forfeits', { method: 'POST', body: { to: 'bob', key: 'abc:9', name: 'Ana', cards: [] } });
+    await settle();
+    assert.equal(sent.length, 1);
+    ctl.abort();
+    await settle();
+  });
+
+  test('the test alert says how it went', async () => {
+    const r = await api('/push/test', { method: 'POST', token: T.bob });
+    assert.equal(r.status, 200);
+    assert.equal(r.body.devices, 1);
+    assert.equal(r.body.sent, 1);
+    assert.deepEqual(r.body.failed, []);
+    assert.equal(sent.at(-1).tag, 'test');
+    assert.equal((await api('/push/test', { method: 'POST', token: T.ana })).body.devices, 0);
+  });
+
   test('a device the push service says is gone is forgotten', async () => {
     gone.add(sub(1).endpoint);
     await api('/forfeits', { method: 'POST', body: { to: 'bob', key: 'abc:3', name: 'Ana', cards: [] } });
