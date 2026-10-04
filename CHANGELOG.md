@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.1 (2026-10-04)
+- How to play no longer scrolls. Every tab is short, Tips has its own tab, and the other rules are split into Hands, Board, Match and Trade. On a phone the tabs sit in two rows
+
 ## 0.17.0 (2026-10-04)
 - **New main menu layout.** The six buttons are now one size and in a new order: Friends, Leaderboard, Collection, Night Market, Packs and How to play. On a phone the whole menu fits on one screen, with no scrolling
 - The Store is now called the **Night Market**, and its button shows when the stock changes

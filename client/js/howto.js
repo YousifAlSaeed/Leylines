@@ -32,11 +32,23 @@ function exTag(b,k,d,txt,ok){
   el.style.top=(d===0?exY(r)-.15:d===2?exY(r+1)-.15:exY(r)+2.76)*fs+'px';
   b.append(el);requestAnimationFrame(()=>el.classList.add('on'));
 }
+// zooms the example to fill the stage, whatever the screen: smaller on a short phone, bigger on a PC
+function exFit(st){
+  const w=st.querySelector('.ex-wrap');if(!w)return;
+  w.style.zoom=1;
+  w.style.zoom=Math.min((st.clientWidth-24)/w.offsetWidth,(st.clientHeight-16)/w.offsetHeight,1.7).toFixed(3);
+}
+// shrinks the text a little when a small screen can't fit it; nothing in How to play scrolls
+function textFit(){
+  const box=$('.htext'),inn=$('#hIn');inn.style.zoom=1;
+  for(let k=.95;k>.69&&box.scrollHeight>box.clientHeight+1;k-=.05)inn.style.zoom=k.toFixed(2);
+}
+addEventListener('resize',()=>{if($('#how').classList.contains('on')){exFit($('#hStage'));textFit()}});
 // plays the scenes on a loop; with reduced motion, shows the first one finished
 function exDemo(st,scenes,still){
   const steps=[],q=k=>st.querySelector(`[data-k="${k}"]`);let t=0,first=0;
   scenes.forEach((sc,i)=>{
-    steps.push([t,()=>{st.innerHTML=`<div class="ex-wrap"><span class="ex-lbl">${sc.label}</span>${exBoard(sc)}<div class="ex-cap"></div></div>`}]);
+    steps.push([t,()=>{st.innerHTML=`<div class="ex-wrap"><span class="ex-lbl">${sc.label}</span>${exBoard(sc)}<div class="ex-cap"></div></div>`;exFit(st)}]);
     steps.push([t+500,()=>{q(sc.at).innerHTML=cardHTML(sc.card,'blue',{name:false,cls:still?'':'drop'})}]);
     t+=1200;
     for(const w of sc.waves){
@@ -57,40 +69,54 @@ function exDemo(st,scenes,still){
 const EX_SAME={rows:2,cols:2,cards:{'0,1':[35,'red'],'1,0':[9,'red']},at:'1,1'};
 const EX_PLUS={rows:2,cols:2,cards:{'0,1':[1,'red'],'1,0':[0,'red']},at:'1,1'};
 const EX_CAP={rows:1,cols:2,cards:{'0,1':[20,'red']},at:'0,0'};
-// tut: the tutorial lesson its button plays (tutorial.js); Basics plays all of it
+// Every tab stays short enough to fit without scrolling (a phone shows about 5 short lines under the example).
+// tut: the tutorial lesson its button plays (tutorial.js); Basics plays all of it. more: a list of rules, no example
 const HOW=[
  {tab:'Basics',tag:'Basics',title:'Own the most cards',tut:0,try:'Play the tutorial',
   ex:[{...EX_CAP,label:'7 meets 6',card:22,waves:[{pairs:[['0,0',1,'7 › 6',1]],cap:'Higher side flips it'}]},
       {...EX_CAP,label:'4 meets 6',card:0,waves:[{pairs:[['0,0',1,'4 ‹ 6',0]],cap:'Lower: nothing happens',bad:1}]}],
-  list:['Each player brings <b>5 cards</b>: at most <b>1 of 5★</b> and <b>2 of 4★ or more</b>','Take turns placing one card on the <b>3×3 board</b>',
-    'Where your card touches an enemy card, compare the two numbers. If yours is <b>higher</b>, their card turns your colour. <b>X</b> = 10',
-    'Board full? Whoever owns <b>more cards</b> wins (cards left in your hand count too)'],
-  extra:'<h4>Tips</h4><ul><li>Point your <b>strong sides</b> at empty squares</li><li><b>Corners</b> hide 2 sides: a safe spot for a weak card</li><li>Save a strong card for the last turn</li><li>Tap a card then a square, or drag it there</li></ul>'},
+  list:['Each player brings <b>5 cards</b> and takes turns placing one on the <b>3×3 board</b>',
+    'Touching an enemy card? If your side is <b>higher</b>, it turns your colour. <b>X</b> = 10',
+    'Board full? <b>Most cards</b> wins. Cards still in your hand count too']},
  {tab:'Same',tag:'Rule · Same',title:'Two matches flip both',tut:1,
   ex:[{...EX_SAME,label:'Seraph Warden: top 8, left 6',card:45,waves:[{pairs:[['1,1',0,'8 = 8',1],['1,1',3,'6 = 6',1]],cap:'2 matches: Same!'}]},
       {...EX_SAME,label:'Gale Harpy: top 8, left 4',card:34,waves:[{pairs:[['1,1',0,'8 = 8',1],['1,1',3,'4 ≠ 6',0]],cap:'Only 1 match: nothing',bad:1}]}],
-  list:['Check every side your card touches','If <b>2 or more</b> are the <b>same number</b> as the side they touch, all those enemy cards flip',
-    'The two matches can be <b>different numbers</b>: 8 = 8 and 6 = 6 counts','Equal is enough here. Normal captures need higher','Only 1 match? Nothing happens',
-    '<b>Same wall</b> (an extra rule): the board edge counts as X. So an X facing the edge plus 1 match is enough']},
+  list:['If <b>2 or more</b> of your sides equal the sides they touch, those cards flip',
+    'They can be <b>different numbers</b>: 8 = 8 and 6 = 6 counts',
+    'Equal is enough here. Only 1 match does nothing']},
  {tab:'Plus',tag:'Rule · Plus',title:'Two equal totals flip both',tut:2,
   ex:[{...EX_PLUS,label:'Bog Newt: top 2, left 1',card:2,waves:[{pairs:[['1,1',0,'2 + 3 = 5',1],['1,1',3,'1 + 4 = 5',1]],cap:'5 and 5: Plus!'}]},
       {...EX_PLUS,label:'Candlewisp: top 1, left 4',card:6,waves:[{pairs:[['1,1',0,'1 + 3 = 4',0],['1,1',3,'4 + 4 = 8',0]],cap:'4 and 8: nothing',bad:1}]}],
-  list:['For each side your card touches, add the two numbers: <b>yours + theirs</b>','If <b>2 or more</b> totals are the <b>same</b>, all those enemy cards flip',
-    'The pairs can use <b>different numbers</b>: 2 + 3 and 1 + 4 both make 5','Low numbers work too: a 1 can flip a 4 this way','Different totals? Nothing happens']},
+  list:['Add each touching pair: <b>your side + theirs</b>',
+    'If <b>2 or more</b> totals are the <b>same</b>, those cards flip',
+    'Any numbers work: 2 + 3 and 1 + 4 both make 5. Even low cards win this way']},
  {tab:'Combo',tag:'Rule · Combo',title:'Flips that keep going',tut:3,
   ex:[{label:'Same or Plus starts it',rows:2,cols:3,cards:{'0,0':[0,'red'],'0,1':[35,'red'],'0,2':[11,'red'],'1,0':[9,'red']},at:'1,1',card:45,waves:[
       {pairs:[['1,1',0,'8 = 8',1],['1,1',3,'6 = 6',1]],cap:'Same!'},
       {pairs:[['0,1',1,'4 › 3',1],['1,0',0,'3 › 2',1]],cap:'Combo: 4 cards!'}]}],
-  list:['Works with <b>Same</b> or <b>Plus</b> on','A card flipped by Same or Plus attacks its own neighbours','Normal rule: the <b>higher</b> side flips them','Those can flip more, and on and on']},
- {tab:'More',tag:'Other rules',title:'The rest, in a line each',more:true,
-  list:['<b>Open</b>Both hands are face up, so you can plan around their cards.',
-    '<b>Elemental</b>Some squares have an element. A card of that element gets +1 on every side. Any other card gets −1.',
-    '<b>Sudden death</b>A draw restarts the match. Each player keeps the cards they owned at the end.',
+  list:['A card flipped by <b>Same</b> or <b>Plus</b> attacks its own neighbours',
+    'If its side is <b>higher</b>, they flip too, and so on']},
+ {tab:'Tips',tag:'Tips',title:'How to win more',more:true,
+  list:['<b>Hide weak sides</b>Corners show only 2 sides, so a weak card is safe there.',
+    '<b>Point strong sides out</b>Face your big numbers at the empty squares, where the next card will land.',
+    '<b>Save one</b>Keep a strong card for the last turn.',
+    '<b>Drag or tap</b>Tap a card, then a square. Or drag it there.']},
+ {tab:'Hands',tag:'Other rules',title:'Your cards',more:true,
+  list:['<b>Your 5</b>Up to one 5★ card, and up to two of 4★ or more.',
+    '<b>Open</b>Both hands are face up, so you can plan around their cards.',
     '<b>Random</b>Your 5 cards are dealt from your collection.',
-    '<b>Chaos</b>Each turn the game picks which card you must play. You only pick the square.',
-    '<b>Turn timer</b>Run out of time and a random card is played for you.',
-    '<b>Series</b>Best of 3 or 5 with the same cards. Who goes first swaps each match. A draw counts for nobody.',
-    '<b>Trade</b>The winner takes cards. <b>One</b>: 1 they pick. <b>Diff</b>: the score gap, from cards they flipped. <b>All</b>: all 5. <b>Sweep</b>: all 5, only if they own the whole board.']}
+    '<b>Chaos</b>Each turn the game picks which card you must play. You only pick the square.']},
+ {tab:'Board',tag:'Other rules',title:'The board',more:true,
+  list:['<b>Elemental</b>Some squares have an element. A card of that element gets +1 on every side. Any other card gets −1.',
+    '<b>Same wall</b>With Same on, the board edge counts as X. An X facing the edge plus 1 match is enough.']},
+ {tab:'Match',tag:'Other rules',title:'The match',more:true,
+  list:['<b>Turn timer</b>Run out of time and a random card is played for you.',
+    '<b>Sudden death</b>A draw restarts the match. Each player keeps the cards they owned at the end.',
+    '<b>Series</b>Best of 3 or 5 with the same cards. Who goes first swaps each match. A draw counts for nobody.']},
+ {tab:'Trade',tag:'Other rules',title:'Win cards, lose cards',more:true,
+  list:['<b>None</b>A friendly match. No cards change hands.','<b>One</b>The winner takes 1 card they pick.',
+    '<b>Diff</b>The winner takes the score gap (up to 5), from cards they flipped.','<b>All</b>The winner takes all 5.',
+    '<b>Sweep</b>All 5, but only by owning the whole board.']}
 ];
 let HI=0,hStop=null,howReturn=null;
 function renderHow(){
@@ -98,20 +124,18 @@ function renderHow(){
   $('#hTabs').innerHTML=HOW.map((x,i)=>`<button role="tab" id="htab${i}" aria-selected="${i===HI}" aria-controls="hPanel" data-i="${i}">${x.tab}</button>`).join('');
   $('#hPanel').setAttribute('aria-labelledby','htab'+HI);
   if(hStop){hStop();hStop=null}
-  // a tab without an example (More) gives its text the whole panel
+  // a tab without an example (Tips and the other rules) gives its text the whole panel
   const st=$('#hStage');st.innerHTML='';st.style.display=h.ex?'':'none';
   if(h.ex)hStop=exDemo(st,h.ex,matchMedia('(prefers-reduced-motion: reduce)').matches);
   $('#hTag').textContent=h.tag;$('#hTitle').textContent=h.title;
   $('#hList').innerHTML=h.list.map(l=>`<li>${l}</li>`).join('');$('#hList').classList.toggle('more',!!h.more);
-  $('#hExtra').innerHTML=h.extra||'';
   // plays the lesson on the real board; not from inside a match, which it would end
   const tr=$('#hTry');tr.hidden=h.tut==null||$('#scr-game').classList.contains('on');
   tr.textContent='▶ '+(h.try||`Try ${h.tab} yourself`);
   $('#hDots').innerHTML=HOW.map((_,i)=>`<i class="${i===HI?'on':''}"></i>`).join('');
   $('#hNext').textContent=HI===HOW.length-1?'Got it':'Next';
   $('#hBack').disabled=HI===0;
-  const t=$('#hTabs'),o=t.children[HI];t.scrollLeft=o.offsetLeft-(t.clientWidth-o.offsetWidth)/2;
-  $('.htext').scrollTop=0;
+  textFit();
 }
 function goHow(i,focusTab){HI=Math.max(0,Math.min(HOW.length-1,i));renderHow();if(focusTab)$('#hTabs [aria-selected="true"]').focus()}
 function openHow(i=0){
