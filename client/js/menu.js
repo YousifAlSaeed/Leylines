@@ -21,6 +21,8 @@ function renderMenu(){
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();renderPackTile();renderFriendTile();renderLbTile();
+  // a CPU match the app closed on, or news about an online match you left (spare.js)
+  if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
 }
 const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',

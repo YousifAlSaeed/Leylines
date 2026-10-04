@@ -92,3 +92,17 @@ CREATE INDEX IF NOT EXISTS leaderboard_xp ON leaderboard (xp);
 CREATE INDEX IF NOT EXISTS leaderboard_wins ON leaderboard (wins);
 CREATE INDEX IF NOT EXISTS leaderboard_best ON leaderboard (best);
 CREATE INDEX IF NOT EXISTS leaderboard_cards ON leaderboard (cards);
+
+-- Online matches someone left (client/js/spare.js). The player who stayed took
+-- some of the leaver's cards or spared them; the row waits here until the
+-- leaver's game picks it up (and deletes it). Their game only applies it to a
+-- match it remembers leaving, so a row can't take cards from anyone else.
+CREATE TABLE IF NOT EXISTS forfeits (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  to_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  match_key  TEXT    NOT NULL,
+  from_name  TEXT    NOT NULL,
+  cards      TEXT    NOT NULL,
+  created_at TEXT    NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS forfeits_match ON forfeits (to_id, match_key);

@@ -31,6 +31,8 @@ export function publicProfile(save) {
     streak: nat(s.streak), best: nat(s.best),
     // online matches only
     ostreak: nat(s.ostreak), obest: nat(s.obest),
+    // players they spared instead of taking cards
+    spares: nat(s.spares),
     beat: Number.isInteger(s.beat) && s.beat >= 0 && s.beat <= 2 ? s.beat : -1,
     recent: results(s.recent), orecent: results(s.orecent),
     badges: Object.fromEntries(Object.entries(s.badges && typeof s.badges === 'object' ? s.badges : {})

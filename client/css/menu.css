@@ -165,3 +165,4 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .alpha-pill{display:none}
   .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }
+.note.warn b{color:var(--warn)}

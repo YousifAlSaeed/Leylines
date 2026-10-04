@@ -145,3 +145,4 @@
 .pf-dev .seg{flex:none}
 .pf-dev .seg button{min-height:34px;padding:4px 12px;font-size:13px}
 .authf label b{color:var(--text);letter-spacing:.04em}
+.pf-cpu+.pf-cpu{margin-top:8px;padding-top:0;border-top:0}
