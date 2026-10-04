@@ -41,7 +41,12 @@ function renderHands(){
   }
   // in same-screen mode the active player is shown at the bottom side's highlight
 }
-function setScores(sc){$('#scBot').textContent=sc[G.bottom];$('#scTop').textContent=sc[1-G.bottom]}
+function setScores(sc){
+  // a score that changed pops (CSS), so a flip is easy to notice
+  const put=(el,v)=>{v=String(v);if(el.textContent===v)return;const was=el.textContent;el.textContent=v;
+    if(was){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}};
+  put($('#scBot'),sc[G.bottom]);put($('#scTop'),sc[1-G.bottom]);
+}
 function renderHud(){
   const st=G.st,bot=G.bottom;
   const lab=p=>esc(G.names[p])+(G.mode==='online'?`<small class="tag">${p===0?'HOST':'GUEST'}</small>`:'');
@@ -153,7 +158,9 @@ function layout(){
   }else{
     const avail=H-52-10-22-24; // hud + timer bar + rulebar + padding
     cell=Math.min(avail/3.7,(W-80-2*180)/3.25,200);
-    hc=Math.min(cell*.9,(avail-52)/3.52); // player strip + stacked hand
+    // each column fits beside the board: the name row with its big score (84 + a 6px gap + spare), then the
+    // stacked hand: 3.52 card widths tall, plus .32 for the room the stack opens up around a picked card
+    hc=Math.min(cell*.9,(Math.min(avail,cell*3.6+26)-96)/3.84);
   }
   cell=Math.max(48,Math.floor(cell));hc=Math.max(40,Math.floor(hc));
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
