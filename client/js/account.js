@@ -119,7 +119,7 @@ function acctSignedOut(msg){
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
   // the name belonged to the account: don't leave it behind for the next one to pick up
   if(SAVE.name){SAVE.name='';save()}
-  acctStore();renderProfile();renderProfilePage();frReset();lbAcct();
+  acctStore();renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
   if(msg)toast(msg,3500);
 }
 function acctSignOut(){

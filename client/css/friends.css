@@ -53,3 +53,16 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 /* the menu tile's request count */
 #friendDot{position:absolute;top:12px;right:12px}
 #friendDot[hidden]{display:none}
+
+/* friends on the main menu, and game invites (pulse.js) */
+.fr-on{color:var(--accent-ink);font-weight:600}
+.fr-on::before{content:"";display:inline-block;width:7px;height:7px;margin:0 5px 1px 0;border-radius:50%;background:currentColor;vertical-align:middle}
+.room-inv:empty{display:none}
+.room-inv{margin-top:14px}
+.room-inv h4{margin:0 0 8px;font:600 13px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.room-inv .note{margin:0}
+.room-inv .btn{min-height:30px;padding:4px 12px;font-size:12.5px;border-radius:10px}
+/* an invite slides down from the top, so it never covers a friend request at the bottom */
+.fr-pop.inv-pop{top:calc(16px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,calc(-100% - 40px))}
+.fr-pop.inv-pop.on{transform:translate(-50%,0)}
+.fr-inv-tip{margin-top:10px}

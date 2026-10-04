@@ -7,6 +7,7 @@ function show(id){
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   keepAwake(id==='game');closeEmotes();
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
+  pulseSoon(); // friends see whether you're on the menu (pulse.js)
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }
 // the last deck is only "ready" if every card in it is still owned

@@ -13,6 +13,7 @@ export async function createSession(db, userId) {
 }
 
 export async function deleteSession(db, token) {
+  known.delete(sha256(token));
   await db.run('DELETE FROM sessions WHERE token_hash = $h', { $h: sha256(token) });
 }
 
@@ -45,6 +46,7 @@ export function requireAuth(db) {
 
 // signs out every other device (after a password change)
 export async function deleteOtherSessions(db, userId, keepToken) {
+  forgetUser(userId);
   await db.run('DELETE FROM sessions WHERE user_id = $u AND token_hash <> $h', { $u: userId, $h: sha256(keepToken) });
 }
 
@@ -52,4 +54,25 @@ export async function deleteOtherSessions(db, userId, keepToken) {
 export function optionalAuth(db) {
   const auth = requireAuth(db);
   return (req, res, next) => (bearer(req) ? auth(req, res, next) : next());
+}
+
+// For the check the game makes every few seconds (routes/pulse.js): a token that
+// was fine a moment ago is trusted for a minute without asking the database.
+// Signing out, a password change and deleting the account forget it at once.
+const known = new Map(); // token hash → { user, until }
+const KNOWN_MS = 60 * 1000;
+export function forgetUser(userId) {
+  for (const [h, k] of known) if (k.user.id === userId) known.delete(h);
+}
+export function cachedAuth(db) {
+  const auth = requireAuth(db);
+  return (req, res, next) => {
+    const token = bearer(req), k = token && known.get(sha256(token));
+    if (k && k.until > Date.now()) { req.user = k.user; req.token = token; return next(); }
+    auth(req, res, () => {
+      if (known.size > 5000) known.clear();
+      known.set(sha256(token), { user: req.user, until: Date.now() + KNOWN_MS });
+      next();
+    });
+  };
 }

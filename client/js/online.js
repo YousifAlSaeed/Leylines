@@ -107,6 +107,7 @@ function hostPeer(code,onFirstErr,tries=0){
   peer.on('open',()=>{
     if(NET.peer!==peer)return;
     NET.code=code;NET.roomMsg='';roomOpen()&&renderRoom();
+    invFlush(); // friends you invited before the room had its code (pulse.js)
   });
   peer.on('connection',c=>{if(NET.peer===peer&&!NET.closing)onGuest(c)});
   peer.on('error',err=>{
@@ -155,6 +156,7 @@ function seat(c,meta){
     const back=!!meta.cid&&meta.cid===NET.gcid,lost=liveMatch(),ended=!!meta.sid&&meta.sid===NET.ended;
     newSession();NET.gcid=typeof meta.cid==='string'?meta.cid.slice(0,20):'';
     frLoad(); // a player just sat down: their Add friend button should show the real state
+    invCancel(); // and the other invites still out are taken down (pulse.js)
     rawSend({t:'hello',sid:NET.sid,ended});
     toast(lost?`${NET.oppName} is back, but your match couldn't be picked up again`:back?`${NET.oppName} reconnected`:`${NET.oppName} joined your game`,lost?4000:2200);
     sfx('banner');
@@ -270,6 +272,7 @@ function dropLink(){
 }
 function netClose(silent){
   NET.closing=true;
+  if(INV.code||INV.sent.size)invCancel();
   try{if(NET.conn&&NET.conn.open)NET.conn.send({t:'bye'})}catch(e){}
   dropLink();clearTimeout(NET.retryT);
   NET.meNext=NET.oppNext=0;NET.pendingDeck=null;

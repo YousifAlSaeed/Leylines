@@ -58,6 +58,7 @@ function oweNews(){
     [{label:'OK',cls:'primary',esc:true}]);
   renderMenu();
 }
+// the server also says when one comes in (pulse.js); this is in case that check misses it
 setInterval(owesCheck,45000);
 
 // your choice, kept by the server in case they've closed the game (it also reaches them directly when they're still here)
