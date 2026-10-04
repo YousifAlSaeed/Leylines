@@ -91,6 +91,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .m-right{display:flex;flex-direction:column;gap:14px;min-width:0}
 .brand{display:flex;align-items:center;gap:18px;margin:4px 0 2px}
 .brand .emblem{display:block;height:84px;width:84px;flex:none}
+/* version tag to the right of the title */
+.title-row{display:flex;align-items:center;gap:10px}
+.ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap}
 .title{margin:0;line-height:0;color:var(--text)}
 .title .logo-word{display:block;height:25px;width:auto}
 .title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
