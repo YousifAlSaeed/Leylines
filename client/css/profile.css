@@ -42,6 +42,7 @@
 .pf-hint{margin:10px 0 0;color:var(--muted);font-size:12.5px;text-align:center}
 .pf-hint.left{text-align:left;margin:0 0 12px}
 .pf-two{display:flex;gap:8px}.pf-two .btn{flex:1}
+.pf-gift{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 
 /* record */
 .pf-rec{display:flex;flex-wrap:wrap;gap:18px;align-items:center}

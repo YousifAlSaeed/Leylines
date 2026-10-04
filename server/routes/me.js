@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { rateLimit } from '../lib/rateLimit.js';
-import { deleteOtherSessions, requireAuth } from '../lib/sessions.js';
+import { deleteOtherSessions, forgetUser, requireAuth } from '../lib/sessions.js';
 import { checkEmail, checkPassword, checkSave, cleanName, privateUser } from '../lib/users.js';
 import { emailHash, sealEmail } from '../lib/emailCrypto.js';
 import { syncBoard } from '../lib/board.js';
@@ -58,6 +58,7 @@ export function meRouter(db) {
     const { password } = req.body ?? {};
     if (typeof password !== 'string' || !await verifyPassword(password, req.user.password_hash)) return wrongPassword(res);
     await db.run('DELETE FROM users WHERE id = $u', { $u: req.user.id });
+    forgetUser(req.user.id);
     res.status(204).end();
   });
 

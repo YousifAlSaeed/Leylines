@@ -65,6 +65,8 @@ function closeModal(){
   const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
   modalReturn=null;
+  // news about a match you left waits for the popup in front of it to close (spare.js)
+  if(OWES.news.length)setTimeout(oweNews,300);
 }
 
 function banner(text,cls=''){

@@ -16,6 +16,8 @@ function defSave(){
     history:[],hideHist:false,
     // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, 5★ guarantee points (data.js)
     packs:[],packLv:1,daily:null,pity:0,
+    // ids of the packs a developer gave you that were added already (packs.js)
+    gifts:[],
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
     // a match vs Computer the app closed on (match.js), online matches you may still lose cards from,
@@ -35,6 +37,7 @@ function fixProfile(p,s){
   for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards'])p[k]=Math.max(0,+p[k]|0);
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
+  p.gifts=(Array.isArray(p.gifts)?p.gifts:[]).filter(Number.isInteger).slice(-100);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
   p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
   p.live=ob(p.live)?p.live:null;

@@ -8,7 +8,7 @@ import { publicProfile, publicUser } from '../lib/users.js';
 export const MAX_FRIENDS = 200;
 export const MAX_SENT = 50; // requests waiting for an answer
 
-export function friendsRouter(db) {
+export function friendsRouter(db, hub) {
   const r = Router();
   r.use(requireAuth(db));
   const limit = rateLimit({ windowMs: 60 * 60 * 1000, max: 100, message: 'Too many friend requests. Try again later.' });
@@ -22,6 +22,8 @@ export function friendsRouter(db) {
     const p = publicProfile(save);
     return { ...publicUser(row), xp: p.xp, avatar: p.avatar, since: row.since };
   };
+  // both players' games reload their lists on their next check (pulse.js)
+  const changed = (...ids) => ids.forEach((id) => hub?.bump(id, 'fr'));
   const list = async (sql, me) => (await db.all(sql, { $me: me })).map(card);
 
   // → { friends, incoming, outgoing }
@@ -57,6 +59,7 @@ export function friendsRouter(db) {
       if (await full(them.id)) return res.status(400).json({ error: 'Their friend list is full.' });
       await db.run('INSERT INTO friends (user_id, friend_id) VALUES ($me, $t), ($t, $me) ON CONFLICT DO NOTHING', { $me: me, $t: them.id });
       await db.run(`DELETE FROM friend_requests WHERE (from_id = $me AND to_id = $t) OR (from_id = $t AND to_id = $me)`, { $me: me, $t: them.id });
+      changed(me, them.id);
       return res.json({ status: 'friends' });
     }
     if (await db.get('SELECT 1 AS x FROM friend_requests WHERE from_id = $me AND to_id = $t', { $me: me, $t: them.id }))
@@ -65,6 +68,7 @@ export function friendsRouter(db) {
     if (await count('SELECT COUNT(*) AS n FROM friend_requests WHERE from_id = $me') >= MAX_SENT)
       return res.status(400).json({ error: 'You have too many requests waiting for an answer. Cancel some first.' });
     await db.run('INSERT INTO friend_requests (from_id, to_id) VALUES ($me, $t) ON CONFLICT DO NOTHING', { $me: me, $t: them.id });
+    changed(me, them.id);
     res.status(201).json({ status: 'sent' });
   });
 
@@ -73,6 +77,7 @@ export function friendsRouter(db) {
     const them = await findUser(req.params.username);
     if (!them) return noSuchPlayer(res, req.params.username);
     await db.run(`DELETE FROM friend_requests WHERE (from_id = $me AND to_id = $t) OR (from_id = $t AND to_id = $me)`, { $me: req.user.id, $t: them.id });
+    changed(req.user.id, them.id);
     res.status(204).end();
   });
 
@@ -81,6 +86,7 @@ export function friendsRouter(db) {
     const them = await findUser(req.params.username);
     if (!them) return noSuchPlayer(res, req.params.username);
     await db.run(`DELETE FROM friends WHERE (user_id = $me AND friend_id = $t) OR (user_id = $t AND friend_id = $me)`, { $me: req.user.id, $t: them.id });
+    changed(req.user.id, them.id);
     res.status(204).end();
   });
 

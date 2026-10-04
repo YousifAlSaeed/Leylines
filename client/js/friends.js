@@ -7,7 +7,7 @@
    someone's profile. Every one of those buttons repaints when the list changes.
    ===================================================================== */
 const FR={friends:[],incoming:[],outgoing:[],loaded:false,loading:null,again:false};
-const FR_POLL=30000; // how often an open game checks for new requests and removals
+const FR_POLL=120000; // the server says when the list changes (pulse.js); this catches anything that check missed
 const frKey=n=>String(n||'').toLowerCase();
 const frIn=(list,name)=>list.some(u=>frKey(u.username)===frKey(name));
 // 'friends' | 'incoming' (they asked you) | 'sent' (you asked them) | ''
@@ -27,7 +27,7 @@ function frLoad(){
 // signing out: nothing about the old account stays on screen
 function frReset(){Object.assign(FR,{friends:[],incoming:[],outgoing:[],loaded:false});frChanged()}
 function frChanged(){renderFriendTile();renderFriends();frPaint();frNotify()}
-// keep the list current while the game is open and in front: new requests, and friends who removed you
+// keep the list current while the game is open and in front: levels and avatars, and anything the pulse missed
 setInterval(()=>{if(ACCT.token&&ACCT.up&&document.visibilityState==='visible')frLoad()},FR_POLL);
 
 /* ---------- the button that goes next to a name ---------- */
@@ -145,8 +145,9 @@ function renderFriendTile(){
   // no server to keep friends on (a copy opened from a file): leave the tile out
   t.hidden=API==null;
   const n=FR.friends.length,k=FR.incoming.length,dot=$('#friendDot');
+  const on=ACCT.token?FR.friends.filter(u=>frFree(u.username)).length:0;
   $('#friendSub').textContent=!ACCT.token?'Sign in to add friends':!FR.loaded?'Your friend list'
-    :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:'');
+    :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:on?` · ${on} online`:'');
   dot.hidden=!(ACCT.token&&k);dot.textContent=k;
   t.setAttribute('aria-label','Friends'+(ACCT.token&&k?`, ${plural(k,'new request')}`:''));
 }
@@ -163,7 +164,7 @@ function frAvatar(u){
   return a&&CARDS[a.c]?`<span class="pc-av art" style="--ring:${RINGS[a.r]||RINGS[0]}" aria-hidden="true">${CARDS[a.c].art}</span>`
     :`<span class="pc-av on" aria-hidden="true">${initialOf(u.displayName)}</span>`;
 }
-const frMeta=u=>{const lv=levelOf(u.xp||0);return `@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
+const frMeta=u=>{const lv=levelOf(u.xp||0);return (frFree(u.username)?'<span class="fr-on">Online</span> · ':'')+`@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
 function renderFriends(){
   const el=$('#frBody');if(!el||!$('#scr-friends').classList.contains('on'))return;
   if(!ACCT.token){
@@ -190,10 +191,15 @@ function renderFriends(){
   const list=!FR.loaded?'<p class="pf-wait"><span class="spin"></span>Loading friends…</p>'
     :FR.friends.length?`<div class="fr-list">${FR.friends.map(u=>`<button class="fr-row" data-open="${esc(u.username)}" aria-label="${esc(u.displayName)}, open profile">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${frMeta(u)}</small></span>${chev}</button>`).join('')}</div>`
     :'<p class="pf-hint left">No friends yet. Add someone by username, or add the player you just faced online.</p>';
+  // friends who are online and not in a match can be invited to one (pulse.js)
+  const onMenu=FR.friends.filter(u=>frFree(u.username));
+  const live=onMenu.length?`<section class="pf-card"><h3>Online now <em>${onMenu.length}</em></h3><div class="fr-list">${onMenu.map(u=>row(u,
+    `<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)} to a match">Invite</button>`)).join('')}</div>
+    <p class="pf-hint left fr-tip fr-inv-tip">Inviting opens a room. They get a pop-up to join it.</p></section>`:'';
   const friends=`<section class="pf-card"><h3>Your friends ${FR.loaded?`<em>${FR.friends.length}</em>`:''}</h3>${list}</section>`;
   const sent=FR.outgoing.length?`<section class="pf-card"><h3>Sent requests <em>${FR.outgoing.length}</em></h3><div class="fr-list">${FR.outgoing.map(u=>row(u,
     `<button class="btn small" data-can="${esc(u.username)}" aria-label="Cancel request to ${esc(u.displayName)}">Cancel</button>`)).join('')}</div></section>`:'';
-  el.innerHTML=add+reqs+friends+sent;
+  el.innerHTML=add+reqs+live+friends+sent;
 
   const f=$('#frAddF'),inp=$('#frName'),err=$('#frErr');
   inp.value=typed;if(focused)inp.focus();

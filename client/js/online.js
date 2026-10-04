@@ -4,9 +4,10 @@
    ===================================================================== */
 // waiting room: room = the host's settings as the guest last heard them, rv = their version (bumped on every change, so a
 // Ready for older rules doesn't count), roomCfg = what the host last sent, meReady/oppReady, oppIn = the other player is in the room
+// want = the code a new room asks for (NET.code once it has it)
 // coming back: sid = this pairing's id (the host makes it), gcid = the guest's device (host only), out = the game messages we sent,
 // got = how many of theirs we've handled, away = the other side dropped and we're holding the match for them
-const NET={peer:null,conn:null,role:null,code:null,meNext:0,oppNext:0,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0,joinAt:0,
+const NET={peer:null,conn:null,role:null,code:null,want:'',meNext:0,oppNext:0,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0,joinAt:0,
   room:null,rv:0,roomCfg:'',roomMsg:'',meReady:false,oppReady:false,oppIn:false,
   sid:null,gcid:'',out:[],got:0,away:false,waiting:false,awayMsg:'',retryT:0,ended:null,
   // awayAt = when they dropped (the minute they get starts then), resolving = settling a match they left (spare.js), longAway = this page was hidden over a minute
@@ -21,12 +22,14 @@ const peerId=code=>'ninefold-tt-'+code.toLowerCase();
 const newCode=()=>Array.from({length:5},()=>CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)]).join('');
 // a match (or its trade, or the rest of a series) is still going, so a dropped player can come back to it
 const liveMatch=()=>!!(G&&G.mode==='online'&&!G.done);
+let peerJsLoad=null;
 function loadPeerJS(){
   if(window.Peer)return Promise.resolve();
+  if(peerJsLoad)return peerJsLoad;
   const urls=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
-  return urls.reduce((p,u)=>p.catch(()=>new Promise((res,rej)=>{
+  return peerJsLoad=urls.reduce((p,u)=>p.catch(()=>new Promise((res,rej)=>{
     const s=document.createElement('script');s.src=u;s.onload=()=>window.Peer?res():rej();s.onerror=()=>{s.remove();rej()};document.head.append(s);
-  })),Promise.reject()).catch(()=>{throw new Error('Could not load the networking library. Check your connection.')});
+  })),Promise.reject()).catch(()=>{peerJsLoad=null;throw new Error('Could not load the networking library. Check your connection.')});
 }
 const cleanName=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
 // your name: the account's display name when signed in, otherwise the name typed on this device
@@ -91,12 +94,14 @@ $('#btnShare').onclick=()=>{
 async function hostStart(){
   clearRejoin();
   netClose(true);NET.closing=false;NET.role='host';NET.code=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';
+  NET.want=newCode(); // picked now, so invites can go out before the connection is made (pulse.js)
   openRoom();
   try{await loadPeerJS()}catch(e){if(!NET.closing){NET.roomMsg=esc(e.message);renderRoom()}return}
   if(NET.closing||NET.role!=='host')return; // left the room while the library loaded
   let tries=0;
-  const attempt=()=>hostPeer(newCode(),err=>{
-    if(err.type==='unavailable-id'&&tries++<4){try{NET.peer.destroy()}catch(e){}attempt();return}
+  const attempt=()=>hostPeer(NET.want,err=>{
+    // that code is taken: pick another, and send the invites again with it
+    if(err.type==='unavailable-id'&&tries++<4){try{NET.peer.destroy()}catch(e){}NET.want=newCode();invFlush(true);attempt();return}
     NET.roomMsg='Connection error: '+esc(err.type||err.message);roomOpen()&&renderRoom();
   });
   attempt();
@@ -107,6 +112,7 @@ function hostPeer(code,onFirstErr,tries=0){
   peer.on('open',()=>{
     if(NET.peer!==peer)return;
     NET.code=code;NET.roomMsg='';roomOpen()&&renderRoom();
+    invFlush(); // friends you invited before the room had its code (pulse.js)
   });
   peer.on('connection',c=>{if(NET.peer===peer&&!NET.closing)onGuest(c)});
   peer.on('error',err=>{
@@ -155,6 +161,7 @@ function seat(c,meta){
     const back=!!meta.cid&&meta.cid===NET.gcid,lost=liveMatch(),ended=!!meta.sid&&meta.sid===NET.ended;
     newSession();NET.gcid=typeof meta.cid==='string'?meta.cid.slice(0,20):'';
     frLoad(); // a player just sat down: their Add friend button should show the real state
+    invCancel(); // and the other invites still out are taken down (pulse.js)
     rawSend({t:'hello',sid:NET.sid,ended});
     toast(lost?`${NET.oppName} is back, but your match couldn't be picked up again`:back?`${NET.oppName} reconnected`:`${NET.oppName} joined your game`,lost?4000:2200);
     sfx('banner');
@@ -169,7 +176,8 @@ function seat(c,meta){
 function newSession(){NET.sid=Math.random().toString(36).slice(2,12);NET.out=[];NET.got=0;NET.away=NET.waiting=false}
 
 /* ---------- joining ---------- */
-async function joinGame(code){
+// patient: tries again this many times if the room isn't open yet (an invite can arrive a moment before its room does)
+async function joinGame(code,{patient=0}={}){
   code=(code||'').toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){onStatus('Enter the 5-letter code from your friend.',true);return}
   // a join that got stuck (the phone went to another app halfway) doesn't block a new one
@@ -181,7 +189,13 @@ async function joinGame(code){
   setJoining(true);
   const fail=(msg,gone)=>{if(NET.code!==code||NET.sid)return;if(gone)clearRejoin();netClose(true);onPanels('choose');onStatus(msg,true)};
   NET.joinT=setTimeout(()=>fail('Couldn\'t reach game '+code+'. Check the code and try again.'),20000);
-  guestPeer(err=>fail(err.type==='peer-unavailable'?'No game found with code '+code+'.':'Connection error: '+(err.type||err.message),err.type==='peer-unavailable'));
+  const onErr=err=>{
+    if(err.type==='peer-unavailable'&&patient-->0){
+      setTimeout(()=>{if(NET.code===code&&!NET.sid&&!NET.closing){dropLink();guestPeer(onErr)}},1500);return;
+    }
+    fail(err.type==='peer-unavailable'?'No game found with code '+code+'.':'Connection error: '+(err.type||err.message),err.type==='peer-unavailable');
+  };
+  guestPeer(onErr);
 }
 // the guest's line to the host. sid and got tell the host which match we're coming back to, and how much of it we heard.
 function guestPeer(onErr){
@@ -270,6 +284,7 @@ function dropLink(){
 }
 function netClose(silent){
   NET.closing=true;
+  if(INV.code||INV.sent.size)invCancel();
   try{if(NET.conn&&NET.conn.open)NET.conn.send({t:'bye'})}catch(e){}
   dropLink();clearTimeout(NET.retryT);
   NET.meNext=NET.oppNext=0;NET.pendingDeck=null;

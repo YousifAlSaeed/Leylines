@@ -10,7 +10,7 @@ import { cleanName } from '../lib/users.js';
 export const KEEP_DAYS = 3;   // a leaver who doesn't come back by then never sees it
 export const MAX_WAITING = 20; // per player
 
-export function forfeitsRouter(db) {
+export function forfeitsRouter(db, hub) {
   const r = Router();
   const limit = rateLimit({ windowMs: 60 * 60 * 1000, max: 30, message: 'Too many requests. Try again later.' });
 
@@ -35,6 +35,7 @@ export function forfeitsRouter(db) {
          (SELECT id FROM forfeits WHERE to_id = $to ORDER BY id DESC LIMIT ${MAX_WAITING})`,
       { $to: u.id },
     );
+    hub?.bump(u.id, 'fo'); // their game hears about it on its next check (pulse.js)
     res.status(204).end();
   });
 

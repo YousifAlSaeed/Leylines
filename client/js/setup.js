@@ -102,6 +102,8 @@ function renderRoom(){
   const guestRow=on?row('g',host?NET.oppAv:myAv(),host?NET.oppName:myName(),!host,false,ready?'✓ Ready':host&&!NET.oppIn?'Still on results':'Not ready',ready)
     :'<li class="empty"><span class="av">?</span><b>Waiting for a friend…</b><span class="spin"></span></li>';
   $('#roomPlayers').innerHTML=hostRow+guestRow;
+  // while the seat is empty, the host can invite friends who are on the main menu (pulse.js)
+  $('#roomInv').innerHTML=host&&!on?roomInvHTML():'';
   const go=$('#setupGo');
   if(host){
     go.textContent='Start match';go.disabled=!(on&&NET.oppReady);
