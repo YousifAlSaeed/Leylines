@@ -51,6 +51,11 @@ services:
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
         sync: false
+      # push alerts (invites, friend requests): a key pair from `npx web-push generate-vapid-keys`; the same pair on both services
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
 
   - type: web
     name: Leylines-dev
@@ -83,4 +88,9 @@ services:
         value: https://leylines.onrender.com
       # usernames that get the in-game developer tools, comma-separated (e.g. "dragonrot")
       - key: DEV_USERS
+        sync: false
+      # push alerts (invites, friend requests): a key pair from `npx web-push generate-vapid-keys`; the same pair on both services
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
         sync: false

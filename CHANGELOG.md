@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.13.0 (2026-10-04)
+- **Alerts.** Turn them on in Settings to hear about invites, friend requests and matches you left, even with the game closed. On iPhone and iPad, add Leylines to your home screen first
+- Friends with alerts on can be invited even when their game is closed. Invites now wait 2 minutes for an answer
+
 ## 0.12.2 (2026-10-04)
 - Small fixes
 

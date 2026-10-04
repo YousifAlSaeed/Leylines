@@ -9,12 +9,15 @@
    (it dropped, or the browser can't stream) it checks every few seconds.
    ===================================================================== */
 const PULSE_MS=5000,PULSE_SLOW=25000; // how often to check without the live line, and with it
-const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],soonT:0};
+const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],alerts:[],soonT:0};
 // hosting or joining an online game (NET.role stays set after netClose, so closing counts as out)
 const inOnline=()=>!!NET.role&&!NET.closing;
 // free to play: the game is in front, and you're not in a match or an online game. Friends can invite you.
 const isFree=()=>!document.hidden&&!G&&!inOnline()&&!$('#scr-online').classList.contains('on');
 const frFree=name=>PULSE.online.some(u=>frKey(u)===frKey(name));
+// not in the game, but they get alerts (alerts.js), so an invite still reaches them
+const frAlerted=name=>PULSE.alerts.some(u=>frKey(u)===frKey(name));
+const frReach=name=>frFree(name)||frAlerted(name);
 
 async function pulse(){
   if(!ACCT.token||!ACCT.user||!ACCT.up||API==null)return;
@@ -32,13 +35,16 @@ async function pulse(){
   if(!first&&(restart||r.fo!==PULSE.fo))owesCheck();
   if(!first&&(restart||r.gi!==PULSE.gi)){GIFTS.wait=true;giftsCheck()}
   Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi});
-  const online=Array.isArray(r.online)?r.online.filter(u=>typeof u==='string'):[];
-  if(online.join()!==PULSE.online.join()){
-    PULSE.online=online;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
+  if(first)alertsSync();
+  const names=l=>Array.isArray(l)?l.filter(u=>typeof u==='string'):[];
+  const online=names(r.online),alerts=names(r.alerts);
+  if(online.join()!==PULSE.online.join()||alerts.join()!==PULSE.alerts.join()){
+    PULSE.online=online;PULSE.alerts=alerts;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
     if(online.length)loadPeerJS().catch(()=>{}); // ready for a quick invite
   }
   for(const n of Array.isArray(r.declined)?r.declined:[])invDeclined(String(n));
-  invIn(Array.isArray(r.invites)?r.invites:[]);
+  const invites=Array.isArray(r.invites)?r.invites:[];
+  invIn(invites);alertsInviteGone(invites);
 }
 // right after something changed here (a new screen, back from another app)
 function pulseSoon(){clearTimeout(PULSE.soonT);PULSE.soonT=setTimeout(pulse,50)}
@@ -134,12 +140,12 @@ function invDeclined(name){
 function roomInvHTML(){
   if(!ACCT.token||!FR.friends.length)return '';
   const tag={sent:'<span class="fr-tag ok">Invited</span>'};
-  const list=FR.friends.filter(u=>frFree(u.username)||INV.sent.has(frKey(u.username)));
+  const list=FR.friends.filter(u=>frReach(u.username)||INV.sent.has(frKey(u.username)));
   // after a no, they can be asked again while they're online
-  const rows=list.map(u=>{const st=INV.sent.get(frKey(u.username)),no=st==='no',on=frFree(u.username);
-    return `<div class="fr-row">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${no?'Can\'t play right now':on?'<span class="fr-on">Online</span>':'Offline or playing'}</small></span>`+
-      (tag[st]||(on?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no?' again':''}">${no?'Ask again':'Invite'}</button>`:''))+'</div>'}).join('');
-  return `<h4>Invite a friend</h4>`+(rows?`<div class="fr-list">${rows}</div>`:'<p class="note">None of your friends are online right now. When one is, they show up here.</p>');
+  const rows=list.map(u=>{const st=INV.sent.get(frKey(u.username)),no=st==='no',on=frFree(u.username),al=!on&&frAlerted(u.username);
+    return `<div class="fr-row">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${no?'Can\'t play right now':on?'<span class="fr-on">Online</span>':al?'Offline · gets an alert':'Offline or playing'}</small></span>`+
+      (tag[st]||(on||al?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no?' again':''}">${no?'Ask again':'Invite'}</button>`:''))+'</div>'}).join('');
+  return `<h4>Invite a friend</h4>`+(rows?`<div class="fr-list">${rows}</div>`:'<p class="note">None of your friends are online right now. When one is, or has alerts on, they show up here.</p>');
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-inv]');if(!b)return;
@@ -178,6 +184,6 @@ function invShow(i){
     if(what==='join'){if(G)return;openOnline(i.code);joinGame(i.code,{patient:4})}
   };
   void p.offsetWidth;p.classList.add('on');sfx('banner');
-  clearTimeout(INV.t);INV.t=setTimeout(invHide,Math.max(5,Math.min(60,+i.left||60))*1000);
+  clearTimeout(INV.t);INV.t=setTimeout(invHide,Math.max(5,Math.min(120,+i.left||60))*1000);
 }
 function invHide(){clearTimeout(INV.t);INV.cur=null;const p=$('#invPop');if(p)p.classList.remove('on')}

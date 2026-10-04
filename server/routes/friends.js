@@ -60,6 +60,7 @@ export function friendsRouter(db, hub) {
       await db.run('INSERT INTO friends (user_id, friend_id) VALUES ($me, $t), ($t, $me) ON CONFLICT DO NOTHING', { $me: me, $t: them.id });
       await db.run(`DELETE FROM friend_requests WHERE (from_id = $me AND to_id = $t) OR (from_id = $t AND to_id = $me)`, { $me: me, $t: them.id });
       changed(me, them.id);
+      hub?.alert(them.id, { title: 'New friend', body: `${req.user.display_name} accepted your friend request.`, tag: 'friend', url: './?friends=1' });
       return res.json({ status: 'friends' });
     }
     if (await db.get('SELECT 1 AS x FROM friend_requests WHERE from_id = $me AND to_id = $t', { $me: me, $t: them.id }))
@@ -69,6 +70,7 @@ export function friendsRouter(db, hub) {
       return res.status(400).json({ error: 'You have too many requests waiting for an answer. Cancel some first.' });
     await db.run('INSERT INTO friend_requests (from_id, to_id) VALUES ($me, $t) ON CONFLICT DO NOTHING', { $me: me, $t: them.id });
     changed(me, them.id);
+    hub?.alert(them.id, { title: 'Friend request', body: `${req.user.display_name} wants to be friends.`, tag: 'friend', url: './?friends=1' });
     res.status(201).json({ status: 'sent' });
   });
 

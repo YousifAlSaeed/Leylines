@@ -8,10 +8,11 @@ import crypto from 'node:crypto';
 
 export const ONLINE_MS = 15 * 1000;  // a game without the live line that hasn't checked in for this long is gone
 export const MAX_LINES = 5;          // live lines per player (tabs, devices)
-export const INVITE_MS = 60 * 1000;  // how long an invite waits for an answer
+export const INVITE_MS = 2 * 60 * 1000; // how long an invite waits for an answer (time to pick up the phone after an alert)
 export const MAX_INVITES = 5;        // waiting for any one player
 
-export function createHub() {
+// push: lib/push.js (null when alerts are off)
+export function createHub(push = null) {
   const boot = crypto.randomBytes(6).toString('hex');
   const vers = new Map();     // user id → { fr, fo, gi }
   const seen = new Map();     // user id → { at, menu }
@@ -38,6 +39,11 @@ export function createHub() {
     boot,
     ver,
     notify,
+    hasLine,
+    // the game isn't open (no live line), but the player turned alerts on: they can still be reached
+    canAlert: (id) => !!push && push.has(id),
+    // a push alert, only when the game isn't open (an open game shows it itself)
+    alert(id, msg) { if (push && !hasLine(id)) push.notify(id, msg); },
     // a live line opened; the returned function closes it. → whether they stopped being free (their friends should hear)
     listen(id, send) {
       const set = lines.get(id) ?? new Set();

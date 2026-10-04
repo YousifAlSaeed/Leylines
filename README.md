@@ -205,7 +205,7 @@ All under `/api`, JSON in and out. Signed-in requests send `Authorization: Beare
 
 Sign-up and sign-in are limited to 20 attempts per 15 minutes per IP.
 
-Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails), `RESEND_API_KEY` (sends password reset emails; without it they are printed to the console locally), `MAIL_FROM` (default `Leylines <noreply@leylines.live>`), `APP_URL` (the site address put in emailed links).
+Server settings (environment variables): `PORT`, `HOST`, `DATABASE_URL` (Postgres connection string; when empty a local SQLite file at `DB_FILE` is used), `CORS_ORIGINS` (comma-separated, default `*`), `TRUST_PROXY` (set to `1` behind Render or another proxy), `SESSION_DAYS`, `EMAIL_KEY` (secret used to encrypt stored emails), `RESEND_API_KEY` (sends password reset emails; without it they are printed to the console locally), `MAIL_FROM` (default `Leylines <noreply@leylines.live>`), `APP_URL` (the site address put in emailed links), `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` (turn on push alerts; see below), `VAPID_SUBJECT` (default `mailto:noreply@leylines.live`).
 
 If the client is hosted somewhere other than the server (for example GitHub Pages), set `<meta name="leylines-api" content="https://your-server">` in `client/index.html`.
 
@@ -240,6 +240,15 @@ Accounts are stored in a free [Neon](https://neon.tech) Postgres database, becau
 3. In Render, on **each** service → **Environment**: add `RESEND_API_KEY` with that key, and `APP_URL` with that service's address (`https://leylines.live` for the live one, `https://leylines.onrender.com` for the dev one).
 
 Reset links work once, for 30 minutes; an account gets at most 3 a hour. Without `RESEND_API_KEY` no email is sent on Render.
+
+### Push alerts
+
+Players can turn on **Alerts** in Settings to hear about invites, friend requests and matches they left even with the game closed (on iPhone and iPad only in the home-screen app). The server needs a key pair for this. One-time setup:
+
+1. On your computer, in this folder, run `npx web-push generate-vapid-keys`. It prints a public key and a private key.
+2. In Render, on **each** service → **Environment**: add `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` with those two values. Use the same pair on both services.
+
+Keep the private key secret. If it's ever changed, every player has to turn alerts on again. Without the keys, the Alerts setting doesn't show.
 
 Without `DATABASE_URL` the server uses a SQLite file, which is fine locally but on Render loses accounts at every spin-down. The first visit after a spin-down takes about a minute.
 

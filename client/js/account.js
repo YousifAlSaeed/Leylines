@@ -116,6 +116,7 @@ function acctSignedIn(r){
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
+  alertsOff(ACCT.token); // this device's alerts belonged to the account (alerts.js)
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
   // the name belonged to the account: don't leave it behind for the next one to pick up
   if(SAVE.name){SAVE.name='';save()}
