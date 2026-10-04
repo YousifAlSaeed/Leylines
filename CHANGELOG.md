@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.6.2 (2026-10-04)
+- Same screen: pick only from cards this account has found (even lost ones), up to 5 copies of each
+
 ## 0.6.1 (2026-10-04)
 - NEW tag on cards you've never found when taking cards after a win
 

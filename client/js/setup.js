@@ -17,7 +17,7 @@ function openSetup(mode){
   $('#roomBox').classList.toggle('hidden',mode!=='room');
   $('#scr-setup').classList.toggle('ro',roomGuest());
   $('#setupGo').disabled=false;
-  $('#setupNote').innerHTML=mode==='local'?'Free play: each player picks any 5 cards from the full set. No cards are traded.':'';
+  $('#setupNote').innerHTML=mode==='local'?'Free play: each player picks 5 cards from every card this account has found, even ones you lost. The same card can be picked more than once. No cards are traded.':'';
   setupLast=null;renderSetup();show('setup');
 }
 function refocus(host,old){const a=document.activeElement;if(!a||a===document.body||!a.isConnected){const n=$(`${host} [data-k="${old.dataset.k}"]`);n&&n.focus()}}

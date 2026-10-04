@@ -19,11 +19,11 @@ function startAI(){
 }
 function startLocal(){
   G=baseMatch('local',{names:['Blue','Red']});
-  if(G.rules.random){G.decks=[randomDeck(fullPool()),randomDeck(fullPool())];startMatch();return}
-  openDeck({title:'Blue — choose 5',pool:fullPool(),color:'blue',onBack:()=>openSetup('local'),
+  if(G.rules.random){G.decks=[randomDeck(foundPool()),randomDeck(foundPool())];startMatch();return}
+  openDeck({title:'Blue — choose 5',pool:foundPool(),free:true,color:'blue',onBack:()=>openSetup('local'),
     onDone:ids=>{G.decks[0]=ids;
       modal('<h2>Pass the device</h2><p>Red, it\'s your turn to choose 5 cards.</p>',[{label:'Ready',cls:'primary',fn:()=>
-        openDeck({title:'Red — choose 5',pool:fullPool(),color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;startMatch()}})}]);
+        openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;startMatch()}})}]);
     }});
 }
 function startMatch(){
