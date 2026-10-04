@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.12.2 (2026-10-04)
+- Small fixes
+
 ## 0.12.1 (2026-10-04)
 - Invites, friend requests and friends coming online now show up instantly
 - The Invite button reacts straight away, and your friend gets the invite in a blink

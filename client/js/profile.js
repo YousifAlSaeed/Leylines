@@ -360,6 +360,10 @@ function renderProfilePage(force){
       <div class="pf-row"><span class="rt"><b>Screen info</b><small>Sizes this device reports, for fixing layout on phones.</small></span><button class="btn small" id="pfScreen">Show</button></div>
       </section>`;
   }
+  // developer accounts can give a pack to the player they're looking at (server/routes/gifts.js)
+  else if(u&&ACCT.token&&ACCT.user&&ACCT.user.dev)acct=`<section class="pf-card pf-dev"><h3>Developer <em>Give packs</em></h3>
+    <p class="pf-hint left">Each tap sends @${esc(u.username)} one pack. It arrives on their next check-in.</p>
+    <div class="pf-gift">${Object.keys(PACKS).map(t=>`<button class="btn small" data-gift="${t}">+1 ${PACKS[t].name}</button>`).join('')}</div></section>`;
 
   // match history: yours, or theirs from the server (null when they hid it)
   const hist=()=>mine?SAVE.history:s.history===undefined?[]:s.history;
@@ -367,6 +371,8 @@ function renderProfilePage(force){
   histWire(hist,mine,name);
   const on=(sel,fn)=>$$('#pfBody '+sel).forEach(b=>b.onclick=()=>{sfx('click');fn(b)});
   on('.pf-bdg',b=>{const x=BADGE[b.dataset.b],d=s.badges[x[0]];toast(`${x[1]} ${x[2]}: ${x[3]}`+(d?` · earned ${new Date(d).toLocaleDateString()}`:''),2600)});
+  on('[data-gift]',b=>{const t=b.dataset.gift;b.disabled=true;
+    api('/gifts',{method:'POST',body:{to:u.username,pack:t}}).then(()=>toast(`Sent ${aPack(t)} to ${u.displayName}.`)).catch(e=>toast(e.message,3000)).finally(()=>b.disabled=false)});
   if(!mine)return;
   on('#pfAv',pickAvatar);on('[data-pin]',pickShowcase);on('#pfColl',openCollection);
   on('#pfShare',profShare);on('#pfJoin',()=>openAuth('up'));on('#pfUp',()=>openAuth('up'));on('#pfIn',()=>openAuth('in'));

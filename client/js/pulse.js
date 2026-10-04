@@ -4,12 +4,12 @@
    A signed-in game keeps a live line open to the server
    (server/routes/pulse.js) and checks in whenever the server says something
    changed: friend requests and answers reload the list (friends.js), cards
-   taken or spared in a match you left show up (spare.js), game invites pop
-   up, and friends who come online show up to be invited. Without the line
+   taken or spared in a match you left show up (spare.js), packs a developer
+   gave you arrive (packs.js), game invites pop up, and friends who come online show up to be invited. Without the line
    (it dropped, or the browser can't stream) it checks every few seconds.
    ===================================================================== */
 const PULSE_MS=5000,PULSE_SLOW=25000; // how often to check without the live line, and with it
-const PULSE={user:null,boot:'',fr:0,fo:0,busy:false,again:false,at:0,online:[],soonT:0};
+const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],soonT:0};
 // hosting or joining an online game (NET.role stays set after netClose, so closing counts as out)
 const inOnline=()=>!!NET.role&&!NET.closing;
 // free to play: the game is in front, and you're not in a match or an online game. Friends can invite you.
@@ -30,7 +30,8 @@ async function pulse(){
   const first=PULSE.user!==ACCT.user.id,restart=!first&&r.boot!==PULSE.boot;
   if(!first&&(restart||r.fr!==PULSE.fr))frLoad();
   if(!first&&(restart||r.fo!==PULSE.fo))owesCheck();
-  Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo});
+  if(!first&&(restart||r.gi!==PULSE.gi)){GIFTS.wait=true;giftsCheck()}
+  Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi});
   const online=Array.isArray(r.online)?r.online.filter(u=>typeof u==='string'):[];
   if(online.join()!==PULSE.online.join()){
     PULSE.online=online;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
@@ -43,7 +44,7 @@ async function pulse(){
 function pulseSoon(){clearTimeout(PULSE.soonT);PULSE.soonT=setTimeout(pulse,50)}
 
 /* ---------- the live line ---------- */
-// a stream the server writes to when something for you changes: {k:'fr'|'fo', v} or {k:'on'|'inv'|'no'}
+// a stream the server writes to when something for you changes: {k:'fr'|'fo'|'gi', v} or {k:'on'|'inv'|'no'}
 const LINE={ctl:null,on:false,tries:0,t:0};
 async function lineOpen(){
   if(LINE.ctl||!ACCT.token||!ACCT.user||!ACCT.up||API==null||document.hidden||!window.ReadableStream||!window.TextDecoder)return;
@@ -72,9 +73,10 @@ function lineEvent(ev){
   const d=ev.split('\n').find(l=>l.startsWith('data: '));if(!d)return;
   let m;try{m=JSON.parse(d.slice(6))}catch(e){return}
   const mine=ACCT.user&&PULSE.user===ACCT.user.id&&Number.isInteger(m.v);
-  // friends or a forfeit: load them straight away (and remember the count, so the next check doesn't load them twice)
+  // friends, a forfeit or a gift: load them straight away (and remember the count, so the next check doesn't load them twice)
   if(m.k==='fr'){if(mine)PULSE.fr=m.v;frLoad()}
   else if(m.k==='fo'){if(mine)PULSE.fo=m.v;owesCheck()}
+  else if(m.k==='gi'){if(mine)PULSE.gi=m.v;GIFTS.wait=true;giftsCheck()}
   else pulse();
 }
 function lineClose(){clearTimeout(LINE.t);LINE.t=0;LINE.tries=0;const c=LINE.ctl;LINE.ctl=null;LINE.on=false;if(c)c.abort()}

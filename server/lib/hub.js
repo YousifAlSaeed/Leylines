@@ -1,6 +1,6 @@
 // What the game checks (routes/pulse.js), kept in memory so those checks don't
 // touch the database: who's free to play, game invites, and a counter per
-// player that goes up when their friends or forfeits change. Games with the
+// player that goes up when their friends, forfeits or gifts change. Games with the
 // live line open (GET /pulse/stream) are told the moment anything changes.
 // It all resets when the server restarts; a new `boot` tells games to load
 // everything again. Good for one server process, like rateLimit.js.
@@ -13,14 +13,14 @@ export const MAX_INVITES = 5;        // waiting for any one player
 
 export function createHub() {
   const boot = crypto.randomBytes(6).toString('hex');
-  const vers = new Map();     // user id → { fr, fo }
+  const vers = new Map();     // user id → { fr, fo, gi }
   const seen = new Map();     // user id → { at, menu }
   const invites = new Map();  // user id → [{ fromId, from, name, code, at }]
   const declined = new Map(); // user id → [display names who said no]
   const friends = new Map();  // user id → [{ id, username }], until their friends change
   const lines = new Map();    // user id → Set of send(message) for their open live lines
 
-  const ver = (id) => vers.get(id) ?? { fr: 0, fo: 0 };
+  const ver = (id) => vers.get(id) ?? { fr: 0, fo: 0, gi: 0 };
   const live = (list) => (list ?? []).filter((i) => Date.now() - i.at < INVITE_MS);
 
   // drop players who left, so the maps can't grow forever
@@ -51,7 +51,7 @@ export function createHub() {
         return was && !onMenu(id);
       };
     },
-    // kind: 'fr' (friend list or requests) or 'fo' (a forfeit is waiting)
+    // kind: 'fr' (friend list or requests), 'fo' (a forfeit is waiting) or 'gi' (a gift is waiting)
     bump(id, kind) {
       const v = { ...ver(id) };
       v[kind]++;

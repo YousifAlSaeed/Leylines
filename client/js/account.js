@@ -89,7 +89,7 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck()}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck();GIFTS.wait=true;giftsCheck()}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
@@ -112,7 +112,7 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();renderProfilePage();frLoad();lbAcct();
+  acctStore();renderProfile();renderProfilePage();frLoad();lbAcct();GIFTS.wait=true;
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
