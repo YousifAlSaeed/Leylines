@@ -145,9 +145,9 @@ function renderFriendTile(){
   // no server to keep friends on (a copy opened from a file): leave the tile out
   t.hidden=API==null;
   const n=FR.friends.length,k=FR.incoming.length,dot=$('#friendDot');
-  const on=ACCT.token?FR.friends.filter(u=>frOnMenu(u.username)).length:0;
+  const on=ACCT.token?FR.friends.filter(u=>frFree(u.username)).length:0;
   $('#friendSub').textContent=!ACCT.token?'Sign in to add friends':!FR.loaded?'Your friend list'
-    :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:on?` · ${on} on the menu`:'');
+    :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:on?` · ${on} online`:'');
   dot.hidden=!(ACCT.token&&k);dot.textContent=k;
   t.setAttribute('aria-label','Friends'+(ACCT.token&&k?`, ${plural(k,'new request')}`:''));
 }
@@ -164,7 +164,7 @@ function frAvatar(u){
   return a&&CARDS[a.c]?`<span class="pc-av art" style="--ring:${RINGS[a.r]||RINGS[0]}" aria-hidden="true">${CARDS[a.c].art}</span>`
     :`<span class="pc-av on" aria-hidden="true">${initialOf(u.displayName)}</span>`;
 }
-const frMeta=u=>{const lv=levelOf(u.xp||0);return (frOnMenu(u.username)?'<span class="fr-on">On the menu</span> · ':'')+`@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
+const frMeta=u=>{const lv=levelOf(u.xp||0);return (frFree(u.username)?'<span class="fr-on">Online</span> · ':'')+`@${esc(u.username)} · Lv ${lv} ${esc(titleOf(lv))}`};
 function renderFriends(){
   const el=$('#frBody');if(!el||!$('#scr-friends').classList.contains('on'))return;
   if(!ACCT.token){
@@ -191,9 +191,9 @@ function renderFriends(){
   const list=!FR.loaded?'<p class="pf-wait"><span class="spin"></span>Loading friends…</p>'
     :FR.friends.length?`<div class="fr-list">${FR.friends.map(u=>`<button class="fr-row" data-open="${esc(u.username)}" aria-label="${esc(u.displayName)}, open profile">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${frMeta(u)}</small></span>${chev}</button>`).join('')}</div>`
     :'<p class="pf-hint left">No friends yet. Add someone by username, or add the player you just faced online.</p>';
-  // friends on the main menu right now can be invited to a match (pulse.js)
-  const onMenu=FR.friends.filter(u=>frOnMenu(u.username));
-  const live=onMenu.length?`<section class="pf-card"><h3>On the menu now <em>${onMenu.length}</em></h3><div class="fr-list">${onMenu.map(u=>row(u,
+  // friends who are online and not in a match can be invited to one (pulse.js)
+  const onMenu=FR.friends.filter(u=>frFree(u.username));
+  const live=onMenu.length?`<section class="pf-card"><h3>Online now <em>${onMenu.length}</em></h3><div class="fr-list">${onMenu.map(u=>row(u,
     `<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)} to a match">Invite</button>`)).join('')}</div>
     <p class="pf-hint left fr-tip fr-inv-tip">Inviting opens a room. They get a pop-up to join it.</p></section>`:'';
   const friends=`<section class="pf-card"><h3>Your friends ${FR.loaded?`<em>${FR.friends.length}</em>`:''}</h3>${list}</section>`;

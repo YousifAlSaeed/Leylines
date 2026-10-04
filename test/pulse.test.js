@@ -103,6 +103,35 @@ describe('pulse', () => {
     assert.equal((await invite('ana', 'bob')).status, 404);
   });
 
+  test('the live line hears changes the moment they happen', async () => {
+    const ctl = new AbortController();
+    const r = await fetch(base + '/api/pulse/stream', { signal: ctl.signal, headers: { Authorization: `Bearer ${T.bob}` } });
+    assert.equal(r.status, 200);
+    assert.match(r.headers.get('content-type'), /text\/event-stream/);
+    const rd = r.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    const next = async () => {
+      for (;;) {
+        const i = buf.indexOf('\n\n');
+        if (i >= 0) { const ev = buf.slice(0, i); buf = buf.slice(i + 2); const d = ev.split('\n').find((l) => l.startsWith('data: ')); if (d) return JSON.parse(d.slice(6)); continue; }
+        const { value } = await rd.read();
+        buf += dec.decode(value, { stream: true });
+      }
+    };
+    await ask('cyd', 'bob');
+    assert.equal((await next()).k, 'fr');
+    // with the line open, bob stays online past the check-in window; ana (now friends again) is told when he goes away
+    await ask('ana', 'bob'); await next();
+    await ask('bob', 'ana'); assert.equal((await next()).k, 'fr');
+    await pulse('bob', true);
+    assert.deepEqual((await pulse('ana')).online, ['bob']);
+    await invite('ana', 'bob', 'ZXCVB');
+    assert.equal((await next()).k, 'inv');
+    ctl.abort();
+    await new Promise((res) => setTimeout(res, 100));
+    assert.deepEqual((await pulse('ana')).online, []);
+  });
+
   test('signing out ends the pulse straight away', async () => {
     const r = await api('/auth/login', { method: 'POST', body: { username: 'cyd', password: 'cyd-pass-1' } });
     const tok = r.body.token;

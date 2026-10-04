@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.12.1 (2026-10-04)
+- Invites, friend requests and friends coming online now show up instantly
+- The Invite button reacts straight away, and your friend gets the invite in a blink
+- Friends count as online on any screen, not just the main menu. They only drop off while they're in a match or the game is in the background
+
 ## 0.12.0 (2026-10-04)
 - **Invite friends to a match.** Friends who are on the main menu show up under Friends and in your room. Tap **Invite** and they get a pop-up to join
 - When you leave a match, you now find out within seconds if your opponent took your cards or spared you. No more reloading
