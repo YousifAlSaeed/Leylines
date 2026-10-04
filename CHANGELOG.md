@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.16.1 (2026-10-04)
+- Tutorial: when two number tags show at once, both stay bright, and the lit numbers on a card no longer bump into each other
+
 ## 0.16.0 (2026-10-04)
 - **New: a tutorial.** New players get 4 quick lessons on the real board: capture, Same, Plus and Combo. Finish them for a free Arcane pack, or skip it any time. Replay it from How to play
 - **How to play is simpler.** 5 tabs instead of 15: Basics, Same, Plus, Combo and More. The examples now show which numbers touch (like 8 = 8 or 2 + 3 = 5), plus a move that doesn't work, and each rule has a Try it button

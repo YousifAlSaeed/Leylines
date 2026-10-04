@@ -34,6 +34,8 @@ body.tut #handTop,body.tut-fin #handBot{visibility:hidden}
 .tut-tag.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .tut-tag.on.old{opacity:.4}
 /* the touching numbers light up (also in How to play's examples) */
-.card .nums b.hl{color:#ffd76a;scale:1.45;transition:scale .25s var(--spring)}
+.card .nums b.hl{color:#ffd76a;scale:1.25;transition:scale .25s var(--spring)}
+/* each grows outward, so a lit top and a lit left never run into each other */
+.card .nums b.n0.hl{transform-origin:50% 100%}.card .nums b.n1.hl{transform-origin:0 50%}.card .nums b.n2.hl{transform-origin:50% 0}.card .nums b.n3.hl{transform-origin:100% 50%}
 :root{--gold-tag:#ffd76a} :root[data-theme="light"]{--gold-tag:#9a6a00}
 .tut-pk{display:flex;justify-content:center;margin:6px 0 10px}

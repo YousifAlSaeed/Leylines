@@ -65,6 +65,7 @@ function tutMove(cell){
 // one wave of flips (an event from play()): a tag on each edge that flipped a card, saying how the two numbers compare
 function tutWave(e,cell){
   const t=G.tut,st=G.st,side=(c,d)=>CARDS[st.b[c]].s[d];
+  TT.forEach(g=>g.el.classList.add('old')); // the wave before fades; this wave's tags all stay bright
   for(const n of e.cells){
     // Combo flips come from a card flipped in the wave before; everything else from the card just placed
     const from=e.t==='combo'?t.prev.find(c=>{const d=NB[c].indexOf(n);return d>=0&&side(c,d)>side(n,(d+2)&3)}):cell;
@@ -75,7 +76,6 @@ function tutWave(e,cell){
   if(e.t!=='basic')t.prev=e.cells;
 }
 function tutTag(c,d,txt){
-  TT.forEach(g=>g.el.classList.add('old'));
   const el=document.createElement('div');el.className='tut-tag';el.textContent=txt;el.setAttribute('aria-hidden','true');
   document.body.append(el);const g={el,c,d};TT.push(g);tagPos(g);
   requestAnimationFrame(()=>el.classList.add('on'));
