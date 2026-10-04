@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.15.0 (2026-10-04)
+- **The Store on a phone opens on the night sky.** Tap a star to bring up the market on that stop, then swipe left and right between the Merchant, the deal, the Pack Counter and the Shard well. Swipe past the first or the last stop to go back to the sky
+
 ## 0.14.1 (2026-10-04)
 - Signing out now gives this device a fresh start. Your progress stays safe on your account, ready for when you sign in again
 - Online matches with a guest in them are played without card bets. The waiting room says why. Both players need an account to play for cards

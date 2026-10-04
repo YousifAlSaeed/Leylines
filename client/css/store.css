@@ -131,54 +131,68 @@
 .st-rates dt{font-weight:600}
 .st-rates dd{margin:0;color:var(--muted);font-variant-numeric:tabular-nums}
 
-/* the map of the four stars: phones only */
-.st-map,.st-grab{display:none}
+/* the carousel's wrappers do nothing on a wide screen; the map of the stars, the dots and the hint are phones only */
+.st-swipe,.st-view{flex:1;display:flex;flex-direction:column}
+.st-map,.st-dots,.st-hint{display:none}
 
-/* a phone: the sky is a map of the four stops, and the one picked opens in a sheet that runs to the bottom of the screen */
+/* a phone: the sky with a constellation of the four stops; tap a star for the market's carousel, swipe past either end
+   to go back to the sky (store.js) */
 @media (max-width:759px){
   #scr-store{padding-bottom:0}
+  #scr-store.st-moving{overflow:hidden}
   .st-hero{gap:16px;padding:8px 2px 0;flex-wrap:nowrap}
   .st-hero>div{flex:1}
   .st-count{font-size:44px}
   .st-hero p{display:none}
   .st-moon{width:76px;height:76px}
-  .st-map{display:block;position:relative;height:230px;margin:0 -8px}
-  .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
-  .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:64px;padding:0;border:0;background:none;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:600 12px/1.2 var(--body)}
-  .st-star svg{width:30px;height:30px;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc));transition:transform .3s var(--spring)}
-  .st-star::before{content:"";position:absolute;top:-9px;left:50%;width:48px;height:48px;margin-left:-24px;border-radius:50%;border:1px solid var(--sc);
-    box-shadow:0 0 22px var(--sc);opacity:0;transform:scale(.6);transition:opacity .25s,transform .3s var(--spring)}
-  .st-star.on svg{transform:scale(1.2)}
-  .st-star.on::before{opacity:.65;transform:none}
-  .st-star.on span{font-weight:700}
-  .st-star.s-merchant{left:16%;top:40%}.st-star.s-deal{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
-  .st-stops{display:flex;flex-direction:column;gap:0;margin:0 -16px;padding:10px 20px max(28px,env(safe-area-inset-bottom));border-radius:28px 28px 0 0;
-    background:linear-gradient(180deg,rgba(28,20,72,.97),rgba(14,10,36,.99));border-top:1px solid rgba(237,230,255,.16);box-shadow:0 -20px 50px rgba(0,0,0,.55)}
-  .st-grab{display:flex;flex:none;align-items:center;justify-content:center;height:36px;margin:-10px -20px 6px;padding:0;border:0;background:none;cursor:grab;touch-action:none}
-  .st-grab::before{content:"";width:40px;height:5px;border-radius:99px;background:rgba(237,230,255,.25);transition:background .2s,width .2s}
-  .st-grab:hover::before,.st-grab:active::before{background:rgba(237,230,255,.45);width:52px}
-  .st-stops{transition:transform .3s var(--ease)}
-  .st-stops.out{transform:translateY(110%)}
-  /* pulled down: just the sky, the constellation spread over the screen and the stars without their names */
-  #scr-store.st-moving{overflow:hidden}
-  .st-down .st-stops{display:none}
+
+  /* the constellation: a short strip over the market, the whole sky without it */
+  .st-map{display:block;position:relative;height:118px;margin:4px -8px 0;flex:none}
   .st-down .st-map{flex:1;min-height:230px}
-  .st-star span{transition:opacity .25s}
-  .st-down .st-star span{opacity:0}
-  .st-down .st-star::before{opacity:0}
-  .st-down .st-star.on svg{transform:none}
-  .st-top{transition:opacity .3s}
+  .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
+  .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:56px;padding:0;border:0;background:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:600 12px/1.2 var(--body)}
+  .st-star svg{width:30px;height:30px;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc));opacity:.55;transition:transform .35s var(--spring),opacity .3s}
+  .st-star::before{content:"";position:absolute;top:-9px;left:50%;width:48px;height:48px;margin-left:-24px;border-radius:50%;border:1px solid var(--sc);
+    box-shadow:0 0 22px var(--sc);opacity:0;transform:scale(.6);transition:opacity .3s,transform .35s var(--spring)}
+  .st-star span{opacity:0;transition:opacity .3s}
+  .st-star.on svg{transform:scale(1.2);opacity:1}
+  .st-star.on::before{opacity:.65;transform:none}
+  .st-star.on span{opacity:1;font-weight:700}
+  .st-star.s-merchant{left:16%;top:40%}.st-star.s-deal{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
+  /* in the sky every star shines alike, with no names and no ring */
+  .st-down .st-star svg{opacity:1;transform:none}
+  .st-down .st-star::before,.st-down .st-star span{opacity:0}
+
+  /* the sky also swaps the countdown for the phone's own time and fades the top bar (a tap brings it back) */
+  .st-top{transition:opacity .35s}
   .st-down .st-top{opacity:0;pointer-events:none}
-  .st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:opacity .35s}
+  .st-down.st-bar .st-top{opacity:1;pointer-events:auto}
+  .st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:opacity .4s}
   .st-down .st-hero>div>.st-lab,.st-down .st-hero>div>.st-count{opacity:0}
   .st-down .st-now{opacity:1}
-  .st-down.st-bar .st-top{opacity:1;pointer-events:auto}
-  .st-stop{display:none;flex:1}
-  .st-stop.on{display:flex;animation:rise .35s var(--ease) both}
+
+  /* the market: a carousel of the four stops, the ones either side peeking in */
+  .st-swipe{flex:1;transition:opacity .35s,transform .5s var(--ease)}
+  .st-swipe.out{opacity:0;transform:translate(var(--ox,0px),var(--oy,48px))}
+  .st-down .st-swipe{display:none}
+  /* on its way out the market is lifted out of the page, so the sky can open out under it at the same time */
+  #stBody{position:relative}
+  .st-swipe.leaving,.st-down .st-swipe.leaving{display:flex;position:absolute;left:0;right:0;pointer-events:none}
+  .st-view{flex:1;margin:10px -16px 0;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+  .st-stops{flex:1;display:flex;gap:12px;align-items:stretch;padding:6px 0 4px;transition:transform .45s var(--ease);will-change:transform}
+  .st-stop{flex:none;width:calc(100% - 56px);box-sizing:border-box;padding:18px;border-radius:24px;
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid rgba(237,230,255,.12);
+    opacity:.45;transform:scale(.94);transition:opacity .35s,transform .45s var(--ease)}
+  .st-stop.on{opacity:1;transform:none}
+  .st-stop.s-deal{border-color:rgba(255,134,196,.3);background:radial-gradient(90% 55% at 50% 22%,rgba(255,95,168,.2),transparent 70%),rgba(255,255,255,.02)}
   .st-sub{min-height:0}
   .st-glass,.s-deal .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-  .st-slot .card{font-size:min(17px,4.4vw)}
+  .st-slot .card{font-size:min(16px,4vw)}
+  .st-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
+  .st-dots i{width:6px;height:6px;border-radius:99px;background:rgba(237,230,255,.3);transition:width .35s var(--ease),background .35s}
+  .st-dots i.on{width:22px;background:var(--sc)}
+  .st-hint{display:block;margin:10px 0 max(16px,env(safe-area-inset-bottom));text-align:center;font-size:12px;color:#8E82B8}
 }
 
 /* the confirm box */
@@ -187,4 +201,4 @@
 .st-cost{display:flex;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
 .st-cost b{color:var(--shard-ink);font:700 18px/1 var(--display);margin-right:6px}
 
-@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-grab::before,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}
+@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-stop,.st-swipe,.st-dots i,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}
