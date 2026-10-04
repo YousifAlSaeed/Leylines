@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.6.1 (2026-10-04)
+- NEW tag on cards you've never found when taking cards after a win
+
 ## 0.6.0 (2026-10-04)
 Friends, leaderboard and the Daily tab.
 - Friends: requests, friend list and profiles

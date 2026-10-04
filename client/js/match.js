@@ -150,7 +150,9 @@ function tradeCount(s0,s1,w){
   const diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),sw=G.bo>1?won.some(m=>m.sweep):swept(w);
   return{one:1,diff:Math.min(5,diff),all:5,sweep:sw?5:0}[G.trade]||0;
 }
-function rowHTML(ids,color){return`<div class="cardrow">${ids.map(id=>cardHTML(id,color)).join('')}</div>`}
+// a NEW tag on cards you've never found, like in packs
+const NEW_TAG='<em class="cr-new">NEW</em>';
+function rowHTML(ids,color,fresh=[]){return`<div class="cardrow">${ids.map((id,i)=>fresh[i]?`<div class="cr-it">${NEW_TAG}${cardHTML(id,color)}</div>`:cardHTML(id,color)).join('')}</div>`}
 const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
   G.over=true;G.busy=true;
@@ -199,10 +201,12 @@ function finish(s0,s1){
       pickCards(head,loserDeck,n,{spare:online}).then(idx=>{
         if(G!==g)return;
         if(idx==='spare'){netSend({t:'trade',idx:[],spare:true});forfeitPost(NET.oppUser,matchKey(),[]);resultModal(head+spareHTML(oppName(),spareGive()));return}
-        const ids=idx.map(i=>loserDeck[i]);ids.forEach(collAdd);earn('spoils');profCheck();histTrade('won',ids);save();
+        const ids=idx.map(i=>loserDeck[i]),fresh=[];
+        // a second copy of a new card isn't new
+        ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');profCheck();histTrade('won',ids);save();
         // also through the server, in case they close the game before it reaches them
         if(online){netSend({t:'trade',idx});forfeitPost(NET.oppUser,matchKey(),ids)}
-        resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue')+freshHTML());
+        resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue',fresh)+freshHTML());
       });
     }else if(cpuTook)resultModal(head+tookHTML('The CPU',cpuTook));
     else{
@@ -225,7 +229,7 @@ function pickCards(head,deck,n,o={}){
     if(all&&!o.spare){res(deck.map((_,i)=>i));return}
     const sel=new Set(all?deck.map((_,i)=>i):[]);
     const ask=o.ask||(all?`Take all their cards, or spare them.`:`Choose <b>${n}</b> card${n>1?'s':''} to take${o.spare?', or spare them':''}.`);
-    const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk${all?' on':''}" data-i="${i}" role="button" aria-pressed="${all}" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'red')}</div>`).join('')}</div>`+
+    const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk${all?' on':''}" data-i="${i}" role="button" aria-pressed="${all}" aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`).join('')}</div>`+
       (o.spare?`<p class="note">💛 Spare: they keep their cards, and you count a spare. Every ${SPARE_PACK} spares give a free pack.</p>`:''),
       [{label:all?'Take all':'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
        ...(o.spare?[{label:'Spare 💛',fn:()=>res('spare')}]:[])]);
