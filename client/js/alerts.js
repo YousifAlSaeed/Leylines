@@ -33,6 +33,18 @@ const AL_KEY='leylines.alerts';
 const alertsMark=on=>{try{on?localStorage.setItem(AL_KEY,'1'):localStorage.removeItem(AL_KEY)}catch(e){}};
 const alertsMarked=()=>{try{return localStorage.getItem(AL_KEY)==='1'}catch(e){return false}};
 
+// the browser's own error, in words a player can act on
+const DEVICE_HELP=alertsIOS()?'iPhone Settings → Notifications → Leylines'
+  :/Android/.test(navigator.userAgent)?'your phone\'s Settings → Apps → your browser → Notifications'
+  :/Windows/.test(navigator.userAgent)?'Windows Settings → System → Notifications (then restart the browser)'
+  :'your computer\'s notification settings';
+function alertsWhy(e){
+  const t=(e&&e.name||'')+' '+(e&&e.message||'');
+  // the site is allowed, but the device blocks the browser itself (Windows, Android): the browser reports it as "permission denied"
+  if(/NotAllowed|permission denied/i.test(t))return `Your device is blocking alerts from your browser. Turn them on in ${DEVICE_HELP} and try again.`;
+  if(/push service|AbortError|not supported/i.test(t))return 'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).';
+  return e&&e.message||'Alerts couldn\'t be turned on. Try again.';
+}
 async function alertsOn(){
   const key=await alertsKey();if(!key)throw new Error('Alerts aren\'t set up on this server yet.');
   const perm=await Notification.requestPermission();
@@ -40,8 +52,7 @@ async function alertsOn(){
   const reg=await alertsReg();
   let sub=await alertsWithin(reg.pushManager.getSubscription(),4000,'This browser didn\'t answer. Try again, or try another browser.');
   if(!sub)sub=await alertsWithin(reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64bytes(key)}),15000,'This browser didn\'t answer. Try again, or try another browser.')
-    .catch(e=>{throw new Error(/push service|AbortError|not supported/i.test(e.name+' '+e.message)
-      ?'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).':e.message)});
+    .catch(e=>{throw new Error(alertsWhy(e))});
   await api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}});
   alertsMark(true);
 }
@@ -81,7 +92,7 @@ async function alertsPaint(box){
   row.hidden=false;
   if(!ACCT.token)return say('Sign in to get alerts for invites and friend requests.');
   if(!alertsCan())return say(alertsIOS()&&!alertsHome()?'Add Leylines to your home screen, then turn alerts on in the app.':'This browser can\'t show alerts.');
-  if(Notification.permission==='denied')return say('Blocked. Allow notifications for this site in your browser settings.');
+  if(Notification.permission==='denied')return say(`Blocked. Allow notifications for this site in your browser, and for your browser in ${DEVICE_HELP}.`);
   const draw=on=>{
     say(on?'On for this device. Invites, friend requests and match news reach you even with the game closed.':'Invites, friend requests and match news, even with the game closed',
       `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
@@ -92,7 +103,7 @@ async function alertsPaint(box){
       try{
         if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on. Tap Test to try one.',3000)}
         else{await alertsOff();toast('Alerts are off')}
-      }catch(e){toast(e.message,4500)}
+      }catch(e){toast(e.message,7000)}
       finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
     });
     const t=ctl.querySelector('#alertsTest');

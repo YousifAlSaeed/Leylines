@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.5 (2026-10-04)
+- Settings no longer shows an empty Alerts row when the server has alerts turned off
+- When your phone or computer blocks alerts, the game now says so and tells you where to turn them on, instead of "Registration failed - permission denied"
+
 ## 0.17.4 (2026-10-04)
 - Gauntlet: before a new run after your first one, the game says what it pays. If your first run already earned today's shards, it tells you the new run gives no rewards
 
