@@ -17,13 +17,15 @@ function renderBoard(){
   for(let i=0;i<9;i++){
     const el=st.el[i]?`<div class="eicon">${ELEM[st.el[i]]}</div>`:'';
     CELLS[i].innerHTML=st.b[i]>=0?el+cardHTML(st.b[i],colorOf(st.o[i]),{mod:st.m[i]}):el;
-    const hot=G.sel!=null&&st.b[i]<0&&canAct(st.turn);
-    CELLS[i].classList.toggle('hot',hot);
+    // in the tutorial only the lesson's square lights up
+    const hot=G.sel!=null&&st.b[i]<0&&canAct(st.turn)&&(!G.tut||i===TUT[G.tut.i].cell);
+    CELLS[i].classList.toggle('hot',hot);CELLS[i].classList.toggle('tut-target',hot&&!!G.tut);
     CELLS[i].classList.remove('over');
     CELLS[i].setAttribute('aria-disabled',!hot);
     CELLS[i].setAttribute('aria-label',`Row ${Math.floor(i/3)+1}, column ${i%3+1}: `+
       (st.b[i]>=0?`${CARDS[st.b[i]].name}, ${colorOf(st.o[i])}`:'empty')+(st.el[i]?`, ${st.el[i]} square`:''));
   }
+  if(G.tut)tutSync();
 }
 function renderHands(){
   const st=G.st,bot=G.bottom,top=1-bot;
@@ -32,7 +34,7 @@ function renderHands(){
     // with Chaos only the picked card can be played; it's marked in either hand
     el.classList.toggle('chaos',chaos);
     el.innerHTML=st.h[p].map((id,i)=>{
-      const ok=can&&(G.forced==null||i===G.forced),fc=chaos&&i===G.forced?'forced ':'';
+      const ok=can&&(G.forced==null||i===G.forced),fc=chaos&&i===G.forced?'forced '+(G.tut&&G.sel==null?'tut-pulse ':''):'';
       return hide
       ?cardHTML(id,null,{back:true,cls:fc})
       :cardHTML(id,colorOf(p),{cls:fc+(ok?'play ':'')+(ok&&G.sel===i?'sel':''),
@@ -59,7 +61,8 @@ function renderHud(){
   $('#sideBot').classList.toggle('active',!G.over&&st.turn===bot);
   $('#sideTop').classList.toggle('active',!G.over&&st.turn!==bot);
   let msg;
-  if(G.over)msg='Game over';
+  if(G.tut)msg=G.over?'Well played!':'Your turn';
+  else if(G.over)msg='Game over';
   else if(G.mode==='local')msg=(st.turn===0?'Blue':'Red')+"'s turn";
   else if(st.turn===G.me)msg='Your turn';
   else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
@@ -75,6 +78,9 @@ function renderHud(){
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   if(G.daily)chips+=dailyChip();
+  // the tutorial's lessons, done ones ticked
+  if(G.tut)chips=G.tut.single?`<span class="tut-on">Try it · ${TUT[G.tut.i].name}</span>`:
+    TUT.map((l,i)=>`<span class="${i===G.tut.i?'tut-on':i<G.tut.i?'tut-done':''}">${i<G.tut.i?'✓ ':''}${l.name}</span>`).join('');
   if($('#ruleBar').innerHTML!==chips){$('#ruleBar').innerHTML=chips;fitGame()}
   updSnd();emoteSync();
 }
@@ -97,7 +103,7 @@ window.addEventListener('pointermove',e=>{
     document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
     // dragging picks this card, so drop the highlight from the one picked before
     $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
-    G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0));
+    G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0&&(!G.tut||i===TUT[G.tut.i].cell)));
   }
   drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
   const t=cellAt(e.clientX,e.clientY);

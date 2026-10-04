@@ -1,14 +1,13 @@
 /* how to play */
 .hbox{width:100%;max-width:440px;height:min(680px,calc(100dvh / var(--ui) - 32px));display:flex;flex-direction:column;padding:12px}
 .hhead{display:flex;align-items:center;gap:6px}
-.htabs{flex:1;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:2px 8px;
-  mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+.htabs{flex:1;display:flex;gap:2px;justify-content:space-between;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:2px 0}
 .htabs::-webkit-scrollbar{display:none}
-.htabs button{flex:none;border:0;background:none;color:var(--muted);font:600 13px var(--body);padding:7px 12px;border-radius:999px;white-space:nowrap;cursor:pointer;transition:color .18s,background .18s}
+.htabs button{flex:none;border:0;background:none;color:var(--muted);font:600 13px var(--body);padding:7px 8px;border-radius:999px;white-space:nowrap;cursor:pointer;transition:color .18s,background .18s}
 .htabs button:hover{color:var(--text)}
 .htabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
 .hmain{flex:1;display:flex;flex-direction:column;min-height:0}
-.hstage{margin-top:12px;height:224px;flex:none;border-radius:18px;border:1px solid var(--line);position:relative;overflow:hidden;display:grid;place-items:center;
+.hstage{margin-top:12px;height:262px;flex:none;border-radius:18px;border:1px solid var(--line);position:relative;overflow:hidden;display:grid;place-items:center;
   background:radial-gradient(90% 90% at 0% 0%,var(--glow-a),transparent 60%),radial-gradient(90% 90% at 100% 100%,var(--glow-b),transparent 60%),var(--well);font-size:14px}
 .htext{flex:1;overflow:auto;padding:14px 6px 0}
 .tag{display:inline-block;font:600 11.5px var(--body);padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-ink);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
@@ -24,7 +23,8 @@
 #hBack{display:none}
 @media (min-width:900px) and (min-height:560px){
   .hbox{max-width:900px;height:560px;padding:16px}
-  .hstage .mini{font-size:1.15em}
+  .htabs{justify-content:center;gap:6px}
+  .htabs button{padding:7px 14px}
   .hmain{flex-direction:row;gap:22px;margin-top:14px}
   .hstage{height:auto;flex:1.1;margin:0;font-size:20px}
   .htext{flex:1;padding:6px 4px 0}
@@ -32,50 +32,32 @@
   .htext li{font-size:15px;margin:9px 0}
   #hBack{display:inline-flex}
 }
-/* stage demos (sizes follow the stage font-size) */
-.demo{display:flex;align-items:center;gap:.6em}
-.eq{font:900 1.6em var(--display);color:var(--accent-ink)}
-.mini{display:grid;grid-template-columns:repeat(3,3.3em);gap:.25em;padding:.35em;border-radius:.8em;background:var(--board);border:1px solid var(--line2)}
-.mini .c{width:3.3em;height:3.96em;border-radius:.45em;background:var(--cell-bg);position:relative;display:grid;place-items:center;font-size:1em}
-.mini .c .card{position:absolute;inset:0;font-size:.66em}
-.mini .c .card .nm{display:none}
-.mini .c.new .card{animation:dropLoop 3.4s var(--spring) infinite}
-@keyframes dropLoop{0%,12%{transform:translateY(-1.4em) scale(1.15);opacity:0}28%,100%{transform:none;opacity:1}}
-.hstage .mini{font-size:.88em}
-.mini .c .eic{font-size:1.4em;opacity:.55;line-height:1}
-.mini.wall{border-top:3px solid var(--accent);box-shadow:0 -8px 18px -8px var(--accent-glow)}
-.flag.red{color:var(--crit)}
-.demo-col{display:flex;flex-direction:column;align-items:center;gap:.7em}
-.lbl2{font:600 .75em var(--body);color:var(--muted)}
-.hand-row{display:flex;gap:.35em;font-size:.55em;min-height:6em}
-.hand-row.chaos .card{transition:opacity .25s,filter .25s,transform .25s var(--spring)}
-.hand-row.chaos .card:not(.forced){opacity:.45;filter:saturate(.5)}
-.hand-row.chaos .card.forced{transform:translateY(-.6em)}
-.hstage .bigscore{font-size:2.4em;margin:0;line-height:1}
-.hstage .serlog{font-size:1.2em;margin:0}
-.hstage .serlog span{font-size:.75em;min-width:5.2em;text-align:center}
-.flag{position:absolute;bottom:.5em;left:0;right:0;text-align:center;font:900 1.1em var(--display);font-style:italic;text-transform:uppercase;color:var(--accent-ink);opacity:0;transition:opacity .25s}
-.flag.on{opacity:1}
-.trade{display:flex;align-items:center;gap:1.2em;font-size:.6em}
-.pile{display:flex}.pile .card{margin-right:-3em}
-.pile .card .nm,.moving .card .nm{display:none}
-.moving{animation:move 3s var(--ease) infinite}
-@keyframes move{0%,20%{transform:translateX(0)}60%,100%{transform:translateX(6em)}}
-.vs{display:flex;align-items:center;gap:.9em}
-.vs .av{width:3.4em;height:3.4em;border-radius:.9em;font-size:1em}
-.vs .av.b{background:linear-gradient(160deg,var(--blue1),var(--blue2))} .vs .av.r{background:linear-gradient(160deg,var(--red1),var(--red2))}
-.vs b{font:900 1.3em var(--display);font-style:italic;color:var(--muted)}
-.diffs{display:flex;gap:.3em;margin-top:.9em;font-size:.8em;justify-content:center}
-.diffs span{padding:.25em .7em;border-radius:.5em;border:1px solid var(--line2);color:var(--muted)}
-.diffs span.on{background:var(--accent);color:var(--on-accent);border-color:transparent;font-weight:600}
-.col{display:flex;flex-direction:column;align-items:center}
-.device{display:flex;flex-direction:column;align-items:center;gap:.35em;padding:.6em .9em;border-radius:1.1em;border:2px solid var(--line2);background:var(--surf)}
-.device .av{width:1.9em;height:1.9em;border-radius:.5em;font-size:.8em}
-.device .mini{font-size:.6em}
-.pass{font:600 .8em var(--body);color:var(--muted);margin-top:.6em}
-.code{display:flex;gap:.25em}
-.code span{width:1.8em;height:2.2em;display:grid;place-items:center;border-radius:.4em;background:var(--surf);border:1px solid var(--line2);font:900 1.3em var(--display);color:var(--accent-ink)}
-.link{margin-top:.7em;font-size:.72em;color:var(--muted);padding:.3em .7em;border-radius:.5em;background:var(--surf);border:1px solid var(--line)}
+/* the examples (howto.js exDemo): a small board, a tag on each edge where two cards touch, a caption */
+.ex-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ex-lbl{font:600 11px var(--body);color:var(--muted);letter-spacing:.04em}
+.ex{position:relative;display:grid;gap:.3em;padding:.35em;border-radius:.8em;background:var(--board);border:1px solid var(--line2);font-size:16.5px}
+.ex.big{font-size:21px}
+.ex .c{width:4.6em;height:5.52em;border-radius:.45em;background:var(--cell-bg);position:relative}
+.ex .c .card{position:absolute;inset:0;font-size:.92em}
+.ex-tag{position:absolute;z-index:5;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:opacity .2s,transform .3s var(--spring);
+  font:800 .82em var(--display);padding:.15em .45em;border-radius:.45em;background:var(--surf2);border:1.5px solid var(--gold-tag);color:var(--gold-tag);white-space:nowrap}
+.ex-tag.bad{border-color:var(--crit);color:var(--crit)}
+.ex-tag.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.ex-tag.on.old{opacity:.35}
+.ex-cap{font:800 14px var(--display);font-style:italic;text-transform:uppercase;color:var(--accent-ink);min-height:18px;opacity:0;transition:opacity .25s;text-align:center}
+.ex-cap.on{opacity:1}.ex-cap.bad{color:var(--crit)}
+/* Tips under Basics, the tutorial button, and More's list of rules */
+#hExtra h4{margin:16px 0 4px;font:700 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink)}
+#hExtra ul{margin:0;padding-left:18px;color:var(--muted)}
+#hExtra li{margin:6px 0;line-height:1.45}
+#hExtra li b{color:var(--text);font-weight:600}
+.htry{margin-top:14px;width:100%}
+.htry[hidden]{display:none}
+#hList.more{padding:0;list-style:none}
+#hList.more li{margin:0;padding:10px 2px;border-bottom:1px solid var(--line)}
+#hList.more li:last-child{border-bottom:0}
+#hList.more li>b:first-child{display:block;font:700 15px var(--display);color:var(--text);margin-bottom:1px}
+@media (min-width:900px) and (min-height:560px){.ex{font-size:21px}.ex.big{font-size:28px}.ex-cap{font-size:20px}.ex-lbl{font-size:13px}}
 
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,12px);z-index:var(--z-toast);
   background:var(--surf2);border:1px solid var(--line2);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;

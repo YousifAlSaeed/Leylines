@@ -86,6 +86,28 @@ const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.
 function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as X for Same',plus:'Equal sums flip cards',
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you',chaos:'You must play a random card each turn'};
+// the tutorial (tutorial.js): one move per lesson. board: the CPU's cards [square, card id]; your hand, with hand[pick]
+// the card to play on square `cell`. The coach says intro, then place once the card is picked, then after.
+// Same and Plus use different numbers on each side (8 = 8 and 6 = 6, 2 + 3 and 1 + 4), so nobody thinks every side must match.
+const TUT_PACK='arcane';
+const TUT=[
+ {name:'Capture',rules:{},board:[[4,20]],hand:[0,22,13],pick:1,cell:3,
+  intro:'Every card has 4 numbers: top, right, bottom, left. Tap <b>Iron Crab</b>.',
+  place:'Now tap the glowing square, <b>left</b> of their card.',
+  after:'Your <b>7</b> beat their <b>6</b>, so their card is yours now!'},
+ {name:'Same',rules:{same:true},board:[[1,35],[3,9]],hand:[3,45,7],pick:1,cell:4,
+  intro:'New rule: <b>Same</b>. Tap <b>Seraph Warden</b>. Look at its top <b>8</b> and left <b>6</b>.',
+  place:'Put it in the <b>middle</b>. Its 8 meets an 8, and its 6 meets a 6.',
+  after:'8 = 8 and 6 = 6. Two matches, so <b>both</b> flipped: <b>Same!</b>'},
+ {name:'Plus',rules:{plus:true},board:[[1,1],[3,0]],hand:[13,2,6],pick:1,cell:4,
+  intro:'New rule: <b>Plus</b>. Tap <b>Bog Newt</b>. Its top is 2 and its left is 1. Tiny!',
+  place:'Put it in the <b>middle</b>. This time, add up each pair of touching numbers.',
+  after:'Different numbers, <b>same total</b> (5 and 5), so both flipped: <b>Plus!</b>'},
+ {name:'Combo',rules:{same:true,combo:true},board:[[0,0],[1,35],[2,11],[3,9]],hand:[5,45,12],pick:1,cell:4,
+  intro:'Last one: <b>Combo</b>. Tap <b>Seraph Warden</b> again.',
+  place:'Put it in the <b>middle</b>, then watch what the flipped cards do.',
+  after:'Same flipped 2. Then <b>those</b> flipped 2 more. <b>4 cards in one move!</b>'}
+];
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5), picked only from the loser\'s cards they flipped.'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 // best-of series: [matches, label, description]; whoever went first in one match goes second in the next

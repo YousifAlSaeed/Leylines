@@ -3,6 +3,7 @@
    NAV / MENU
    ===================================================================== */
 function show(id){
+  if(id!=='game')tutClear(); // leaving ends a tutorial lesson
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   keepAwake(id==='game');closeEmotes();

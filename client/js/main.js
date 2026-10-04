@@ -22,5 +22,8 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
       if(playerName())joinGame(code);
       else{onStatus("You've been invited. Enter your name, then tap <b>Join</b>.");const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
     }
+    return;
   }
+  // a new player is offered the tutorial (tutorial.js)
+  if(!SAVE.tut)setTimeout(()=>{if($('#scr-menu').classList.contains('on')&&!$('#modal').classList.contains('on'))tutWelcome()},400);
 })();

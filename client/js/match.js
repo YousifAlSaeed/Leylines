@@ -72,6 +72,7 @@ function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===
 
 function nextTurn(){
   if(!G)return;
+  if(G.tut){if(G.tut.state==='moving')tutMoved();return} // a lesson is one move (tutorial.js)
   liveSave();
   // Chaos: the card that must be played this turn. Drawn from the match's seeded random numbers, so both online players get the same one
   G.sel=null;G.forced=null;
@@ -101,6 +102,7 @@ function aiTurn(){
 }
 function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
+  if(G.tut&&!tutMove(cell))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
   if(G.daily)dailyMoved();
   execMove(hi,cell);
@@ -112,13 +114,15 @@ async function execMove(hi,cell){
   const sc=[score(st,0),score(st,1)];
   if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
   const ev=[];play(st,G.rules,hi,cell,ev);
-  if(G.mode!=='local'&&p===G.me)profFlips(ev);
+  if(G.mode!=='local'&&p===G.me&&!G.tut)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
   CELLS[cell].innerHTML=cardHTML(id,colorOf(p),{mod:st.m[cell],cls:'drop'});
   sfx('place');
   await wait(300);
   for(const e of ev){
     if(G!==g)return;
+    // the tutorial shows which numbers touched before each flip
+    if(G.tut){tutWave(e,cell);if(e.t==='basic')await wait(450)}
     if(e.t!=='basic')await banner({same:'Same!',plus:'Plus!',combo:'Combo!'}[e.t]);
     if(G!==g)return;
     flipCells(e.cells,p,cell);
@@ -127,7 +131,7 @@ async function execMove(hi,cell){
     await wait(520);
   }
   if(G!==g)return;
-  emoteMove(p,ev);
+  if(!G.tut)emoteMove(p,ev);
   G.busy=false;nextTurn();
 }
 function flipCells(cells,p,origin){
@@ -317,7 +321,7 @@ function leaveMatch(){
 
 /* ---------- leaving early ---------- */
 // the match (or the rest of a series) is still being played, so leaving now gives it up
-function stillPlaying(){return !!(G&&G.st&&!G.done&&(!G.over||G.bo>1&&!seriesDone(G.bo,G.ser.n,G.ser.wins)))}
+function stillPlaying(){return !!(G&&G.st&&!G.done&&!G.tut&&(!G.over||G.bo>1&&!seriesDone(G.bo,G.ser.n,G.ser.wins)))}
 // the cards you give up by leaving: what the trade rule takes on a loss, and at least 1 (so Sweep and a close Diff take 1).
 // Nothing in a same-screen game, the Daily, or with no trade rule.
 function leaveCount(){
