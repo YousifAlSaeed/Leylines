@@ -20,7 +20,9 @@ function defSave(){
     trial:null,
     // a match vs Computer the app closed on (match.js), online matches you may still lose cards from,
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)
-    live:null,owes:[],spares:0,spareDay:null};
+    live:null,owes:[],spares:0,spareDay:null,
+    // the store (store.js): Ley Shards (everyone starts with a few), shards from matches today {at, n}, today's purchases
+    shards:150,shardDay:null,shop:null};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -28,7 +30,7 @@ function fixProfile(p,s){
   if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
   // the first time with packs: one for every level already reached
   if(p.pv<2){p.packLv=1;p.pv=2}
-  for(const k of ['xp','streak','best','pity','ostreak','obest','spares'])p[k]=Math.max(0,+p[k]|0);
+  for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards'])p[k]=Math.max(0,+p[k]|0);
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
@@ -38,6 +40,9 @@ function fixProfile(p,s){
     o.deck.every(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length)).slice(-10);
   p.spareDay=ob(p.spareDay)&&typeof p.spareDay.at==='string'&&Array.isArray(p.spareDay.who)
     ?{at:p.spareDay.at.slice(0,10),who:p.spareDay.who.filter(x=>typeof x==='string').slice(0,100)}:null;
+  p.shardDay=ob(p.shardDay)&&(p.shardDay.at===null||typeof p.shardDay.at==='string')?{at:p.shardDay.at&&p.shardDay.at.slice(0,10),n:Math.max(0,p.shardDay.n|0)}:null;
+  p.shop=ob(p.shop)&&typeof p.shop.at==='string'?{at:p.shop.at.slice(0,10),got:ob(p.shop.got)?p.shop.got:{},
+    mine:Number.isInteger(p.shop.mine)&&p.shop.mine>=0&&p.shop.mine<CARD_DATA.length?p.shop.mine:null,wk:p.shop.wk|0,myth:Math.max(0,p.shop.myth|0)}:null;
   grantPacks(p);
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);

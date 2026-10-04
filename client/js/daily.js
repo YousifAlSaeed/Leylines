@@ -7,9 +7,10 @@
    Until the server has told the time, the tab waits.
    ===================================================================== */
 const DAILY_EPOCH=Date.UTC(2026,9,1); // challenge #1
-const DAILY_REWARD={duel:{xp:100,pack:'spark'},puzzle:{pack:'spark'},
-  // the Gauntlet's first run pays one tier per win; later runs only the XP, once a day
-  gauntlet:[{xp:100},{pack:'spark'},{pack:'arcane'}]};
+// shards from the Daily tab don't count toward the daily limit on match shards (store.js)
+const DAILY_REWARD={duel:{xp:100,pack:'spark',shards:50},puzzle:{pack:'spark',shards:30},
+  // the Gauntlet's first run pays one tier per win; later runs only the shards, once a day
+  gauntlet:[{shards:75},{pack:'spark'},{pack:'arcane'}]};
 const CELL_NAME=['top left','top','top right','left','centre','right','bottom left','bottom','bottom right'];
 const dayNo=()=>gameDayNo()-DAILY_EPOCH/864e5+1;
 // one seed per challenge per day
@@ -26,11 +27,15 @@ const dailyRules=(on={},timer=SAVE.rules.timer)=>({open:true,same:false,sameWall
 
 /* ---------- today's progress ---------- */
 // duel: 1 once won, dt: tries; puz: 0 not tried, 1 missed, 2 solved;
-// g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, xp: XP claimed, live: in a match, deck}
+// g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, paid: today's shards claimed, live: in a match, deck}
 function trial(){
   const t=SAVE.trial;
-  if(t&&t.at>=today()&&t.g&&typeof t.g==='object')return t;
-  return SAVE.trial={at:today(),duel:0,dt:0,puz:0,g:{run:0,stage:0,over:0,xp:0,live:0,deck:null}};
+  if(t&&t.at>=today()&&t.g&&typeof t.g==='object'){
+    // before 0.7.0 the once-a-day reward was XP
+    if(t.g.xp){t.g.paid=1;delete t.g.xp}
+    return t;
+  }
+  return SAVE.trial={at:today(),duel:0,dt:0,puz:0,g:{run:0,stage:0,over:0,paid:0,live:0,deck:null}};
 }
 // a Gauntlet match that was never finished (the app closed mid-game) counts as a loss
 {const t=SAVE.trial;if(t&&t.g&&t.g.live){t.g.live=0;t.g.over=1;save()}}
@@ -39,14 +44,15 @@ function trial(){
 function dailyGive(r){
   const lv0=levelOf(SAVE.xp),packs=[];
   if(r.pack){SAVE.packs.push({t:r.pack,src:'daily'});packs.push(`${PACKS[r.pack].name} pack`)}
+  if(r.shards)SAVE.shards+=r.shards;
   // XP can level you up, which brings that level's own pack
   if(r.xp){SAVE.xp+=r.xp;grantPacks(SAVE).forEach(k=>packs.push(`Level ${k.lv} pack`))}
   const lv=levelOf(SAVE.xp);
-  return (r.xp?`<span class="pf-gain">+${r.xp} XP</span>`:'')+(lv>lv0?`<span class="pf-up">Level ${lv}</span>`:'')+
+  return (r.xp?`<span class="pf-gain">+${r.xp} XP</span>`:'')+(r.shards?`<span class="pf-shard">${shd()}+${r.shards}</span>`:'')+(lv>lv0?`<span class="pf-up">Level ${lv}</span>`:'')+
     packs.map(t=>`<span class="pf-pack">🎁 ${t}</span>`).join('');
 }
 const aPack=t=>(/^[AEIOU]/.test(PACKS[t].name)?'an ':'a ')+PACKS[t].name+' pack';
-const rewardText=r=>[r.pack&&PACKS[r.pack].name+' pack',r.xp&&r.xp+' XP'].filter(Boolean).join(' + ');
+const rewardText=r=>[r.pack&&PACKS[r.pack].name+' pack',r.xp&&r.xp+' XP',r.shards&&r.shards+' shards'].filter(Boolean).join(' + ');
 const dailyBox=(chips,note='')=>`<div class="dly-res">${chips?`<div class="pf-reward">${chips}</div>`:''}${note?`<p>${note}</p>`:''}</div>`;
 
 /* ---------- Daily Duel: everyone gets the same lent hands, rules and Challenger CPU ---------- */
@@ -168,13 +174,13 @@ function dailyFinish(w){
   const g=t.g;g.live=0;
   if(!won){
     g.over=1;save();d.again={label:'New run',fn:playGauntlet};
-    return dailyBox('',g.xp?'Run over. New runs today give no more rewards, but you can keep playing.':`Run over. Start a new run to earn today's ${DAILY_REWARD.gauntlet[0].xp} XP.`);
+    return dailyBox('',g.paid?'Run over. New runs today give no more rewards, but you can keep playing.':`Run over. Start a new run to earn today's ${DAILY_REWARD.gauntlet[0].shards} shards.`);
   }
   g.stage++;
   let chips='';
   const first=g.run===1,tier=DAILY_REWARD.gauntlet[g.stage-1];
   if(first&&tier.pack)chips+=dailyGive({pack:tier.pack});
-  if(tier.xp&&!g.xp){g.xp=1;chips+=dailyGive({xp:tier.xp})}
+  if(tier.shards&&!g.paid){g.paid=1;chips+=dailyGive({shards:tier.shards})}
   if(g.stage>=3)g.over=1;
   save();
   if(g.stage<3){
@@ -203,9 +209,9 @@ function dailyStatus(){
     puzzle:t.puz===2?{done:true,txt:'Solved'}:t.puz===1?{done:true,miss:true,txt:'Missed'}:{txt:'1 try'},
     gauntlet:g.run&&g.over&&g.stage>=3?{done:true,txt:'Cleared'}
       :act?{txt:`Stage ${g.stage+1} of 3`}
-      :g.run?{done:!!g.xp,miss:!!g.xp,txt:g.xp?'Run over':'Retry for XP'}:{txt:'Up to 2 packs'},
+      :g.run?{done:!!g.paid,miss:!!g.paid,txt:g.paid?'Run over':'Retry for shards'}:{txt:'Shards + 2 packs'},
     // challenges that can still pay out today
-    left:(t.duel?0:1)+(t.puz?0:1)+(!g.run||act&&(g.run===1||!g.xp)||g.over&&!g.xp?1:0)
+    left:(t.duel?0:1)+(t.puz?0:1)+(!g.run||act&&(g.run===1||!g.paid)||g.over&&!g.paid?1:0)
   };
 }
 const dailyOpen=()=>clockOk()&&dailyStatus().left>0;
@@ -247,7 +253,7 @@ function dailyBrief(k){
     const st=[0,1,2].map(i=>{const S=gauntStage(i),r=DAILY_REWARD.gauntlet[i],state=act&&i<g.stage||g.over&&g.stage>i?'won':act&&i===g.stage?'now':'';
       return `<div class="dly-st ${state}"><span class="dly-art">${S.art}</span><div><b>${esc(S.name)}${S.boss?' <em>Boss</em>':''}</b><small>${DIFF_NAME[S.diff]} · ${RULES.filter(x=>S.rules[x[0]]).map(x=>x[1]).join(' + ')||'Basic'}${S.rules.open?'':' · hidden hand'}</small></div><span class="dly-rw">${state==='won'?'✓':rewardText(r)}</span></div>`}).join('');
     const note=first?'Your own deck, no cards traded. Each win on your <b>first run</b> pays its reward. A loss ends the run.'
-      :g.xp?'Your first run is over, so new runs give no rewards today. Play for fun.':`Your first run is over. Win the first stage of a new run for today's <b>${DAILY_REWARD.gauntlet[0].xp} XP</b>; packs only come on the first run.`;
+      :g.paid?'Your first run is over, so new runs give no rewards today. Play for fun.':`Your first run is over. Win the first stage of a new run for today's <b>${DAILY_REWARD.gauntlet[0].shards} shards</b>; packs only come on the first run.`;
     const cleared=g.run&&g.over&&g.stage>=3;
     modal(`<div class="kick">Gauntlet #${n}</div><h2>${cleared?'Cleared today':act?`Stage ${g.stage+1} of 3`:'Today\'s gauntlet'}</h2><div class="dly-stages">${st}</div>
       <p class="dly-note">${note} Leaving a match, or closing the app during one, counts as a loss.</p>`,

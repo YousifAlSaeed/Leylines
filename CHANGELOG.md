@@ -6,6 +6,15 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.7.0 (2026-10-04)
+The Store and Ley Shards.
+- Ley Shards: earned from CPU and online matches (up to 250 a day) and the Daily tab; everyone starts with 150
+- Store tile on the menu, beside Packs
+- Wandering Merchant: 4 cards and a discounted pack, new every day; one card is one you haven't found yet
+- Pack Counter: buy any pack tier with shards (one Mythic a week)
+- Gauntlet's daily reward is now 75 shards instead of 100 XP; Daily Duel and Daily Puzzle also pay shards
+- Match results show the shards you earned
+
 ## 0.6.5 (2026-10-04)
 - Choosing 5 cards before a match now uses the Collection binder: rarity tabs, pages, tap a card to add it, Play in the hand tray
 

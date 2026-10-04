@@ -96,7 +96,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap}
 .title{margin:0;line-height:0;color:var(--text)}
 .title .logo-word{display:block;height:25px;width:auto}
-.title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sr,.title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .subtitle{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35;text-wrap:pretty}
 .hero{position:relative;border-radius:22px;padding:18px;background:linear-gradient(160deg,var(--surf2),var(--surf));border:1px solid var(--line);overflow:hidden;
   box-shadow:0 20px 50px -20px rgba(var(--sh),calc(.8*var(--shk)))}

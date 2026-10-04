@@ -27,7 +27,7 @@ function untilMidnight(){
 // counts them as today, so it waits one day instead of until that date
 function clockFix(){
   const d=today();let ch=false;
-  for(const k of ['daily','trial','spareDay'])if(SAVE[k]&&typeof SAVE[k].at==='string'&&SAVE[k].at>d){SAVE[k].at=d;ch=true}
+  for(const k of ['daily','trial','spareDay','shardDay','shop'])if(SAVE[k]&&typeof SAVE[k].at==='string'&&SAVE[k].at>d){SAVE[k].at=d;ch=true}
   if(ch)save();
 }
 async function clockSync(){
@@ -43,6 +43,7 @@ async function clockSync(){
     if(first){
       if($('#scr-menu').classList.contains('on'))renderMenu();
       if($('#scr-packs').classList.contains('on'))renderPacks();
+      if($('#scr-store').classList.contains('on'))renderStore();
     }
   }catch(e){
     // try again soon, then less often: 5s, 10s, 20s … up to every 2 minutes

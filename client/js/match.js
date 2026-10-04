@@ -312,7 +312,7 @@ function quitMatch(){
   let took=null;
   if(G.mode!=='local'&&!puzzle){
     // between the matches of a series that match already counted; the series is what's given up
-    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online'}));
+    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',left:true}));
     const h=histAdd('l','you');
     if(ai&&n)took=loseCards(strongest(G.decks[G.me],n));
     // online the other player decides; it reaches you through the server (spare.js)

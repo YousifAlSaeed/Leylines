@@ -126,6 +126,7 @@ function pkClose(){
   stg.className='pk-stage';FX.p=[];PK.state='';
   $$('.screen').forEach(s=>s.inert=false);
   if($('#scr-packs').classList.contains('on'))renderPacks();
+  if($('#scr-store').classList.contains('on'))renderStore();
   if($('#scr-menu').classList.contains('on'))renderMenu();
   freshToast();
   if(PK.ret&&PK.ret.isConnected&&PK.ret.offsetParent)PK.ret.focus({preventScroll:true});

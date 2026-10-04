@@ -1,0 +1,74 @@
+/* ---------- store (store.js) ---------- */
+:root{--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a}
+:root[data-theme="light"]{--shard:#22a6b8;--shard-ink:#0f7684;--shard-deep:#0d5563}
+
+/* a Ley Shard: inline, sized by the text around it */
+.shd{display:inline-block;width:.68em;height:.95em;margin-right:.28em;vertical-align:-.12em;flex:none;
+  background:linear-gradient(160deg,#e6fdff 0%,var(--shard) 45%,var(--shard-deep));clip-path:polygon(50% 0,100% 36%,50% 100%,0 36%)}
+
+/* menu tile: beside Packs */
+.st-gem{--w:34px;display:block;flex:none;width:var(--w);height:calc(var(--w)*1.43);position:relative;
+  background:linear-gradient(160deg,#e6fdff 0%,var(--shard) 40%,var(--shard-deep));clip-path:polygon(50% 0,100% 30%,82% 100%,18% 100%,0 30%)}
+.st-gem::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 45%,rgba(255,255,255,.55) 50%,transparent 56%)}
+.tile.stile small{color:var(--shard-ink);font-weight:600}
+.tile.stile.hot{border-color:color-mix(in srgb,var(--shard) 70%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--shard) 50%,transparent) inset,0 10px 30px -14px var(--shard)}
+.tile.stile.hot .st-gem::after{animation:stShine 2.6s ease-in-out infinite}
+@keyframes stShine{0%,55%{transform:translateX(-80%)}100%{transform:translateX(80%)}}
+
+/* the result screen's chips (profile.css lays them out) */
+.pf-reward .pf-shard{background:color-mix(in srgb,var(--shard) 16%,transparent);color:var(--shard-ink);display:inline-flex;align-items:center}
+.pf-reward .pf-cap{background:var(--well);color:var(--muted);font-weight:600}
+
+/* ---------- the Store screen ---------- */
+.st-top,.st-wrap{max-width:760px}
+.st-wrap{gap:14px}
+.st-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);font-variant-numeric:tabular-nums;
+  color:var(--shard-ink);background:color-mix(in srgb,var(--shard) 12%,transparent);border:1px solid color-mix(in srgb,var(--shard) 35%,transparent)}
+.st-note{margin:12px 0 0;color:var(--muted);font-size:12.5px}
+.st-note b{color:var(--text)}
+.st-price{display:inline-flex;align-items:center;font:700 14px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--shard-ink);white-space:nowrap}
+.st-price.short{color:var(--muted);opacity:.75}
+
+/* the Merchant */
+.st-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.st-slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 6px 10px;border-radius:14px;background:var(--well);border:1px solid var(--line)}
+.st-slot .card{font-size:min(17px,3.6vw)}
+.st-slot .btn{width:100%;padding:8px 6px}
+.st-slot.sold .card{filter:grayscale(.85) brightness(.7)}
+.st-slot.sold::after{content:"SOLD";position:absolute;top:34%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font:800 15px/1 var(--display);letter-spacing:.14em;
+  color:var(--cta);border:2px solid currentColor;border-radius:5px;padding:3px 7px;background:var(--surf);pointer-events:none}
+.st-tag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;font:800 10px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 7px;border-radius:999px;background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta)}
+@media (max-width:520px){.st-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.st-slot .card{font-size:min(19px,5.6vw)}}
+
+/* a pack row: the Merchant's deal and the Pack Counter */
+.st-deal,.st-pk{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;border-radius:14px;cursor:pointer;
+  background:var(--well);border:1px solid var(--line);color:var(--text);font:inherit;transition:border-color .2s,transform .25s var(--spring)}
+.st-deal{margin-top:12px}
+.st-deal:hover:not(:disabled),.st-pk:hover:not(:disabled){border-color:var(--line2);transform:translateY(-1px)}
+.st-deal:disabled,.st-pk:disabled{cursor:default;opacity:.6}
+.st-deal .pk-mini,.st-pk .pk-mini{--w:32px}
+.st-dt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st-dt b{font:700 16px/1.15 var(--display)}
+.st-dt small{color:var(--muted);font-size:12px}
+.st-was{color:var(--muted);font-size:12.5px;text-decoration:line-through;font-variant-numeric:tabular-nums}
+.st-packs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.st-packs{grid-template-columns:1fr}}
+
+/* earning */
+.st-bar{height:10px;border-radius:99px;background:var(--well);overflow:hidden;border:1px solid var(--line)}
+.st-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--shard-deep),var(--shard))}
+.st-bar.full i{background:linear-gradient(90deg,var(--accent),var(--cta))}
+.st-rates{display:grid;gap:6px;margin:14px 0 0}
+.st-rates div{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--line);font-size:13.5px}
+.st-rates div:last-child{border-bottom:0;padding-bottom:0}
+.st-rates dt{font-weight:600}
+.st-rates dd{margin:0;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* the confirm box */
+.st-one{display:flex;justify-content:center;margin:6px 0 10px}
+.st-one .card{font-size:22px}
+.st-cost{display:flex;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
+.st-cost b{color:var(--shard-ink);font:700 18px/1 var(--display);margin-right:6px}
+
+@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-deal,.st-pk{transition:none}}

@@ -17,8 +17,8 @@
 .pk-mini.ready{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 22px var(--pg)}
 .pk-mini.spent{filter:grayscale(.7) brightness(.6)}
 
-/* menu tile: across the top of the tiles */
-.tile.ptile{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:10px 14px}
+/* menu tile: across the top of the tiles, beside the Store (store.css) */
+.tile.ptile{flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:10px 14px}
 .tile.ptile .pk-mini{--w:34px}
 .tile.ptile>div{flex:1;min-width:0}
 .tile.ptile.hot{border-color:var(--cta);box-shadow:0 0 0 1px var(--cta) inset,0 10px 30px -14px var(--cta-glow)}

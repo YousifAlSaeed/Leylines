@@ -20,7 +20,7 @@ function renderMenu(){
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  renderHero();renderPackTile();renderFriendTile();renderLbTile();
+  renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
   // a CPU match the app closed on, or news about an online match you left (spare.js)
   if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
 }
@@ -110,9 +110,10 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='online')openOnline();
   else if(g==='coll')openCollection();
   else if(g==='packs')openPacks();
+  else if(g==='store')openStore();
   else if(g==='howto')openHow(0);
   else if(g==='friends')openFriends();
   else if(g==='leaders')openLeaderboard();
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
-$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP and coins could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};
+$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP and shards could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};

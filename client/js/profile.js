@@ -62,13 +62,13 @@ function freshToast(){
 }
 
 /* ---------- match tracking (match.js and online.js call these) ---------- */
-// res: 'w' | 'l' | 'd'. o: {online, diff, sweep, sd, elemental}. Returns what the result screen shows.
+// res: 'w' | 'l' | 'd'. o: {online, diff, sweep, sd, elemental, left: left early (no shards)}. Returns what the result screen shows.
 function recordMatch(res,o={}){
   const k=(o.online?'o':'')+res;
   SAVE.stats[k]=(SAVE.stats[k]||0)+1;
   const lv0=levelOf(SAVE.xp),gain=Math.round(XP[res]*(o.online?1.5:1));
   SAVE.xp+=gain;
-  const packs=grantPacks(SAVE);
+  const packs=grantPacks(SAVE),{sh,capped}=matchShards(res,o);
   // a draw doesn't break a streak, it just doesn't add to it
   if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
   SAVE.recent=[...SAVE.recent,res].slice(-10);
@@ -84,7 +84,7 @@ function recordMatch(res,o={}){
     if(o.elemental)earn('elemental');
   }
   profCheck();save();
-  return {gain,lv0,lv:levelOf(SAVE.xp),packs};
+  return {gain,lv0,lv:levelOf(SAVE.xp),packs,sh,capped};
 }
 // a move's flips, for the badges (only your own moves in CPU and online matches)
 function profFlips(ev){
@@ -96,6 +96,7 @@ function profFlips(ev){
 function rewardHTML(r){
   const up=r.lv>r.lv0,newTitle=titleOf(r.lv)!==titleOf(r.lv0);
   return `<div class="pf-reward"><span class="pf-gain">+${r.gain} XP</span>`+
+    (r.sh?`<span class="pf-shard">${shd()}+${r.sh}</span>`:'')+(r.capped?'<span class="pf-cap">Daily shard limit reached</span>':'')+
     (up?`<span class="pf-up">Level ${r.lv}${newTitle?' · '+titleOf(r.lv):''}</span>`:'')+
     Object.entries((r.packs||[]).reduce((n,k)=>(n[k.t]=(n[k.t]||0)+1,n),{})).map(([t,n])=>`<span class="pf-pack">🎁 ${PACKS[t].name} pack${n>1?' ×'+n:''}</span>`).join('')+`</div>`+freshHTML();
 }
