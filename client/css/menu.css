@@ -190,3 +190,23 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }
 .note.warn b{color:var(--warn)}
+/* add to home screen (a2hs.js): a card at the bottom of the menu, iPhone Safari only */
+.a2hs{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:5;width:min(420px,calc(100% - 24px));
+  transform:translate(-50%,24px);opacity:0;transition:transform .35s var(--spring),opacity .25s;
+  padding:14px 14px 12px;border-radius:20px;border:1px solid var(--line2);background:linear-gradient(170deg,var(--surf2),var(--surf));
+  box-shadow:0 18px 40px -12px rgba(var(--sh),calc(.9*var(--shk)))}
+.a2hs.on{transform:translate(-50%,0);opacity:1}
+.a2hs-x{position:absolute;right:6px;top:6px;width:36px;height:36px;border:0;border-radius:10px;background:none;color:var(--muted);font:400 24px/1 var(--body);cursor:pointer}
+.a2hs-x:hover{background:rgba(var(--tint),.08);color:var(--text)}
+.a2hs-top{display:flex;gap:12px;align-items:center;padding-right:30px}
+.a2hs-icon{width:46px;height:46px;border-radius:11px;flex:none}
+.a2hs h3{margin:0;font:800 16px/1.2 var(--display);color:var(--text)}
+.a2hs-top p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+.a2hs ol{margin:12px 0 0;padding:10px 12px 10px 30px;border-radius:14px;background:rgba(var(--tint),.04);display:flex;flex-direction:column;gap:7px}
+.a2hs li{font-size:13px;line-height:1.35;color:var(--muted)}
+.a2hs li::marker{color:var(--accent-ink);font-weight:700}
+.a2hs li b{color:var(--text);font-weight:600}
+.a2hs li small{font-size:11.5px}
+.a2hs-ic{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 4px;margin:0 1px;vertical-align:middle;border-radius:6px;
+  background:rgba(var(--tint),.1);color:var(--accent-ink)!important;font:700 12px/1 var(--body);letter-spacing:.05em}
+.a2hs-ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

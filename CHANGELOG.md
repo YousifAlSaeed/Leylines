@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.10.0 (2026-10-04)
+- On iPhone Safari, a small guide shows how to add Leylines to your home screen and play it like an app (close it and it stays away for 30 days)
+
 ## 0.9.0 (2026-10-04)
 - What's new: tap the version next to the menu title to see the latest changes, and scroll for older versions
 
