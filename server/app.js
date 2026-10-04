@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import { authRouter } from './routes/auth.js';
 import { forfeitsRouter } from './routes/forfeits.js';
 import { friendsRouter } from './routes/friends.js';
@@ -69,6 +70,8 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
   });
   app.use('/api', api);
 
+  // the game's "What's new" reads the changelog (on GitHub Pages it's one folder up from the game, at the same relative path)
+  app.get('/CHANGELOG.md', (req, res) => res.type('text/markdown; charset=utf-8').sendFile(path.resolve(clientDir, '../CHANGELOG.md')));
   // the game itself: plain static files, the same ones GitHub Pages serves
   app.use(express.static(clientDir));
   return app;

@@ -13,6 +13,8 @@ It is kept in three places that must always match (`npm test` checks):
 
 - **Patch** `0.6.0 → 0.6.1`: a fix, a tweak, a small polish.
 - **Minor** `0.6.1 → 0.7.0`: a new feature, mode, rule, screen or system.
+  Only when it changes how the game plays. Helpers and small extras (a tip,
+  a guide, a nicer button) are a **patch**.
 - **Major** `0.x → 1.0.0`: only when the owners say the game is out of alpha. Never on your own.
 
 Changes that don't touch the game (README, tests only, CI, tooling) don't bump.

@@ -4,7 +4,9 @@
    Your profile is built from the save, so guests have one too. A shared
    link (?u=name) shows someone else's, read-only, from /api/users/:name.
    ===================================================================== */
-const XP={w:40,d:20,l:10};              // per match; online matches give 1.5×
+// XP per match by opponent, as [win, draw, loss]. Leaving early and Same screen give none.
+// challenger: the Daily Duel and Gauntlet CPU; boss: the Gauntlet's last stage
+const MATCH_XP={easy:[20,10,5],normal:[40,20,10],hard:[60,30,15],challenger:[50,25,10],boss:[80,40,15],online:[60,30,20]};
 const TITLES=[[1,'Wanderer'],[3,'Apprentice'],[5,'Card Adept'],[8,'Leyweaver'],[12,'Rune Master'],[16,'Archmage'],[20,'Ley Sovereign']];
 const titleOf=lv=>TITLES.filter(t=>lv>=t[0]).pop()[1];
 const RINGS=['#8B6CFF','#FF5FA8','#2F5FD0','#5EE6B0','#f0c35c','#C8344F'];
@@ -62,13 +64,13 @@ function freshToast(){
 }
 
 /* ---------- match tracking (match.js and online.js call these) ---------- */
-// res: 'w' | 'l' | 'd'. o: {online, diff, sweep, sd, elemental}. Returns what the result screen shows.
+// res: 'w' | 'l' | 'd'. o: {online, diff, sweep, sd, elemental, left: left early (no shards)}. Returns what the result screen shows.
 function recordMatch(res,o={}){
   const k=(o.online?'o':'')+res;
   SAVE.stats[k]=(SAVE.stats[k]||0)+1;
-  const lv0=levelOf(SAVE.xp),gain=Math.round(XP[res]*(o.online?1.5:1));
+  const lv0=levelOf(SAVE.xp),xp=MATCH_XP[o.online?'online':o.diff]||MATCH_XP.normal,gain=o.left?0:xp['wdl'.indexOf(res)];
   SAVE.xp+=gain;
-  const packs=grantPacks(SAVE);
+  const packs=grantPacks(SAVE),{sh,capped}=matchShards(res,o);
   // a draw doesn't break a streak, it just doesn't add to it
   if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
   SAVE.recent=[...SAVE.recent,res].slice(-10);
@@ -84,7 +86,7 @@ function recordMatch(res,o={}){
     if(o.elemental)earn('elemental');
   }
   profCheck();save();
-  return {gain,lv0,lv:levelOf(SAVE.xp),packs};
+  return {gain,lv0,lv:levelOf(SAVE.xp),packs,sh,capped};
 }
 // a move's flips, for the badges (only your own moves in CPU and online matches)
 function profFlips(ev){
@@ -95,7 +97,8 @@ function profFlips(ev){
 }
 function rewardHTML(r){
   const up=r.lv>r.lv0,newTitle=titleOf(r.lv)!==titleOf(r.lv0);
-  return `<div class="pf-reward"><span class="pf-gain">+${r.gain} XP</span>`+
+  return `<div class="pf-reward">${r.gain?`<span class="pf-gain">+${r.gain} XP</span>`:''}`+
+    (r.sh?`<span class="pf-shard">${shd()}+${r.sh}</span>`:'')+(r.capped?'<span class="pf-cap">Daily shard limit reached</span>':'')+
     (up?`<span class="pf-up">Level ${r.lv}${newTitle?' · '+titleOf(r.lv):''}</span>`:'')+
     Object.entries((r.packs||[]).reduce((n,k)=>(n[k.t]=(n[k.t]||0)+1,n),{})).map(([t,n])=>`<span class="pf-pack">🎁 ${PACKS[t].name} pack${n>1?' ×'+n:''}</span>`).join('')+`</div>`+freshHTML();
 }

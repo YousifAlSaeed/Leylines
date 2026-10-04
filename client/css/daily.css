@@ -9,12 +9,24 @@
 
 .dly-no{font-weight:600;color:var(--accent-ink);font-size:.62em;vertical-align:.18em}
 .dly-wait{font-variant-numeric:tabular-nums}
-.dly-pips{display:flex;gap:5px;padding:6px 4px 0 0;flex:none}
-.dly-pips i{width:12px;height:12px;border-radius:4px;background:rgba(var(--tint),.1);border:1px solid var(--line2)}
-.dly-pips i.on{background:var(--accent);border-color:transparent}
-.dly-pips i.miss{background:color-mix(in srgb,var(--warn) 40%,transparent);border-color:transparent}
+/* the Daily picture on the menu card: one stamp per challenge, lit once it's done */
+.dly-stamps{display:flex;gap:6px;flex:none;padding-top:2px}
+.dly-stamps i{position:relative;width:40px;height:46px;border-radius:11px;display:grid;place-items:center;font-style:normal;
+  border:1.5px dashed var(--line2);color:var(--muted);background:rgba(var(--tint),.03)}
+.dly-stamps i:nth-child(1){transform:rotate(-5deg)} .dly-stamps i:nth-child(3){transform:rotate(5deg)}
+.dly-stamps svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dly-stamps i.on{border:1.5px solid transparent;background:linear-gradient(160deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#000));color:var(--on-accent);box-shadow:0 6px 16px -8px var(--accent-glow)}
+.dly-stamps i.miss{border-style:solid;border-color:color-mix(in srgb,var(--warn) 50%,transparent);color:var(--warn)}
+.dly-stamps em{position:absolute;right:-5px;bottom:-5px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:800 10px/1 var(--body);font-style:normal;background:var(--pf-win);color:#06281c;box-shadow:0 0 0 2px var(--surf2)}
+@media (min-width:920px) and (min-height:560px){.dly-stamps i{width:52px;height:60px;border-radius:13px}.dly-stamps svg{width:26px;height:26px}}
 
 .dly-row{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+/* on the menu card: as tall as the two rows of buttons the other modes have; only the next challenge
+   is pink, the others are outlined so the card has one main button like the other modes */
+.hero-row .dly{min-height:104px}
+.hero-row .dly:not(.next):not(.done){background:var(--surf2);color:var(--text);border-color:var(--line2);box-shadow:none}
+.hero-row .dly:not(.next):not(.done) svg{color:var(--cta)}
+.hero-row .dly:not(.next):not(.done) small{color:var(--muted);opacity:1}
 .dly{appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:76px;padding:8px 4px;border-radius:14px;cursor:pointer;
   background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);border:1px solid transparent;font:inherit;
   box-shadow:0 10px 24px -10px var(--cta-glow);transition:transform .2s var(--spring),filter .15s}

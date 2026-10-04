@@ -20,7 +20,7 @@ function renderMenu(){
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  renderHero();renderPackTile();renderFriendTile();renderLbTile();
+  renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
   // a CPU match the app closed on, or news about an online match you left (spare.js)
   if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
 }
@@ -41,32 +41,46 @@ function heroDeck(random){
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
 const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online'],['daily','Daily']];
-// what the Play card shows for one mode
+// a small fan for Same screen: two of Blue's cards (or backs) vs two of Red's
+function localFan(d){
+  const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
+  return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,'blue')}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
+}
+// the bar of 3 numbers above a mode's buttons: [value, label]. XP, shards, then one more that fits the mode
+const shardsToday=()=>[`${shd()}${shardDay().n}/${SHARD_CAP}`,'shards today'];
+const winStats=(xp,sh)=>[[`+${xp}`,'XP a win'],[`${shd()}+${sh}`,'shards a win'],shardsToday()];
+// what the Play card shows for one mode. Every mode has the same parts: a title with a picture,
+// the bar of 3 numbers, then the controls (two rows), so no mode leaves a gap
 function heroPane(m){
-  let h,sub,side='',row;
+  let h,sub,side='',stats=[],row;
   if(m==='ai'){
-    const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade);
-    h='vs Computer';
-    sub=dk.sub+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(boOf(SAVE.bo)>1?' · Best of '+SAVE.bo:'');
-    side=dk.fan;
-    row=`<button class="btn primary" id="heroGo">Play</button><div class="seg" id="menuDiff" role="group" aria-label="Difficulty">${
-      DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`;
+    const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade),bo=boOf(SAVE.bo);
+    h='vs Computer';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(bo>1?' · Best of '+bo:'');side=dk.fan;
+    // the numbers follow the difficulty you pick
+    stats=winStats(MATCH_XP[SAVE.diff][0],MATCH_SHARDS[SAVE.diff]);
+    row=`<div class="seg full" id="menuDiff" role="group" aria-label="Difficulty">${
+      DIFFS.map(([k,l])=>`<button data-k="${k}" class="${SAVE.diff===k?'on':''}" aria-pressed="${SAVE.diff===k}">${l}</button>`).join('')}</div>`+
+      `<button class="btn primary full" id="heroGo">Play</button>`;
   }else if(m==='local'){
-    h='Same screen';sub='Blue picks, then passes to Red · friendly';
-    side='<div class="vsav" aria-hidden="true"><span class="av b">B</span><em>vs</em><span class="av r">R</span></div>';
-    row='<button class="btn primary full" id="heroGo">Play</button>';
+    // Quick play: last game's rules and both players' cards, straight into the match
+    const d=localDecks();
+    h='Same screen';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
+    // no XP or shards here, so the bar says what kind of game it is
+    stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
+    row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;
   }else if(m==='daily'){
     // daily.js: today's three challenges
-    ({h,sub,side,row}=dailyPane());
-    return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div><div class="hero-row">${row}</div>`;
+    ({h,sub,side,stats,row}=dailyPane());
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
     const dk=heroDeck(false),rj=readRejoin();
-    h='Online';sub=dk.sub+' · Host or join with a code';side=dk.fan;
+    h='Online';sub=esc(dk.sub)+' · Host picks the rules';side=dk.fan;
+    stats=winStats(MATCH_XP.online[0],MATCH_SHARDS.online);
     // a game this device was in when the app closed: one tap back in
     row=(rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+`<button class="btn ${rj?'':'primary '}full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
-  return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${esc(sub)}</p></div>${side}</div><div class="hero-row">${row}</div>`;
+  return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div>`+
+    (stats.length?`<div class="hero-stats">${stats.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>`:'')+`<div class="hero-row">${row}</div>`;
 }
 // the Play card: a 4-way mode switch, then what that mode needs
 function renderHero(anim){
@@ -82,6 +96,7 @@ function renderHero(anim){
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   if(m==='daily'){bindDaily();return}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
+  const qp=$('#heroQuick');if(qp)qp.onclick=()=>{sfx('click');quickLocal()};
   const rb=$('#heroRejoin');
   if(rb)rb.onclick=()=>{sfx('click');const rj=readRejoin();if(!rj){renderHero();return}$('#heroCode').value=rj.code;heroJoin()};
   $$('#menuDiff button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderHero();refocus('#menuDiff',b)});
@@ -110,9 +125,10 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='online')openOnline();
   else if(g==='coll')openCollection();
   else if(g==='packs')openPacks();
+  else if(g==='store')openStore();
   else if(g==='howto')openHow(0);
   else if(g==='friends')openFriends();
   else if(g==='leaders')openLeaderboard();
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
-$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP and coins could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};
+$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP, shards and collection could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};

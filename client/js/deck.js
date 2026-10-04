@@ -3,42 +3,22 @@
    DECK PICKER
    ===================================================================== */
 let DK=null;
+// the picker is the collection binder in "pick" mode: same pages and tray, plus a Play button
 function openDeck(o){
   // o: {title, pool:[{id,count}], color, pre:[ids], free (Same screen: count kinds, not copies), onDone(ids), onBack()}
-  DK={...o,pfx:'deck',sel:[],f:'all',deal:-1,saving:false,note:'',render:()=>renderDeck()};
-  for(const id of (o.pre||[])){if(DK.sel.length<5&&remaining(id)>0&&!rarBlock(DK.sel,id))DK.sel.push(id)}
-  $('#deckTitle').textContent=o.title;
-  renderDeck();show('deck');$('#scr-deck').scrollTop=0;
+  DK={...o,pfx:'coll',sel:[],deal:-1,saving:false,note:'',render:()=>renderDeck()};
+  for(const id of (o.pre||[])){if(DK.sel.length<5&&handRemaining(DK,id)>0&&!rarBlock(DK.sel,id))DK.sel.push(id)}
+  const total=o.free?o.pool.length:o.pool.reduce((a,e)=>a+e.count,0);
+  collMode(DK,o.title,`${total} cards`);
+  BD.p=0;show('coll');$('#scr-coll').scrollTop=0;
+  bdRender();renderDeck();
 }
-const remaining=id=>handRemaining(DK,id);
-const DECK_RANGES=[['all','All',0],...[1,2,3,4,5].map(r=>[String(r),rarName(r),r])];
 const SIDE_NAMES=['Top','Right','Bottom','Left'];
 function renderDeck(){
-  const col=DK.color||'blue';
-  // rarity filter: only offer rarities you hold cards of, and hide the row when there's nothing to choose between
-  const inRange=(e,r)=>!r[2]||CARDS[e.id].rar===r[2];
-  const ranges=DECK_RANGES.filter(r=>r[0]==='all'||DK.pool.some(e=>inRange(e,r)));
-  if(!ranges.some(r=>r[0]===DK.f))DK.f='all';
-  $('#deckFilter').innerHTML=ranges.length>2?ranges.map(r=>`<button class="dk-chip ${DK.f===r[0]?'on':''}" data-f="${r[0]}" aria-pressed="${DK.f===r[0]}">${r[1]}</button>`).join(''):'';
-  $$('#deckFilter .dk-chip').forEach(b=>b.onclick=()=>{DK.f=b.dataset.f;sfx('click');renderDeck()});
   const n=DK.sel.length;
-  // collection grid
-  const cur=DECK_RANGES.find(r=>r[0]===DK.f);
-  const pool=DK.pool.filter(e=>inRange(e,cur)).sort((a,b)=>CARDS[b.id].rar-CARDS[a.id].rar||CARDS[b.id].lv-CARDS[a.id].lv||CARDS[b.id].sum-CARDS[a.id].sum||a.id-b.id);
-  let html='',lastR=0;
-  for(const e of pool){
-    const c=CARDS[e.id];
-    if(c.rar!==lastR){html+=`<h4 class="rar${c.rar}"><span class="rt">${c.rar}★</span> ${RARITY[c.rar-1]}${RAR_CAP[c.rar]?`<small>${RAR_CAP[c.rar]}</small>`:''}</h4>`;lastR=c.rar}
-    const r=remaining(e.id),why=r>0?rarBlock(DK.sel,e.id):'',off=r<=0||!!why;
-    html+=`<div class="gc ${off?'used':''}" data-id="${e.id}" role="button" aria-label="${esc(cardLabel(e.id))}, ${r} left${why?'. '+why:''}"${why?` title="${why}"`:''}${off?' aria-disabled="true"':''}>${cardHTML(e.id,col,{count:r})}</div>`;
-  }
-  $('#deckGrid').innerHTML=html;
-  $$('#deckGrid .gc').forEach(g=>g.onclick=()=>handAdd(DK,+g.dataset.id));
-  const total=DK.free?DK.pool.length:DK.pool.reduce((a,e)=>a+e.count,0);
-  $('#deckMeta').textContent=`${total} cards`;
-  $('#deckGo').disabled=n!==5;
-  $('#deckGo').textContent=n<5?`${n} / 5`:'Play';
-  renderHand(DK);
+  renderHand(DK);bdSyncAdd();
+  $('#collGo').disabled=n!==5;
+  $('#collGo').textContent=n<5?`${n} / 5`:'Play';
 }
 
 /* =====================================================================
@@ -152,9 +132,6 @@ function wireHand(P,get){
   };
   $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
 }
-wireHand('deck',()=>DK);
-$('#deckGo').onclick=()=>{if(DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
-$('#deckBack').onclick=()=>{sfx('click');DK&&DK.onBack?DK.onBack():show('menu')};
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return legalDeck(shuffle(all))}
 // Same screen: any card this account has ever found (even if lost since), up to 5 copies
 const foundPool=()=>CARDS.filter(c=>isSeen(c.id)).map(c=>({id:c.id,count:5}));

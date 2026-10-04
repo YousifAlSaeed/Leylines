@@ -17,8 +17,8 @@
 .pk-mini.ready{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 22px var(--pg)}
 .pk-mini.spent{filter:grayscale(.7) brightness(.6)}
 
-/* menu tile: across the top of the tiles */
-.tile.ptile{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:10px 14px}
+/* menu tile: across the top of the tiles, beside the Store (store.css) */
+.tile.ptile{flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:10px 14px}
 .tile.ptile .pk-mini{--w:34px}
 .tile.ptile>div{flex:1;min-width:0}
 .tile.ptile.hot{border-color:var(--cta);box-shadow:0 0 0 1px var(--cta) inset,0 10px 30px -14px var(--cta-glow)}
@@ -50,7 +50,7 @@
 .pk-streak i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:800 11px/1 var(--display);font-style:normal;background:var(--well);border:1px solid var(--line);color:var(--muted)}
 .pk-streak i.on{background:color-mix(in srgb,var(--pf-win) 18%,transparent);border-color:transparent;color:var(--pf-win)}
 .pk-streak i.today{box-shadow:0 0 0 2px var(--cta);color:var(--text)}
-.pk-streak i.gift{background:linear-gradient(160deg,#7a3cd6,#240c5c);color:#fff;border-color:transparent}
+.pk-streak i.gift{background:linear-gradient(160deg,#7a3cd6,#240c5c) border-box;color:#fff;border-color:transparent}
 .pk-streak i.gift.on{box-shadow:0 0 0 2px var(--pf-win)}
 @media (max-width:420px){.pk-daily{flex-direction:column;text-align:center}.pk-dtext{align-items:center}}
 @keyframes pkSpin{to{transform:rotate(1turn)}}
@@ -198,3 +198,9 @@
   .pk-rays,.pk-daily::before,.pk-arr,.tile.ptile.hot .pk-mini,.pk-node.ready .pk-mini{animation:none}
   .pk-pack.shake,.pk-flip.tease{animation:none}
 }
+/* the 5★ guarantee bar (also under the Store's Pack Counter) */
+.pity-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
+.pity-h b{font:700 14px/1 var(--display);letter-spacing:0;color:var(--text);font-variant-numeric:tabular-nums}
+.pity-bar{height:10px;border-radius:99px;background:rgba(var(--tint),.08);overflow:hidden;border:1px solid var(--line)}
+.pity-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff8fd0,#ffd76a);transition:width .4s var(--ease)}
+.pity-note{margin:8px 0 0;color:var(--muted);font-size:12.5px}

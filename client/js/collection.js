@@ -5,10 +5,26 @@
 // the hand you build in the collection; it stays put while you browse, and survives leaving the screen
 const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
-wireHand('coll',()=>CH);
+// the hand the binder and tray work on: CH in the collection, DK when picking cards for a match
+let BH=CH;
+const picking=()=>BH!==CH;
+wireHand('coll',()=>BH);
+// switch the screen between the collection and the match picker (Play button, its own title and back)
+function collMode(h,title,meta){
+  BH=h;const pick=picking();
+  $('#scr-coll').classList.toggle('pick',pick);
+  $('#collTitle').textContent=title;$('#collMeta').innerHTML=meta;
+  $('#collGo').classList.toggle('hidden',!pick);
+  const sv=$('#collSave');
+  sv.className=pick?'dk-act ico':'btn primary';
+  sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>':'Save hand';
+  if(pick)sv.setAttribute('aria-label','Save hand');else sv.removeAttribute('aria-label');
+}
+$('#collBack').onclick=()=>{sfx('click');picking()&&DK.onBack?DK.onBack():show('menu')};
+$('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 function openCollection(){
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
-  $('#collMeta').innerHTML=(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:'');
+  collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
   CH.pool=collPool();
   const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
@@ -40,8 +56,11 @@ function collDetail(id){
   (add.disabled?box.querySelector('.mbtns .btn'):add).focus({preventScroll:true});
 }
 // the + on each owned card: greyed out once every copy is in the hand, the hand is full, or the rarity limit is reached
-const bdCanAdd=id=>CH.sel.length<5&&handRemaining(CH,id)>0&&!rarBlock(CH.sel,id);
-function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{b.disabled=!bdCanAdd(+b.dataset.add)})}
+const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&!rarBlock(BH.sel,id);
+// how many of a card the binder holds: owned copies in the collection, the picker's pool when picking
+const bdHave=id=>{const e=BH.pool.find(x=>x.id===id);return e?e.count:0};
+// when picking, a card you can't add right now also fades, like the old picker grid
+function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dataset.add);b.disabled=no;b.parentNode.classList.toggle('used',no&&picking())})}
 
 /* ---------- binder: pages by rarity, up to 8 cards a page ----------
    8 fits the 3×3 sleeves (with one spare), 4×2 on short pages and 2×4 on tall ones, so no card is ever hidden */
@@ -65,11 +84,11 @@ function bdPage(k){
   for(let i=0;i<9;i++){
     const c=cs[i];
     if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
-    const n=owned(c.id),seen=isSeen(c.id);
-    const face=n?cardHTML(c.id,'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
+    const face=n?cardHTML(c.id,BH.color||'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
-    const add=n?`<button class="pk-add" data-add="${c.id}" ${bdCanAdd(c.id)?'':'disabled'} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
-    pk+=`<div class="pk-cell"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
+    const add=n?`<button class="pk-add" data-add="${c.id}" ${no?'disabled':''} aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
+    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
   }
   return `<div class="bd-h rar${pg.r}"><b><span class="rt">${pg.r}★</span> ${RARITY[pg.r-1]}${pg.parts>1?` <em>${pg.part}/${pg.parts}</em>`:''}</b>`+
     `<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
@@ -201,9 +220,12 @@ $('#bdPrev').onclick=()=>bdStep(-1);
 $('#bdNext').onclick=()=>bdStep(1);
 $('#binder').addEventListener('click',e=>{
   const a=e.target.closest('.pk-add');
-  if(a){if(!BD.swiped&&!a.disabled)handAdd(CH,+a.dataset.add);return}
+  if(a){if(!BD.swiped&&!a.disabled)handAdd(BH,+a.dataset.add);return}
   const b=e.target.closest('.pocket[data-id]');
-  if(b&&!BD.swiped)collDetail(+b.dataset.id);
+  if(!b||BD.swiped)return;
+  // picking: a tap adds the card straight to the hand; in the collection it opens the card
+  const id=+b.dataset.id;
+  if(picking()&&bdHave(id))handAdd(BH,id);else collDetail(id);
 });
 // swipe left / right to turn pages
 {let sx=0,sy=0,down=false;
@@ -233,12 +255,12 @@ $('#binder').addEventListener('click',e=>{
    d.g.remove();d.el.classList.remove('dragging');tray.classList.remove('over');
    // swallow the click that follows, so the card's detail doesn't open
    BD.swiped=true;setTimeout(()=>{BD.swiped=false},0);
-   if(!cancel&&overTray(e.clientX,e.clientY))handAdd(CH,d.id);
+   if(!cancel&&overTray(e.clientX,e.clientY))handAdd(BH,d.id);
  };
  $('#binder').addEventListener('pointerdown',e=>{
    const b=e.target.closest('.pocket[data-id]');
    if(!b||e.button>0||BD.done)return;
-   const id=+b.dataset.id;if(CH.sel.length>=5||handRemaining(CH,id)<=0)return;
+   const id=+b.dataset.id;if(BH.sel.length>=5||handRemaining(BH,id)<=0)return;
    const d=BD.drag={id,el:b,x:e.clientX,y:e.clientY,g:null,touch:e.pointerType!=='mouse',t:0};
    if(d.touch)d.t=setTimeout(()=>{if(BD.drag===d)lift(d)},280);
  });

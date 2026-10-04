@@ -59,7 +59,7 @@ The trade rule decides which cards the winner takes from the loser.
 | --- | --- |
 | **None** | Nothing. It's a friendly match. |
 | **One** | 1 card of their choice. |
-| **Diff** | As many cards as the score difference (max 5). |
+| **Diff** | As many cards as the score difference (max 5), picked only from the loser's cards the winner flipped. |
 | **All** | All 5 of the loser's cards. |
 | **Sweep** | All 5 cards, but only after owning every square on the board. Any other win trades nothing. |
 
@@ -80,6 +80,25 @@ The 55 cards are split into five rarities:
 - Save up to 3 hands as loadouts, or let **Best 5** pick your strongest legal hand.
 - Browse your cards in the **Collection** binder, with one section per rarity.
 - **Settings → Unlock all cards** lets you play with every card without touching your collection.
+
+## Store and shards
+
+**Ley Shards** are earned by playing and spent in the **Store** (the tile beside Packs). Everyone starts with 150.
+
+| Earned from | Shards |
+| --- | --- |
+| Win vs Computer | Easy 10 · Normal 20 · Hard 30 (Daily Duel 25, Gauntlet boss 40) |
+| Online match | Win 40 · Draw 20 · Loss 10 |
+| Draw vs Computer | Half a win |
+| Daily tab | Duel 50 · Puzzle 30 · Gauntlet 75 (once a day, on top of the limit) |
+
+- Matches pay up to **250 shards a game day**. The limit resets at midnight with the dailies.
+- Same screen and leaving a match early pay nothing.
+
+The Store has two parts:
+
+- **Wandering Merchant:** 4 single cards and a pack at 25% off, new every game day. Three cards and the pack are the same for every player; the fourth (**For you**) is a card you haven't found yet. Each item sells once. Cards cost 30 / 80 / 200 / 600 / 1800 by rarity (1★ to 5★).
+- **Pack Counter:** any pack tier, opened right away. Spark 120, Arcane 300, Leyline 700, Mythic 1600 (one Mythic a week, from Monday). Every pack opened adds points toward the 5★ guarantee (Spark 1, Arcane 3, Leyline 5, Mythic 10); the pack that reaches 50 ends with a 5★.
 
 ## Settings
 
@@ -147,6 +166,7 @@ client/                 the game: static files, no build step
     menu.js setup.js deck.js match.js game.js collection.js howto.js settings.js online.js
     account.js          sign up / sign in, the menu's profile card, cloud save sync
                         one file per screen or feature
+    store.js            Ley Shards, the Wandering Merchant and the Pack Counter
     main.js             boot: runs last, starts the app
   audio/ images/        music, logos, favicon and app icons
 server/                 optional Node server (Express)

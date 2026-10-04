@@ -6,6 +6,54 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.11.0 (2026-10-04)
+- **Diff** trade rule changed: the winner still takes as many cards as the score difference, but only from the loser's cards they flipped. Cards they didn't flip are greyed out
+
+## 0.10.2 (2026-10-04)
+- The alpha note now says your collection could be reset too
+
+## 0.10.1 (2026-10-04)
+- Wide screens: the card you pick slides out and the stack opens around it, so the next card is easy to tap
+- Wide screens: big scores under each player's cards, level with the bottom of the board, with a little pop when they change
+
+## 0.10.0 (2026-10-04)
+A cleaner Play card.
+- Every mode on the Play card now has the same layout: a picture, quick facts, and the buttons at the bottom
+- vs Computer, Online and Daily show the same bar above their buttons: XP, shards, and shards left today (or packs left in Daily)
+- Daily on the Play card: a stamp for each challenge lights up when it's done, and only the next challenge is pink
+- Same screen: **Quick play** starts right away with the same rules and cards as your last game, or pick new rules and cards
+
+## 0.9.1 (2026-10-04)
+- On iPhone Safari, a small guide shows how to add Leylines to your home screen and play it like an app (close it and it stays away for 30 days)
+
+## 0.9.0 (2026-10-04)
+- What's new: tap the version next to the menu title to see the latest changes, and scroll for older versions
+
+## 0.8.0 (2026-10-04)
+A real leveling system.
+- Level road repeats every 10 levels: Leyline at levels ending in 5, Mythic at levels ending in 0 from Lv 20 (Lv 10 is a Leyline; all 4★ milestones), 4 small packs between (Spark, Arcane from Lv 21)
+- XP depends on the opponent: CPU Easy 20 / Normal 40 / Hard 60 a win, Daily Duel 50, Gauntlet Boss 80, online 60 (20 for a loss)
+- Leaving a match early gives no XP; the Daily Puzzle now gives 50 XP
+- Spare packs are your level's small pack
+- 5★ guarantee needs 50 points (was 40)
+- Daily pack: the day 7 box no longer shows a light line on its bottom and right edges
+
+## 0.7.1 (2026-10-04)
+- 5★ guarantee uses points: Spark +1, Arcane +3, Leyline +5, Mythic +10; the pack that reaches 40 ends with a 5★ (your old count stays, now out of 40)
+- A 5★ guarantee bar on the Packs screen and in the Store, instead of the wrong "packs to go" count
+
+## 0.7.0 (2026-10-04)
+The Store and Ley Shards.
+- Ley Shards: earned from CPU and online matches (up to 250 a day) and the Daily tab; everyone starts with 150
+- Store tile on the menu, beside Packs
+- Wandering Merchant: 4 cards and a discounted pack, new every day; one card is one you haven't found yet
+- Pack Counter: buy any pack tier with shards (one Mythic a week)
+- Gauntlet's daily reward is now 75 shards instead of 100 XP; Daily Duel and Daily Puzzle also pay shards
+- Match results show the shards you earned
+
+## 0.6.5 (2026-10-04)
+- Choosing 5 cards before a match now uses the Collection binder: rarity tabs, pages, tap a card to add it, Play in the hand tray
+
 ## 0.6.4 (2026-10-04)
 - New link picture for shared links: drawn from the real game cards (10 shows as X), made by `node tools/og-image.js`
 

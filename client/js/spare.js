@@ -38,7 +38,7 @@ async function owesCheck(){
     const o=SAVE.owes.find(x=>x.k===f.key);if(!o)continue;
     SAVE.owes=SAVE.owes.filter(x=>x!==o);
     // closed the game and never came back: that's a loss too
-    if(!o.left)recordMatch('l',{online:true});
+    if(!o.left)recordMatch('l',{online:true,left:true});
     const left=o.deck.slice(),ids=[];
     for(const id of (Array.isArray(f.cards)?f.cards:[]).slice(0,5)){const i=left.indexOf(id);if(i>=0&&owned(id)>0){left.splice(i,1);collRemove(id);ids.push(id)}}
     const h=o.ht&&SAVE.history.find(x=>x.t===o.ht);if(h&&ids.length)h.lost=ids;
@@ -67,14 +67,14 @@ function forfeitPost(user,key,ids){
 }
 
 /* ---------- spares ---------- */
-// a spare counts once per player per day; every SPARE_PACK of them give a pack for your level. Returns {counted, pack}
+// a spare counts once per player per day; every SPARE_PACK of them give your level's small pack (data.js). Returns {counted, pack}
 function spareGive(who){
   const k=String(who).toLowerCase(),d=today();
   if(!SAVE.spareDay||SAVE.spareDay.at!==d)SAVE.spareDay={at:d,who:[]};
   if(SAVE.spareDay.who.includes(k)){save();return {counted:false}}
   SAVE.spareDay.who.push(k);SAVE.spares++;
   let pack=null;
-  if(SAVE.spares%SPARE_PACK===0){pack=packForLevel(levelOf(SAVE.xp));SAVE.packs.push({t:pack,src:'spare'})}
+  if(SAVE.spares%SPARE_PACK===0){pack=smallPack(levelOf(SAVE.xp));SAVE.packs.push({t:pack,src:'spare'})}
   profCheck();save();
   return {counted:true,pack};
 }
@@ -127,7 +127,7 @@ function oppForfeit(why){
 // you were gone for longer than the other player waits: the match went to them
 function selfForfeit(){
   const n=leaveCount(),opp=oppName(),host=NET.role==='host';
-  if(!G.over)histXp(recordMatch('l',{online:true}));
+  if(!G.over)histXp(recordMatch('l',{online:true,left:true}));
   const h=histAdd('l','you');
   if(n)oweLeft(matchKey(),h);
   G.over=G.done=true;clearRejoin();save();

@@ -47,6 +47,7 @@
 <link rel="stylesheet" href="css/friends.css">
 <link rel="stylesheet" href="css/daily.css">
 <link rel="stylesheet" href="css/leaderboard.css">
+<link rel="stylesheet" href="css/store.css">
 </head>
 <body>
 <!-- shared by the menu logo and the small one in a match; outside the screens, so the glow still works when the menu is hidden -->
@@ -81,7 +82,7 @@
 <polygon points="120,104 136,120 120,136 104,120" fill="#1E1450"/>
 </g>
 </svg>
-      <div><div class="title-row"><h1 class="title"><span class="sr">Leylines</span><svg class="logo-word" viewBox="289 116 441 64" aria-hidden="true"><path id="lyWord" fill="currentColor" d="M292 176.9V119.1H309.3V163.54H330.05V176.9Z M345.34 176.9V119.1H386.75V131.79H362.56V141.45H382.8V153.96H362.56V164.21H386.75V176.9Z M418 176.9V157.66L399.27 119.1H416.99L426.57 141.87H427.16L436.73 119.1H454.04L435.3 157.66V176.9Z M467.48 176.9V119.1H484.78V163.54H505.53V176.9Z M520.82 176.9V119.1H538.12V176.9Z M556.68 176.9V119.1H574.41L589.11 145.48H589.61V119.1H606.16V176.9H590.12L573.65 146.74H573.15V176.9Z M624.81 176.9V119.1H666.22V131.79H642.03V141.45H662.27V153.96H642.03V164.21H666.22V176.9Z M705.78 177.57Q702.34 177.57 698.31 177.36Q694.28 177.15 690.5 176.85Q686.72 176.56 683.78 176.14V163.96Q686.88 164.21 689.95 164.42Q693.02 164.63 695.75 164.76Q698.48 164.88 700.41 164.88Q704.02 164.88 705.91 164.67Q707.8 164.46 708.56 163.88Q709.14 163.46 709.35 162.91Q709.56 162.36 709.65 161.61Q709.73 160.85 709.73 159.93Q709.73 158.5 709.48 157.66Q709.23 156.82 708.56 156.32Q707.88 155.81 706.5 155.52Q705.11 155.22 702.76 154.97L692.01 153.63Q688.98 153.21 687.09 151.86Q685.2 150.52 684.07 148.29Q682.94 146.07 682.52 142.92Q682.1 139.77 682.1 135.99Q682.1 130.28 683.82 126.79Q685.54 123.3 688.61 121.5Q691.67 119.69 695.75 119.06Q699.82 118.43 704.52 118.43Q708.05 118.43 711.71 118.68Q715.36 118.94 718.64 119.27Q721.91 119.61 724.01 120.11V132.12Q721.91 131.87 719.06 131.62Q716.2 131.37 713.18 131.24Q710.15 131.12 707.46 131.12Q704.86 131.12 703.31 131.28Q701.75 131.45 700.91 131.96Q699.99 132.46 699.69 133.34Q699.4 134.22 699.4 135.48Q699.4 137.25 699.65 138.17Q699.9 139.1 701 139.43Q702.09 139.77 704.44 140.1L714.52 141.28Q716.7 141.53 718.68 142.12Q720.65 142.71 722.29 143.97Q723.93 145.23 725.19 147.58Q725.78 148.67 726.11 150.23Q726.45 151.78 726.7 153.88Q726.95 155.98 726.95 158.67Q726.95 163.79 725.94 167.24Q724.94 170.68 723 172.74Q721.07 174.8 718.43 175.85Q715.78 176.9 712.59 177.23Q709.4 177.57 705.78 177.57Z"/></svg></h1><span class="ver" title="Game version"></span></div><p class="subtitle">Nine squares. Five cards. Every card you place redraws the lines of power.</p><button class="alpha-pill" id="alphaPill" type="button">ALPHA <i>· progress may reset</i></button></div>
+      <div><div class="title-row"><h1 class="title"><span class="sr">Leylines</span><svg class="logo-word" viewBox="289 116 441 64" aria-hidden="true"><path id="lyWord" fill="currentColor" d="M292 176.9V119.1H309.3V163.54H330.05V176.9Z M345.34 176.9V119.1H386.75V131.79H362.56V141.45H382.8V153.96H362.56V164.21H386.75V176.9Z M418 176.9V157.66L399.27 119.1H416.99L426.57 141.87H427.16L436.73 119.1H454.04L435.3 157.66V176.9Z M467.48 176.9V119.1H484.78V163.54H505.53V176.9Z M520.82 176.9V119.1H538.12V176.9Z M556.68 176.9V119.1H574.41L589.11 145.48H589.61V119.1H606.16V176.9H590.12L573.65 146.74H573.15V176.9Z M624.81 176.9V119.1H666.22V131.79H642.03V141.45H662.27V153.96H642.03V164.21H666.22V176.9Z M705.78 177.57Q702.34 177.57 698.31 177.36Q694.28 177.15 690.5 176.85Q686.72 176.56 683.78 176.14V163.96Q686.88 164.21 689.95 164.42Q693.02 164.63 695.75 164.76Q698.48 164.88 700.41 164.88Q704.02 164.88 705.91 164.67Q707.8 164.46 708.56 163.88Q709.14 163.46 709.35 162.91Q709.56 162.36 709.65 161.61Q709.73 160.85 709.73 159.93Q709.73 158.5 709.48 157.66Q709.23 156.82 708.56 156.32Q707.88 155.81 706.5 155.52Q705.11 155.22 702.76 154.97L692.01 153.63Q688.98 153.21 687.09 151.86Q685.2 150.52 684.07 148.29Q682.94 146.07 682.52 142.92Q682.1 139.77 682.1 135.99Q682.1 130.28 683.82 126.79Q685.54 123.3 688.61 121.5Q691.67 119.69 695.75 119.06Q699.82 118.43 704.52 118.43Q708.05 118.43 711.71 118.68Q715.36 118.94 718.64 119.27Q721.91 119.61 724.01 120.11V132.12Q721.91 131.87 719.06 131.62Q716.2 131.37 713.18 131.24Q710.15 131.12 707.46 131.12Q704.86 131.12 703.31 131.28Q701.75 131.45 700.91 131.96Q699.99 132.46 699.69 133.34Q699.4 134.22 699.4 135.48Q699.4 137.25 699.65 138.17Q699.9 139.1 701 139.43Q702.09 139.77 704.44 140.1L714.52 141.28Q716.7 141.53 718.68 142.12Q720.65 142.71 722.29 143.97Q723.93 145.23 725.19 147.58Q725.78 148.67 726.11 150.23Q726.45 151.78 726.7 153.88Q726.95 155.98 726.95 158.67Q726.95 163.79 725.94 167.24Q724.94 170.68 723 172.74Q721.07 174.8 718.43 175.85Q715.78 176.9 712.59 177.23Q709.4 177.57 705.78 177.57Z"/></svg></h1><button class="ver" id="verBtn" type="button" title="What's new"></button></div><p class="subtitle">Nine squares. Five cards. Every card you place redraws the lines of power.</p><button class="alpha-pill" id="alphaPill" type="button">ALPHA <i>· progress may reset</i></button></div>
     </div>
     <div class="hero">
       <div class="seg modeseg" id="modeSeg" role="group" aria-label="Game mode"></div>
@@ -90,6 +91,7 @@
     <div class="m-right">
       <nav class="tiles" aria-label="Main menu">
         <button class="tile ptile" id="packTile" data-go="packs"><span class="pk-mini t-arcane" aria-hidden="true"></span><div><b>Packs</b><small id="packSub"></small></div><span class="ptdot" id="packDot" aria-hidden="true" hidden></span></button>
+        <button class="tile ptile stile" id="storeTile" data-go="store"><span class="st-gem" aria-hidden="true"></span><div><b>Store</b><small id="storeSub"></small></div></button>
         <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
         <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
         <button class="tile" data-go="friends" id="friendTile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/></svg><div><b>Friends</b><small id="friendSub"></small></div><span class="ptdot" id="friendDot" aria-hidden="true" hidden></span></button>
@@ -100,8 +102,10 @@
         <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
       </div>
     </div>
-    <p class="alpha-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><span><b>ALPHA</b> Leylines is still being built. Your record, XP and coins could be reset at any time.</span></p>
+    <p class="alpha-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><span><b>ALPHA</b> Leylines is still being built. Your record, XP, shards and collection could be reset at any time.</span></p>
   </div>
+  <!-- add to home screen: a guide for iPhone Safari; a2hs.js decides when it shows -->
+  <div class="a2hs" id="a2hs" role="dialog" aria-labelledby="a2hsTitle" hidden></div>
 </section>
 
 <!-- SETUP -->
@@ -120,34 +124,6 @@
     <div id="tradeBox" class="s-trade"><h3>Trade</h3><div class="tgrid" id="tradeSeg" role="group" aria-label="Trade rule"></div><p class="note" id="tradeDesc"></p><p class="note warn" id="tradeWarn"></p></div>
     <p class="note" id="setupNote" aria-live="polite"></p>
     <div class="setup-foot"><button class="btn primary" id="setupGo">Choose cards</button></div>
-  </div>
-</section>
-
-<!-- DECK -->
-<section id="scr-deck" class="screen">
-  <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
-  <div class="wrap">
-    <div class="dk-lo" id="deckLo">
-      <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="deckLoCancel">Cancel</button></div>
-      <div class="dk-lorow" id="deckLoRow"></div>
-      <div class="dk-lonote" id="deckLoNote" aria-live="polite"></div>
-    </div>
-    <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
-    <div class="grid" id="deckGrid"></div>
-    <div class="dk-tray">
-      <div class="dk-fan" id="deckSlots"></div>
-      <div class="dk-row">
-        <div class="dk-power">Power<b id="deckPower">0</b></div>
-        <div class="dk-sides" id="deckSides"></div>
-        <button class="btn primary" id="deckGo" disabled>Play</button>
-      </div>
-      <div class="dk-acts">
-        <button class="dk-act gold" id="deckBest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Best 5</button>
-        <button class="dk-act" id="deckSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save hand</button>
-        <button class="dk-act quiet" id="deckClear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Clear</button>
-      </div>
-      <div class="dk-hint">Tap a card in your hand to put it back</div>
-    </div>
   </div>
 </section>
 
@@ -174,11 +150,11 @@
   </div>
 </section>
 
-<!-- COLLECTION -->
+<!-- COLLECTION (also the card picker before a match: deck.js opens it in "pick" mode) -->
 <section id="scr-coll" class="screen">
   <div class="topbar coll-top">
-    <button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <div class="coll-title"><h2>Collection</h2><div class="meta" id="collMeta"></div></div>
+    <button class="iconbtn" id="collBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="coll-title"><h2 id="collTitle">Collection</h2><div class="meta" id="collMeta"></div></div>
   </div>
   <!-- one screen, no scrolling: the binder takes whatever height is left and its cards resize to fit -->
   <div class="wrap coll-wrap">
@@ -210,6 +186,7 @@
           <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
           <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           <button class="btn primary" id="collSave">Save hand</button>
+          <button class="btn primary hidden" id="collGo" disabled>Play</button>
         </div>
       </div>
     </div>
@@ -238,6 +215,12 @@
 <section id="scr-packs" class="screen">
   <div class="topbar pk-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Packs</h2></div>
   <div class="wrap pk-wrap" id="pkBody"></div>
+</section>
+
+<!-- STORE -->
+<section id="scr-store" class="screen">
+  <div class="topbar st-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Store</h2><span class="st-bal" id="stBal"></span></div>
+  <div class="wrap st-wrap" id="stBody"></div>
 </section>
 
 <!-- ONLINE -->
@@ -321,6 +304,9 @@
 <script src="js/history.js"></script>
 <script src="js/packs.js"></script>
 <script src="js/daily.js"></script>
+<script src="js/store.js"></script>
+<script src="js/news.js"></script>
+<script src="js/a2hs.js"></script>
 <script src="js/account.js"></script>
 <script src="js/clock.js"></script>
 <script src="js/friends.js"></script>
