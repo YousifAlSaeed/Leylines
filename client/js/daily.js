@@ -8,7 +8,7 @@
    ===================================================================== */
 const DAILY_EPOCH=Date.UTC(2026,9,1); // challenge #1
 // shards from the Daily tab don't count toward the daily limit on match shards (store.js)
-const DAILY_REWARD={duel:{xp:100,pack:'spark',shards:50},puzzle:{pack:'spark',shards:30},
+const DAILY_REWARD={duel:{xp:100,pack:'spark',shards:50},puzzle:{xp:50,pack:'spark',shards:30},
   // the Gauntlet's first run pays one tier per win; later runs only the shards, once a day
   gauntlet:[{shards:75},{pack:'spark'},{pack:'arcane'}]};
 const CELL_NAME=['top left','top','top right','left','centre','right','bottom left','bottom','bottom right'];

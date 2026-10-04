@@ -67,14 +67,14 @@ function forfeitPost(user,key,ids){
 }
 
 /* ---------- spares ---------- */
-// a spare counts once per player per day; every SPARE_PACK of them give a pack for your level. Returns {counted, pack}
+// a spare counts once per player per day; every SPARE_PACK of them give your level's small pack (data.js). Returns {counted, pack}
 function spareGive(who){
   const k=String(who).toLowerCase(),d=today();
   if(!SAVE.spareDay||SAVE.spareDay.at!==d)SAVE.spareDay={at:d,who:[]};
   if(SAVE.spareDay.who.includes(k)){save();return {counted:false}}
   SAVE.spareDay.who.push(k);SAVE.spares++;
   let pack=null;
-  if(SAVE.spares%SPARE_PACK===0){pack=packForLevel(levelOf(SAVE.xp));SAVE.packs.push({t:pack,src:'spare'})}
+  if(SAVE.spares%SPARE_PACK===0){pack=smallPack(levelOf(SAVE.xp));SAVE.packs.push({t:pack,src:'spare'})}
   profCheck();save();
   return {counted:true,pack};
 }

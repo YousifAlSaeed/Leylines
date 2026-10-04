@@ -345,7 +345,7 @@ function renderPacks(){
     ${Object.entries(PACKS).map(([k,T])=>`<tr><td>${miniPack(k,'tiny')}${T.name}</td><td>${T.n}</td>${T.odds.map(o=>`<td>${o?o+'%':'—'}</td>`).join('')}<td>${T.min}★ or better</td></tr>`).join('')}
     </table></div><ul>
       <li>Chances are for each card. Cards come out worst to best, so the best one is always last.</li>
-      <li>Every 5th level is a milestone: its last card is at least 4★.</li>
+      <li>The level road repeats every 10 levels: a Leyline at levels ending in 5, a Mythic at levels ending in 0 (from level 20; level 10 is a Leyline), and 4 small packs between them (Spark, or Arcane from level 21). The Leyline and Mythic levels are milestones: their last card is at least 4★.</li>
       <li>Light leaks out of the tear in the colour of the best card inside.</li>
       <li>Duplicates are extra copies: use them in decks or lose them in trades.</li></ul></details>`;
 

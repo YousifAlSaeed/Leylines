@@ -6,6 +6,15 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.8.0 (2026-10-04)
+A real leveling system.
+- Level road repeats every 10 levels: Leyline at levels ending in 5, Mythic at levels ending in 0 from Lv 20 (Lv 10 is a Leyline; all 4★ milestones), 4 small packs between (Spark, Arcane from Lv 21)
+- XP depends on the opponent: CPU Easy 20 / Normal 40 / Hard 60 a win, Daily Duel 50, Gauntlet Boss 80, online 60 (20 for a loss)
+- Leaving a match early gives no XP; the Daily Puzzle now gives 50 XP
+- Spare packs are your level's small pack
+- 5★ guarantee needs 50 points (was 40)
+- Daily pack: the day 7 box no longer shows a light line on its bottom and right edges
+
 ## 0.7.1 (2026-10-04)
 - 5★ guarantee uses points: Spark +1, Arcane +3, Leyline +5, Mythic +10; the pack that reaches 40 ends with a 5★ (your old count stays, now out of 40)
 - A 5★ guarantee bar on the Packs screen and in the Store, instead of the wrong "packs to go" count

@@ -104,12 +104,15 @@ const PACKS={
   ley:{name:'Leyline',n:5,odds:[15,30,35,16,4],min:3},
   mythic:{name:'Mythic',n:5,odds:[0,20,40,30,10],min:4},
 };
-// every level up gives one pack; every 5th level is a milestone whose last card is at least 4★
-const packForLevel=lv=>lv>=15?'mythic':lv>=10?'ley':lv>=5?'arcane':'spark';
-const PACK_LEVELS=[['spark','Lv 2–4 · daily'],['arcane','Lv 5–9'],['ley','Lv 10–14'],['mythic','Lv 15+']];
+// every level up gives one pack, on a road that repeats every 10 levels: a Leyline at levels ending in 5,
+// a Mythic at levels ending in 0 from level 20 (level 10 is a Leyline too), both milestones whose last card
+// is at least 4★, and 4 small packs between them: Spark, or Arcane from level 21
+const smallPack=lv=>lv>20?'arcane':'spark';
+const packForLevel=lv=>lv%10===0&&lv>=20?'mythic':lv%5===0?'ley':smallPack(lv);
+const PACK_LEVELS=[['spark','to Lv 20 · daily'],['arcane','from Lv 21'],['ley','Lv 5, 10, 15, 25…'],['mythic','Lv 20, 30, 40…']];
 // the 5★ guarantee: every pack opened adds points by tier, and the pack that reaches PITY ends in a 5★.
 // Any 5★ starts it over. Cheap packs add little, so a pile of Sparks isn't a cheap 5★.
-const PITY=40;
+const PITY=50;
 const PITY_PTS={spark:1,arcane:3,ley:5,mythic:10};
 const pitySure=t=>SAVE.pity+PITY_PTS[t]>=PITY;
 const pityPts=()=>Object.entries(PITY_PTS).map(([t,n])=>`${PACKS[t].name} +${n}`).join(' · ');

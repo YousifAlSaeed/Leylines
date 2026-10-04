@@ -98,7 +98,7 @@ The 55 cards are split into five rarities:
 The Store has two parts:
 
 - **Wandering Merchant:** 4 single cards and a pack at 25% off, new every game day. Three cards and the pack are the same for every player; the fourth (**For you**) is a card you haven't found yet. Each item sells once. Cards cost 30 / 80 / 200 / 600 / 1800 by rarity (1★ to 5★).
-- **Pack Counter:** any pack tier, opened right away. Spark 120, Arcane 300, Leyline 700, Mythic 1600 (one Mythic a week, from Monday). Every pack opened adds points toward the 5★ guarantee (Spark 1, Arcane 3, Leyline 5, Mythic 10); the pack that reaches 40 ends with a 5★.
+- **Pack Counter:** any pack tier, opened right away. Spark 120, Arcane 300, Leyline 700, Mythic 1600 (one Mythic a week, from Monday). Every pack opened adds points toward the 5★ guarantee (Spark 1, Arcane 3, Leyline 5, Mythic 10); the pack that reaches 50 ends with a 5★.
 
 ## Settings
 

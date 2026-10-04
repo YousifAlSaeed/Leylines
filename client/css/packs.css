@@ -50,7 +50,7 @@
 .pk-streak i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:800 11px/1 var(--display);font-style:normal;background:var(--well);border:1px solid var(--line);color:var(--muted)}
 .pk-streak i.on{background:color-mix(in srgb,var(--pf-win) 18%,transparent);border-color:transparent;color:var(--pf-win)}
 .pk-streak i.today{box-shadow:0 0 0 2px var(--cta);color:var(--text)}
-.pk-streak i.gift{background:linear-gradient(160deg,#7a3cd6,#240c5c);color:#fff;border-color:transparent}
+.pk-streak i.gift{background:linear-gradient(160deg,#7a3cd6,#240c5c) border-box;color:#fff;border-color:transparent}
 .pk-streak i.gift.on{box-shadow:0 0 0 2px var(--pf-win)}
 @media (max-width:420px){.pk-daily{flex-direction:column;text-align:center}.pk-dtext{align-items:center}}
 @keyframes pkSpin{to{transform:rotate(1turn)}}
