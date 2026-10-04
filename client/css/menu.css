@@ -83,6 +83,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* the guest sees the host's rules but can't change them */
 #scr-setup.ro .tc,#scr-setup.ro .rng{cursor:default}
 #scr-setup.ro .tc:not(.on){opacity:.55}
+/* trade locked in the online room while a guest is in (setup.js) */
+#tradeSeg .tc[aria-disabled]{cursor:default}
+#tradeSeg .tc[aria-disabled]:not(.on){opacity:.55}
 
 
 /* ---------- menu ---------- */

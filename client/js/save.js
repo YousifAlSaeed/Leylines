@@ -26,7 +26,9 @@ function defSave(){
     // the store (store.js): Ley Shards (everyone starts with a few), shards from matches today {at, n}, today's purchases
     shards:150,shardDay:null,shop:null,
     // Same screen's last two hands [blue, red], for Quick play (match.js)
-    localDecks:null};
+    localDecks:null,
+    // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
+    gNote:-1};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -94,6 +96,13 @@ SAVE.loadouts=[0,1,2].map(i=>{const l=Array.isArray(SAVE.loadouts)?SAVE.loadouts
 // the main loadout is what the menu shows and the deck picker starts with; it must point at a saved slot
 function fixMain(){if(!(Number.isInteger(SAVE.mainLo)&&SAVE.loadouts[SAVE.mainLo]))SAVE.mainLo=SAVE.loadouts.findIndex(Boolean)}
 fixMain();
+// signing out: the progress belonged to the account, so the next player on this device starts fresh.
+// Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
+function resetSave(){
+  const d=defSave();
+  for(const k of ['sound','musicVol','sfxVol','theme','cid'])d[k]=SAVE[k];
+  SAVE=d;fixMain();save();
+}
 // indexes in ids you don't have enough copies of; have(id) = how many you own
 function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
 /* deck building rules: at most 1 card of 5★ rarity, at most 2 cards of 4★ or more, 3★ and below have no limit */

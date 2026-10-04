@@ -18,6 +18,7 @@ function lastDeckReady(){
   return d;
 }
 function renderMenu(){
+  if(SAVE.wipe&&!ACCT.token)acctWipe(); // signed out during a match (account.js)
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
