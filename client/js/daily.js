@@ -1,16 +1,17 @@
 'use strict';
 /* =====================================================================
    DAILY  (the Daily tab on the Play card: Daily Duel, Daily Puzzle, Gauntlet)
-   Everything comes from the local date, so every player gets the same
-   challenges on the same day, even offline. Progress lives in SAVE.trial
-   and resets at local midnight, like the daily pack.
+   Everything comes from the game day (clock.js, the server's time), so
+   every player gets the same challenges on the same day. Progress lives
+   in SAVE.trial and resets at the game's midnight, like the daily pack.
+   Until the server has told the time, the tab waits.
    ===================================================================== */
 const DAILY_EPOCH=Date.UTC(2026,9,1); // challenge #1
 const DAILY_REWARD={duel:{xp:100,pack:'spark'},puzzle:{pack:'spark'},
   // the Gauntlet's first run pays one tier per win; later runs only the XP, once a day
   gauntlet:[{xp:100},{pack:'spark'},{pack:'arcane'}]};
 const CELL_NAME=['top left','top','top right','left','centre','right','bottom left','bottom','bottom right'];
-const dayNo=(d=new Date())=>Math.round((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-DAILY_EPOCH)/864e5)+1;
+const dayNo=()=>gameDayNo()-DAILY_EPOCH/864e5+1;
 // one seed per challenge per day
 const daySeed=(salt,n=dayNo())=>(Math.imul(n,0x9E3779B1)^Math.imul(salt,0x85EBCA6B))>>>0;
 const pickOne=(a,rng)=>a[Math.floor(rng()*a.length)];
@@ -28,7 +29,7 @@ const dailyRules=(on={},timer=SAVE.rules.timer)=>({open:true,same:false,sameWall
 // g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, xp: XP claimed, live: in a match, deck}
 function trial(){
   const t=SAVE.trial;
-  if(t&&t.at===today()&&t.g&&typeof t.g==='object')return t;
+  if(t&&t.at>=today()&&t.g&&typeof t.g==='object')return t;
   return SAVE.trial={at:today(),duel:0,dt:0,puz:0,g:{run:0,stage:0,over:0,xp:0,live:0,deck:null}};
 }
 // a Gauntlet match that was never finished (the app closed mid-game) counts as a loss
@@ -207,13 +208,15 @@ function dailyStatus(){
     left:(t.duel?0:1)+(t.puz?0:1)+(!g.run||act&&(g.run===1||!g.xp)||g.over&&!g.xp?1:0)
   };
 }
-const dailyOpen=()=>dailyStatus().left>0;
+const dailyOpen=()=>clockOk()&&dailyStatus().left>0;
 const DLY_ICON={
   duel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M9.5 6.5L13 3h3v3l-3.5 3.5M5 14l-2 2 2 2 2-2"/></svg>',
   puzzle:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg>',
   gauntlet:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V9l7-5 7 5v11"/><path d="M9 20v-5h6v5M3 20h18"/></svg>'};
 const DLY_NAME={duel:'Duel',puzzle:'Puzzle',gauntlet:'Gauntlet'};
 function dailyPane(){
+  if(!clockOk())return {h:'Daily',sub:'Checking the time with the server…',side:'',
+    row:'<p class="hero-sub">The challenges show up once the game reaches the server.</p>'};
   const s=dailyStatus(),done=['duel','puzzle','gauntlet'].filter(k=>s[k].done).length;
   const btn=k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''}" id="dly-${k}" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`;
   return {h:`Daily <span class="dly-no">#${dayNo()}</span>`,sub:`${done} of 3 done · new in <span class="dly-wait">${untilMidnight()}</span>`,

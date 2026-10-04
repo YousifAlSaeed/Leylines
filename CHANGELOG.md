@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.6.3 (2026-10-04)
+- Daily pack, Daily tab and spares use the server's clock, so changing the device's date no longer gives extra dailies
+- The game day now resets at midnight Arabia time (UTC+3) for every player
+- Saves that claimed dailies in the future wait one day instead
+- Packs tile no longer shows a "0" when there's nothing to open
+
 ## 0.6.2 (2026-10-04)
 - Same screen: pick only from cards this account has found (even lost ones), up to 5 copies of each
 

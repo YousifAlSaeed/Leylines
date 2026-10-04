@@ -123,6 +123,15 @@ describe('forgot password', () => {
   });
 });
 
+describe('clock', () => {
+  test('the server tells the time, never cached', async () => {
+    const before = Date.now(), r = await api('/time');
+    assert.equal(r.status, 200);
+    assert.ok(r.body.now >= before && r.body.now <= Date.now());
+    assert.equal(r.headers.get('cache-control'), 'no-store');
+  });
+});
+
 describe('security headers', () => {
   test('pages and the API forbid framing and limit where scripts come from', async () => {
     for (const path of ['/', '/api/health']) {
