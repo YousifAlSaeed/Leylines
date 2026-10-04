@@ -139,6 +139,8 @@ body.land .hand .card.sel ~ .card{--dy:calc(var(--hc) * .16)}
 .serlog .b{color:var(--blue-ink);border-color:color-mix(in srgb,var(--blue-ink) 45%,transparent)} .serlog .r{color:var(--red-ink);border-color:color-mix(in srgb,var(--red-ink) 45%,transparent)}
 .cardrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0;font-size:13px}
 .cardrow .pk{position:relative;cursor:pointer;border-radius:10px;padding:3px;border:2px solid transparent;transition:transform .2s var(--spring),border-color .15s}
+/* Diff: a card the winner didn't flip can't be taken */
+.cardrow .pk.off{cursor:default;opacity:.35;filter:saturate(.4)}
 /* NEW tag on cards you've never found (same look as in packs) */
 .cr-it{position:relative}
 .cr-new{position:absolute;top:-.5em;left:50%;transform:translateX(-50%);z-index:5;font:900 10px/1 var(--display);font-style:normal;letter-spacing:.06em;padding:.3em .55em;border-radius:99px;background:var(--cta);color:var(--on-cta);white-space:nowrap;pointer-events:none}

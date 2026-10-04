@@ -59,7 +59,7 @@ The trade rule decides which cards the winner takes from the loser.
 | --- | --- |
 | **None** | Nothing. It's a friendly match. |
 | **One** | 1 card of their choice. |
-| **Diff** | As many cards as the score difference (max 5). |
+| **Diff** | As many cards as the score difference (max 5), picked only from the loser's cards the winner flipped. |
 | **All** | All 5 of the loser's cards. |
 | **Sweep** | All 5 cards, but only after owning every square on the board. Any other win trades nothing. |
 

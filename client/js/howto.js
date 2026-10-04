@@ -104,7 +104,7 @@ const HOW=[
   list:['Pick <b>Single</b>, <b>Best of 3</b> or <b>Best of 5</b> in match setup','Both players keep the <b>same 5 cards</b> all series','Whoever went first goes <b>second</b> in the next match','A draw counts for nobody (with Sudden death on, it replays first)','<b>Most wins</b> takes the series. Equal wins is a tie','It ends early once nobody can catch up','Cards are traded <b>once</b>, at the end','<b>Example:</b> Blue wins 6–4, draws 5–5, then wins 7–3 → Blue takes the series 2–0']},
  {tab:'Trade',tag:'Trade · Collection',title:'Win cards, lose cards',
   stage:()=>`<div class="trade"><div class="pile">${cardHTML(22,'red')}${cardHTML(18,'red')}</div><div class="moving">${cardHTML(28,'red')}</div><div style="width:3.5em"></div><div class="pile">${cardHTML(7,'blue')}${cardHTML(0,'blue')}</div></div>`,
-  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5)','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
+  list:['<b>None</b> — a friendly match','<b>One</b> — the winner takes 1 card they choose','<b>Diff</b> — takes as many as the score gap (max 5), only from cards they flipped','<b>All</b> — takes all 5','<b>Sweep</b> — takes all 5, but only by owning the whole board','You start with weak cards. Everything saves on this device']},
  {tab:'Tips',tag:'Tips',title:'How to win more',
   // Iron Crab (3 top, 3 left) tucks into the corner so only its 7 and 6 face the board
   stage:()=>miniBoard([[22,'blue','n'],0,0,0,0,0,0,0,0])+'<span class="flag"></span>',

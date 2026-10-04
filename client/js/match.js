@@ -55,6 +55,9 @@ async function newRound(h0,h1,first){
   const g=G;
   G.first=first;G.sel=null;G.busy=true;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
+  // who placed the card on each square, and which card of their deck it is ([player, deck index]), for Diff:
+  // h follows each hand as cards leave it, c holds the board
+  G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
   renderGame();
   const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
   if(G.bo>1&&!G.sd){await banner(`Match ${G.ser.n}`);if(G!==g)return}
@@ -107,6 +110,7 @@ async function execMove(hi,cell){
   G.busy=true;G.sel=null;G.timeUp=false;stopTurnTimer();
   if(p===G.me)G.moved=true;
   const sc=[score(st,0),score(st,1)];
+  if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
   const ev=[];play(st,G.rules,hi,cell,ev);
   if(G.mode!=='local'&&p===G.me)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
@@ -155,11 +159,21 @@ async function endRound(){
 /* ---------- results & trading ---------- */
 // sweep: the winner must own all 9 squares at the end
 const swept=w=>w>=0&&G.st.o.every(o=>o===w);
+// Diff: the loser's cards that end the match in the winner's colour, as indexes in the loser's deck.
+// null when it can't be told (a match saved before this was tracked), and then any card can be taken
+function flipped(w){
+  if(w<0||!G.trk)return null;
+  const out=[];G.trk.c.forEach((c,cell)=>{if(c&&c[0]===1-w&&G.st.o[cell]===w)out.push(c[1])});
+  return out;
+}
 // in a series: Diff uses the series winner's last win, Sweep counts if any of their wins was a sweep
+const lastWin=w=>{const won=G.ser.log.filter(m=>m.w===w);return won[won.length-1]};
+// Diff picks only from the cards the winner flipped (indexes in the loser's deck), or null for any card
+const diffPool=w=>{const l=lastWin(w);return G.trade==='diff'&&l&&Array.isArray(l.fl)?l.fl:null};
 function tradeCount(s0,s1,w){
-  const won=G.ser.log.filter(m=>m.w===w),last=won[won.length-1];
-  const diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),sw=G.bo>1?won.some(m=>m.sweep):swept(w);
-  return{one:1,diff:Math.min(5,diff),all:5,sweep:sw?5:0}[G.trade]||0;
+  const won=G.ser.log.filter(m=>m.w===w),last=lastWin(w);
+  const diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),sw=G.bo>1?won.some(m=>m.sweep):swept(w),pool=diffPool(w);
+  return{one:1,diff:Math.min(5,diff,pool?pool.length:5),all:5,sweep:sw?5:0}[G.trade]||0;
 }
 // a NEW tag on cards you've never found, like in packs
 const NEW_TAG='<em class="cr-new">NEW</em>';
@@ -168,7 +182,7 @@ const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+
 function finish(s0,s1){
   G.over=true;G.busy=true;
   const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
-  ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1]});
+  ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});
   if(G.sd>0)ser.sd=1;
   if(mw>=0)ser.wins[mw]++;
   renderHud();
@@ -196,7 +210,8 @@ function finish(s0,s1){
   if(G.daily)head+=dailyFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   // vs Computer a loss is settled straight away, so closing the app on the result screen can't undo it
-  const cpuTook=G.mode==='ai'&&n&&w!==G.me?loseCards(strongest(G.decks[G.me],n)):null;
+  const pool=w<0?null:diffPool(w);
+  const cpuTook=G.mode==='ai'&&n&&w!==G.me?loseCards(strongest(G.decks[G.me],n,pool)):null;
   liveClear();
   // online, nothing more is owed unless you lost cards (then it's settled when the winner decides)
   if(G.mode==='online'&&!(n&&w!==G.me))oweClear(matchKey());
@@ -204,12 +219,13 @@ function finish(s0,s1){
   setTimeout(()=>{
     if(G!==g)return;
     if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?`<p>No cards change hands on a ${G.bo>1?'tied series':'draw'}.</p>`:
-      G.trade==='sweep'?`<p>No sweep: cards only change hands when the winner owns the whole board${G.bo>1?' in a match they won':''}.</p>`:''));return}
+      G.trade==='sweep'?`<p>No sweep: cards only change hands when the winner owns the whole board${G.bo>1?' in a match they won':''}.</p>`:
+      G.trade==='diff'?`<p>No trade: with Diff the winner only takes cards they flipped, and none of the loser's cards ended up flipped.</p>`:''));return}
     if(G.trade==='sweep')head+='<p class="gold"><b>Full board sweep!</b></p>';
     const loserDeck=G.decks[1-w],online=G.mode==='online';
     if(w===G.me){
       // online the winner can take the cards or spare the loser
-      pickCards(head,loserDeck,n,{spare:online}).then(idx=>{
+      pickCards(head,loserDeck,n,{spare:online,only:pool}).then(idx=>{
         if(G!==g)return;
         if(idx==='spare'){netSend({t:'trade',idx:[],spare:true});forfeitPost(NET.oppUser,matchKey(),[]);resultModal(head+spareHTML(oppName(),spareGive()));return}
         const ids=idx.map(i=>loserDeck[i]),fresh=[];
@@ -234,18 +250,21 @@ function finish(s0,s1){
   },600);
 }
 // resolves with the chosen indexes, or 'spare' (o.spare adds that button). Taking every card needs no choosing.
+// o.only: the indexes that may be taken (Diff: the cards you flipped); the rest are shown faded
 function pickCards(head,deck,n,o={}){
   return new Promise(res=>{
-    const all=n>=deck.length;
-    if(all&&!o.spare){res(deck.map((_,i)=>i));return}
-    const sel=new Set(all?deck.map((_,i)=>i):[]);
-    const ask=o.ask||(all?`Take all their cards, or spare them.`:`Choose <b>${n}</b> card${n>1?'s':''} to take${o.spare?', or spare them':''}.`);
-    const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>`<div class="pk${all?' on':''}" data-i="${i}" role="button" aria-pressed="${all}" aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`).join('')}</div>`+
+    const pool=o.only||deck.map((_,i)=>i),all=n>=pool.length;
+    if(all&&!o.spare){res(pool.slice());return}
+    const sel=new Set(all?pool:[]);
+    const of=o.only?' you flipped':'';
+    const ask=o.ask||(all?(o.only?`Take the ${plural(pool.length,'card')} you flipped`:'Take all their cards')+(o.spare?', or spare them.':'.'):`Choose <b>${n}</b> of the cards${of} to take${o.spare?', or spare them':''}.`);
+    const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>{const can=pool.includes(i),on=all&&can;
+      return `<div class="pk${on?' on':''}${can?'':' off'}" data-i="${i}" role="button" aria-pressed="${on}"${can?'':' aria-disabled="true"'} aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}${can?'':', not flipped'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`}).join('')}</div>`+
       (o.spare?`<p class="note">💛 Spare: they keep their cards, and you count a spare. Every ${SPARE_PACK} spares give a free pack.</p>`:''),
       [{label:all?'Take all':'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
        ...(o.spare?[{label:'Spare 💛',fn:()=>res('spare')}]:[])]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=!all;
-    if(!all)box.querySelectorAll('.pk').forEach(el=>el.onclick=()=>{
+    if(!all)box.querySelectorAll('.pk:not(.off)').forEach(el=>el.onclick=()=>{
       const i=+el.dataset.i;
       if(sel.has(i))sel.delete(i);else if(sel.size<n)sel.add(i);else if(n===1){sel.clear();sel.add(i)}
       box.querySelectorAll('.pk').forEach(x=>{x.classList.toggle('on',sel.has(+x.dataset.i));x.setAttribute('aria-pressed',sel.has(+x.dataset.i))});
@@ -306,8 +325,8 @@ function leaveCount(){
   const gap=Math.abs(score(G.st,0)-score(G.st,1));
   return {one:1,diff:Math.max(1,Math.min(5,gap)),all:5,sweep:1}[G.trade]||0;
 }
-// the CPU always takes your strongest cards: their indexes in your hand
-const strongest=(deck,n)=>deck.map((_,i)=>i).sort((a,b)=>cardStrength(deck[b])-cardStrength(deck[a])).slice(0,n);
+// the CPU always takes your strongest cards: their indexes in your hand (only from `pool` if given: Diff's flipped cards)
+const strongest=(deck,n,pool)=>(pool||deck.map((_,i)=>i)).slice().sort((a,b)=>cardStrength(deck[b])-cardStrength(deck[a])).slice(0,n);
 // you lose these cards (indexes in your hand); a collection that drops too low gets a few back. The caller shows what happened.
 function loseCards(idx){
   const deck=G.decks[G.me],ids=idx.filter(i=>Number.isInteger(i)&&deck[i]!=null).map(i=>deck[i]);
@@ -364,7 +383,7 @@ $('#btnQuit').onclick=()=>{
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
   SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
-    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved}));
+    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk}));
   save();
 }
 function liveClear(){if(SAVE.live){SAVE.live=null;save()}}
@@ -376,6 +395,9 @@ function liveMatchFrom(L){
     const g=baseMatch('ai',{rules:{...defSave().rules,...L.rules},trade:netTrade(L.trade),diff:DIFFS.some(d=>d[0]===L.diff)?L.diff:'normal',bo:boOf(L.bo),
       names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved});
     g.rng=mulberry32(L.a|0);
+    // which card each player placed (Diff); a save from before it was tracked lets any card be taken
+    const t=L.trk;
+    g.trk=t&&Array.isArray(t.h)&&t.h.length===2&&t.h.every(Array.isArray)&&ok9(t.c)?t:null;
     return g;
   }catch(e){return null}
 }

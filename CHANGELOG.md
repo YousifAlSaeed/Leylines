@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.11.0 (2026-10-04)
+- **Diff** trade rule changed: the winner still takes as many cards as the score difference, but only from the loser's cards they flipped. Cards they didn't flip are greyed out
+
+## 0.10.2 (2026-10-04)
+- The alpha note now says your collection could be reset too
+
 ## 0.10.1 (2026-10-04)
 - Wide screens: the card you pick slides out and the stack opens around it, so the next card is easy to tap
 - Wide screens: big scores under each player's cards, level with the bottom of the board, with a little pop when they change
