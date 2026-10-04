@@ -144,3 +144,10 @@ describe('security headers', () => {
     }
   });
 });
+
+test("the changelog is served for the game's What's new", async () => {
+  const r = await fetch(base + '/CHANGELOG.md');
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('content-type'), /text\/markdown/);
+  assert.match(await r.text(), /^## \d+\.\d+\.\d+/m);
+});

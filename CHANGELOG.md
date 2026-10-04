@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.9.0 (2026-10-04)
+- What's new: tap the version next to the menu title to see the latest changes, and scroll for older versions
+
 ## 0.8.0 (2026-10-04)
 A real leveling system.
 - Level road repeats every 10 levels: Leyline at levels ending in 5, Mythic at levels ending in 0 from Lv 20 (Lv 10 is a Leyline; all 4★ milestones), 4 small packs between (Spark, Arcane from Lv 21)

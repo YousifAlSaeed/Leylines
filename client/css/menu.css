@@ -93,7 +93,28 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .brand .emblem{display:block;height:84px;width:84px;flex:none}
 /* version tag to the right of the title */
 .title-row{display:flex;align-items:center;gap:10px}
-.ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap;
+  background:none;cursor:pointer;transition:color .18s,border-color .18s,background .18s}
+.ver:hover{color:var(--accent-ink);border-color:var(--accent);background:rgba(var(--tint),.05)}
+/* what's new (news.js): the changelog, newest version first */
+.mbox.nw-box{max-width:520px;text-align:left}
+.nw-box .kick,.nw-box h2{text-align:center}
+.nw-wait{text-align:center;color:var(--muted);font-size:14px}
+.nw-list{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px}
+.nw-ver{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--surf)}
+.nw-ver.top{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 10px 24px -14px var(--accent-glow)}
+.nw-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nw-h b{font:800 15px var(--display);color:var(--text)}
+.nw-h small{margin-left:auto;color:var(--muted);font-size:12px}
+.nw-tag{font:700 10.5px var(--body);padding:2px 7px;border-radius:5px;background:var(--accent);color:var(--on-accent)}
+.mbox p.nw-intro{margin:6px 0 0;max-width:none;font-size:13.5px;font-weight:600;color:var(--text)}
+/* the list can be long: Close stays pinned to the bottom of the window */
+.nw-box .mbtns{position:sticky;bottom:-20px;margin:12px -20px -20px;padding:12px 20px 16px;background:var(--surf);border-top:1px solid var(--line)}
+.nw-ver ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.nw-ver li{font-size:13.5px;line-height:1.45;color:var(--muted)}
+.nw-ver li b{color:var(--text)}
+.nw-ver code{font:12px ui-monospace,Consolas,monospace;padding:1px 4px;border-radius:4px;background:rgba(var(--tint),.08)}
+.nw-old{margin:8px 2px 0;font:700 11.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .title{margin:0;line-height:0;color:var(--text)}
 .title .logo-word{display:block;height:25px;width:auto}
 .sr,.title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
