@@ -144,13 +144,25 @@ function gauntStage(i,n=dayNo()){
 }
 const gauntActive=g=>g.run>0&&!g.over&&g.stage<3;
 // the run's deck, or ask for one if it's new (or a card in it was lost since)
-function playGauntlet(){
+// sure: the player has seen what a new run pays (gauntNewRun)
+function playGauntlet(sure){
   const t=trial(),g=t.g;
   if(gauntActive(g)&&g.deck&&!missingIn(g.deck,owned).length){startGauntStage();return}
+  if(g.run&&!gauntActive(g)&&sure!==true){gauntNewRun();return}
   if(deckable(collPool())<5)ensureMinimum();
   // a new run only starts once a deck is chosen, so backing out doesn't use up the first run
   openDeck({title:'Gauntlet · choose 5',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
     onDone:ids=>{const g2=trial().g;if(!gauntActive(g2)){g2.run++;g2.stage=0;g2.over=0}g2.deck=ids;SAVE.lastDeck=ids;save();startGauntStage()},onBack:()=>show('menu')});
+}
+// before a second run (or later) today: say plainly what it pays, so nobody plays it expecting the first run's rewards
+function gauntNewRun(){
+  const g=trial().g,shards=DAILY_REWARD.gauntlet[0].shards;
+  // from a match's result screen, backing out goes to the menu
+  const back=G?{label:'Menu',fn:leaveMatch}:{label:'Close',esc:true};
+  modal(g.paid
+    ?`<h2>No rewards this run</h2><p>Your first Gauntlet run today is over, so this run gives <b>no shards and no packs</b>. It's just for fun.</p><p class="dly-note">A new Gauntlet with fresh rewards comes at midnight.</p>`
+    :`<h2>Smaller rewards this run</h2><p>Packs only come on your first run of the day. This run can still earn today's <b>${shards} shards</b> if you win the first stage. The other stages give <b>nothing</b>.</p>`,
+    [{label:g.paid?'Play for fun':'Start run',cls:'primary',fn:()=>playGauntlet(true)},back]);
 }
 function startGauntStage(){
   const t=trial(),g=t.g,S=gauntStage(g.stage);

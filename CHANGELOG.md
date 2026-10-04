@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.4 (2026-10-04)
+- Gauntlet: before a new run after your first one, the game says what it pays. If your first run already earned today's shards, it tells you the new run gives no rewards
+
 ## 0.17.3 (2026-10-04)
 - The Alerts switch in Settings now always shows up. Once alerts are on, a **Test** button sends one to check they reach you
 - Minimising the game no longer makes you go offline. Friends see you as **Away**, can still invite you, and you get an alert if you turned them on
