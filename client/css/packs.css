@@ -17,18 +17,11 @@
 .pk-mini.ready{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 22px var(--pg)}
 .pk-mini.spent{filter:grayscale(.7) brightness(.6)}
 
-/* menu tile: across the top of the tiles, beside the Store (store.css) */
-.tile.ptile{flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:0;padding:10px 14px}
-.tile.ptile .pk-mini{--w:34px}
-.tile.ptile>div{flex:1;min-width:0}
+/* menu tile (menu.css lays the tiles out) */
 .tile.ptile.hot{border-color:var(--cta);box-shadow:0 0 0 1px var(--cta) inset,0 10px 30px -14px var(--cta-glow)}
-.tile.ptile.hot .pk-mini{animation:pkBob 1.8s ease-in-out infinite}
+.tile.ptile.hot .pk-ico{animation:pkBob 1.8s ease-in-out infinite}
 .ptdot{flex:none;min-width:26px;height:26px;padding:0 8px;border-radius:99px;display:grid;place-items:center;background:var(--cta);color:var(--on-cta);font:800 13px/1 var(--display)}
 .ptdot[hidden]{display:none}
-@media (min-width:920px) and (min-height:560px){
-  .m-right .tiles{grid-template-rows:auto 1fr}
-  .tile.ptile{min-height:0;padding:12px 18px}
-}
 @keyframes pkBob{50%{transform:translateY(-3px) rotate(-3deg)}}
 
 /* ---------- the Packs screen ---------- */
@@ -195,7 +188,7 @@
 .pf-reward .pf-pack{background:linear-gradient(160deg,#7a3cd6,#240c5c);color:#fff}
 
 @media (prefers-reduced-motion:reduce){
-  .pk-rays,.pk-daily::before,.pk-arr,.tile.ptile.hot .pk-mini,.pk-node.ready .pk-mini{animation:none}
+  .pk-rays,.pk-daily::before,.pk-arr,.tile.ptile.hot .pk-ico,.pk-node.ready .pk-mini{animation:none}
   .pk-pack.shake,.pk-flip.tease{animation:none}
 }
 /* the 5★ guarantee bar (also under the Store's Pack Counter) */

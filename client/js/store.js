@@ -306,11 +306,14 @@ function stSwipe(){
 }
 // keep the carousel centred when the window changes size (a phone turning, for one)
 addEventListener('resize',()=>{if($('#scr-store').classList.contains('on')&&!stDown)stGo(stIdx(),false)});
+// the menu's Night Market tile, and the shards on the player card (account.js)
 function renderStoreTile(){
   const fresh=clockOk()&&(!SAVE.shop||SAVE.shop.at!==today());
-  $('#storeSub').innerHTML=`${shd()}${fmtSh(SAVE.shards)}${fresh?' · new stock':''}`;
+  const sub=!clockOk()?"Tonight's stock":fresh?'New stock tonight':`New stock in ${untilMidnight()}`;
+  $('#storeSub').textContent=sub;
   $('#storeTile').classList.toggle('hot',fresh);
-  $('#storeTile').setAttribute('aria-label',`Store. ${shardsTxt(SAVE.shards)}${fresh?', new stock today':''}`);
+  $('#storeTile').setAttribute('aria-label',`Night Market. ${sub}`);
+  const p=$('#pcShards');if(p)p.innerHTML=`${shd()}${fmtSh(SAVE.shards)}`;
 }
 // the countdown, and new stock at midnight
 setInterval(()=>{

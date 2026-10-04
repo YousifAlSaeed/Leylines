@@ -13,8 +13,12 @@
 .pc-main b+small{font-variant-numeric:tabular-nums}
 .pc-st.offline,.pc-st.error{color:var(--warn)}
 /* looks like a button, but the whole card is the button */
-.pcard .pc-cta{flex:none;min-height:34px;padding:4px 12px;font-size:13px;pointer-events:none}
-@media (pointer:coarse){.pcard .pc-cta{min-height:34px}}
+.pcard .pc-cta{flex:none;min-height:28px;padding:3px 10px;font-size:12.5px;border-radius:10px;pointer-events:none}
+@media (pointer:coarse){.pcard .pc-cta{min-height:28px}}
+/* the right-hand side, centred top to bottom: your shards, with the sign-up button (guests) under them */
+.pc-side{flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px}
+.pc-sh{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font:700 13px/1 var(--display);font-variant-numeric:tabular-nums;
+  color:var(--shard-ink);background:color-mix(in srgb,var(--shard) 12%,transparent);border:1px solid color-mix(in srgb,var(--shard) 35%,transparent)}
 /* narrow phones: shorter labels so the name and status keep their room */
 .pcard .sm{display:none}
 @media (max-width:420px){.pcard .lg{display:none}.pcard .sm{display:inline}}
@@ -43,7 +47,6 @@
 /* the card avatar (profile.js) and the level line */
 .pc-av.art{background:var(--surf2);font:400 20px/1 var(--body);border-color:transparent;box-shadow:0 0 0 2px var(--ring)}
 .pc-main .pc-lv{color:var(--accent-ink);font-weight:600}
-.pcard .pc-go{flex:none;width:18px;height:18px;color:var(--muted)}
 .acctrow .pc-av.art{margin-left:2px}
 /* the menu's guest notice (account.js) */
 .gnote{display:flex;align-items:center;gap:10px;border-radius:14px;padding:10px 8px 10px 12px;font-size:12.5px;line-height:1.4;color:var(--muted);

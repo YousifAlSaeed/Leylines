@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.0 (2026-10-04)
+- **New main menu layout.** The six buttons are now one size and in a new order: Friends, Leaderboard, Collection, Night Market, Packs and How to play. On a phone the whole menu fits on one screen, with no scrolling
+- The Store is now called the **Night Market**, and its button shows when the stock changes
+- Your shards now sit on the right of your player card
+- The menu buttons share one look, with simple line icons (Packs has a new one)
+
 ## 0.16.1 (2026-10-04)
 - Tutorial: when two number tags show at once, both stay bright, and the lit numbers on a card no longer bump into each other
 

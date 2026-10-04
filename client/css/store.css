@@ -6,14 +6,6 @@
 .shd{display:inline-block;width:.68em;height:.95em;margin-right:.28em;vertical-align:-.12em;flex:none;
   background:linear-gradient(160deg,#e6fdff 0%,var(--shard) 45%,var(--shard-deep));clip-path:polygon(50% 0,100% 36%,50% 100%,0 36%)}
 
-/* menu tile: beside Packs */
-.st-gem{--w:34px;display:block;flex:none;width:var(--w);height:calc(var(--w)*1.43);position:relative;
-  background:linear-gradient(160deg,#e6fdff 0%,var(--shard) 40%,var(--shard-deep));clip-path:polygon(50% 0,100% 30%,82% 100%,18% 100%,0 30%)}
-.st-gem::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 45%,rgba(255,255,255,.55) 50%,transparent 56%)}
-.tile.stile small{color:var(--shard-ink);font-weight:600}
-.tile.stile.hot{border-color:color-mix(in srgb,var(--shard) 70%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--shard) 50%,transparent) inset,0 10px 30px -14px var(--shard)}
-.tile.stile.hot .st-gem::after{animation:stShine 2.6s ease-in-out infinite}
-@keyframes stShine{0%,55%{transform:translateX(-80%)}100%{transform:translateX(80%)}}
 
 /* the result screen's chips (profile.css lays them out) */
 .pf-reward .pf-shard{background:color-mix(in srgb,var(--shard) 16%,transparent);color:var(--shard-ink);display:inline-flex;align-items:center}
@@ -201,4 +193,4 @@
 .st-cost{display:flex;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
 .st-cost b{color:var(--shard-ink);font:700 18px/1 var(--display);margin-right:6px}
 
-@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-stop,.st-swipe,.st-dots i,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}
+@media (prefers-reduced-motion:reduce){.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-stop,.st-swipe,.st-dots i,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}

@@ -90,8 +90,10 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 
 /* ---------- menu ---------- */
 #scr-menu{justify-content:center}
-.menu{width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;margin:auto 0}
-.m-right{display:flex;flex-direction:column;gap:14px;min-width:0}
+/* a phone: the menu fills the screen exactly, and the tiles take whatever height is left, so nothing scrolls */
+.menu{width:100%;max-width:440px;height:100%;display:flex;flex-direction:column;gap:14px;margin:auto 0}
+.m-right{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:14px;min-width:0}
+.menu>.brand,.menu>.hero,.m-right>:not(.tiles){flex:none}
 .brand{display:flex;align-items:center;gap:18px;margin:4px 0 2px}
 .brand .emblem{display:block;height:84px;width:84px;flex:none}
 /* version tag to the right of the title */
@@ -161,15 +163,20 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-row .seg{flex:1 1 210px}
 .hero-row .seg.full{flex-basis:100%}
 .hero-row .btn.full:not(.primary){min-height:48px}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{position:relative;text-align:left;border-radius:18px;padding:14px;min-height:100px;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
-  display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
+/* six tiles, all one size: an icon beside a name and a line of news, two to a row */
+.tiles{flex:1 1 auto;min-height:188px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(56px,1fr);gap:10px}
+.tile{position:relative;text-align:left;border-radius:18px;padding:10px 12px;min-height:0;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
+.tile>div{flex:1;min-width:0}
+.tile small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the Packs line (the daily pack, packs to open) may take two lines where the tile has the height */
+.tile.ptile small{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
 .tile:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 12px 24px -12px rgba(var(--sh),calc(.8*var(--shk)))}
 .tile:active{transform:scale(.98)}
-.tile svg{width:22px;height:22px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tile b{display:block;font:700 16px/1.2 var(--display)}
+.tile>svg{flex:none;width:26px;height:26px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tile b{display:block;font:700 16px/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
-.bar{height:4px;border-radius:2px;background:rgba(var(--tint),.1);margin-top:7px;overflow:hidden}
+.bar{height:4px;border-radius:2px;background:rgba(var(--tint),.1);margin-top:5px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;transition:width .6s var(--ease)}
 .mstats{display:flex;gap:8px}
 .stat{flex:1;border-radius:14px;padding:10px 12px;background:rgba(var(--tint),.03);border:1px solid var(--line)}
@@ -184,9 +191,16 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   border:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
 .alpha-bar b{color:var(--warn);font:700 11px/1.5 var(--body);letter-spacing:.08em;margin-right:6px}
 .alpha-bar svg{width:18px;height:18px;flex:none;color:var(--warn);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* short phones (an iPhone SE): the tagline goes and the emblem shrinks, so the tiles still fit */
+@media (max-height:800px){.tile.ptile small{display:block;white-space:nowrap}}
+@media (max-height:760px){.subtitle{display:none}.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
+/* very short phones (iPhone SE): a little less room between and inside everything */
+@media (max-height:700px){#scr-menu{padding-bottom:max(12px,env(safe-area-inset-bottom))}.menu,.m-right{gap:10px}.brand .emblem{height:52px;width:52px}.hero{padding:12px}#scr-menu .seg button{min-height:32px;padding:4px 8px}.hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.pcard{padding:6px 10px}.tiles{grid-auto-rows:minmax(50px,1fr);min-height:166px;gap:8px}.tile{padding-top:7px;padding-bottom:7px}}
+/* narrow phones: smaller icons and names, so "Leaderboard" and "Night Market" fit whole */
+@media (max-width:400px){.tile{padding:10px 9px;gap:9px}.tile>svg{width:22px;height:22px}.tile b{font-size:15px;font-stretch:84%}.tile.ptile .ptdot{display:none}}
 @media (min-width:920px) and (min-height:560px){
   /* title across the top; Play card and tiles share one top and bottom edge */
-  .menu{max-width:1180px;display:grid;grid-template-columns:1.15fr 1fr;align-items:stretch;column-gap:40px;row-gap:28px}
+  .menu{max-width:1180px;height:auto;display:grid;grid-template-columns:1.15fr 1fr;align-items:stretch;column-gap:40px;row-gap:28px}
   .brand{grid-column:1/-1;gap:26px;margin:0}
   .brand .emblem{height:132px;width:132px}
   .title .logo-word{height:38px}
@@ -198,9 +212,12 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .fan{font-size:16px}
   .vsfan .fan{font-size:12px}
   .modeseg svg{display:block}
-  .m-right .tiles{flex:1;grid-auto-rows:1fr}
-  .tile{min-height:122px;padding:18px}
+  /* three rows of exactly one height, whatever the tiles hold (and stronger than any older rule for the tiles) */
+  .menu .m-right .tiles{flex:1;grid-template-rows:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr)}
+  .tile{min-height:0;padding:16px 18px;gap:14px}
   .tile b{font-size:19px}
+  .tile small{font-size:12.5px}
+  .tile>svg{width:30px;height:30px}
   .alpha-pill{display:none}
   .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }

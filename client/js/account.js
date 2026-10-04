@@ -277,9 +277,10 @@ function renderProfile(){
   el.innerHTML=avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
-    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>'
-      :'<svg class="i pc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
-  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${acctStatus()}. Open profile.`);
+    // your shards in the corner, and for a guest who could sign up, a button under them
+    `<span class="pc-side"><span class="pc-sh" id="pcShards">${shd()}${fmtSh(SAVE.shards)}</span>`+
+    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'')+'</span>';
+  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}. ${acctStatus()}. Open profile.`);
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
   renderGuestNote();
