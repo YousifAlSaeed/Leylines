@@ -1,0 +1,45 @@
+<!doctype html>
+<!--
+  The picture chat apps show for a shared link (client/images/og-image.jpg), drawn with the
+  game's own cards and styles. To remake it after changing cards or the look, run from the repo root:
+    node tools/og-image.js
+-->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Leylines link picture</title>
+<link href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..125,400..900&family=Geist:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../client/css/base.css">
+<link rel="stylesheet" href="../client/css/cards.css">
+<link rel="stylesheet" href="../client/css/game.css">
+<style>
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:space-between;padding:0 76px 0 82px;box-sizing:border-box}
+  .left{display:flex;flex-direction:column;align-items:flex-start;gap:30px}
+  /* the logo file has empty space around it; the margins pull it back in line with the text */
+  .logo{height:210px;width:auto;margin:-46px 0 -46px -42px}
+  .tag{margin:0;font:600 34px/1.3 var(--body);color:var(--text);letter-spacing:-.01em}
+  .sub{margin:0;font:400 23px/1.5 var(--body);color:var(--muted)}
+  .board{--cell:118px}
+</style>
+</head>
+<body>
+<div class="left">
+  <img class="logo" src="../client/images/leylines-horizontal.svg" alt="">
+  <p class="tag">Nine squares. Five cards.<br>Every card redraws the lines of power.</p>
+  <p class="sub">Play the computer, a friend, or online.<br>Free in your browser.</p>
+</div>
+<div class="board" id="board"></div>
+<script src="../client/js/data.js"></script>
+<script src="../client/js/helpers.js"></script>
+<script>
+  // [card name, colour] for each square, left to right, top to bottom; null = empty
+  const LAYOUT=[['Ashen Dragon','red'],null,['Astra Starborn','blue'],
+                ['Sun Phoenix','blue'],['Mira Frostheart','blue'],null,
+                null,['Seraph Warden','red'],['Elder Oak','blue']];
+  const byName=n=>CARDS.find(c=>c.name===n).id;
+  $('#board').innerHTML=LAYOUT.map(x=>`<div class="cell">${x?cardHTML(byName(x[0]),x[1]):''}</div>`).join('');
+  document.fonts.ready.then(()=>document.body.dataset.ready='1');
+</script>
+</body>
+</html>
