@@ -105,7 +105,7 @@ function buyPack(t,deal){
   if(myth&&s.myth>=MYTHIC_WEEK){toast('One Mythic pack a week. The next one comes on Monday.');return}
   if(short(price))return;
   modal(`<div class="kick">${deal?'Wandering Merchant':'Pack Counter'}</div><h2>Buy ${aPack(t)}?</h2>
-    <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
+    <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${pitySure(t)?', the last one a sure 5★ (guarantee)':T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
     <p class="st-cost">${shd()}<b>${fmtSh(price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
     [{label:'Buy and open',cls:'primary',fn:()=>{
       if(SAVE.shards<price)return;
@@ -142,7 +142,7 @@ function renderStore(){
       const out=t==='mythic'&&mythLeft===0;
       return `<button class="st-pk t-${t}${out?' sold':''}" data-p="${t}" ${out?'disabled':''}>${miniPack(t,out?'spent':'ready')}
         <span class="st-dt"><b>${T.name}</b><small>${T.n} cards${T.min>1?` · ${T.min}★+ last`:''}${t==='mythic'?` · ${out?'next on Monday':'1 a week'}`:''}</small></span>${out?'':price(PACK_PRICE[t])}</button>`}).join('')}</div>
-    <p class="st-note">Bought packs count toward the 5★ guarantee: ${plural(Math.max(1,PITY-SAVE.pity),'pack')} to go. Odds are on the Packs screen.</p></section>`;
+    <div class="st-pity">${pityHTML()}</div><p class="st-note">Odds are on the Packs screen.</p></section>`;
 
   const d=shardDay(),pct=Math.min(100,d.n/SHARD_CAP*100);
   const earn=`<section class="pk-card st-earn"><h3>Earning shards <em>${fmtSh(d.n)} / ${SHARD_CAP} from matches today</em></h3>

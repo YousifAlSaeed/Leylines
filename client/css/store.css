@@ -26,6 +26,9 @@
   color:var(--shard-ink);background:color-mix(in srgb,var(--shard) 12%,transparent);border:1px solid color-mix(in srgb,var(--shard) 35%,transparent)}
 .st-note{margin:12px 0 0;color:var(--muted);font-size:12.5px}
 .st-note b{color:var(--text)}
+/* the 5★ guarantee under the Pack Counter (its bar is styled in packs.css) */
+.st-pity{margin-top:14px}
+.st-pity+.st-note{margin-top:4px}
 .st-price{display:inline-flex;align-items:center;font:700 14px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--shard-ink);white-space:nowrap}
 .st-price.short{color:var(--muted);opacity:.75}
 

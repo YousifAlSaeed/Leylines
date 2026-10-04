@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.7.1 (2026-10-04)
+- 5★ guarantee uses points: Spark +1, Arcane +3, Leyline +5, Mythic +10; the pack that reaches 40 ends with a 5★ (your old count stays, now out of 40)
+- A 5★ guarantee bar on the Packs screen and in the Store, instead of the wrong "packs to go" count
+
 ## 0.7.0 (2026-10-04)
 The Store and Ley Shards.
 - Ley Shards: earned from CPU and online matches (up to 250 a day) and the Daily tab; everyone starts with 150

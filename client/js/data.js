@@ -107,4 +107,9 @@ const PACKS={
 // every level up gives one pack; every 5th level is a milestone whose last card is at least 4★
 const packForLevel=lv=>lv>=15?'mythic':lv>=10?'ley':lv>=5?'arcane':'spark';
 const PACK_LEVELS=[['spark','Lv 2–4 · daily'],['arcane','Lv 5–9'],['ley','Lv 10–14'],['mythic','Lv 15+']];
-const PITY=10; // this many packs in a row without a 5★ makes the next one end in a 5★
+// the 5★ guarantee: every pack opened adds points by tier, and the pack that reaches PITY ends in a 5★.
+// Any 5★ starts it over. Cheap packs add little, so a pile of Sparks isn't a cheap 5★.
+const PITY=40;
+const PITY_PTS={spark:1,arcane:3,ley:5,mythic:10};
+const pitySure=t=>SAVE.pity+PITY_PTS[t]>=PITY;
+const pityPts=()=>Object.entries(PITY_PTS).map(([t,n])=>`${PACKS[t].name} +${n}`).join(' · ');

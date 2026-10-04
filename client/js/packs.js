@@ -26,12 +26,12 @@ const packsToOpen=()=>SAVE.packs.length+(dailyState().ready?1:0);
 /* ---------- rolling ---------- */
 // p: {t, mile}. Returns card ids, worst first and best last.
 function rollPack(p){
-  const T=PACKS[p.t],out=[];
+  const T=PACKS[p.t],out=[],sure=pitySure(p.t);
   const pick=min=>{const w=T.odds.map((x,i)=>i+1>=min?x:0),sum=w.reduce((a,b)=>a+b,0);
     let r=Math.random()*sum;for(let i=0;i<5;i++){r-=w[i];if(r<=0&&w[i])return i+1}return 5};
   for(let i=0;i<T.n;i++){
     const last=i===T.n-1;
-    const rar=last&&SAVE.pity>=PITY?5:pick(last?Math.max(T.min,p.mile?4:1):1);
+    const rar=last&&sure?5:pick(last?Math.max(T.min,p.mile?4:1):1);
     const pool=CARDS.filter(c=>c.rar===rar);
     out.push(pool[Math.floor(Math.random()*pool.length)].id);
   }
@@ -45,7 +45,7 @@ function openPack(src){
   const ids=rollPack(p),fresh=[];
   // a second copy of a new card in the same pack isn't new
   ids.forEach(id=>{fresh.push(!SAVE.seen.includes(id));collAdd(id)});
-  SAVE.pity=ids.some(id=>CARDS[id].rar===5)?0:SAVE.pity+1;
+  SAVE.pity=ids.some(id=>CARDS[id].rar===5)?0:Math.min(PITY,SAVE.pity+PITY_PTS[p.t]);
   profCheck();save();
   pkStart(p,ids,fresh);
 }
@@ -299,6 +299,13 @@ function summary(){
 }
 
 /* ---------- the Packs screen and the menu tile ---------- */
+// the 5★ guarantee as a bar: on the Packs screen and under the Store's Pack Counter
+function pityHTML(){
+  const n=Math.min(PITY,SAVE.pity);
+  return `<div class="pity-h"><span>5★ guarantee</span><b>${n} / ${PITY}</b></div>
+    <div class="pity-bar" role="progressbar" aria-label="5 star guarantee points" aria-valuemin="0" aria-valuemax="${PITY}" aria-valuenow="${n}"><i style="width:${(n/PITY*100).toFixed(1)}%"></i></div>
+    <p class="pity-note">Every pack you open adds points (${pityPts()}). The pack that reaches ${PITY} ends with a 5★, and any 5★ starts it over.</p>`;
+}
 const miniPack=(t,cls='')=>`<span class="pk-mini t-${t} ${cls}" aria-hidden="true"></span>`;
 function openPacks(){renderPacks();show('packs');$('#scr-packs').scrollTop=0}
 function renderPacks(){
@@ -340,10 +347,10 @@ function renderPacks(){
       <li>Chances are for each card. Cards come out worst to best, so the best one is always last.</li>
       <li>Every 5th level is a milestone: its last card is at least 4★.</li>
       <li>Light leaks out of the tear in the colour of the best card inside.</li>
-      <li>Go ${PITY} packs without a 5★ and the next pack ends with one${SAVE.pity?` (${PITY-Math.min(PITY,SAVE.pity)} to go)`:''}.</li>
       <li>Duplicates are extra copies: use them in decks or lose them in trades.</li></ul></details>`;
 
-  $('#pkBody').innerHTML=daily+inv+roadHTML+odds;
+  const pity=`<section class="pk-card pk-pity">${pityHTML()}</section>`;
+  $('#pkBody').innerHTML=daily+inv+pity+roadHTML+odds;
   const b=$('#pkDaily');if(b)b.onclick=()=>{sfx('click');openPack('daily')};
   $$('#pkBody [data-i]').forEach(x=>x.onclick=()=>{sfx('click');openPack(+x.dataset.i)});
   const cur=$('#pkRoad .cur'),road2=$('#pkRoad');if(cur)road2.scrollLeft=cur.offsetLeft-road2.clientWidth/2+cur.offsetWidth/2;

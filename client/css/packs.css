@@ -198,3 +198,9 @@
   .pk-rays,.pk-daily::before,.pk-arr,.tile.ptile.hot .pk-mini,.pk-node.ready .pk-mini{animation:none}
   .pk-pack.shake,.pk-flip.tease{animation:none}
 }
+/* the 5★ guarantee bar (also under the Store's Pack Counter) */
+.pity-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
+.pity-h b{font:700 14px/1 var(--display);letter-spacing:0;color:var(--text);font-variant-numeric:tabular-nums}
+.pity-bar{height:10px;border-radius:99px;background:rgba(var(--tint),.08);overflow:hidden;border:1px solid var(--line)}
+.pity-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff8fd0,#ffd76a);transition:width .4s var(--ease)}
+.pity-note{margin:8px 0 0;color:var(--muted);font-size:12.5px}

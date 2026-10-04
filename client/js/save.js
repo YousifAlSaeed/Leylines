@@ -14,7 +14,7 @@ function defSave(){
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
-    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, packs since a 5★
+    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, 5★ guarantee points (data.js)
     packs:[],packLv:1,daily:null,pity:0,
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
