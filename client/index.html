@@ -123,34 +123,6 @@
   </div>
 </section>
 
-<!-- DECK -->
-<section id="scr-deck" class="screen">
-  <div class="topbar"><button class="iconbtn" id="deckBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="deckTitle">Choose 5 cards</h2></div>
-  <div class="wrap">
-    <div class="dk-lo" id="deckLo">
-      <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="deckLoCancel">Cancel</button></div>
-      <div class="dk-lorow" id="deckLoRow"></div>
-      <div class="dk-lonote" id="deckLoNote" aria-live="polite"></div>
-    </div>
-    <div class="dk-head"><div class="dk-filter" id="deckFilter"></div><span class="meta" id="deckMeta"></span></div>
-    <div class="grid" id="deckGrid"></div>
-    <div class="dk-tray">
-      <div class="dk-fan" id="deckSlots"></div>
-      <div class="dk-row">
-        <div class="dk-power">Power<b id="deckPower">0</b></div>
-        <div class="dk-sides" id="deckSides"></div>
-        <button class="btn primary" id="deckGo" disabled>Play</button>
-      </div>
-      <div class="dk-acts">
-        <button class="dk-act gold" id="deckBest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>Best 5</button>
-        <button class="dk-act" id="deckSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save hand</button>
-        <button class="dk-act quiet" id="deckClear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Clear</button>
-      </div>
-      <div class="dk-hint">Tap a card in your hand to put it back</div>
-    </div>
-  </div>
-</section>
-
 <!-- GAME -->
 <section id="scr-game" class="screen">
   <div class="hud">
@@ -174,11 +146,11 @@
   </div>
 </section>
 
-<!-- COLLECTION -->
+<!-- COLLECTION (also the card picker before a match: deck.js opens it in "pick" mode) -->
 <section id="scr-coll" class="screen">
   <div class="topbar coll-top">
-    <button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <div class="coll-title"><h2>Collection</h2><div class="meta" id="collMeta"></div></div>
+    <button class="iconbtn" id="collBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="coll-title"><h2 id="collTitle">Collection</h2><div class="meta" id="collMeta"></div></div>
   </div>
   <!-- one screen, no scrolling: the binder takes whatever height is left and its cards resize to fit -->
   <div class="wrap coll-wrap">
@@ -210,6 +182,7 @@
           <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
           <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           <button class="btn primary" id="collSave">Save hand</button>
+          <button class="btn primary hidden" id="collGo" disabled>Play</button>
         </div>
       </div>
     </div>

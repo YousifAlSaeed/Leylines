@@ -1,11 +1,4 @@
 /* ---------- deck & collection ---------- */
-.dk-head{display:flex;align-items:center;gap:10px}
-.dk-head .meta{margin-left:auto;flex:none}
-.dk-filter{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
-.dk-filter::-webkit-scrollbar{display:none}
-.dk-chip{flex:none;border:1px solid var(--line2);background:none;color:var(--muted);border-radius:999px;padding:5px 12px;font:600 12.5px var(--body);cursor:pointer;white-space:nowrap;min-height:32px;transition:background .18s,color .18s}
-.dk-chip:hover{color:var(--text)}
-.dk-chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 /* the picked hand: 5 cards spread in a gentle arc, spaced so each card's art stays visible */
 .dk-tray{position:sticky;bottom:0;z-index:2;container-type:inline-size;padding:16px 18px 10px;border-radius:20px;
   background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px solid var(--line2);box-shadow:0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
@@ -19,15 +12,12 @@
 .dk-fs .card.deal{animation:deal .45s var(--spring)}
 @keyframes deal{from{transform:translateY(4em) rotate(8deg);opacity:0}}
 @media (hover:hover){.dk-fs:has(.card):hover{transform:var(--t) translateY(-.5em)!important}.dk-fs .card:hover{filter:brightness(1.12)}}
-.dk-row{display:flex;align-items:center;gap:14px;margin-top:4px;padding-top:12px;border-top:1px solid var(--line)}
 .dk-power{display:flex;flex-direction:column;gap:2px;font:600 11.5px var(--body);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .dk-power b{font:800 22px/1 var(--display);color:var(--text);letter-spacing:0;font-variant-numeric:tabular-nums}
 .dk-sides{display:grid;grid-template-columns:repeat(2,auto auto);gap:3px 8px;align-items:center;font-size:12px;color:var(--muted)}
 .dk-bar{width:40px;height:5px;border-radius:3px;background:rgba(var(--tint),.1);overflow:hidden}
 .dk-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s var(--ease)}
 .dk-bar.weak i{background:var(--danger)}
-.dk-row .btn.primary{margin-left:auto;min-width:120px}
-.dk-acts{display:flex;gap:8px;margin-top:12px}
 .dk-act{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 10px;border-radius:12px;
   border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);font:600 13.5px var(--body);cursor:pointer;white-space:nowrap;
   transition:background .18s,border-color .18s,color .18s,transform .2s var(--spring)}
@@ -38,7 +28,6 @@
 .dk-act.gold{color:var(--accent-ink);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
 .dk-act.quiet{color:var(--muted)}
 .dk-act.quiet:hover:not(:disabled){color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,transparent)}
-.dk-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
 /* loadouts: saved hands above the collection */
 .dk-lo{display:flex;flex-direction:column;gap:8px}
 .dk-lohead{display:flex;justify-content:space-between;align-items:center;min-height:28px}
@@ -75,28 +64,8 @@
 .dk-lodel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .dk-lonote{font-size:12.5px;color:var(--muted);min-height:18px;margin-top:-2px}
 .dk-lonote b{color:var(--text);font-weight:600} .dk-lonote .bad{color:var(--danger)}
-@media (max-width:480px){.dk-head .meta,.dk-hint{display:none}}
 @media (max-width:380px){.dk-sides{display:none}.dk-act{padding:6px;font-size:13px;gap:4px}}
-/* most phones (the tray is ~320–400px wide): slimmer bars and a narrower Play button, so the row fits */
-@container (max-width:420px){.dk-row{gap:10px}.dk-bar{width:24px}.dk-row .btn.primary{min-width:92px;padding-inline:12px}}
-/* and if it still doesn't fit (bigger text settings), the bars get clipped rather than pushing Play off the edge */
 .dk-sides{min-width:0;overflow:hidden}
-.dk-row .btn.primary{flex:none}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px 8px;justify-items:center;font-size:15px}
-.grid .gc{cursor:pointer;position:relative;border-radius:.6em;transition:transform .25s var(--spring)}
-@media (hover:hover){.grid .gc:not(.used):hover{transform:translateY(-4px) rotate(-1deg)}}
-.grid .gc:active{transform:scale(.95)}
-.grid .gc.used{opacity:.3;cursor:default}
-.grid h4{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;gap:10px;margin:14px 0 0;font:600 13px var(--body);color:var(--accent-ink)}
-.grid h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
-.grid h4 small{order:1;font:500 11.5px var(--body);color:var(--muted)}
-
-/* desktop: a wider picker with bigger cards so the grid and hand don't sit in a thin strip */
-@media (min-width:920px) and (min-height:560px){
-  #scr-deck .topbar,#scr-deck .wrap{max-width:860px}
-  #scr-deck .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:14px 10px;font-size:19px}
-  #scr-deck .dk-fan{font-size:min(20px,calc(100cqw / 28.5))}
-}
 
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
@@ -241,6 +210,11 @@
 .coll-row .btn.primary{white-space:nowrap}
 /* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
 @container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
+/* picking cards for a match: Save hand shrinks to an icon next to Clear, and Play takes the wide spot */
+.coll-row .dk-act.ico{width:42px;padding:0}
+@container (max-width:400px){#scr-coll.pick .coll-row .dk-act span{display:none}#scr-coll.pick .coll-row #collBest{width:42px;padding:0}}
+/* a card you can't add right now (every copy in hand, hand full, over the rarity limit) fades */
+.pk-cell.used .pocket{opacity:.35}
 @media (min-width:700px) and (orientation:landscape){
   #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,calc(34vw / var(--ui)),380px);grid-template-rows:minmax(0,1fr)}
   #scr-coll .dk-lorow{grid-template-columns:1fr}

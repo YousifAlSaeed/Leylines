@@ -80,7 +80,7 @@ p{text-wrap:pretty}
 .hidden{display:none!important}
 :focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 h2[tabindex="-1"]:focus,.mbox:focus{outline:none}
-.sc,.bigscore,.codebox,.stat b,.meta,#deckMeta,.timer span{font-variant-numeric:tabular-nums}
+.sc,.bigscore,.codebox,.stat b,.meta,.timer span{font-variant-numeric:tabular-nums}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* ---------- screens ---------- */

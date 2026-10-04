@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.6.5 (2026-10-04)
+- Choosing 5 cards before a match now uses the Collection binder: rarity tabs, pages, tap a card to add it, Play in the hand tray
+
 ## 0.6.4 (2026-10-04)
 - New link picture for shared links: drawn from the real game cards (10 shows as X), made by `node tools/og-image.js`
 
