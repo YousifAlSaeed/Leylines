@@ -215,18 +215,34 @@ function dailyStatus(){
   };
 }
 const dailyOpen=()=>clockOk()&&dailyStatus().left>0;
+// the rewards today's challenges can still pay (the menu card's numbers): {xp, shards, packs}
+function dailyLeft(){
+  const t=trial(),g=t.g,R=DAILY_REWARD,out={xp:0,shards:0,packs:0};
+  const add=r=>{out.xp+=r.xp||0;out.shards+=r.shards||0;out.packs+=r.pack?1:0};
+  if(!t.duel)add(R.duel);
+  if(!t.puz)add(R.puzzle);
+  // the Gauntlet: its shards once a day; its packs only on the first run, for the stages not yet won
+  if(!g.paid)out.shards+=R.gauntlet[0].shards;
+  if(!g.run||g.run===1&&!g.over)R.gauntlet.forEach((r,i)=>{if(r.pack&&i>=g.stage)out.packs++});
+  return out;
+}
 const DLY_ICON={
   duel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M9.5 6.5L13 3h3v3l-3.5 3.5M5 14l-2 2 2 2 2-2"/></svg>',
   puzzle:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg>',
   gauntlet:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V9l7-5 7 5v11"/><path d="M9 20v-5h6v5M3 20h18"/></svg>'};
 const DLY_NAME={duel:'Duel',puzzle:'Puzzle',gauntlet:'Gauntlet'};
 function dailyPane(){
-  if(!clockOk())return {h:'Daily',sub:'Checking the time with the server…',side:'',
+  if(!clockOk())return {h:'Daily',sub:'Checking the time with the server…',side:'',stats:[],
     row:'<p class="hero-sub">The challenges show up once the game reaches the server.</p>'};
   const s=dailyStatus(),done=['duel','puzzle','gauntlet'].filter(k=>s[k].done).length;
-  const btn=k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''}" id="dly-${k}" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`;
+  // only the next challenge to play is pink, like the one main button in the other modes
+  const next=['duel','puzzle','gauntlet'].find(k=>!s[k].done);
+  const btn=k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''} ${k===next?'next':''}" id="dly-${k}" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`;
+  const l=dailyLeft();
   return {h:`Daily <span class="dly-no">#${dayNo()}</span>`,sub:`${done} of 3 done · new in <span class="dly-wait">${untilMidnight()}</span>`,
-    side:`<div class="dly-pips" aria-hidden="true">${['duel','puzzle','gauntlet'].map(k=>`<i class="${s[k].done?(s[k].miss?'miss':'on'):''}"></i>`).join('')}</div>`,
+    stats:[[`+${l.xp}`,'XP left today'],[`${shd()}+${l.shards}`,'shards left today'],[l.packs,l.packs===1?'pack left today':'packs left today']],
+    // the picture: a stamp per challenge that lights up once it's done
+    side:`<div class="dly-stamps" aria-hidden="true">${['duel','puzzle','gauntlet'].map(k=>`<i class="${s[k].done?(s[k].miss?'miss':'on'):''}">${DLY_ICON[k]}${s[k].done&&!s[k].miss?'<em>✓</em>':''}</i>`).join('')}</div>`,
     row:`<div class="dly-row">${btn('duel')}${btn('puzzle')}${btn('gauntlet')}</div>`};
 }
 function bindDaily(){$$('#heroBody .hero-pane:not(.hero-ghost) .dly').forEach(b=>b.onclick=()=>{sfx('click');dailyBrief(b.dataset.k)})}

@@ -7,6 +7,13 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
 ## 0.10.0 (2026-10-04)
+A cleaner Play card.
+- Every mode on the Play card now has the same layout: a picture, quick facts, and the buttons at the bottom
+- vs Computer, Online and Daily show the same bar above their buttons: XP, shards, and shards left today (or packs left in Daily)
+- Daily on the Play card: a stamp for each challenge lights up when it's done, and only the next challenge is pink
+- Same screen: **Quick play** starts right away with the same rules and cards as your last game, or pick new rules and cards
+
+## 0.9.1 (2026-10-04)
 - On iPhone Safari, a small guide shows how to add Leylines to your home screen and play it like an app (close it and it stays away for 30 days)
 
 ## 0.9.0 (2026-10-04)

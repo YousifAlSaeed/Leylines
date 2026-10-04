@@ -22,7 +22,9 @@ function defSave(){
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)
     live:null,owes:[],spares:0,spareDay:null,
     // the store (store.js): Ley Shards (everyone starts with a few), shards from matches today {at, n}, today's purchases
-    shards:150,shardDay:null,shop:null};
+    shards:150,shardDay:null,shop:null,
+    // Same screen's last two hands [blue, red], for Quick play (match.js)
+    localDecks:null};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){

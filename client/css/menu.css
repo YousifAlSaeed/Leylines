@@ -129,11 +129,20 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-pane{grid-area:1/1;display:flex;flex-direction:column;min-width:0}
 .hero-pane.hero-ghost{visibility:hidden;pointer-events:none}
 .hero-body.fade{animation:rise .3s var(--ease)}
-/* centred in whatever room the tallest mode leaves (hero-pane in menu.js) */
-.hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-top:14px;margin:auto 0}
-.vsav{display:flex;align-items:center;gap:8px;padding:2px 6px 0 0;flex:none}
-.vsav .av{width:44px;height:44px;border-radius:12px;font-size:18px}
-.vsav em{font:900 16px var(--display);color:var(--muted);font-style:italic}
+/* every mode: title + picture centred in the room above the bar of numbers and the controls (hero-pane in menu.js) */
+.hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 0 12px;margin:auto 0}
+/* Same screen's picture: two of Blue's cards vs two of Red's */
+.vsfan{display:flex;align-items:center;gap:2px;flex:none}
+.vsfan .fan{padding-right:4px;font-size:7px}
+.vsfan .fan .card:last-child{margin-right:0}
+.vsfan em{font:900 italic 16px var(--display);color:var(--accent-ink);margin:0 6px}
+/* the bar of 3 numbers that sits on top of the buttons: XP, shards and one more */
+.hero-stats{position:relative;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:14px;background:rgba(var(--tint),.03)}
+.hero-stats div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;min-width:0;text-align:center}
+.hero-stats div+div{border-left:1px solid var(--line)}
+.hero-stats b{display:flex;align-items:center;gap:3px;font:800 15px/1.1 var(--display);color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hero-stats small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hero-stats .shd{width:11px;height:13px}
 .av.b{background:linear-gradient(160deg,var(--blue1),var(--blue2))} .av.r{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .joinrow{display:flex;gap:8px;flex:1 1 100%}
 .joinrow .codein{flex:1;min-width:0;font-size:20px;padding:6px 8px;min-height:48px;border-radius:14px}
@@ -144,9 +153,11 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .fan .card{margin-right:-1.3em}
 .fan .card:nth-child(1){transform:rotate(-9deg) translateY(.4em)} .fan .card:nth-child(2){transform:rotate(-4deg)}
 .fan .card:nth-child(4){transform:rotate(4deg)} .fan .card:nth-child(5){transform:rotate(9deg) translateY(.4em)}
-.hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;padding-top:16px}
+.hero-row{position:relative;display:flex;flex-wrap:wrap;gap:8px;padding-top:8px}
 .hero-row .btn.primary{flex:1 1 130px;min-height:52px;font-size:18px}
 .hero-row .seg{flex:1 1 210px}
+.hero-row .seg.full{flex-basis:100%}
+.hero-row .btn.full:not(.primary){min-height:48px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{position:relative;text-align:left;border-radius:18px;padding:14px;min-height:100px;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
   display:flex;flex-direction:column;justify-content:space-between;gap:10px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
@@ -181,7 +192,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hero-body{flex:1}
   .hero-row{padding-top:18px}
   .hero-h{font-size:30px}
-  .fan{font-size:14px}
+  .fan{font-size:16px}
+  .vsfan .fan{font-size:12px}
   .modeseg svg{display:block}
   .m-right .tiles{flex:1;grid-auto-rows:1fr}
   .tile{min-height:122px;padding:18px}

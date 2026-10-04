@@ -23,8 +23,19 @@ function startLocal(){
   openDeck({title:'Blue — choose 5',pool:foundPool(),free:true,color:'blue',onBack:()=>openSetup('local'),
     onDone:ids=>{G.decks[0]=ids;
       modal('<h2>Pass the device</h2><p>Red, it\'s your turn to choose 5 cards.</p>',[{label:'Ready',cls:'primary',fn:()=>
-        openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;startMatch()}})}]);
+        openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;SAVE.localDecks=G.decks.map(d=>d.slice());save();startMatch()}})}]);
     }});
+}
+// Same screen's Quick play (menu.js): the last two hands, if every card in them has still been found
+function localDecks(){
+  const d=SAVE.localDecks;
+  return Array.isArray(d)&&d.length===2&&d.every(h=>Array.isArray(h)&&h.length===5&&h.every(id=>CARDS[id]&&isSeen(id)))?d:null;
+}
+function quickLocal(){
+  const d=localDecks();if(!d){openSetup('local');return}
+  G=baseMatch('local',{names:['Blue','Red']});
+  G.decks=G.rules.random?[randomDeck(foundPool()),randomDeck(foundPool())]:d.map(h=>h.slice());
+  startMatch();
 }
 function startMatch(){
   G.rng=mulberry32(G.seed);G.sd=0;G.over=false;
