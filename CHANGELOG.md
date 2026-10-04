@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.13.0 (2026-10-04)
+- **The Store is now the Night Market.** Four stops under a starry sky: the Merchant's cards, the deal of the night, the Pack Counter and the Shard well, with a countdown to midnight. On a wide screen they sit side by side; on a phone, tap a star on the sky map to open that stop. Pull the panel down to see just the sky, with no names or buttons and your phone's time and date in place of the countdown (a clean screenshot or wallpaper). Tap the sky to bring back the top bar, or any star to bring the panel back
+
 ## 0.12.2 (2026-10-04)
 - Small fixes
 

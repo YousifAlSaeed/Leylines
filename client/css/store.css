@@ -19,54 +19,167 @@
 .pf-reward .pf-shard{background:color-mix(in srgb,var(--shard) 16%,transparent);color:var(--shard-ink);display:inline-flex;align-items:center}
 .pf-reward .pf-cap{background:var(--well);color:var(--muted);font-weight:600}
 
-/* ---------- the Store screen ---------- */
-.st-top,.st-wrap{max-width:760px}
-.st-wrap{gap:14px}
+/* ---------- the Store screen: the Night Market (store.js) ---------- */
+/* The sky is the screen's own background, so it fills the whole window however tall the page is, and stays put while
+   the page scrolls. It's night in the light theme too, so the screen sets its own dark colours. */
+#scr-store{--text:#F1ECFF;--muted:#B9AEDD;--line:rgba(237,230,255,.1);--line2:rgba(237,230,255,.22);--tint:255,255,255;--well:rgba(0,0,0,.3);
+  --surf:#140C33;--surf2:#1E1450;--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a;color:var(--text);
+  background:
+    radial-gradient(circle at 23px 41px,rgba(237,230,255,.85) 0 1px,transparent 1.6px) 0 0/173px 157px,
+    radial-gradient(circle at 97px 12px,rgba(237,230,255,.5) 0 .8px,transparent 1.4px) 0 0/211px 193px,
+    radial-gradient(circle at 140px 120px,rgba(237,230,255,.9) 0 1.2px,transparent 2px) 0 0/263px 241px,
+    radial-gradient(circle at 60px 170px,rgba(184,148,255,.75) 0 1px,transparent 1.6px) 0 0/307px 229px,
+    radial-gradient(circle at 200px 60px,rgba(142,240,250,.6) 0 1px,transparent 1.6px) 0 0/337px 283px,
+    radial-gradient(circle at 31px 88px,rgba(237,230,255,.6) 0 .9px,transparent 1.5px) 0 0/389px 347px,
+    radial-gradient(circle at 250px 300px,rgba(255,196,92,.55) 0 1px,transparent 1.6px) 0 0/431px 409px,
+    radial-gradient(circle at 120px 20px,rgba(237,230,255,.75) 0 1.1px,transparent 1.8px) 0 0/487px 457px,
+    radial-gradient(70% 45% at 50% 118%,rgba(139,108,255,.34),transparent 70%),
+    radial-gradient(45% 35% at 82% 0,rgba(94,230,176,.15),transparent 70%),
+    radial-gradient(55% 40% at 12% 0,rgba(139,108,255,.3),transparent 70%),
+    linear-gradient(180deg,#0c0a2a,#06051a 55%,#0b0824)}
+#scr-store .iconbtn{color:var(--text)}
+.st-top,.st-wrap{max-width:1200px}
+.st-wrap{flex:1 0 auto;gap:0}
 .st-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);font-variant-numeric:tabular-nums;
   color:var(--shard-ink);background:color-mix(in srgb,var(--shard) 12%,transparent);border:1px solid color-mix(in srgb,var(--shard) 35%,transparent)}
 .st-note{margin:12px 0 0;color:var(--muted);font-size:12.5px}
-.st-note b{color:var(--text)}
-/* the 5★ guarantee under the Pack Counter (its bar is styled in packs.css) */
-.st-pity{margin-top:14px}
-.st-pity+.st-note{margin-top:4px}
+.st-note b,.st-sub b{color:var(--text)}
 .st-price{display:inline-flex;align-items:center;font:700 14px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--shard-ink);white-space:nowrap}
 .st-price.short{color:var(--muted);opacity:.75}
 
-/* the Merchant */
-.st-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.st-slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 6px 10px;border-radius:14px;background:var(--well);border:1px solid var(--line)}
-.st-slot .card{font-size:min(17px,3.6vw)}
-.st-slot .btn{width:100%;padding:8px 6px}
+/* tonight's sky: the countdown and the moon */
+.st-hero{display:flex;align-items:center;flex-wrap:wrap;gap:20px 48px;padding:22px 4px 34px}
+.st-hero>div{flex:1 1 320px;position:relative}
+/* the phone's own date and time, shown in place of the countdown while the sheet is down (phones only) */
+.st-now{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap}
+.st-now .st-lab{color:#B9AEDD}
+.st-now small{margin-left:.15em;font-size:.42em;letter-spacing:.02em}
+.st-lab{font:700 12px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:#5EE6B0}
+.st-count{margin-top:10px;font:800 64px/.95 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,#fff 20%,#B894FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.st-hero p{margin:12px 0 0;max-width:470px;color:var(--muted);font-size:14.5px}
+.st-moon{width:132px;height:132px;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 34% 52%,rgba(120,100,190,.25) 0 11px,transparent 12px),radial-gradient(circle at 62% 28%,rgba(120,100,190,.25) 0 7px,transparent 8px),
+    radial-gradient(circle at 60% 66%,rgba(120,100,190,.22) 0 5px,transparent 6px),radial-gradient(circle at 38% 35%,#fbf7ff,#d9ccff 55%,#a796e0);
+  box-shadow:0 0 60px rgba(217,204,255,.45),0 0 140px rgba(139,108,255,.35)}
+
+/* the four stops, each under its own star; their panels stretch to one height so the row ends level */
+.st-stops{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 24px;align-items:stretch;padding-bottom:12px}
+@media (max-width:1099px){.st-stops{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.st-stop{display:flex;flex-direction:column;min-width:0}
+.s-merchant{--sc:#B894FF}.s-deal{--sc:#FF86C4}.s-packs{--sc:#8ef0fa}.s-well{--sc:#5EE6B0}
+.st-sh{display:flex;align-items:center;gap:12px;margin:0 0 10px;font:700 12px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--text)}
+.st-sh svg{width:24px;height:24px;flex:none;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc))}
+.st-sh i{flex:1;border-top:1px dashed rgba(237,230,255,.3)}
+.st-sub{margin:0 0 14px;min-height:2.8em;color:var(--muted);font-size:12.5px}
+.st-glass{flex:1;display:flex;flex-direction:column;border-radius:18px;padding:18px;border:1px solid rgba(237,230,255,.1);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.st-glass>.st-note:last-child{margin-top:auto;padding-top:12px}
+
+/* I · the Merchant */
+.st-cards{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:center;gap:18px 10px}
+.st-slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.st-slot .card{font-size:15px}
+.st-slot.mine .card{box-shadow:0 0 0 2px #FF86C4,0 0 24px rgba(255,134,196,.55)}
+.st-cn{font:600 12.5px/1.2 var(--body)}
+.st-cn small{display:block;margin-top:2px;font-size:10.5px;color:#FFC45C}
+.mine .st-cn small{color:#FF86C4;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.st-buy{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(111,227,240,.35);background:rgba(111,227,240,.06);color:var(--shard-ink);
+  font:inherit;cursor:pointer;display:inline-flex;align-items:center;transition:border-color .2s,transform .25s var(--spring)}
+.st-buy:hover:not(:disabled){border-color:var(--shard);transform:translateY(-1px)}
+.st-buy:disabled{cursor:default;color:var(--muted);border-color:var(--line);background:none;font:700 13px/1 var(--display)}
 .st-slot.sold .card{filter:grayscale(.85) brightness(.7)}
-.st-slot.sold::after{content:"SOLD";position:absolute;top:34%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font:800 15px/1 var(--display);letter-spacing:.14em;
-  color:var(--cta);border:2px solid currentColor;border-radius:5px;padding:3px 7px;background:var(--surf);pointer-events:none}
-.st-tag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;font:800 10px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;
-  padding:4px 7px;border-radius:999px;background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta)}
-@media (max-width:520px){.st-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.st-slot .card{font-size:min(19px,5.6vw)}}
+.st-slot.sold::after{content:"SOLD";position:absolute;top:2.4em;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font:800 14px/1 var(--display);letter-spacing:.14em;
+  color:#FF86C4;border:2px solid currentColor;border-radius:5px;padding:3px 7px;background:#140C33;pointer-events:none}
 
-/* a pack row: the Merchant's deal and the Pack Counter */
-.st-deal,.st-pk{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 14px;border-radius:14px;cursor:pointer;
-  background:var(--well);border:1px solid var(--line);color:var(--text);font:inherit;transition:border-color .2s,transform .25s var(--spring)}
-.st-deal{margin-top:12px}
-.st-deal:hover:not(:disabled),.st-pk:hover:not(:disabled){border-color:var(--line2);transform:translateY(-1px)}
-.st-deal:disabled,.st-pk:disabled{cursor:default;opacity:.6}
-.st-deal .pk-mini,.st-pk .pk-mini{--w:32px}
-.st-dt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.st-dt b{font:700 16px/1.15 var(--display)}
-.st-dt small{color:var(--muted);font-size:12px}
-.st-was{color:var(--muted);font-size:12.5px;text-decoration:line-through;font-variant-numeric:tabular-nums}
-.st-packs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (max-width:520px){.st-packs{grid-template-columns:1fr}}
+/* II · the deal of the night */
+.s-deal .st-glass{border-color:rgba(255,134,196,.25);background:radial-gradient(90% 60% at 50% 20%,rgba(255,95,168,.18),transparent 70%),rgba(255,255,255,.02)}
+.st-dealbox{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.st-dealbox .pk-mini{--w:96px;margin:10px 0 22px;transform:rotate(-5deg);box-shadow:0 0 60px rgba(255,134,196,.45),0 22px 36px -12px rgba(0,0,0,.85)}
+.st-dealbox.sold .pk-mini{box-shadow:none}
+.st-dn{font:800 22px/1 var(--display)}
+.st-dealbox small{margin-top:6px;color:var(--muted);font-size:12.5px}
+.st-off{margin:12px 0 16px;color:#FF86C4;font-size:13px}
+.st-off s{color:var(--muted)}
+.st-dealbox.sold .st-off{color:var(--muted)}
+.st-dealbuy{width:100%;margin-top:auto;border-radius:999px}
 
-/* earning */
-.st-bar{height:10px;border-radius:99px;background:var(--well);overflow:hidden;border:1px solid var(--line)}
-.st-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--shard-deep),var(--shard))}
-.st-bar.full i{background:linear-gradient(90deg,var(--accent),var(--cta))}
-.st-rates{display:grid;gap:6px;margin:14px 0 0}
-.st-rates div{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--line);font-size:13.5px}
+/* III · the Pack Counter */
+.st-tiers{flex:1;display:flex;flex-direction:column;justify-content:center}
+.st-pk{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:8px 2px;border:0;border-bottom:1px solid rgba(237,230,255,.08);background:none;
+  color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:transform .25s var(--spring)}
+.st-pk:last-child{border-bottom:0}
+.st-pk:hover:not(:disabled){transform:translateX(3px)}
+.st-pk:disabled{cursor:default;opacity:.6}
+.st-pk .pk-mini{--w:30px}
+.st-dt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.st-dt b{font:700 15px/1.15 var(--display)}
+.st-dt small{color:var(--muted);font-size:11.5px}
+
+/* IV · the Shard well */
+.st-rings{display:flex;justify-content:space-around;gap:12px}
+.st-ring-w{text-align:center}
+.st-ring{width:96px;height:96px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--rc) calc(var(--p)*1%),rgba(255,255,255,.08) 0)}
+.st-ring span{width:80px;height:80px;border-radius:50%;background:#0d0a2b;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.st-ring b{font:800 20px/1 var(--display);font-variant-numeric:tabular-nums}
+.st-ring small{font-size:10.5px;color:var(--muted)}
+.st-rl{margin-top:8px;font-size:11.5px;color:var(--muted);max-width:110px}
+.st-rates{display:grid;gap:6px;margin:16px 0 0}
+.st-rates div{display:flex;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid rgba(237,230,255,.08);font-size:12.5px}
 .st-rates div:last-child{border-bottom:0;padding-bottom:0}
 .st-rates dt{font-weight:600}
 .st-rates dd{margin:0;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* the map of the four stars: phones only */
+.st-map,.st-grab{display:none}
+
+/* a phone: the sky is a map of the four stops, and the one picked opens in a sheet that runs to the bottom of the screen */
+@media (max-width:759px){
+  #scr-store{padding-bottom:0}
+  .st-hero{gap:16px;padding:8px 2px 0;flex-wrap:nowrap}
+  .st-hero>div{flex:1}
+  .st-count{font-size:44px}
+  .st-hero p{display:none}
+  .st-moon{width:76px;height:76px}
+  .st-map{display:block;position:relative;height:230px;margin:0 -8px}
+  .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
+  .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:64px;padding:0;border:0;background:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:600 12px/1.2 var(--body)}
+  .st-star svg{width:30px;height:30px;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc));transition:transform .3s var(--spring)}
+  .st-star::before{content:"";position:absolute;top:-9px;left:50%;width:48px;height:48px;margin-left:-24px;border-radius:50%;border:1px solid var(--sc);
+    box-shadow:0 0 22px var(--sc);opacity:0;transform:scale(.6);transition:opacity .25s,transform .3s var(--spring)}
+  .st-star.on svg{transform:scale(1.2)}
+  .st-star.on::before{opacity:.65;transform:none}
+  .st-star.on span{font-weight:700}
+  .st-star.s-merchant{left:16%;top:40%}.st-star.s-deal{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
+  .st-stops{display:flex;flex-direction:column;gap:0;margin:0 -16px;padding:10px 20px max(28px,env(safe-area-inset-bottom));border-radius:28px 28px 0 0;
+    background:linear-gradient(180deg,rgba(28,20,72,.97),rgba(14,10,36,.99));border-top:1px solid rgba(237,230,255,.16);box-shadow:0 -20px 50px rgba(0,0,0,.55)}
+  .st-grab{display:flex;flex:none;align-items:center;justify-content:center;height:36px;margin:-10px -20px 6px;padding:0;border:0;background:none;cursor:grab;touch-action:none}
+  .st-grab::before{content:"";width:40px;height:5px;border-radius:99px;background:rgba(237,230,255,.25);transition:background .2s,width .2s}
+  .st-grab:hover::before,.st-grab:active::before{background:rgba(237,230,255,.45);width:52px}
+  .st-stops{transition:transform .3s var(--ease)}
+  .st-stops.out{transform:translateY(110%)}
+  /* pulled down: just the sky, the constellation spread over the screen and the stars without their names */
+  #scr-store.st-moving{overflow:hidden}
+  .st-down .st-stops{display:none}
+  .st-down .st-map{flex:1;min-height:230px}
+  .st-star span{transition:opacity .25s}
+  .st-down .st-star span{opacity:0}
+  .st-down .st-star::before{opacity:0}
+  .st-down .st-star.on svg{transform:none}
+  .st-top{transition:opacity .3s}
+  .st-down .st-top{opacity:0;pointer-events:none}
+  .st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:opacity .35s}
+  .st-down .st-hero>div>.st-lab,.st-down .st-hero>div>.st-count{opacity:0}
+  .st-down .st-now{opacity:1}
+  .st-down.st-bar .st-top{opacity:1;pointer-events:auto}
+  .st-stop{display:none;flex:1}
+  .st-stop.on{display:flex;animation:rise .35s var(--ease) both}
+  .st-sub{min-height:0}
+  .st-glass,.s-deal .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .st-slot .card{font-size:min(17px,4.4vw)}
+}
 
 /* the confirm box */
 .st-one{display:flex;justify-content:center;margin:6px 0 10px}
@@ -74,4 +187,4 @@
 .st-cost{display:flex;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
 .st-cost b{color:var(--shard-ink);font:700 18px/1 var(--display);margin-right:6px}
 
-@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-deal,.st-pk{transition:none}}
+@media (prefers-reduced-motion:reduce){.tile.stile.hot .st-gem::after{animation:none}.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-grab::before,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}
