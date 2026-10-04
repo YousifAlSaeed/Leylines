@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.2 (2026-10-04)
+- How to play: **Sudden death** now has its own tab with an example. After a draw, your new hand is every card in your colour, so cards you flipped come with you
+- How to play's tabs are back in one row you can swipe, with the arrow
+
 ## 0.17.1 (2026-10-04)
 - How to play no longer scrolls. Every tab is short, Tips has its own tab, and the other rules are split into Hands, Board, Match and Trade. On a phone the tabs sit in two rows
 

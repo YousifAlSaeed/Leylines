@@ -100,7 +100,7 @@ function tutClear(){
   document.body.classList.remove('tut','tut-fin');
 }
 function tutSeen(){if(!SAVE.tut){SAVE.tut=1;save()}}
-function tutLeave(){const i=G.tut.i;show('menu');openHow(i)}
+function tutLeave(){const i=G.tut.i;show('menu');openHow(Math.max(0,HOW.findIndex(h=>h.tut===i)))}
 function tutSkip(){
   const t=G&&G.tut;if(!t)return;
   if(t.single){tutLeave();return}
