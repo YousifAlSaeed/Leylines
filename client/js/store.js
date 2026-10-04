@@ -116,48 +116,122 @@ function buyPack(t,deal){
     }},{label:'Cancel',esc:true}]);
 }
 
-/* ---------- the Store screen and the menu tile ---------- */
-function openStore(){renderStore();show('store');$('#scr-store').scrollTop=0}
+/* ---------- the Store screen: the Night Market (and the menu tile) ---------- */
+// Four stops under a starry sky: the Merchant, the deal of the night, the Pack Counter and the Shard well.
+// A wide screen shows them side by side; a phone shows a map of the four stars and the chosen stop in a sheet under it.
+const ST_STOPS=[['merchant','I','Merchant','Merchant'],['deal','II','Deal of the night','Deal'],['packs','III','Pack counter','Packs'],['well','IV','Shard well','Well']];
+const ST_STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l2.2 8.8L23 12l-8.8 2.2L12 23l-2.2-8.8L1 12l8.8-2.2z"/></svg>';
+let stStop='merchant'; // the stop the phone layout shows
+function openStore(){stDown=false;clearInterval(stSheet.c);$('#scr-store').classList.remove('st-down','st-bar');renderStore();show('store');$('#scr-store').scrollTop=0}
 function renderStore(){
   $('#stBal').innerHTML=`${shd()}<b>${fmtSh(SAVE.shards)}</b>`;
   $('#stBal').setAttribute('aria-label',`You have ${shardsTxt(SAVE.shards)}`);
   const price=p=>`<span class="st-price${SAVE.shards<p?' short':''}">${shd()}${fmtSh(p)}<span class="sr"> shards</span></span>`;
+  const ok=clockOk(),s=ok?shopDay():null,st=ok?merchStock():null,wait='<p class="st-note">Checking the time with the server…</p>';
 
-  let merch;
-  if(!clockOk())merch=`<section class="pk-card st-merch"><h3>Wandering Merchant</h3><p class="st-note">Checking the time with the server…</p></section>`;
-  else{
-    const s=shopDay(),st=merchStock(),d=st.deal,T=PACKS[d.t];
-    merch=`<section class="pk-card st-merch"><h3>Wandering Merchant <em>New stock in <b id="stWait">${untilMidnight()}</b></em></h3>
-      <div class="st-grid">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id];
-        return `<div class="st-slot${sold?' sold':''}">${it.mine?'<span class="st-tag">For you</span>':''}${cardHTML(it.id,'blue')}
-          <button class="btn small st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>
-      <button class="st-deal${s.got.deal?' sold':''}" id="stDeal" ${s.got.deal?'disabled':''}>${miniPack(d.t,s.got.deal?'spent':'ready')}
-        <span class="st-dt"><b>${T.name} pack</b><small>${s.got.deal?'Sold':`${T.n} cards · ${DEAL_OFF*100}% off today`}</small></span>
-        ${s.got.deal?'':`<span class="st-was">${fmtSh(PACK_PRICE[d.t])}</span>${price(d.price)}`}</button>
-      <p class="st-note">Every player gets the same stock today. <b>For you</b> is a card you haven't found yet, picked for you. Each item sells once.</p></section>`;
+  const hero=`<section class="st-hero"><div><div class="st-lab">Tonight's sky</div><div class="st-count" id="stWait">${untilMidnight()}</div>
+    <div class="st-now" aria-hidden="true"><div class="st-lab" id="stDate"></div><div class="st-count" id="stClock"></div></div>
+    <p>${ok?'until the market moves on. Every player sees the same four stops tonight, and at midnight they all change.':'Checking the time with the server…'}</p></div><span class="st-moon" aria-hidden="true"></span></section>`;
+  const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M16 40L40 72L63 30L85 66" vector-effect="non-scaling-stroke"/></svg>${
+    ST_STOPS.map(([k,,,short])=>`<button class="st-star s-${k}${k===stStop?' on':''}" data-stop="${k}" aria-pressed="${k===stStop}">${ST_STAR}<span>${short}${k==='deal'&&s&&!s.got.deal?` −${DEAL_OFF*100}%`:''}</span></button>`).join('')}</nav>`;
+
+  const merch=!ok?wait:`<div class="st-cards">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id];
+    return `<div class="st-slot${sold?' sold':''}${it.mine?' mine':''}">${cardHTML(it.id,'blue')}<span class="st-cn">${esc(c.name)}<small>${it.mine?'For you':'★'.repeat(c.rar)}</small></span>
+      <button class="st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>`;
+
+  let deal=wait;
+  if(ok){
+    const d=st.deal,T=PACKS[d.t],sold=!!s.got.deal;
+    deal=`<div class="st-dealbox${sold?' sold':''}">${miniPack(d.t,sold?'spent':'ready')}<b class="st-dn">${T.name} pack</b>
+      <small>${T.n} cards${T.min>1?` · the last one ${T.min}★ or better`:''}</small>${sold
+        ?'<p class="st-off">Sold. A new deal comes at midnight.</p>'
+        :`<p class="st-off">${DEAL_OFF*100}% off tonight · <s>${fmtSh(PACK_PRICE[d.t])}</s></p><button class="btn primary st-dealbuy" id="stDeal">${shd()}${fmtSh(d.price)} · Buy and open</button>`}</div>`;
   }
 
-  const s=clockOk()?shopDay():null,mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null;
-  const counter=`<section class="pk-card"><h3>Pack Counter <em>Opens right away</em></h3><div class="st-packs">${Object.entries(PACKS).map(([t,T])=>{
+  const mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null;
+  const packs=`<div class="st-tiers">${Object.entries(PACKS).map(([t,T])=>{
       const out=t==='mythic'&&mythLeft===0;
       return `<button class="st-pk t-${t}${out?' sold':''}" data-p="${t}" ${out?'disabled':''}>${miniPack(t,out?'spent':'ready')}
         <span class="st-dt"><b>${T.name}</b><small>${T.n} cards${T.min>1?` · ${T.min}★+ last`:''}${t==='mythic'?` · ${out?'next on Monday':'1 a week'}`:''}</small></span>${out?'':price(PACK_PRICE[t])}</button>`}).join('')}</div>
-    <div class="st-pity">${pityHTML()}</div><p class="st-note">Odds are on the Packs screen.</p></section>`;
+    <p class="st-note">Odds are on the Packs screen.</p>`;
 
-  const d=shardDay(),pct=Math.min(100,d.n/SHARD_CAP*100);
-  const earn=`<section class="pk-card st-earn"><h3>Earning shards <em>${fmtSh(d.n)} / ${SHARD_CAP} from matches today</em></h3>
-    <div class="st-bar${d.n>=SHARD_CAP?' full':''}" role="progressbar" aria-label="Shards from matches today" aria-valuemin="0" aria-valuemax="${SHARD_CAP}" aria-valuenow="${d.n}"><i style="width:${pct.toFixed(1)}%"></i></div>
+  const d=shardDay(),pity=Math.min(PITY,SAVE.pity);
+  const ring=(n,max,col,label)=>`<div class="st-ring-w"><div class="st-ring" style="--p:${(Math.min(n,max)/max*100).toFixed(1)};--rc:${col}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${n}"><span><b>${fmtSh(n)}</b><small>of ${max}</small></span></div><div class="st-rl">${label}</div></div>`;
+  const well=`<div class="st-rings">${ring(d.n,SHARD_CAP,'#6fe3f0','Shards from matches today')}${ring(pity,PITY,'#FFC45C','5★ guarantee')}</div>
     <dl class="st-rates">
-      <div><dt>Win vs Computer</dt><dd>Easy ${MATCH_SHARDS.easy} · Normal ${MATCH_SHARDS.normal} · Hard ${MATCH_SHARDS.hard}</dd></div>
+      <div><dt>Win vs Computer</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
       <div><dt>Daily tab</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
     </dl>
-    <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and a draw pays half a win. The Daily tab pays on top of that. The limit resets at midnight with the dailies. Same screen, and leaving a match early, pay nothing.</p></section>`;
+    <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily tab pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
 
-  $('#stBody').innerHTML=merch+counter+earn;
+  const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',deal:'One pack at a discount. It sells once.',
+    packs:'Opens the moment you buy.',well:'What you\'ve drawn from the ley today.'};
+  const body={merchant:merch,deal,packs,well};
+  $('#stBody').innerHTML=hero+map+`<div class="st-stops"><button class="st-grab" aria-label="Hide the market to see the sky"></button>${ST_STOPS.map(([k,n,name])=>
+    `<section class="st-stop s-${k}${k===stStop?' on':''}" data-stop="${k}"><h3 class="st-sh">${ST_STAR}<span>${n} · ${name}</span><i></i></h3><p class="st-sub">${sub[k]}</p><div class="st-glass">${body[k]}</div></section>`).join('')}</div>`;
+
+  $$('#stBody .st-star').forEach(b=>b.onclick=()=>{
+    if(stStop===b.dataset.stop&&!stDown)return;
+    sfx('click');stStop=b.dataset.stop;
+    $$('#stBody [data-stop]').forEach(x=>{const on=x.dataset.stop===stStop;x.classList.toggle('on',on);if(x.matches('button'))x.setAttribute('aria-pressed',on)});
+    stSheet(false);
+  });
+  stDrag($('#stBody .st-grab'),$('#stBody .st-stops'));
   $$('#stBody .st-buy').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
   $$('#stBody .st-pk').forEach(b=>b.onclick=()=>{sfx('click');buyPack(b.dataset.p,false)});
   const dl=$('#stDeal');if(dl)dl.onclick=()=>{sfx('click');buyPack(merchStock().deal.t,true)};
+}
+// A phone can pull the sheet down to see just the sky: the constellation spreads over the screen and the stars lose
+// their names, for a clean screenshot. Tapping any star brings the sheet back on that stop.
+let stDown=false;
+function stSheet(down){
+  const sc=$('#scr-store'),map=$('#stBody .st-map'),sheet=$('#stBody .st-stops');
+  if(stDown===down||!map||!sheet)return;
+  stDown=down;sc.classList.remove('st-bar');
+  clearInterval(stSheet.c);if(down){stClock();stSheet.c=setInterval(stClock,1000)}
+  clearTimeout(stSheet.t);
+  // the map's height animates from where it was to where the new layout puts it
+  const grow=()=>{
+    const h0=map.offsetHeight;sc.classList.toggle('st-down',down);
+    const h1=map.offsetHeight;map.style.height=h0+'px';void map.offsetHeight;
+    map.style.transition='height .45s var(--ease)';map.style.height=h1+'px';
+    stSheet.t=setTimeout(()=>{map.style.height=map.style.transition=''},480);
+  };
+  if(down){
+    sc.scrollTop=0;sc.classList.add('st-moving');sheet.classList.add('out');
+    stSheet.t=setTimeout(()=>{sheet.classList.remove('out');grow();setTimeout(()=>sc.classList.remove('st-moving'),480)},280);
+  }else{
+    sc.classList.add('st-moving');sheet.classList.add('out');grow();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>sheet.classList.remove('out')));
+    setTimeout(()=>sc.classList.remove('st-moving'),480);
+  }
+}
+// with the sheet down the top bar fades too; a tap on the sky brings it back (or hides it again)
+document.addEventListener('click',e=>{
+  const sc=e.target.closest('#scr-store');
+  if(!sc||!stDown||e.target.closest('.st-star,.st-top,.st-grab'))return;
+  sc.classList.toggle('st-bar');
+});
+// with the sheet down the countdown gives way to the phone's own date and time, like a lock screen
+function stClock(){
+  const now=new Date(),c=$('#stClock'),d=$('#stDate');if(!c||!d)return;
+  // the hour and minutes big, AM or PM (where the phone uses them) small
+  const t=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).formatToParts(now)
+    .map(p=>p.type==='dayPeriod'?`<small>${esc(p.value)}</small>`:p.type==='literal'&&/^\s+$/.test(p.value)?'':esc(p.value)).join('');
+  if(c.innerHTML!==t)c.innerHTML=t;
+  d.textContent=now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+}
+// the sheet's handle: drag it down (or tap it) to hide the sheet
+function stDrag(h,sheet){
+  if(!h)return;
+  let y0=null,dy=0;
+  h.onpointerdown=e=>{y0=e.clientY;dy=0;h.setPointerCapture(e.pointerId);sheet.style.transition='none'};
+  h.onpointermove=e=>{if(y0==null)return;dy=Math.max(0,e.clientY-y0);sheet.style.transform=`translateY(${dy}px)`};
+  // the click that follows a drag is ignored; a click from the keyboard (no drag) still hides the sheet
+  const end=()=>{if(y0==null)return;y0=null;sheet.style.transition=sheet.style.transform='';if(dy>60){sfx('click');stSheet(true)}setTimeout(()=>dy=0)};
+  h.onpointerup=end;h.onpointercancel=end;
+  h.onclick=()=>{if(dy<6){sfx('click');stSheet(true)}};
 }
 function renderStoreTile(){
   const fresh=clockOk()&&(!SAVE.shop||SAVE.shop.at!==today());
