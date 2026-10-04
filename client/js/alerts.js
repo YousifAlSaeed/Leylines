@@ -136,3 +136,42 @@ function alertsInviteGone(list){
   ALERTS.fromInvite=false;
   if(!list.length)toast('That invite has ended.',3000);
 }
+
+/* ---------- the tip on the main menu ---------- */
+// A signed-in player who has finished a few matches, and could get alerts but hasn't turned
+// them on, gets one small card about them. Not now: again in TIP_SNOOZE days; ✕: never again
+// (per device, in localStorage, like the other device-only things).
+const TIP_KEY='leylines.alertsTip',TIP_AFTER=3,TIP_SNOOZE=3;
+const BELL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16v-5a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/></svg>';
+function tipLater(){try{const v=localStorage.getItem(TIP_KEY);return v==='never'||Date.now()<(+v||0)}catch(e){return true}}
+function tipSave(v){try{localStorage.setItem(TIP_KEY,String(v))}catch(e){}}
+const tipMenuFree=()=>!G&&$('#scr-menu').classList.contains('on')&&!$('#modal').classList.contains('on')
+  &&!$('#frPop.on')&&!$('#invPop.on')&&!$('#a2hs:not([hidden])');
+async function alertsTipMaybe(){
+  if(ALERTS.tipped||!ACCT.token||!ACCT.up||!alertsCan()||Notification.permission==='denied'||tipLater())return;
+  if(Object.values(SAVE.stats).reduce((a,v)=>a+(+v||0),0)<TIP_AFTER)return;
+  if(!await alertsKey()||await alertsSub())return;
+  // a moment after the menu draws, and only if nothing else is showing then
+  await wait(1500);
+  if(ALERTS.tipped||!ACCT.token||!tipMenuFree())return;
+  ALERTS.tipped=true;
+  const p=document.createElement('div');p.id='alertTip';p.className='fr-pop';
+  p.setAttribute('role','region');p.setAttribute('aria-label','Alerts');p.setAttribute('aria-live','polite');
+  p.innerHTML=`<span class="pc-av on al-bell">${BELL}</span><span class="rt"><b>Never miss an invite</b><small>Hear about invites and friend requests, even with the game closed.</small></span>`+
+    '<span class="fr-two"><button class="btn small primary" data-k="on">Turn on</button><button class="btn small" data-k="later">Not now</button></span>'+
+    '<button class="iconbtn fr-x" data-k="x" aria-label="Don\'t show this again"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+  const hide=()=>{p.classList.remove('on');setTimeout(()=>p.remove(),400)};
+  p.onclick=async e=>{
+    const b=e.target.closest('button[data-k]');if(!b)return;
+    sfx('click');const k=b.dataset.k;
+    if(k==='x'){tipSave('never');hide();return}
+    if(k==='later'){tipSave(Date.now()+TIP_SNOOZE*864e5);hide();return}
+    p.querySelectorAll('button').forEach(x=>x.disabled=true);
+    try{await alertsOn();tipSave('never');hide();toast('Alerts are on. You can turn them off in Settings.',3500)}
+    catch(e){
+      // blocked or failed: don't ask again for a while, and say why
+      tipSave(Date.now()+TIP_SNOOZE*864e5);hide();toast(e.message,7000);
+    }
+  };
+  document.body.append(p);void p.offsetWidth;p.classList.add('on');
+}

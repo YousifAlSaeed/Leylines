@@ -71,3 +71,4 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 #alertsCtl{display:flex;align-items:center;gap:8px;flex:none}
 @media (max-width:440px){.setalerts{flex-wrap:wrap;row-gap:8px}.setalerts #alertsCtl{width:100%;justify-content:flex-end}}
 #setAlerts[hidden]{display:none} /* .setrow sets display, which would beat the hidden attribute */
+.al-bell svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

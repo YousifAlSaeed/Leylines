@@ -36,7 +36,7 @@ async function pulse(){
   if(!first&&(restart||r.fo!==PULSE.fo))owesCheck();
   if(!first&&(restart||r.gi!==PULSE.gi)){GIFTS.wait=true;giftsCheck()}
   Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi});
-  if(first)alertsSync();
+  if(first){alertsSync();alertsTipMaybe()}
   const names=l=>Array.isArray(l)?l.filter(u=>typeof u==='string'):[];
   const online=names(r.online),away=names(r.away),alerts=names(r.alerts);
   if([online,away,alerts].join('|')!==[PULSE.online,PULSE.away,PULSE.alerts].join('|')){

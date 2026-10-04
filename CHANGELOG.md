@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.6 (2026-10-04)
+- Signed in and played a few matches? A small tip on the main menu offers to turn on alerts, so you never miss an invite. **Not now** asks again in 3 days; ✕ hides it for good
+
 ## 0.17.5 (2026-10-04)
 - Settings no longer shows an empty Alerts row when the server has alerts turned off
 - When your phone or computer blocks alerts, the game now says so and tells you where to turn them on, instead of "Registration failed - permission denied"
