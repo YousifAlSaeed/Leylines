@@ -12,7 +12,7 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "db:init": "node server/db/init.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/"
   },
   "dependencies": {
     "express": "^5.2.1",

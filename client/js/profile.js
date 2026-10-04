@@ -31,6 +31,9 @@ const BADGES=[
   ['sudden','⏳','Overtime','Win a match in Sudden death'],
   ['elemental','🔮','Elementalist','Win with the Elemental rule on'],
   ['spoils','🎁','Spoils of war','Win a card in a trade'],
+  ['spare1','💛','Kind heart','Spare a player instead of taking their cards',s=>s.spares>=1],
+  ['spare10','🕊️','Peacemaker','Spare 10 players',s=>s.spares>=10],
+  ['spare50','😇','Guardian','Spare 50 players',s=>s.spares>=50],
   ['played10','🎴','Regular','Play 10 matches',s=>totals(s).n>=10],
   ['played50','🗡️','Veteran','Play 50 matches',s=>totals(s).n>=50],
   ['played100','🛡️','Centurion','Play 100 matches',s=>totals(s).n>=100],
@@ -304,7 +307,7 @@ function renderProfilePage(force){
       <div><b>${s.obest}</b><small>Best streak</small></div>
       ${s.orecent.length?`<div><small class="pf-rl">Recent</small>${rec}</div>`:''}
     </div>`:`<p class="pf-empty">No online matches yet.${mine?' Play a friend online to start your record and get on the leaderboard.':''}</p>`}
-    ${cpu}</section>`;
+    ${cpu}${s.spares||mine?`<div class="pf-cpu"><span aria-hidden="true">💛</span><span>Spares <b>${s.spares}</b></span>${mine?`<span>${SPARE_PACK-s.spares%SPARE_PACK} more for a free pack</span>`:''}</div>`:''}</section>`;
 
   // badges
   const got=BADGES.filter(b=>hasBadge(s,b)).length;

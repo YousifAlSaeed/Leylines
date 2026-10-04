@@ -79,6 +79,8 @@ function renderSetup(flipKey){
   $$('#tradeSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
   const tr=TRADES.find(t=>t[0]===cur.trade);
   $('#tradeDesc').textContent=tr[2];
+  // leaving early gives up the cards too (match.js, spare.js)
+  $('#tradeWarn').innerHTML=cur.trade==='none'||setupMode==='local'?'':`<b>⚠ Leaving mid-match counts as a loss.</b> ${inRoom()?'Your opponent can take your cards or spare you.':'The CPU takes your cards as if it won.'}`;
   const bo=cur.bo;
   $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"${lock}><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
   $$('#seriesSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});

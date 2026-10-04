@@ -40,10 +40,6 @@ const sameSave=d=>{const n=normSave(d);delete n.cid;return stable(n)===stable(sy
 // a device that has never really been played: signing in just loads the account
 const isFresh=()=>Object.values(SAVE.stats).every(v=>!v)&&SAVE.seen.length<=STARTER.length&&!(SAVE.loadouts||[]).some(Boolean);
 const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
-function saveSummary(s){
-  const st=s.stats||{},cards=Object.values(s.coll||{}).reduce((a,b)=>a+(+b||0),0);
-  return plural(cards,'card')+' · '+plural((st.w|0)+(st.ow|0),'win');
-}
 function ago(t){
   const s=Math.round((Date.now()-new Date(t))/1000);
   return s<60?'just now':s<3600?Math.round(s/60)+' min ago':s<86400?plural(Math.round(s/3600),'hour')+' ago':plural(Math.round(s/86400),'day')+' ago';
@@ -65,7 +61,7 @@ function acctApply(data,rev){
 function acctChanged(){
   if(!ACCT.token||ACCT.applying)return;
   if(!ACCT.dirty){ACCT.dirty=true;acctStore()}
-  // while the player hasn't picked which progress to keep, don't overwrite the account's
+  // while the account's progress is waiting to be loaded (after a match), don't overwrite it
   clearTimeout(ACCT.pushT);if(!ACCT.conflict)ACCT.pushT=setTimeout(acctPush,2500);
   renderProfile();
 }
@@ -93,26 +89,23 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad()}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck()}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
   if(!s){ACCT.rev=0;return acctPush(true)}
   if(sameSave(s.data)){Object.assign(ACCT,{rev:s.rev,dirty:false,syncedAt:Date.now()});acctStore();return acctState('')}
-  if(justSignedIn?isFresh():!ACCT.dirty&&s.rev>ACCT.rev)return acctApply(s.data,s.rev);
   if(!justSignedIn&&ACCT.dirty&&s.rev===ACCT.rev)return acctPush();
-  acctAsk(s);
+  // anything else loads the account; only progress this device would lose gets a message
+  const quiet=justSignedIn?isFresh():!ACCT.dirty&&s.rev>ACCT.rev;
+  acctTakeAccount({s,msg:quiet?'':justSignedIn?'Signed in. Your account\'s progress was loaded.':'Your account changed on another device, so its progress was loaded here.'});
 }
-// both sides changed: the player picks one
-function acctAsk(s){
-  // only on the menu or your profile, never mid-match or over another popup; renderMenu asks again later
-  if(G||!['#scr-menu','#scr-profile'].some(id=>$(id).classList.contains('on'))||$('#modal').classList.contains('on')){ACCT.conflict=s;return}
-  ACCT.conflict=null;
-  modal(`<h2 class="nm2">Which progress to keep?</h2><p>This device and your account have different progress. The one you don't keep is replaced.</p>
-    <div class="pick2"><div class="pk2"><b>Your account</b><small>${saveSummary(s.data)} · ${ago(s.updatedAt)}</small></div>
-    <div class="pk2"><b>This device</b><small>${saveSummary(SAVE)}</small></div></div>`,[
-    {label:'Keep account',cls:'primary',fn:()=>{acctApply(s.data,s.rev);toast('Account progress loaded.')}},
-    {label:'Keep this device',fn:()=>{ACCT.rev=s.rev;acctPush(true);toast('This device\'s progress saved to your account.')}}]);
+// The account wins whenever the two differ. There's no "keep this device": that would let anyone undo a loss
+// by keeping an older copy (a phone left offline, or the progress left behind after signing out).
+function acctTakeAccount(c){
+  // never in the middle of a match; renderMenu does it afterwards (nothing is pushed meanwhile, see acctChanged)
+  if(G){ACCT.conflict=c;return}
+  ACCT.conflict=null;acctApply(c.s.data,c.s.rev);if(c.msg)toast(c.msg,3500);
 }
 function acctState(s){ACCT.state=s;renderProfile()}
 

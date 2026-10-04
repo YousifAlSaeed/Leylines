@@ -31,6 +31,8 @@ export function publicProfile(save) {
     streak: nat(s.streak), best: nat(s.best),
     // online matches only
     ostreak: nat(s.ostreak), obest: nat(s.obest),
+    // players they spared instead of taking cards
+    spares: nat(s.spares),
     beat: Number.isInteger(s.beat) && s.beat >= 0 && s.beat <= 2 ? s.beat : -1,
     recent: results(s.recent), orecent: results(s.orecent),
     badges: Object.fromEntries(Object.entries(s.badges && typeof s.badges === 'object' ? s.badges : {})
@@ -57,8 +59,10 @@ export function publicHistory(save) {
       me: cards(h.me), op: cards(h.op), ru: (Array.isArray(h.ru) ? h.ru : []).filter((k) => RULE_KEYS.includes(k)),
       tm: nat(h.tm, 90), tr: TRADE_KEYS.includes(h.tr) ? h.tr : 'none', xp: nat(h.xp, 10000),
     };
-    if (e.m === 'ai') e.d = ['easy', 'normal', 'hard'].includes(h.d) ? h.d : 'normal';
-    else {
+    if (e.m === 'ai') {
+      e.d = ['easy', 'normal', 'hard'].includes(h.d) ? h.d : 'normal';
+      if (['duel', 'gauntlet'].includes(h.dk)) e.dk = h.dk; // a Daily challenge match (client/js/daily.js)
+    } else {
       e.n = cleanName(h.n) || 'Player';
       if (typeof h.u === 'string' && USERNAME.test(h.u)) e.u = h.u;
       if (cardId(h.av)) e.av = h.av;

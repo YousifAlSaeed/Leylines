@@ -94,8 +94,8 @@ Playing as a guest works exactly as before: progress stays on that device. The p
 
 - Sign-up takes a username, a password (8+ characters) and an optional email. Your current cards, stats, hands and settings are uploaded to the new account.
 - Signed in, every change syncs to the account a couple of seconds later. The card shows *Synced*, *Syncing…* or *Offline*.
-- Signing in on a device that already has different progress asks **which progress to keep**. A device that was never played just loads the account.
-- If two devices both change progress before syncing, the next sync asks the same question instead of overwriting.
+- Signing in on a device that already has different progress loads the **account's** progress; the device's is replaced (a message says so).
+- If two devices both change progress before syncing, the account's progress wins the same way. There is no "keep this device": it would let anyone undo a loss by keeping an older copy.
 - **Settings** shows the account at the top, with **Sign out**. Signing out keeps the progress on that device.
 - **Reset progress** while signed in also resets the account.
 

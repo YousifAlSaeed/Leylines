@@ -3,7 +3,8 @@
    ENGINE  (pure — used by UI, AI search and online sync)
    ===================================================================== */
 // seeded random numbers: the same seed gives the same sequence on both online players' devices
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+// The state sits on the function (r.a), so a match in progress can be saved and picked up again (match.js).
+function mulberry32(a){const r=()=>{let a=r.a|0;a=r.a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};r.a=a;return r}
 const rand32=()=>(Math.random()*4294967296)>>>0;
 function shuffle(a,r=Math.random){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 // neighbours: [top,right,bottom,left]; side index d touches opposite side (d+2)&3

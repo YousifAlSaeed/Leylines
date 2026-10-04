@@ -27,6 +27,11 @@ describe('publicHistory', () => {
     assert.deepEqual(e, { t: entry.t, m: 'ai', bo: 1, r: 'd', log: [[10, 0]], me: [1], op: entry.op, ru: ['open'], tm: 90, tr: 'none',
       xp: 0, d: 'normal', won: [6], sw: 1 });
   });
+  test('a Daily challenge label is kept on CPU matches only', () => {
+    assert.equal(publicHistory({ history: [{ ...entry, m: 'ai', dk: 'gauntlet' }] })[0].dk, 'gauntlet');
+    assert.equal(publicHistory({ history: [{ ...entry, m: 'ai', dk: 'boss' }] })[0].dk, undefined);
+    assert.equal(publicHistory({ history: [{ ...entry, m: 'online', n: 'Ana', dk: 'duel' }] })[0].dk, undefined);
+  });
   test('keeps at most the last 30', () => {
     const many = Array.from({ length: 40 }, (_, i) => ({ ...entry, t: i }));
     const out = publicHistory({ history: many });

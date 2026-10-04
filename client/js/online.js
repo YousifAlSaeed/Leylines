@@ -8,7 +8,9 @@
 // got = how many of theirs we've handled, away = the other side dropped and we're holding the match for them
 const NET={peer:null,conn:null,role:null,code:null,meNext:0,oppNext:0,pendingDeck:null,closing:false,oppName:'',oppAv:null,last:0,joining:false,joinT:0,joinAt:0,
   room:null,rv:0,roomCfg:'',roomMsg:'',meReady:false,oppReady:false,oppIn:false,
-  sid:null,gcid:'',out:[],got:0,away:false,waiting:false,awayMsg:'',retryT:0,ended:null};
+  sid:null,gcid:'',out:[],got:0,away:false,waiting:false,awayMsg:'',retryT:0,ended:null,
+  // awayAt = when they dropped (the minute they get starts then), resolving = settling a match they left (spare.js), longAway = this page was hidden over a minute
+  awayAt:0,resolving:false,longAway:false};
 // these messages change the match, so they're numbered and kept, and sent again after a reconnect
 const LOGGED=new Set(['setup','deck','move','trade','next']);
 // avatars travel as a card id; anything else means no avatar
@@ -119,6 +121,8 @@ function hostPeer(code,onFirstErr,tries=0){
 function onGuest(c){
   const meta=c.metadata||{},old=NET.conn,mine=!!meta.cid&&meta.cid===NET.gcid;
   const refuse=busy=>{const no=()=>{try{c.send({t:'full',busy})}catch(e){}setTimeout(()=>c.close(),500)};c.open?no():c.on('open',no)};
+  // still choosing what happens to the cards of the match they left
+  if(NET.resolving){refuse(true);return}
   // the seat is kept for the player in the match
   if(!mine&&liveMatch()){refuse(true);return}
   if(!mine&&old&&old.open){
@@ -243,7 +247,13 @@ function checkLink(){
   const t=Date.now(),c=NET.conn;rawSend({t:'ping'});
   setTimeout(()=>{if(NET.conn===c&&!NET.away&&NET.last<t)netLost(`Lost connection to ${oppName()}.`)},5000);
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkLink()});
+// hidden for longer than the other player waits: if the link turns out to be dead, the match has gone to them (goAway)
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){NET.hidAt=Date.now();return}
+  NET.longAway=!!NET.hidAt&&Date.now()-NET.hidAt>(AWAY_GRACE+15)*1000;NET.hidAt=0;
+  if(NET.longAway)setTimeout(()=>NET.longAway=false,10000);
+  checkLink();
+});
 window.addEventListener('pageshow',e=>{if(e.persisted)checkLink()});
 window.addEventListener('online',checkLink);
 function rawSend(m){try{NET.conn&&NET.conn.open&&NET.conn.send(m)}catch(e){}}
@@ -264,13 +274,15 @@ function netClose(silent){
   dropLink();clearTimeout(NET.retryT);
   NET.meNext=NET.oppNext=0;NET.pendingDeck=null;
   NET.room=null;NET.roomCfg='';NET.roomMsg='';NET.meReady=NET.oppReady=NET.oppIn=false;
-  NET.sid=null;NET.gcid='';NET.out=[];NET.got=0;NET.away=NET.waiting=false;NET.ended=null;
+  NET.sid=null;NET.gcid='';NET.out=[];NET.got=0;NET.away=NET.waiting=false;NET.ended=null;NET.awayAt=0;NET.resolving=false;
   hideAway();setJoining(false);
 }
 // the connection dropped by accident: hold the match and wait, or try to get back in
 function netLost(msg){
   if(NET.closing)return;
   const c=NET.conn;NET.conn=null;try{c&&c.close()}catch(e){}
+  // already settling the match they left (spare.js); the room opens after that
+  if(NET.resolving)return;
   if(NET.away){if(NET.role==='guest')retryLater();return}
   if(liveMatch()||(NET.role==='guest'&&NET.sid)){goAway(msg);return}
   if(NET.role==='host'&&NET.code){hostBackToRoom(msg);return}
@@ -279,7 +291,9 @@ function netLost(msg){
 }
 // the other player left on purpose (Leave, Menu): no waiting
 function netGone(msg){
-  if(NET.closing)return;
+  if(NET.closing||NET.resolving)return;
+  // in the middle of a match: it's yours, and you choose what happens to their cards (spare.js)
+  if(stillPlaying()){oppForfeit(`${oppName()} left the match before it ended.`);return}
   const playing=liveMatch()&&!G.over;
   if(playing){histXp(recordMatch('w',{online:true}));histAdd('w','them');save();freshToast();msg+=' The match counts as a win.'}
   clearRejoin();hideAway();
@@ -291,14 +305,15 @@ function hostBackToRoom(msg){
   const c=NET.conn;NET.conn=null;try{c&&c.close()}catch(e){}
   NET.pendingDeck=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';NET.oppReady=NET.oppIn=false;G=null;stopTurnTimer();
   NET.sid=null;NET.out=[];NET.got=0;NET.away=NET.waiting=false;
-  hideAway();closeModal();toast(msg,4000);
+  hideAway();closeModal();if(msg)toast(msg,4000);
   if(roomOpen())renderRoom();else openRoom();
 }
 
 /* ---------- waiting for the other player to come back ---------- */
 // its own layer above #modal, so whatever was open underneath (the series score, a trade) is still there afterwards
 function goAway(msg){
-  NET.away=true;NET.waiting=false;NET.awayMsg=msg;
+  if(NET.longAway&&stillPlaying()){NET.longAway=false;selfForfeit();return}
+  NET.away=true;NET.waiting=false;NET.awayMsg=msg;NET.awayAt=Date.now();
   stopTurnTimer();if(drag)endDrag({},true);
   renderAway();
   if(NET.role==='guest')retryLater(500);
@@ -309,6 +324,12 @@ function renderAway(){
   if(!liveMatch()){
     html=`<h2>Reconnecting</h2><p>${esc(NET.awayMsg)}</p><p><span class="spin"></span>Trying to get you back in with ${opp}…</p>`;
     btns=[['Leave','danger',()=>{hideAway();closeModal();G=null;stopTurnTimer();leaveRoom()}]];
+  }else if(stillPlaying()){
+    // they get a minute to come back; after that the match is yours (the countdown is in spare.js)
+    const left=Math.max(0,AWAY_GRACE-Math.floor((Date.now()-NET.awayAt)/1000));
+    html=`<h2>${host?`${opp} dropped out`:'Connection lost'}</h2><p>${host?`${opp} closed the game or lost connection.`:`You lost connection to ${opp}. We'll keep trying to get you back in.`}</p>`+
+      `<p class="aw-count"><span class="spin"></span>If they're not back in <b id="awLeft">${fmtLeft(left)}</b>, the match is yours${leaveCount()?' and you choose: take their cards or spare them':''}.</p>`;
+    btns=[['Abandon match','danger',abandonMatch]];
   }else if(!NET.waiting){
     html=`<h2>Connection lost</h2><p>${host?`${opp} dropped out of the match. They can come back and pick up where you left off.`
       :`You lost connection to ${opp}. We'll keep trying to get you back in.`}</p><p>Wait for them, or abandon the match (it counts as a win for you).</p>`;
@@ -331,7 +352,7 @@ function hideAway(){
 }
 // they're back (or we are): hand over what they missed and carry on
 function comeBack(){
-  const was=NET.away;NET.away=NET.waiting=false;NET.last=Date.now();clearTimeout(NET.retryT);
+  const was=NET.away;NET.away=NET.waiting=false;NET.awayAt=0;NET.last=Date.now();clearTimeout(NET.retryT);
   hideAway();
   if(was){toast(NET.role==='host'?`${oppName()} is back`:'Back in the game');sfx('banner')}
   // a fresh clock for whoever's turn it is, on both sides
@@ -457,10 +478,12 @@ function onNet(m){
     case 'move':
       if(G&&G.mode==='online'){G.inbox.push(m);pump()}break;
     case 'trade':
-      if(!G||G.mode!=='online'||!Array.isArray(m.idx))return;
-      {const idx=m.idx.filter(i=>Number.isInteger(i)&&i>=0&&i<5);
-      if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(idx)}else G.pendingTrade=idx;}
+      if(!G||G.mode!=='online'||!m.spare&&!Array.isArray(m.idx))return;
+      // the winner's choice: these cards from your hand, or a spare
+      {const v=m.spare?'spare':m.idx.filter(i=>Number.isInteger(i)&&i>=0&&i<5);
+      if(G.onTrade){const f=G.onTrade;G.onTrade=null;closeModal();f(v)}else G.pendingTrade=v;}
       break;
+    case 'thanks':if(G&&G.mode==='online'&&!G.thanked){G.thanked=1;toast(`${oppName()} says thanks 🙏`,3000);sfx('emote')}break;
     case 'emote':emoteIn(m.i);break;
     case 'friend':frLoad();break; // they sent or accepted a friend request: refresh the Add friend button
     case 'next':

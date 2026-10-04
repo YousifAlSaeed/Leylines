@@ -181,3 +181,10 @@ body.land #sideBot .ebub{left:46px}
 .side.opp .ebub,body.land .side.me .ebub{top:calc(100% + 6px);bottom:auto;transform-origin:12% 0}
 .side.opp .ebub::before,body.land .side.me .ebub::before{top:-7px;bottom:auto;border:7px solid transparent;border-top:0;border-bottom-color:#fff}
 @keyframes emWig{50%{transform:rotate(-12deg) scale(1.12)}}
+/* spares (spare.js): the spared line, and the progress to a free pack */
+.mbox .spared{font-size:16px;line-height:1.45} .mbox .spared small{color:var(--muted);font-size:13px}
+.spare-bar{margin:12px auto 4px;max-width:280px;text-align:left}
+.spare-bar>div:first-child{display:flex;justify-content:space-between;font-size:13px}
+.spare-bar span{color:var(--muted)} .spare-bar span b{color:var(--accent-ink)}
+.spare-bar .bar{height:7px}
+.spare-bar small{display:block;margin-top:8px;text-align:center;color:var(--muted);font-size:12.5px}

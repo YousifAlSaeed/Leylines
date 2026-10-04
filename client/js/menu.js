@@ -17,15 +17,18 @@ function lastDeckReady(){
   return d;
 }
 function renderMenu(){
-  renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctAsk(ACCT.conflict),300);
+  renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();renderPackTile();renderFriendTile();renderLbTile();
+  // a CPU match the app closed on, or news about an online match you left (spare.js)
+  if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
 }
 const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
   local:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-  online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>'};
+  online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>',
+  daily:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'};
 // what the Play card says about your deck, plus the small fan of its cards
 function heroDeck(random){
   const mlo=mainLoadout(),d=lastDeckReady(),back=cardHTML(0,null,{back:true});
@@ -37,7 +40,7 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online']];
+const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online'],['daily','Daily']];
 // what the Play card shows for one mode
 function heroPane(m){
   let h,sub,side='',row;
@@ -52,6 +55,10 @@ function heroPane(m){
     h='Same screen';sub='Blue picks, then passes to Red · friendly';
     side='<div class="vsav" aria-hidden="true"><span class="av b">B</span><em>vs</em><span class="av r">R</span></div>';
     row='<button class="btn primary full" id="heroGo">Play</button>';
+  }else if(m==='daily'){
+    // daily.js: today's three challenges
+    ({h,sub,side,row}=dailyPane());
+    return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div><div class="hero-row">${row}</div>`;
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
     const dk=heroDeck(false),rj=readRejoin();
@@ -61,10 +68,11 @@ function heroPane(m){
   }
   return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${esc(sub)}</p></div>${side}</div><div class="hero-row">${row}</div>`;
 }
-// the Play card: a 3-way mode switch, then what that mode needs
+// the Play card: a 4-way mode switch, then what that mode needs
 function renderHero(anim){
   const m=MODES.some(x=>x[0]===SAVE.menuMode)?SAVE.menuMode:'ai';
-  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}</button>`).join('');
+  // the Daily tab gets a dot while a challenge can still pay out today
+  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}${k==='daily'&&dailyOpen()?'<i class="mdot" aria-label="(rewards left)"></i>':''}</button>`).join('');
   $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
   // the other modes sit invisibly in the same spot, so the card is always as tall as the tallest one
   // and the menu doesn't jump when you switch
@@ -72,6 +80,7 @@ function renderHero(anim){
   const body=$('#heroBody');
   body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
+  if(m==='daily'){bindDaily();return}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
   const rb=$('#heroRejoin');
   if(rb)rb.onclick=()=>{sfx('click');const rj=readRejoin();if(!rj){renderHero();return}$('#heroCode').value=rj.code;heroJoin()};
@@ -106,3 +115,4 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='leaders')openLeaderboard();
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
+$('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP and coins could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};

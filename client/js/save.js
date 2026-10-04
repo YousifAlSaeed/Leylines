@@ -15,7 +15,12 @@ function defSave(){
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
     // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: local date, n: streak}, packs since a 5★
-    packs:[],packLv:1,daily:null,pity:0};
+    packs:[],packLv:1,daily:null,pity:0,
+    // the Daily tab (daily.js): today's challenge progress, reset at local midnight
+    trial:null,
+    // a match vs Computer the app closed on (match.js), online matches you may still lose cards from,
+    // and spares (spare.js): how many, and who you spared today (each player counts once a day)
+    live:null,owes:[],spares:0,spareDay:null};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -23,10 +28,16 @@ function fixProfile(p,s){
   if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
   // the first time with packs: one for every level already reached
   if(p.pv<2){p.packLv=1;p.pv=2}
-  for(const k of ['xp','streak','best','pity','ostreak','obest'])p[k]=Math.max(0,+p[k]|0);
+  for(const k of ['xp','streak','best','pity','ostreak','obest','spares'])p[k]=Math.max(0,+p[k]|0);
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
+  p.live=ob(p.live)?p.live:null;
+  p.owes=(Array.isArray(p.owes)?p.owes:[]).filter(o=>ob(o)&&typeof o.k==='string'&&Number.isFinite(o.at)&&Array.isArray(o.deck)&&
+    o.deck.every(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length)).slice(-10);
+  p.spareDay=ob(p.spareDay)&&typeof p.spareDay.at==='string'&&Array.isArray(p.spareDay.who)
+    ?{at:p.spareDay.at.slice(0,10),who:p.spareDay.who.filter(x=>typeof x==='string').slice(0,100)}:null;
   grantPacks(p);
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
