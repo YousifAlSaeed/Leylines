@@ -56,11 +56,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .setup .s-diff,.setup .s-room,.setup .s-series,.setup .s-trade{margin-bottom:20px}
   .setup .setup-foot{margin-top:20px}
   .setup .rc b{font-size:14px}
-  .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0}
+  .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0;margin-left:0;margin-right:0}
   .setup .setup-foot::after{display:none}
   .setup .setup-foot .btn{width:280px}
 }
-.setup-foot{position:sticky;bottom:0;padding:14px 0 4px;background:linear-gradient(transparent,var(--bg0) 45%);margin-top:auto}
+/* 6px wider than the page on each side (the button stays put), so the glow ring of a picked option scrolling under it
+   (Trade's, 1px outside its box) can't peek out past its edge as a thin line */
+.setup-foot{position:sticky;bottom:0;padding:14px 6px 4px;margin:auto -6px 0;background:linear-gradient(transparent,var(--bg0) 45%)}
 .setup-foot .btn{width:100%}
 /* fills the screen's bottom padding under the pinned button, so the page doesn't show through as it scrolls */
 .setup-foot::after{content:"";position:absolute;left:0;right:0;top:100%;height:max(24px,env(safe-area-inset-bottom));background:var(--bg0)}

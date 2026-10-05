@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.14 (2026-10-05)
+- Fixed a thin line at the bottom left of the rules screen, under the **Choose cards** button
+
 ## 0.17.13 (2026-10-05)
 - iPhone home-screen app on iOS 27: the strip along the bottom can't be removed (iOS keeps it for itself), so every screen now fades softly into it instead of ending in a hard line. Pop-ups too
 - Fixed: going back to the main menu didn't always refresh it, and a match didn't always resize to fit when it started
