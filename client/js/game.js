@@ -132,13 +132,14 @@ window.addEventListener('pointercancel',e=>endDrag(e,true));
 
 /* ---------- responsive sizing ---------- */
 let UI=1; // current --ui zoom; rects from getBoundingClientRect are in window pixels, so divide by it before reusing them as CSS sizes inside a screen
-// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css). On an iPhone 16 Pro Max with iOS 26: the
+// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css), only for apps added to the home screen before
+// the status bar went opaque (index.html): those still run under the clock. On an iPhone 16 Pro Max with iOS 26: the
 // screen is 956 tall, the page only 894, short by exactly the clock's strip (safe-area top 62), with the rest at the bottom.
 function iosFlags(){
   const app=navigator.standalone===true,top=parseFloat(getComputedStyle($('#safe')).paddingTop)||0;
   const full=innerWidth<innerHeight?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height),gap=full-innerHeight;
   const de=document.documentElement.classList;
-  de.toggle('ios-app',app);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
+  de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
 function layout(){
   iosFlags();

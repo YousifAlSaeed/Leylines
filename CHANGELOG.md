@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.10 (2026-10-05)
+- iPhone home-screen app: no more plain bar along the bottom of every screen. The game now reaches the bottom edge, and the clock and battery get their own strip at the top. To get this, remove Leylines from your home screen and add it again
+
 ## 0.17.9 (2026-10-05)
 - Night Market on phones: the market fits the screen with no scrolling. On smaller screens the Merchant's cards shrink a little to make room
 - Night Market in light mode: the iPhone's top blur and bottom strip stay night-dark instead of showing a pale band

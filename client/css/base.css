@@ -53,7 +53,9 @@ html,body{margin:0;height:100%;overflow:hidden}
 /* measures the phone's notch and home bar (layout() reads its padding) */
 #safe{position:fixed;inset:0;z-index:-1;visibility:hidden;pointer-events:none;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-/* iPhone home-screen app (layout() sets these classes; measured on an iPhone with iOS 26):
+/* iPhone home-screen app added before the status bar went opaque (index.html), so it still runs under the clock
+   (layout() sets these classes; measured on an iPhone with iOS 26). Added since, the app starts below the clock and
+   reaches the bottom of the screen, and needs neither:
    .ios-app   the page runs under the clock and battery (iOS picks a light or dark clock by itself). iOS blurs about
               90px from the top, deeper than the clock's strip, so screens start below the blur.
    .ios-short the page stops 62px short of the bottom of the screen and iOS fills that strip with the page's background
