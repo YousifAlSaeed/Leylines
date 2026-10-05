@@ -11,7 +11,7 @@
   --ley-blue-700:#2F5FD0; --ley-blue-300:#8CB4FF; --ley-red-700:#C8344F; --ley-red-300:#FF8A9A;
   --ley-success:#5EE6B0; --ley-warning:#FFC45C; --ley-danger:#FF5470;
 
-  --bg0:#08061a; --bg1:var(--ley-bg); --surf:var(--ley-surface); --surf2:var(--ley-raised); --seg-on:#2a1d66;
+  --bg0:#08061a; --bg1:var(--ley-bg); --bar:var(--bg1); --surf:var(--ley-surface); --surf2:var(--ley-raised); --seg-on:#2a1d66;
   --line:rgba(184,148,255,.13); --line2:rgba(184,148,255,.26);
   --text:var(--ley-text); --muted:var(--ley-text-muted);
   --accent:var(--ley-violet-500); --accent-hi:var(--ley-violet-300); --on-accent:var(--ley-surface); --accent-ink:var(--ley-violet-300); --accent-glow:rgba(139,108,255,.4);
@@ -53,15 +53,23 @@ html,body{margin:0;height:100%;overflow:hidden}
 /* measures the phone's notch and home bar (layout() reads its padding) */
 #safe{position:fixed;inset:0;z-index:-1;visibility:hidden;pointer-events:none;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-/* iPhone home-screen app that runs under the clock: added before the status bar went opaque (index.html), or on iOS 27,
-   which ignores that setting (layout() sets these classes; measured on an iPhone 16 Pro Max with iOS 26 and 27). On
-   iOS 26, added since, the app starts below the clock and reaches the bottom of the screen, and needs neither:
+/* iPhone home-screen app (layout() sets these classes; measured on an iPhone 16 Pro Max with iOS 27).
+   .ios-bar   the status bar is opaque (index.html): the page starts below the clock and reaches the bottom of the
+              screen. iOS paints the strip behind the clock in the page's colour and blurs about 28px of the page under
+              it, so screens start below the blur, and the top of the page fades from the strip's colour (--bar: the top
+              of the page, or the Night Market's sky; settings.js gives it to the browser too) so the strip reads as
+              part of the screen, not a separate bar.
+   An app added to the home screen before the status bar went opaque keeps the old setting and runs under the clock:
    .ios-app   the page runs under the clock and battery (iOS picks a light or dark clock by itself). iOS blurs about
               90px from the top, deeper than the clock's strip, so screens start below the blur.
    .ios-short the page stops 62px short of the bottom of the screen and iOS fills that strip with the page's background
               colour (--bg0, so it follows the theme), which no page can draw over (even a 100lvh box stops at it). A short
               fade over everything, dialogs too, blends whatever is at the bottom into that colour, so the strip reads
               as part of the screen, not a hard edge. No room is needed for the home bar, which sits inside the strip. */
+.ios-bar{background-color:var(--bar)}
+.ios-bar .screen{padding-top:30px}
+.ios-bar body::before{content:"";position:fixed;left:0;right:0;top:0;height:32px;pointer-events:none;z-index:var(--z-fade);
+  background:linear-gradient(var(--bar),transparent)}
 .ios-app .screen{padding-top:calc(env(safe-area-inset-top) + 30px)}
 .ios-short .screen{padding-bottom:28px}
 .ios-short body::before{content:"";position:fixed;left:0;right:0;bottom:0;height:32px;pointer-events:none;z-index:var(--z-fade);

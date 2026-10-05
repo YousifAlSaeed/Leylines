@@ -7,6 +7,7 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
 ## 0.17.14 (2026-10-05)
+- iPhone home-screen app: the strip behind the clock now matches the top of each screen (the night sky on the Night Market), and the page fades into it. Everything starts a little lower, so iPhone's blur under the clock no longer softens the logo or headings
 - Fixed a thin line at the bottom left of the rules screen, under the **Choose cards** button
 
 ## 0.17.13 (2026-10-05)

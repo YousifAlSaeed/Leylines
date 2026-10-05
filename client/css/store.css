@@ -32,7 +32,7 @@
 #scr-store .iconbtn{color:var(--text)}
 /* while the market is open (show() sets .night) the page's own colour is the sky's, light theme too: an iPhone paints
    its bottom strip and the blur under the clock with it (base.css), so they stay night instead of a pale band */
-:root.night,:root[data-theme].night{--bg0:#0b0824}
+:root.night,:root[data-theme].night{--bg0:#0b0824;--bar:#0c0a2a} /* --bar: the top of the sky, for the strip behind the clock */
 .st-top,.st-wrap{max-width:1200px}
 .st-wrap{flex:1 0 auto;gap:0}
 .st-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);font-variant-numeric:tabular-nums;
