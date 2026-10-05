@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.8 (2026-10-05)
+- On phones, the big **Sudden Death!** banner now fits on screen instead of running off the edge. Long player names in "… goes first" fit too
+
 ## 0.17.7 (2026-10-05)
 - No more turn timer in the Daily. Take your time on the Duel, the Puzzle and the Gauntlet
 - vs Computer now has its own turn timer, and it starts off. Turn it on in the rules if you like the pressure. Online and Same screen keep the timer you set
