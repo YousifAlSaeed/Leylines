@@ -26,7 +26,11 @@ function defSave(){
     // the store (store.js): Ley Shards (everyone starts with a few), shards from matches today {at, n}, today's purchases
     shards:150,shardDay:null,shop:null,
     // Same screen's last two hands [blue, red], for Quick play (match.js)
-    localDecks:null};
+    localDecks:null,
+    // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
+    gNote:-1,
+    // the tutorial (tutorial.js): 0 = not offered yet, 1 = offered, 2 = finished and its pack given
+    tut:0};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -54,6 +58,9 @@ function fixProfile(p,s){
   p.recent=res(p.recent);p.orecent=res(p.orecent);
   p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
   p.hideHist=!!p.hideHist;
+  // saves from before the tutorial: anyone who has played already isn't offered it on launch
+  if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;
+  p.tut=[0,1,2].includes(p.tut)?p.tut:0;
   p.badges=ob(p.badges)?p.badges:{};
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
@@ -94,6 +101,14 @@ SAVE.loadouts=[0,1,2].map(i=>{const l=Array.isArray(SAVE.loadouts)?SAVE.loadouts
 // the main loadout is what the menu shows and the deck picker starts with; it must point at a saved slot
 function fixMain(){if(!(Number.isInteger(SAVE.mainLo)&&SAVE.loadouts[SAVE.mainLo]))SAVE.mainLo=SAVE.loadouts.findIndex(Boolean)}
 fixMain();
+// signing out: the progress belonged to the account, so the next player on this device starts fresh.
+// Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
+function resetSave(){
+  const d=defSave();
+  for(const k of ['sound','musicVol','sfxVol','theme','cid'])d[k]=SAVE[k];
+  d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
+  SAVE=d;fixMain();save();
+}
 // indexes in ids you don't have enough copies of; have(id) = how many you own
 function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
 /* deck building rules: at most 1 card of 5★ rarity, at most 2 cards of 4★ or more, 3★ and below have no limit */

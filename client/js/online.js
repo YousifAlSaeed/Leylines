@@ -38,6 +38,11 @@ function myName(){return playerName()||(NET.role==='guest'?'Guest':'Host')}
 // account usernames travel with the names, so each side can add the other as a friend ('' for a guest)
 function myUser(){return ACCT.token&&ACCT.user?ACCT.user.username:''}
 const netUser=u=>typeof u==='string'&&/^[A-Za-z0-9_]{3,20}$/.test(u)?u:'';
+// a guest (no account) is in the room: then no cards are bet. A guest who leaves can't be made to give
+// up cards (spare.js), and a throwaway guest could pass its cards on to an account by losing on purpose.
+function guestIn(){return !myUser()||(!!NET.oppName&&!NET.oppUser)}
+// the trade rule the room really plays: the host's pick, or none with a guest in
+const roomTrade=()=>guestIn()?'none':SAVE.trade;
 function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
 // which lobby panels are visible: 'choose' (name + host/join) or 'none'
@@ -169,7 +174,7 @@ function seat(c,meta){
     NET.oppReady=NET.oppIn=false;
     hideAway();
     if(G){G=null;stopTurnTimer();closeModal()}
-    if(roomOpen()){sendRoom();renderRoom()}else openRoom();
+    if(roomOpen()){sendRoom();renderSetup()}else openRoom();
   };
   c.open?go():c.on('open',go);
 }
@@ -321,7 +326,7 @@ function hostBackToRoom(msg){
   NET.pendingDeck=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';NET.oppReady=NET.oppIn=false;G=null;stopTurnTimer();
   NET.sid=null;NET.out=[];NET.got=0;NET.away=NET.waiting=false;
   hideAway();closeModal();if(msg)toast(msg,4000);
-  if(roomOpen())renderRoom();else openRoom();
+  if(roomOpen())renderSetup();else openRoom();
 }
 
 /* ---------- waiting for the other player to come back ---------- */
@@ -402,19 +407,19 @@ function backToRoom(){
   openRoom();
 }
 function sendRoom(){
-  NET.roomCfg=JSON.stringify([SAVE.rules,SAVE.trade,boOf(SAVE.bo)]);
-  netSend({t:'room',v:1,rv:NET.rv,rules:{...SAVE.rules},trade:SAVE.trade,bo:boOf(SAVE.bo),name:myName(),user:myUser(),av:myAv()});
+  NET.roomCfg=JSON.stringify([SAVE.rules,roomTrade(),boOf(SAVE.bo)]);
+  netSend({t:'room',v:1,rv:NET.rv,rules:{...SAVE.rules},trade:roomTrade(),bo:boOf(SAVE.bo),name:myName(),user:myUser(),av:myAv()});
 }
 // the host changed something: tell the guest, and their Ready no longer counts
 function roomSync(){
   if(!inRoom()||NET.role!=='host')return;
-  if(JSON.stringify([SAVE.rules,SAVE.trade,boOf(SAVE.bo)])===NET.roomCfg)return;
+  if(JSON.stringify([SAVE.rules,roomTrade(),boOf(SAVE.bo)])===NET.roomCfg)return;
   NET.rv++;NET.oppReady=false;sendRoom();
 }
 function sendSetup(){
-  const seed=rand32(),bo=boOf(SAVE.bo);
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade:SAVE.trade,bo,seed,name:myName(),user:myUser(),av:myAv()});
-  beginOnline({rules:{...SAVE.rules},trade:SAVE.trade,bo,seed});
+  const seed=rand32(),bo=boOf(SAVE.bo),trade=roomTrade();
+  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade,bo,seed,name:myName(),user:myUser(),av:myAv()});
+  beginOnline({rules:{...SAVE.rules},trade,bo,seed});
 }
 function beginOnline(cfg){
   closeModal();
@@ -436,7 +441,8 @@ function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
 function validDeck(ids){return Array.isArray(ids)&&ids.length===5&&ids.every(i=>Number.isInteger(i)&&i>=0&&i<CARDS.length)}
 // rules from the host, with anything missing or odd replaced by a safe value
 function netRules(m){const r={...defSave().rules,...(m.rules&&typeof m.rules==='object'?m.rules:{})};r.timer=timerSec(r.timer);return r}
-const netTrade=t=>TRADES.some(x=>x[0]===t)?t:'none';
+// the host's trade rule; none with a guest in, whatever the host sent
+const netTrade=t=>TRADES.some(x=>x[0]===t)&&!guestIn()?t:'none';
 function onNet(m){
   if(!m||typeof m!=='object')return;
   switch(m.t){

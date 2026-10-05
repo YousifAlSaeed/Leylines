@@ -31,3 +31,28 @@ async function networkFirst(req) {
     return (await saved) || Response.error();
   }
 }
+
+// Push alerts (server/lib/push.js): show the message, even with the game closed.
+self.addEventListener('push', (e) => {
+  let m = {};
+  try { m = e.data ? e.data.json() : {}; } catch { m = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(m.title || 'Leylines', {
+    body: m.body || '', tag: m.tag || 'leylines', renotify: true,
+    icon: 'images/apple-touch-icon.png', data: { url: m.url || './' },
+  }));
+});
+// tapping it: back to the game if it's open (it handles the link), otherwise open it there
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = new URL(e.notification.data?.url || './', self.registration.scope).href;
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const w = wins.find((c) => c.url.startsWith(self.registration.scope)) || wins[0];
+    if (w) {
+      try { await w.focus(); } catch { /* some browsers only allow focus from a click, which this is */ }
+      w.postMessage({ t: 'alert', url });
+      return;
+    }
+    await self.clients.openWindow(url);
+  })());
+});

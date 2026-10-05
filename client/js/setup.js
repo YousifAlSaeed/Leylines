@@ -8,7 +8,9 @@ const inRoom=()=>setupMode==='room';
 const roomGuest=()=>inRoom()&&NET.role==='guest';
 const roomOpen=()=>inRoom()&&$('#scr-setup').classList.contains('on');
 // the settings on show: your own, or the host's when you're the guest in the room
-const SR=()=>roomGuest()&&NET.room?NET.room:{rules:SAVE.rules,trade:SAVE.trade,bo:boOf(SAVE.bo)};
+const SR=()=>roomGuest()&&NET.room?NET.room:{rules:SAVE.rules,trade:inRoom()?roomTrade():SAVE.trade,bo:boOf(SAVE.bo)};
+// no cards are bet online while a guest is in the room (online.js)
+const tradeLocked=()=>inRoom()&&guestIn();
 function openSetup(mode){
   setupMode=mode;
   $('#setupTitle').textContent={ai:'vs Computer',local:'Same screen',room:'Waiting room'}[mode];
@@ -74,13 +76,16 @@ function renderSetup(flipKey){
   const lr=RULES.find(r=>r[0]===setupLast);
   $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
     :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${ro?'Violet cards are on. Only the host can change them. Tap one to see what it does.':'Violet cards are on. Tap one to turn it on or off and see what it does.'}</span></div>`;
-  const lock=ro?' aria-disabled="true"':'';
-  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${lock}><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
-  $$('#tradeSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
+  const lock=ro?' aria-disabled="true"':'',tlock=ro||tradeLocked()?' aria-disabled="true"':'';
+  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${tlock}><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
+  $$('#tradeSeg button').forEach(b=>b.onclick=()=>{if(ro||tradeLocked())return;SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
   const tr=TRADES.find(t=>t[0]===cur.trade);
   $('#tradeDesc').textContent=tr[2];
   // leaving early gives up the cards too (match.js, spare.js)
-  $('#tradeWarn').innerHTML=cur.trade==='none'||setupMode==='local'?'':`<b>⚠ Leaving mid-match counts as a loss.</b> ${inRoom()?'Your opponent can take your cards or spare you.':'The CPU takes your cards as if it won.'}`;
+  $('#tradeWarn').innerHTML=tradeLocked()?(myUser()
+      ?`<b>🔒 Card bets are off.</b> <b class="gold">${esc(NET.oppName)}</b> is playing as a guest. Both players need an account to play for cards.`
+      :`<b>🔒 Card bets are off.</b> You're playing as a guest. Create an account to play online for cards.`)
+    :cur.trade==='none'||setupMode==='local'?'':`<b>⚠ Leaving mid-match counts as a loss.</b> ${inRoom()?'Your opponent can take your cards or spare you.':'The CPU takes your cards as if it won.'}`;
   const bo=cur.bo;
   $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"${lock}><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
   $$('#seriesSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});

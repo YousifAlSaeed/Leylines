@@ -11,7 +11,7 @@ function applyTheme(){
 lightMQ.addEventListener('change',()=>{if((SAVE.theme||'system')==='system')applyTheme()});
 function openSettings(){
   const th=SAVE.theme||'system';
-  const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}
+  const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
     <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
     ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
@@ -32,7 +32,7 @@ function openSettings(){
     sl.oninput=()=>{SAVE[k]=+sl.value;if(!SAVE.sound){SAVE.sound=true;updSnd()}save();box.querySelectorAll('[data-vol]').forEach(r=>r.paint());musicSync()};
     if(k==='sfxVol')sl.onchange=()=>sfx('click');
   });
-  acctWireSettings(box);
+  acctWireSettings(box);alertsPaint(box);
   box.querySelector('#setHow').onclick=()=>{closeModal();openHow(0)};
 }
 $('#btnSettings').onclick=()=>{sfx('click');openSettings()};

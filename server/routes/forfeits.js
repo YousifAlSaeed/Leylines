@@ -36,6 +36,9 @@ export function forfeitsRouter(db, hub) {
       { $to: u.id },
     );
     hub?.bump(u.id, 'fo'); // their game hears about it on its next check (pulse.js)
+    const who = cleanName(name) || 'Your opponent';
+    hub?.alert(u.id, { title: 'Match news', tag: 'forfeit', url: './',
+      body: cards.length ? `${who} took ${cards.length === 1 ? 'a card' : `${cards.length} cards`} from the match you left.` : `${who} spared you. You kept your cards.` });
     res.status(204).end();
   });
 

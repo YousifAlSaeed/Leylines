@@ -1,6 +1,6 @@
 {
   "name": "leylines",
-  "version": "0.12.2",
+  "version": "0.17.6",
   "private": true,
   "description": "Leylines: a 3x3 card game. Static client plus an optional Node server with a Postgres (or local SQLite) user database.",
   "license": "UNLICENSED",
@@ -17,6 +17,7 @@
   "dependencies": {
     "express": "^5.2.1",
     "pg": "^8.23.1",
-    "sql.js": "^1.14.2"
+    "sql.js": "^1.14.2",
+    "web-push": "^3.6.7"
   }
 }

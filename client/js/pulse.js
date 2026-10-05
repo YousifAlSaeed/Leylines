@@ -9,12 +9,16 @@
    (it dropped, or the browser can't stream) it checks every few seconds.
    ===================================================================== */
 const PULSE_MS=5000,PULSE_SLOW=25000; // how often to check without the live line, and with it
-const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],soonT:0};
+const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],away:[],alerts:[],soonT:0};
 // hosting or joining an online game (NET.role stays set after netClose, so closing counts as out)
 const inOnline=()=>!!NET.role&&!NET.closing;
-// free to play: the game is in front, and you're not in a match or an online game. Friends can invite you.
-const isFree=()=>!document.hidden&&!G&&!inOnline()&&!$('#scr-online').classList.contains('on');
+// free to play: not in a match or an online game. Friends can invite you (also while the game is minimised: then it's "away").
+const isFree=()=>!G&&!inOnline()&&!$('#scr-online').classList.contains('on');
 const frFree=name=>PULSE.online.some(u=>frKey(u)===frKey(name));
+const frAway=name=>PULSE.away.some(u=>frKey(u)===frKey(name));
+// not in the game, but they get alerts (alerts.js), so an invite still reaches them
+const frAlerted=name=>PULSE.alerts.some(u=>frKey(u)===frKey(name));
+const frReach=name=>frFree(name)||frAlerted(name);
 
 async function pulse(){
   if(!ACCT.token||!ACCT.user||!ACCT.up||API==null)return;
@@ -22,7 +26,7 @@ async function pulse(){
   if(PULSE.busy){PULSE.again=true;return}
   PULSE.busy=true;PULSE.at=Date.now();
   let r;
-  try{r=await api('/pulse',{method:'POST',body:{menu:isFree()},timeout:10000})}
+  try{r=await api('/pulse',{method:'POST',body:{menu:isFree(),away:document.hidden},timeout:10000})}
   catch(e){if(e.status===401)acctSignedOut('Your session ended. Sign in again.');return}
   finally{PULSE.busy=false;if(PULSE.again){PULSE.again=false;setTimeout(pulse,0)}}
   if(!ACCT.user)return;
@@ -32,13 +36,16 @@ async function pulse(){
   if(!first&&(restart||r.fo!==PULSE.fo))owesCheck();
   if(!first&&(restart||r.gi!==PULSE.gi)){GIFTS.wait=true;giftsCheck()}
   Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi});
-  const online=Array.isArray(r.online)?r.online.filter(u=>typeof u==='string'):[];
-  if(online.join()!==PULSE.online.join()){
-    PULSE.online=online;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
+  if(first){alertsSync();alertsTipMaybe()}
+  const names=l=>Array.isArray(l)?l.filter(u=>typeof u==='string'):[];
+  const online=names(r.online),away=names(r.away),alerts=names(r.alerts);
+  if([online,away,alerts].join('|')!==[PULSE.online,PULSE.away,PULSE.alerts].join('|')){
+    PULSE.online=online;PULSE.away=away;PULSE.alerts=alerts;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
     if(online.length)loadPeerJS().catch(()=>{}); // ready for a quick invite
   }
   for(const n of Array.isArray(r.declined)?r.declined:[])invDeclined(String(n));
-  invIn(Array.isArray(r.invites)?r.invites:[]);
+  const invites=Array.isArray(r.invites)?r.invites:[];
+  invIn(invites);alertsInviteGone(invites);
 }
 // right after something changed here (a new screen, back from another app)
 function pulseSoon(){clearTimeout(PULSE.soonT);PULSE.soonT=setTimeout(pulse,50)}
@@ -47,7 +54,7 @@ function pulseSoon(){clearTimeout(PULSE.soonT);PULSE.soonT=setTimeout(pulse,50)}
 // a stream the server writes to when something for you changes: {k:'fr'|'fo'|'gi', v} or {k:'on'|'inv'|'no'}
 const LINE={ctl:null,on:false,tries:0,t:0};
 async function lineOpen(){
-  if(LINE.ctl||!ACCT.token||!ACCT.user||!ACCT.up||API==null||document.hidden||!window.ReadableStream||!window.TextDecoder)return;
+  if(LINE.ctl||!ACCT.token||!ACCT.user||!ACCT.up||API==null||!window.ReadableStream||!window.TextDecoder)return;
   const ctl=new AbortController();LINE.ctl=ctl;
   try{
     const r=await fetch(API+'/api/pulse/stream',{signal:ctl.signal,cache:'no-store',headers:{Authorization:'Bearer '+ACCT.token}});
@@ -81,20 +88,20 @@ function lineEvent(ev){
 }
 function lineClose(){clearTimeout(LINE.t);LINE.t=0;LINE.tries=0;const c=LINE.ctl;LINE.ctl=null;LINE.on=false;if(c)c.abort()}
 
-// every second: open the line when it's missing, and check in on time
+// every second: open the line when it's missing, and check in on time (a browser slows this down while the game is minimised)
 setInterval(()=>{
-  if(document.hidden)return;
   if(!LINE.ctl&&!LINE.t)lineOpen();
   if(Date.now()-PULSE.at>=(LINE.on?PULSE_SLOW:PULSE_MS))pulse();
 },1000);
-// in another app or tab: friends see you as away straight away; back: open the line and catch up
+// minimised or in another tab: still online, as "away" (an alert reaches you if you turned them on); back: catch up
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){lineClose();pulse()}
-  else{lineOpen();pulseSoon()}
+  if(document.hidden){pulse();return}
+  if(!LINE.ctl){clearTimeout(LINE.t);LINE.t=0;lineOpen()}
+  pulseSoon();invTitle(false);
 });
 addEventListener('online',()=>{lineClose();lineOpen();pulseSoon()});
 // signed out: nobody is online for you any more
-function pulseReset(){lineClose();PULSE.user=null;PULSE.online=[];invHide();INV.sent.clear()}
+function pulseReset(){lineClose();PULSE.user=null;PULSE.online=[];PULSE.away=[];PULSE.alerts=[];invHide();INV.sent.clear()}
 
 /* ---------- inviting a friend ---------- */
 // sent: the friends you invited to the room you're hosting, username key → 'wait' | 'sent' | 'no'
@@ -134,12 +141,12 @@ function invDeclined(name){
 function roomInvHTML(){
   if(!ACCT.token||!FR.friends.length)return '';
   const tag={sent:'<span class="fr-tag ok">Invited</span>'};
-  const list=FR.friends.filter(u=>frFree(u.username)||INV.sent.has(frKey(u.username)));
+  const list=FR.friends.filter(u=>frReach(u.username)||INV.sent.has(frKey(u.username)));
   // after a no, they can be asked again while they're online
-  const rows=list.map(u=>{const st=INV.sent.get(frKey(u.username)),no=st==='no',on=frFree(u.username);
-    return `<div class="fr-row">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${no?'Can\'t play right now':on?'<span class="fr-on">Online</span>':'Offline or playing'}</small></span>`+
-      (tag[st]||(on?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no?' again':''}">${no?'Ask again':'Invite'}</button>`:''))+'</div>'}).join('');
-  return `<h4>Invite a friend</h4>`+(rows?`<div class="fr-list">${rows}</div>`:'<p class="note">None of your friends are online right now. When one is, they show up here.</p>');
+  const rows=list.map(u=>{const st=INV.sent.get(frKey(u.username)),no=st==='no',on=frFree(u.username),al=!on&&frAlerted(u.username);
+    return `<div class="fr-row">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${no?'Can\'t play right now':on?frOnTag(u.username):al?'Offline · gets an alert':'Offline or playing'}</small></span>`+
+      (tag[st]||(on||al?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no?' again':''}">${no?'Ask again':'Invite'}</button>`:''))+'</div>'}).join('');
+  return `<h4>Invite a friend</h4>`+(rows?`<div class="fr-list">${rows}</div>`:'<p class="note">None of your friends are online right now. When one is, or has alerts on, they show up here.</p>');
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-inv]');if(!b)return;
@@ -157,6 +164,11 @@ function invIn(list){
   const i=list.find(i=>!INV.done.has(invKey(i)));
   if(i){invShow(i);loadPeerJS().catch(()=>{})} // ready to join quickly
 }
+// "Online", or "Away" when their game is minimised
+const frOnTag=name=>frAway(name)?'<span class="fr-on away">Away</span>':'<span class="fr-on">Online</span>';
+// an invite while the game is minimised: the tab's title says so until you look
+const INV_TITLE=document.title;
+function invTitle(name){document.title=name&&document.hidden?`🎮 ${name} invited you · ${INV_TITLE}`:INV_TITLE}
 function invShow(i){
   let p=$('#invPop');
   if(!p){
@@ -177,7 +189,7 @@ function invShow(i){
     api('/pulse/invite/answer',{method:'POST',body:{from:i.from,code:i.code,no:what==='no'}}).catch(()=>{});
     if(what==='join'){if(G)return;openOnline(i.code);joinGame(i.code,{patient:4})}
   };
-  void p.offsetWidth;p.classList.add('on');sfx('banner');
-  clearTimeout(INV.t);INV.t=setTimeout(invHide,Math.max(5,Math.min(60,+i.left||60))*1000);
+  void p.offsetWidth;p.classList.add('on');sfx('banner');invTitle(u.displayName);
+  clearTimeout(INV.t);INV.t=setTimeout(invHide,Math.max(5,Math.min(120,+i.left||60))*1000);
 }
 function invHide(){clearTimeout(INV.t);INV.cur=null;const p=$('#invPop');if(p)p.classList.remove('on')}

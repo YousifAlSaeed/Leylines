@@ -26,3 +26,12 @@ one bump.
 Before bumping, pull `dev` first: two people work on this repo. If a merge
 conflicts on the version, take the higher number, then bump once more for
 your change.
+
+## Pulling
+
+Two people push to this repo, so always pull `dev` (`git pull origin dev`):
+
+1. At the start of every session, before touching any code.
+2. Right before every push, even if you pulled earlier.
+
+If the pull brings conflicts, fix them, run `npm test`, then push.

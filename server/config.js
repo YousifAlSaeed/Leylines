@@ -26,6 +26,11 @@ export const config = {
   mailFrom: process.env.MAIL_FROM || 'Leylines <noreply@leylines.live>',
   // the site address put in emailed links. Never taken from the request, so a forged Host header can't redirect them
   appUrl: (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${port}`).replace(/\/+$/, ''),
+  // push alerts (invites, friend requests, match news) need a VAPID key pair: run `npx web-push generate-vapid-keys`.
+  // Use the same pair on both Render services. Without them the game simply offers no alerts.
+  vapidPublic: process.env.VAPID_PUBLIC_KEY || '',
+  vapidPrivate: process.env.VAPID_PRIVATE_KEY || '',
+  vapidSubject: process.env.VAPID_SUBJECT || 'mailto:noreply@leylines.live',
   // usernames that get the developer tools in the game (unlock all cards…), comma-separated
   devUsers: (process.env.DEV_USERS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean),
 };

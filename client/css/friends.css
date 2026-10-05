@@ -66,3 +66,9 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 .fr-pop.inv-pop{top:calc(16px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,calc(-100% - 40px))}
 .fr-pop.inv-pop.on{transform:translate(-50%,0)}
 .fr-inv-tip{margin-top:10px}
+.fr-on.away{color:var(--muted)}
+/* Settings → Alerts: the switch and the Test button side by side */
+#alertsCtl{display:flex;align-items:center;gap:8px;flex:none}
+@media (max-width:440px){.setalerts{flex-wrap:wrap;row-gap:8px}.setalerts #alertsCtl{width:100%;justify-content:flex-end}}
+#setAlerts[hidden]{display:none} /* .setrow sets display, which would beat the hidden attribute */
+.al-bell svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

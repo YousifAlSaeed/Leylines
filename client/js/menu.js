@@ -3,6 +3,7 @@
    NAV / MENU
    ===================================================================== */
 function show(id){
+  if(id!=='game')tutClear(); // leaving ends a tutorial lesson
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   keepAwake(id==='game');closeEmotes();
@@ -18,12 +19,14 @@ function lastDeckReady(){
   return d;
 }
 function renderMenu(){
+  if(SAVE.wipe&&!ACCT.token)acctWipe(); // signed out during a match (account.js)
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
   renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
   // a CPU match the app closed on, or news about an online match you left (spare.js)
   if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
+  alertsTipMaybe(); // a tip about alerts, once a player has a few matches in (alerts.js)
 }
 const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',

@@ -81,7 +81,7 @@ async function acctPush(force){
   finally{ACCT.busy=false}
 }
 function acctFail(e){
-  if(e.status===401)return acctSignedOut('Your session ended. Sign in again to keep syncing.');
+  if(e.status===401)return acctSignedOut('Your session ended. Sign in again to get your progress back.');
   if(e.status===409)return acctRefresh();
   acctState(e.net?'offline':'error');
 }
@@ -116,21 +116,40 @@ function acctSignedIn(r){
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
+  alertsOff(ACCT.token); // this device's alerts belonged to the account (alerts.js)
   Object.assign(ACCT,{token:null,user:null,rev:0,dirty:false,state:'',conflict:null});
-  // the name belonged to the account: don't leave it behind for the next one to pick up
-  if(SAVE.name){SAVE.name='';save()}
-  acctStore();renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
+  acctStore();
+  // the progress belonged to the account: this device goes back to a fresh guest. In a match that
+  // waits for the menu (renderMenu), and SAVE.wipe makes sure it still happens if the app closes first.
+  if(G){SAVE.wipe=1;save()}else acctWipe();
+  renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
   if(msg)toast(msg,3500);
 }
+function acctWipe(){
+  resetSave();clearRejoin();OWES.news=[];HIST.open=-1;
+  if($('#scr-menu').classList.contains('on'))renderMenu();
+}
+// signed out with a match on, and the app closed before the menu came back
+if(SAVE.wipe&&!ACCT.token)resetSave();
 function acctSignOut(){
-  modal(`<h2 class="nm2">Sign out?</h2><p>Your progress stays on this device.${ACCT.dirty?' Changes that haven\'t synced yet will only be here.':''}</p>`,[
+  modal(`<h2 class="nm2">Sign out?</h2><p>Your progress is kept on your account. This device goes back to a fresh start until you sign in again.</p>`,[
     {label:'Sign out',cls:'danger',fn:async()=>{
+      // let a sync that's on its way finish, then send what's left
+      while(ACCT.busy)await new Promise(r=>setTimeout(r,200));
       if(ACCT.dirty)await acctPush();
-      api('/auth/logout',{method:'POST'}).catch(()=>{});
-      acctSignedOut();toast('Signed out.');
+      if(!ACCT.token)return; // the session had already ended (acctFail)
+      // couldn't reach the server: signing out now would lose what hasn't synced
+      if(ACCT.dirty&&(ACCT.state==='offline'||ACCT.state==='error')){
+        modal(`<h2 class="nm2">Not synced yet</h2><p>Your latest progress couldn't be saved to your account. Signing out now loses it. Try again when you're online.</p>`,[
+          {label:'Sign out anyway',cls:'danger',fn:acctLeave},
+          {label:'Stay signed in',cls:'primary',esc:true}]);
+        return;
+      }
+      acctLeave();
     }},
     {label:'Cancel',cls:'primary',esc:true}]);
 }
+function acctLeave(){api('/auth/logout',{method:'POST'}).catch(()=>{});acctSignedOut();toast('Signed out.')}
 
 const USERNAME_RE=/^[A-Za-z0-9_]{3,20}$/;
 // one sheet for both: .up = create account, .in = sign in
@@ -146,6 +165,7 @@ function openAuth(mode='up'){
       <p class="auerr" role="alert"></p>
       <button class="btn primary full" type="submit" id="auGo"></button>
       <p class="note su">Your ${plural(n,'card')}, stats and settings come with you.</p>
+      ${isFresh()?'':"<p class=\"note si\">Signing in replaces the guest progress on this device with your account's.</p>"}
     </form>`,[{label:'Not now',cls:'text',esc:true}]);
   const f=box.querySelector('#authf'),err=f.querySelector('.auerr'),go=f.querySelector('#auGo'),pw=f.elements.password;
   const set=m=>{
@@ -257,11 +277,29 @@ function renderProfile(){
   el.innerHTML=avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
-    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>'
-      :'<svg class="i pc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>');
-  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${acctStatus()}. Open profile.`);
+    // your shards in the corner, and for a guest who could sign up, a button under them
+    `<span class="pc-side"><span class="pc-sh" id="pcShards">${shd()}${fmtSh(SAVE.shards)}</span>`+
+    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'')+'</span>';
+  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}. ${acctStatus()}. Open profile.`);
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
+  renderGuestNote();
+}
+// the menu's guest notice: after a guest's first match, a reminder that their progress lives on this device only.
+// Closing it hides it until they've played GNOTE_EVERY more matches.
+const GNOTE_EVERY=10;
+const matchesPlayed=()=>Object.values(SAVE.stats).reduce((a,b)=>a+(+b||0),0);
+function renderGuestNote(){
+  const el=$('#gNote');if(!el)return;
+  const n=matchesPlayed(),last=Number.isInteger(SAVE.gNote)?SAVE.gNote:-1;
+  const on=!ACCT.token&&ACCT.up&&n>0&&(last<0||n>=last+GNOTE_EVERY);
+  el.hidden=!on;if(!on){el.innerHTML='';return}
+  if(el.firstChild)return;
+  el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`+
+    `<p><b>You're playing as a guest.</b> Your cards and progress are saved on this device only. Create an account to keep them and to play online for cards.</p>`+
+    `<button class="btn small primary" id="gNoteGo">Create account</button><button class="gnote-x" id="gNoteX" aria-label="Hide this notice">×</button>`;
+  $('#gNoteGo').onclick=()=>{sfx('click');openAuth('up')};
+  $('#gNoteX').onclick=()=>{sfx('click');SAVE.gNote=matchesPlayed();save();renderGuestNote()};
 }
 $('#pcard').onclick=()=>{sfx('click');openProfile()};
 // the first row of Settings; empty when there's no server to sign in to

@@ -2,17 +2,21 @@ import express from 'express';
 import path from 'node:path';
 import { authRouter } from './routes/auth.js';
 import { createHub } from './lib/hub.js';
+import { createPusher } from './lib/push.js';
 import { forfeitsRouter } from './routes/forfeits.js';
 import { friendsRouter } from './routes/friends.js';
 import { giftsRouter } from './routes/gifts.js';
 import { leaderboardRouter } from './routes/leaderboard.js';
 import { meRouter } from './routes/me.js';
 import { pulseRouter } from './routes/pulse.js';
+import { pushRouter } from './routes/push.js';
 import { usersRouter } from './routes/users.js';
 
-export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }) {
+// pushSend: replaces the real push delivery (tests)
+export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, pushSend }) {
   const app = express();
-  const hub = createHub(); // presence, invites and change counters (lib/hub.js)
+  const push = createPusher(db, { send: pushSend }); // push alerts (lib/push.js), null without VAPID keys
+  const hub = createHub(push); // presence, invites and change counters (lib/hub.js)
   app.disable('x-powered-by');
   app.set('trust proxy', trustProxy);
 
@@ -66,6 +70,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0 }
   api.use('/forfeits', forfeitsRouter(db, hub));
   api.use('/gifts', giftsRouter(db, hub));
   api.use('/pulse', pulseRouter(db, hub));
+  api.use('/push', pushRouter(db, push));
   api.use('/leaderboard', leaderboardRouter(db));
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   // malformed JSON and other request errors come back as JSON, not an HTML page

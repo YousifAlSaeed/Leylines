@@ -6,6 +6,56 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.6 (2026-10-04)
+- Signed in and played a few matches? A small tip on the main menu offers to turn on alerts, so you never miss an invite. **Not now** asks again in 3 days; ✕ hides it for good
+
+## 0.17.5 (2026-10-04)
+- Settings no longer shows an empty Alerts row when the server has alerts turned off
+- When your phone or computer blocks alerts, the game now says so and tells you where to turn them on, instead of "Registration failed - permission denied"
+
+## 0.17.4 (2026-10-04)
+- Gauntlet: before a new run after your first one, the game says what it pays. If your first run already earned today's shards, it tells you the new run gives no rewards
+
+## 0.17.3 (2026-10-04)
+- The Alerts switch in Settings now always shows up. Once alerts are on, a **Test** button sends one to check they reach you
+- Minimising the game no longer makes you go offline. Friends see you as **Away**, can still invite you, and you get an alert if you turned them on
+
+## 0.17.2 (2026-10-04)
+- How to play: **Sudden death** now has its own tab with an example. After a draw, your new hand is every card in your colour, so cards you flipped come with you
+- How to play's tabs are back in one row you can swipe, with the arrow
+
+## 0.17.1 (2026-10-04)
+- How to play no longer scrolls. Every tab is short, Tips has its own tab, and the other rules are split into Hands, Board, Match and Trade. On a phone the tabs sit in two rows
+
+## 0.17.0 (2026-10-04)
+- **New main menu layout.** The six buttons are now one size and in a new order: Friends, Leaderboard, Collection, Night Market, Packs and How to play. On a phone the whole menu fits on one screen, with no scrolling
+- The Store is now called the **Night Market**, and its button shows when the stock changes
+- Your shards now sit on the right of your player card
+- The menu buttons share one look, with simple line icons (Packs has a new one)
+
+## 0.16.1 (2026-10-04)
+- Tutorial: when two number tags show at once, both stay bright, and the lit numbers on a card no longer bump into each other
+
+## 0.16.0 (2026-10-04)
+- **New: a tutorial.** New players get 4 quick lessons on the real board: capture, Same, Plus and Combo. Finish them for a free Arcane pack, or skip it any time. Replay it from How to play
+- **How to play is simpler.** 5 tabs instead of 15: Basics, Same, Plus, Combo and More. The examples now show which numbers touch (like 8 = 8 or 2 + 3 = 5), plus a move that doesn't work, and each rule has a Try it button
+
+## 0.15.0 (2026-10-04)
+- **The Store on a phone opens on the night sky.** Tap a star to bring up the market on that stop, then swipe left and right between the Merchant, the deal, the Pack Counter and the Shard well. Swipe past the first or the last stop to go back to the sky
+
+## 0.14.1 (2026-10-04)
+- Signing out now gives this device a fresh start. Your progress stays safe on your account, ready for when you sign in again
+- Online matches with a guest in them are played without card bets. The waiting room says why. Both players need an account to play for cards
+- Guests see a reminder on the menu after their first match: their progress is saved on this device only
+- Signing in on a device with guest progress now warns you first that it will be replaced
+
+## 0.14.0 (2026-10-04)
+- **Alerts.** Turn them on in Settings to hear about invites, friend requests and matches you left, even with the game closed. On iPhone and iPad, add Leylines to your home screen first
+- Friends with alerts on can be invited even when their game is closed. Invites now wait 2 minutes for an answer
+
+## 0.13.0 (2026-10-04)
+- **The Store is now the Night Market.** Four stops under a starry sky: the Merchant's cards, the deal of the night, the Pack Counter and the Shard well, with a countdown to midnight. On a wide screen they sit side by side; on a phone, tap a star on the sky map to open that stop. Pull the panel down to see just the sky, with no names or buttons and your phone's time and date in place of the countdown (a clean screenshot or wallpaper). Tap the sky to bring back the top bar, or any star to bring the panel back
+
 ## 0.12.2 (2026-10-04)
 - Small fixes
 

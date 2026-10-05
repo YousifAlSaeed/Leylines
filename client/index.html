@@ -38,6 +38,7 @@
 <link rel="stylesheet" href="css/cards.css">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/howto.css">
+<link rel="stylesheet" href="css/tutorial.css">
 <link rel="stylesheet" href="css/collection.css">
 <link rel="stylesheet" href="css/online.css">
 <link rel="stylesheet" href="css/account.css">
@@ -90,13 +91,15 @@
     </div>
     <div class="m-right">
       <nav class="tiles" aria-label="Main menu">
-        <button class="tile ptile" id="packTile" data-go="packs"><span class="pk-mini t-arcane" aria-hidden="true"></span><div><b>Packs</b><small id="packSub"></small></div><span class="ptdot" id="packDot" aria-hidden="true" hidden></span></button>
-        <button class="tile ptile stile" id="storeTile" data-go="store"><span class="st-gem" aria-hidden="true"></span><div><b>Store</b><small id="storeSub"></small></div></button>
-        <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
-        <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
         <button class="tile" data-go="friends" id="friendTile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/></svg><div><b>Friends</b><small id="friendSub"></small></div><span class="ptdot" id="friendDot" aria-hidden="true" hidden></span></button>
         <button class="tile" data-go="leaders" id="lbTile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/></svg><div><b>Leaderboard</b><small id="lbSub">See who's on top</small></div></button>
+        <button class="tile" data-go="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><div><b>Collection</b><small id="collSub"></small><div class="bar"><i id="collBar"></i></div></div></button>
+        <button class="tile stile" id="storeTile" data-go="store"><svg class="st-moon-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><div><b>Night Market</b><small id="storeSub"></small></div></button>
+        <button class="tile ptile" id="packTile" data-go="packs"><svg class="pk-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M5 6.5h14M8 3v3.5M11 3v3.5M14 3v3.5"/><path d="M12 10l3 3.5-3 3.5-3-3.5z"/></svg><div><b>Packs</b><small id="packSub"></small></div><span class="ptdot" id="packDot" aria-hidden="true" hidden></span></button>
+        <button class="tile" data-go="howto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><div><b>How to play</b><small>Rules in 2 minutes</small></div></button>
       </nav>
+      <!-- guests, after their first match: progress lives on this device only (account.js) -->
+      <div class="gnote" id="gNote" hidden></div>
       <div class="mstats">
         <button class="pcard" id="pcard" type="button"></button>
         <button class="iconbtn" id="btnSettings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
@@ -139,6 +142,7 @@
       <span id="turnTxt"></span>
     </div></div>
     <span class="vh" id="turnMsg" aria-live="polite"></span>
+    <button class="btn small" id="tutSkip">Skip</button>
     <button class="iconbtn" id="btnHow" aria-label="How to play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
     <button class="iconbtn" id="btnSnd" aria-label="Sound"></button>
   </div>
@@ -220,7 +224,7 @@
 
 <!-- STORE -->
 <section id="scr-store" class="screen">
-  <div class="topbar st-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Store</h2><span class="st-bal" id="stBal"></span></div>
+  <div class="topbar st-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Night Market</h2><span class="st-bal" id="stBal"></span></div>
   <div class="wrap st-wrap" id="stBody"></div>
 </section>
 
@@ -253,9 +257,9 @@
     </div>
     <div class="hmain" id="hPanel" role="tabpanel">
       <div class="hstage" id="hStage" aria-hidden="true"></div>
-      <div class="htext"><span class="tag" id="hTag"></span><h3 id="hTitle"></h3><ul id="hList"></ul></div>
+      <div class="htext"><div id="hIn"><span class="tag" id="hTag"></span><h3 id="hTitle"></h3><ul id="hList"></ul></div></div>
     </div>
-    <div class="hfoot"><div class="dots" id="hDots" aria-hidden="true"></div><button class="btn" id="hBack">Back</button><button class="btn primary" id="hNext">Next</button></div>
+    <div class="hfoot"><button class="btn htry" id="hTry" hidden></button><div class="dots" id="hDots" aria-hidden="true"></div><button class="btn" id="hBack">Back</button><button class="btn primary" id="hNext">Next</button></div>
   </div>
 </div>
 
@@ -281,6 +285,9 @@
 </div>
 
 <div id="banners" aria-hidden="true"></div>
+<!-- the tutorial's coach and its next button (tutorial.js) -->
+<div class="tut-coach" id="tutCoach" aria-live="polite" hidden></div>
+<button class="btn primary tut-next" id="tutNext" hidden></button>
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="away" role="alertdialog" aria-modal="true"></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -312,7 +319,9 @@
 <script src="js/clock.js"></script>
 <script src="js/friends.js"></script>
 <script src="js/pulse.js"></script>
+<script src="js/alerts.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/tutorial.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
