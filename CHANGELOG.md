@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.7 (2026-10-05)
+- No more turn timer in the Daily. Take your time on the Duel, the Puzzle and the Gauntlet
+- vs Computer now has its own turn timer, and it starts off. Turn it on in the rules if you like the pressure. Online and Same screen keep the timer you set
+
 ## 0.17.6 (2026-10-04)
 - Signed in and played a few matches? A small tip on the main menu offers to turn on alerts, so you never miss an invite. **Not now** asks again in 3 days; ✕ hides it for good
 

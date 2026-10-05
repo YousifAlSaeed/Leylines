@@ -22,8 +22,8 @@ function bandHand(rng,bands){
   for(const[lo,hi] of bands)ids.push(pickOne(CARDS.filter(c=>c.lv>=lo&&c.lv<=hi&&!ids.includes(c.id)),rng).id);
   return ids;
 }
-// every rule off except Open; the turn timer is the player's own setting
-const dailyRules=(on={},timer=SAVE.rules.timer)=>({open:true,same:false,sameWall:false,plus:false,combo:false,elemental:false,suddenDeath:false,random:false,chaos:false,timer,...on});
+// every rule off except Open, and no turn timer: the Daily is a puzzle, take your time
+const dailyRules=(on={},timer=0)=>({open:true,same:false,sameWall:false,plus:false,combo:false,elemental:false,suddenDeath:false,random:false,chaos:false,timer,...on});
 
 /* ---------- today's progress ---------- */
 // duel: 1 once won, dt: tries; puz: 0 not tried, 1 missed, 2 solved;
@@ -85,7 +85,7 @@ function puzzleMoves(st,R){
 function makePuzzle(n=dayNo()){
   const rng=mulberry32(daySeed(2,n));
   const on=pickOne([{},{same:true},{plus:true},{same:true,combo:true},{plus:true,combo:true},{same:true,plus:true,combo:true}],rng);
-  const R=dailyRules(on,0),need=on.combo?3:2;
+  const R=dailyRules(on),need=on.combo?3:2;
   for(let k=0;k<4000;k++){
     // 4 or 5 cards down and Blue to move: Blue has played half of them (rounded down)
     const filled=4+Math.floor(rng()*2),pb=Math.floor(filled/2),pr=filled-pb;

@@ -39,17 +39,19 @@ const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</s
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
-const ruleCountText=()=>{const R=SR().rules;return`${RULES.filter(r=>R[r[0]]).length+(R.timer?1:0)} on`};
-function timerInfo(){const t=SR().rules.timer;return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
+// vs Computer keeps its own timer (off by default); Same screen and the room use the rules' one
+const setupTimer=()=>setupMode==='ai'?SAVE.cpuTimer:SR().rules.timer;
+const ruleCountText=()=>{const R=SR().rules;return`${RULES.filter(r=>R[r[0]]).length+(setupTimer()?1:0)} on`};
+function timerInfo(){const t=setupTimer();return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
 // slider positions: 0 = off, 1..17 = 10..90 seconds
 function renderTimerRow(){
-  const row=$('#timerRow'),t=SR().rules.timer;
+  const row=$('#timerRow'),t=setupTimer();
   if(!row.firstChild){
     row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
       `<input type="range" class="rng" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
       `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
     const sl=$('#timerSl');
-    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(roomGuest()||n===SAVE.rules.timer)return;SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
+    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(roomGuest()||n===setupTimer())return;if(setupMode==='ai')SAVE.cpuTimer=n;else SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
       renderTimerRow();$('#ruleInfo').innerHTML=timerInfo();if(inRoom()){roomSync();renderRoom()}};
   }
   const sl=$('#timerSl'),pos=t?t/5-1:0;

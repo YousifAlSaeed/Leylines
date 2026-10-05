@@ -11,7 +11,7 @@ function baseMatch(mode,extra){
 }
 function startAI(){
   if(deckable(collPool())<5)ensureMinimum();
-  G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
+  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
   openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
