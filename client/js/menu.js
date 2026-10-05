@@ -8,7 +8,8 @@ function show(id){
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   keepAwake(id==='game');closeEmotes();
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
-  document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)if(id==='game')layout();if(id==='menu')renderMenu();
+  if(id==='game')layout();if(id==='menu')renderMenu();
+  document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }

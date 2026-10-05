@@ -192,7 +192,7 @@
   .st-dots i{width:6px;height:6px;border-radius:99px;background:rgba(237,230,255,.3);transition:width .35s var(--ease),background .35s}
   .st-dots i.on{width:22px;background:var(--sc)}
   .st-hint{display:block;margin:10px 0 max(16px,env(safe-area-inset-bottom));text-align:center;font-size:12px;color:#8E82B8}
-  .ios-short .st-hint{margin-bottom:12px} /* the home bar sits in iOS's own strip below the page (base.css) */
+  .ios-short .st-hint{margin-bottom:24px} /* the home bar sits in iOS's own strip below the page (base.css) */
 }
 
 /* the confirm box */

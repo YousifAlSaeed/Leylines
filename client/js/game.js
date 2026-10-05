@@ -132,13 +132,13 @@ window.addEventListener('pointercancel',e=>endDrag(e,true));
 
 /* ---------- responsive sizing ---------- */
 let UI=1; // current --ui zoom; rects from getBoundingClientRect are in window pixels, so divide by it before reusing them as CSS sizes inside a screen
-// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css), only for apps added to the home screen before
-// the status bar went opaque (index.html): those still run under the clock. On an iPhone 16 Pro Max with iOS 26: the
+// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css), only for apps that still run under the clock:
+// added before the status bar went opaque (index.html), or on iOS 27, which ignores that setting. On an iPhone 16 Pro Max with iOS 26: the
 // screen is 956 tall, the page only 894, short by exactly the clock's strip (safe-area top 62), with the rest at the bottom.
 function iosFlags(){
   const app=navigator.standalone===true,top=parseFloat(getComputedStyle($('#safe')).paddingTop)||0;
   const full=innerWidth<innerHeight?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height),gap=full-innerHeight;
-  const de=document.documentElement.classList;
+  const de=document.documentElement.classList;iosFlags.last={app,top,gap};
   de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
 function layout(){
@@ -194,3 +194,8 @@ function fitGame(){
   }
 }
 window.addEventListener('resize',layout);
+// an iPhone home-screen app can come up full height and only then shrink (no resize event), so look again a few times,
+// and whenever it comes back to the front
+window.visualViewport?.addEventListener('resize',layout);addEventListener('pageshow',layout);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)layout()});
+for(const t of [300,1000,2500])setTimeout(layout,t);

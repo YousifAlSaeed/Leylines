@@ -127,6 +127,7 @@ function screenInfo(){
     'safe areas       top '+sa.paddingTop+'  bottom '+sa.paddingBottom+'  left '+sa.paddingLeft+'  right '+sa.paddingRight,
     'bars (height)    '+bars.map(([l])=>l+' '+barH(l)).join('  '),
     'classes '+(document.documentElement.className||'(none)')+'   --ui '+UI,
+    'ios check        '+(iosFlags.last?`app ${iosFlags.last.app}  top ${iosFlags.last.top}  gap ${iosFlags.last.gap}`:'not run'),
     'game padding     top '+gp.paddingTop+'  bottom '+gp.paddingBottom,
     'offline helper   '+(navigator.serviceWorker&&navigator.serviceWorker.controller?'on':'off'),
     navigator.userAgent].join(String.fromCharCode(10));

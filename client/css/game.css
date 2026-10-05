@@ -1,6 +1,6 @@
 /* ---------- game ---------- */
 #scr-game{padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:hidden}
-.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-short #scr-game{padding-bottom:6px}
+.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-short #scr-game{padding-bottom:22px}
 /* a match never scrolls: everything is sized to fit (layout, fitGame) */
 #scr-game{overscroll-behavior:none}
 .hud{display:flex;align-items:center;gap:8px;width:100%;max-width:1240px;height:52px;flex:none;position:relative}
