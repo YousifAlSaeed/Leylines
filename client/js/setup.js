@@ -13,7 +13,7 @@ const SR=()=>roomGuest()&&NET.room?NET.room:{rules:SAVE.rules,trade:inRoom()?roo
 const tradeLocked=()=>inRoom()&&guestIn();
 function openSetup(mode){
   setupMode=mode;
-  $('#setupTitle').textContent={ai:'vs Computer',local:'Same screen',room:'Waiting room'}[mode];
+  $('#setupTitle').textContent={ai:'Solo',local:'Couch',room:'Waiting room'}[mode];
   $('#diffBox').classList.toggle('hidden',mode!=='ai');
   $('#tradeBox').classList.toggle('hidden',mode==='local');
   $('#roomBox').classList.toggle('hidden',mode!=='room');
@@ -39,7 +39,7 @@ const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</s
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
 const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
-// vs Computer keeps its own timer (off by default); Same screen and the room use the rules' one
+// Solo keeps its own timer (off by default); Couch and the room use the rules' one
 const setupTimer=()=>setupMode==='ai'?SAVE.cpuTimer:SR().rules.timer;
 const ruleCountText=()=>{const R=SR().rules;return`${RULES.filter(r=>R[r[0]]).length+(setupTimer()?1:0)} on`};
 function timerInfo(){const t=setupTimer();return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}

@@ -26,7 +26,7 @@ function startLocal(){
         openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;SAVE.localDecks=G.decks.map(d=>d.slice());save();startMatch()}})}]);
     }});
 }
-// Same screen's Quick play (menu.js): the last two hands, if every card in them has still been found
+// Couch's Quick play (menu.js): the last two hands, if every card in them has still been found
 function localDecks(){
   const d=SAVE.localDecks;
   return Array.isArray(d)&&d.length===2&&d.every(h=>Array.isArray(h)&&h.length===5&&h.every(id=>CARDS[id]&&isSeen(id)))?d:null;
@@ -213,7 +213,7 @@ function finish(s0,s1){
   if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
-  // vs Computer a loss is settled straight away, so closing the app on the result screen can't undo it
+  // in Solo a loss is settled straight away, so closing the app on the result screen can't undo it
   const pool=w<0?null:diffPool(w);
   const cpuTook=G.mode==='ai'&&n&&w!==G.me?loseCards(strongest(G.decks[G.me],n,pool)):null;
   liveClear();
@@ -323,7 +323,7 @@ function leaveMatch(){
 // the match (or the rest of a series) is still being played, so leaving now gives it up
 function stillPlaying(){return !!(G&&G.st&&!G.done&&!G.tut&&(!G.over||G.bo>1&&!seriesDone(G.bo,G.ser.n,G.ser.wins)))}
 // the cards you give up by leaving: what the trade rule takes on a loss, and at least 1 (so Sweep and a close Diff take 1).
-// Nothing in a same-screen game, the Daily, or with no trade rule.
+// Nothing in a Couch game, the Daily, or with no trade rule.
 function leaveCount(){
   if(!stillPlaying()||G.mode==='local'||G.daily||G.trade==='none')return 0;
   const gap=Math.abs(score(G.st,0)-score(G.st,1));
@@ -340,7 +340,7 @@ function loseCards(idx){
 function tookHTML(who,t){
   return `<p>${who} took:</p>`+rowHTML(t.ids,'red')+(t.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(t.added,'blue'):'');
 }
-// you left, or tapped Give up on a CPU match you closed: a loss, and vs Computer the cards go now
+// you left, or tapped Give up on a CPU match you closed: a loss, and in Solo the cards go now
 function quitMatch(){
   const puzzle=G.daily&&G.daily.kind==='puzzle',n=leaveCount(),ai=G.mode==='ai';
   let took=null;
@@ -358,7 +358,7 @@ function quitMatch(){
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
-  // vs Computer, leaving before you've played a card costs nothing
+  // in Solo, leaving before you've played a card costs nothing
   if(G.mode==='ai'&&!G.daily&&!G.moved&&!G.over&&G.ser.n===1&&!G.sd){
     modal(`<h2>Leave match?</h2><p>You haven't played a card yet, so leaving now costs nothing.</p>`,[
       {label:'Leave',cls:'danger',fn:leaveMatch},{label:'Keep playing',cls:'primary',esc:true}]);
@@ -382,7 +382,7 @@ $('#btnQuit').onclick=()=>{
 };
 
 /* ---------- picking a CPU match back up ---------- */
-// A match vs Computer is saved at the start of every turn (SAVE.live), so closing the app doesn't end it:
+// A Solo match is saved at the start of every turn (SAVE.live), so closing the app doesn't end it:
 // the menu offers to carry on, and giving up counts as leaving. The Daily has its own rules, so it isn't saved.
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
@@ -412,7 +412,7 @@ function liveOffer(){
   const g=liveMatchFrom(L);
   if(!g){liveClear();return}
   G=g;const n=leaveCount(),s=[score(g.st,0),score(g.st,1)];G=null;
-  modal(`<div class="kick">vs Computer · ${esc(DIFFS.find(d=>d[0]===g.diff)[1])}${g.bo>1?` · Best of ${g.bo}`:''}</div><h2>Match in progress</h2>`+
+  modal(`<div class="kick">Solo · ${esc(DIFFS.find(d=>d[0]===g.diff)[1])}${g.bo>1?` · Best of ${g.bo}`:''}</div><h2>Match in progress</h2>`+
     `<p>You left a match before it ended. Pick up where you left off.</p>`+
     (L.next?`<p class="serscore">Series <b class="b">${g.ser.wins[0]}</b> – <b class="r">${g.ser.wins[1]}</b></p>`:`<div class="bigscore"><span class="b">${s[0]}</span> – <span class="r">${s[1]}</span></div>`)+
     `<p class="note">Giving up counts as a loss${n?`. The CPU takes ${n>=5?'all your cards':plural(n,'card')}`:''}.</p>`,[

@@ -1,7 +1,7 @@
 // Offline support. Pages and files still come from the network first, so a new
 // version shows up right away, and a copy of each is kept. With no connection,
 // or a server that is still waking up (Render's free plan sleeps), the saved
-// copy is used, so the game opens and vs Computer / Same screen still work.
+// copy is used, so the game opens and Solo and Couch still work.
 // The API (accounts) is never cached.
 const CACHE = 'leylines';
 const WAIT = 4000; // how long to wait for the network before using a saved copy

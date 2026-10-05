@@ -136,7 +136,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-body.fade{animation:rise .3s var(--ease)}
 /* every mode: title + picture centred in the room above the bar of numbers and the controls (hero-pane in menu.js) */
 .hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 0 12px;margin:auto 0}
-/* Same screen's picture: two of Blue's cards vs two of Red's */
+/* Couch's picture: two of Blue's cards vs two of Red's */
 .vsfan{display:flex;align-items:center;gap:2px;flex:none}
 .vsfan .fan{padding-right:4px;font-size:7px}
 .vsfan .fan .card:last-child{margin-right:0}

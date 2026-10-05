@@ -41,7 +41,7 @@ function renderHands(){
         attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${fc?', picked by Chaos':''}"`:'')})}).join('');
     if(can)el.querySelectorAll('.card.play').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
-  // in same-screen mode the active player is shown at the bottom side's highlight
+  // in Couch the active player is shown at the bottom side's highlight
 }
 function setScores(sc){
   // a score that changed pops (CSS), so a flip is easy to notice

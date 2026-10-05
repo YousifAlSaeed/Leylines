@@ -45,8 +45,8 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online'],['daily','Daily']];
-// a small fan for Same screen: two of Blue's cards (or backs) vs two of Red's
+const MODES=[['ai','Solo'],['local','Couch'],['online','Online'],['daily','Daily']];
+// a small fan for Couch: two of Blue's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
   return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,'blue')}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
@@ -60,7 +60,7 @@ function heroPane(m){
   let h,sub,side='',stats=[],row;
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade),bo=boOf(SAVE.bo);
-    h='vs Computer';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(bo>1?' · Best of '+bo:'');side=dk.fan;
+    h='Solo';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(bo>1?' · Best of '+bo:'');side=dk.fan;
     // the numbers follow the difficulty you pick
     stats=winStats(MATCH_XP[SAVE.diff][0],MATCH_SHARDS[SAVE.diff]);
     row=`<div class="seg full" id="menuDiff" role="group" aria-label="Difficulty">${
@@ -69,7 +69,7 @@ function heroPane(m){
   }else if(m==='local'){
     // Quick play: last game's rules and both players' cards, straight into the match
     const d=localDecks();
-    h='Same screen';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
+    h='Couch';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
     // no XP or shards here, so the bar says what kind of game it is
     stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
     row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;

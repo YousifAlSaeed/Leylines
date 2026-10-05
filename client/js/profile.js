@@ -4,7 +4,7 @@
    Your profile is built from the save, so guests have one too. A shared
    link (?u=name) shows someone else's, read-only, from /api/users/:name.
    ===================================================================== */
-// XP per match by opponent, as [win, draw, loss]. Leaving early and Same screen give none.
+// XP per match by opponent, as [win, draw, loss]. Leaving early and Couch give none.
 // challenger: the Daily Duel and Gauntlet CPU; boss: the Gauntlet's last stage
 const MATCH_XP={easy:[20,10,5],normal:[40,20,10],hard:[60,30,15],challenger:[50,25,10],boss:[80,40,15],online:[60,30,20]};
 const TITLES=[[1,'Wanderer'],[3,'Apprentice'],[5,'Card Adept'],[8,'Leyweaver'],[12,'Rune Master'],[16,'Archmage'],[20,'Ley Sovereign']];
@@ -298,7 +298,7 @@ function renderProfilePage(force){
   const seg=(len,off,col,op='')=>len?`<circle cx="21" cy="21" r="16" pathLength="100" stroke="${col}" ${op} stroke-dasharray="${len} ${100-len}" stroke-dashoffset="${-off}"/>`:'';
   const rec=`<span class="pf-form">${s.orecent.map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`;
   const cpu=st.w+st.l+st.d||s.beat>=0?`<div class="pf-cpu"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>`+
-    `<span>vs Computer <b>${st.w} W · ${st.l} L · ${st.d} D</b></span>${s.beat>=0?`<span>Toughest beaten <b>${DIFFS[s.beat][1]}</b></span>`:''}</div>`:'';
+    `<span>Solo <b>${st.w} W · ${st.l} L · ${st.d} D</b></span>${s.beat>=0?`<span>Toughest beaten <b>${DIFFS[s.beat][1]}</b></span>`:''}</div>`:'';
   const record=`<section class="pf-card"><h3>Online record</h3>
     <div class="pf-rec">
       <div class="pf-ring" role="img" aria-label="${n?rate+'% online win rate':'No online matches yet'}"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="16" stroke="var(--well)"/>${seg(W,0,'var(--pf-win)')}${seg(L,W,'var(--red-ink)')}${seg(D,W+L,'var(--muted)','stroke-opacity=".45"')}</svg>

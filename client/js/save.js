@@ -20,12 +20,12 @@ function defSave(){
     gifts:[],
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
-    // a match vs Computer the app closed on (match.js), online matches you may still lose cards from,
+    // a Solo match the app closed on (match.js), online matches you may still lose cards from,
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)
     live:null,owes:[],spares:0,spareDay:null,
     // the store (store.js): Ley Shards (everyone starts with a few), shards from matches today {at, n}, today's purchases
     shards:150,shardDay:null,shop:null,
-    // Same screen's last two hands [blue, red], for Quick play (match.js)
+    // Couch's last two hands [blue, red], for Quick play (match.js)
     localDecks:null,
     // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
     gNote:-1,
@@ -86,7 +86,7 @@ let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 SAVE.rules.timer=timerSec(SAVE.rules.timer);
-// vs Computer has its own turn timer, off unless the player turns it on (rules.timer is for people)
+// Solo has its own turn timer, off unless the player turns it on (rules.timer is for people)
 SAVE.cpuTimer=timerSec(SAVE.cpuTimer);
 // every change goes through here; account.js (loaded later) syncs it to a signed-in account
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}if(typeof acctChanged==='function')acctChanged()}

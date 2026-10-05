@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.11 (2026-10-05)
+- New names for two modes: **vs Computer** is now **Solo**, and **Same screen** is now **Couch**
+
 ## 0.17.10 (2026-10-05)
 - iPhone home-screen app: no more plain bar along the bottom of every screen. The game now reaches the bottom edge, and the clock and battery get their own strip at the top. To get this, remove Leylines from your home screen and add it again
 

@@ -12,7 +12,7 @@ const EMO_BURST=3,EMO_WINDOW=5000,EMO_COOL=4000;
 // no emotes in the Daily Puzzle: there's nobody to talk to
 const emoteOn=()=>!!G&&G.mode!=='local'&&!(G.daily&&G.daily.kind==='puzzle');
 const emoteOpp=()=>G.mode==='ai'?'CPU':oppName();
-// the button only shows vs Computer and online; a new match starts with the opponent unmuted
+// the button only shows in Solo and online; a new match starts with the opponent unmuted
 function emoteSync(){
   $('#btnEmote').classList.toggle('hidden',!emoteOn());$('#scr-game').classList.toggle('emo',emoteOn());
   if(EMO.g!==G){EMO.g=G;EMO.muted=false;closeEmotes()}
