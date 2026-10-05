@@ -215,11 +215,11 @@ function stSheet(down){
   if(down){
     // the market lifts out of the page and fades away (sideways after a swipe, see stSwipe) while the sky opens out under it
     sc.scrollTo({top:0,behavior:'smooth'});
-    sw.style.top=sw.offsetTop+'px';sw.classList.add('leaving');
+    sw.style.top=sw.offsetTop+'px';sw.style.height=sw.offsetHeight+'px';sw.classList.add('leaving');
     grow();
     requestAnimationFrame(()=>{sw.style.opacity='';sw.classList.add('out')});
     stSheet.t2=setTimeout(()=>{
-      sw.classList.remove('leaving','out');sw.style.top='';sw.style.removeProperty('--ox');sw.style.removeProperty('--oy');
+      sw.classList.remove('leaving','out');sw.style.top=sw.style.height='';sw.style.removeProperty('--ox');sw.style.removeProperty('--oy');
       sc.classList.remove('st-moving');
     },530);
   }else{

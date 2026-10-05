@@ -30,6 +30,9 @@
     radial-gradient(55% 40% at 12% 0,rgba(139,108,255,.3),transparent 70%),
     linear-gradient(180deg,#0c0a2a,#06051a 55%,#0b0824)}
 #scr-store .iconbtn{color:var(--text)}
+/* while the market is open (show() sets .night) the page's own colour is the sky's, light theme too: an iPhone paints
+   its bottom strip and the blur under the clock with it (base.css), so they stay night instead of a pale band */
+:root.night,:root[data-theme].night{--bg0:#0b0824}
 .st-top,.st-wrap{max-width:1200px}
 .st-wrap{flex:1 0 auto;gap:0}
 .st-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);font-variant-numeric:tabular-nums;
@@ -139,7 +142,7 @@
   .st-moon{width:76px;height:76px}
 
   /* the constellation: a short strip over the market, the whole sky without it */
-  .st-map{display:block;position:relative;height:118px;margin:4px -8px 0;flex:none}
+  .st-map{display:block;position:relative;height:100px;margin:4px -8px 0;flex:none}
   .st-down .st-map{flex:1;min-height:230px}
   .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
   .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:56px;padding:0;border:0;background:none;cursor:pointer;
@@ -173,18 +176,23 @@
   .st-swipe.leaving,.st-down .st-swipe.leaving{display:flex;position:absolute;left:0;right:0;pointer-events:none}
   .st-view{flex:1;margin:10px -16px 0;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none}
   .st-stops{flex:1;display:flex;gap:12px;align-items:stretch;padding:6px 0 4px;transition:transform .45s var(--ease);will-change:transform}
-  .st-stop{flex:none;width:calc(100% - 56px);box-sizing:border-box;padding:18px;border-radius:24px;
+  /* the stops take the height the sky leaves them (the page never scrolls), and the Merchant's cards shrink to fit it:
+     ~268px inside each stop is headings, names and buy buttons, the rest is two rows of cards 6em tall. A phone too short
+     for even 12px cards keeps 450px stops and scrolls a little, so nothing is cut off */
+  .st-stop{flex:none;width:calc(100% - 56px);box-sizing:border-box;padding:18px;border-radius:24px;container-type:size;min-height:450px;
     background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid rgba(237,230,255,.12);
     opacity:.45;transform:scale(.94);transition:opacity .35s,transform .45s var(--ease)}
   .st-stop.on{opacity:1;transform:none}
   .st-stop.s-deal{border-color:rgba(255,134,196,.3);background:radial-gradient(90% 55% at 50% 22%,rgba(255,95,168,.2),transparent 70%),rgba(255,255,255,.02)}
   .st-sub{min-height:0}
   .st-glass,.s-deal .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-  .st-slot .card{font-size:min(16px,4vw)}
+  .st-slot .card{font-size:max(12px,min(16px,4vw,calc((100cqh - 268px) / 12)))}
+  .st-cards{row-gap:12px}
   .st-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
   .st-dots i{width:6px;height:6px;border-radius:99px;background:rgba(237,230,255,.3);transition:width .35s var(--ease),background .35s}
   .st-dots i.on{width:22px;background:var(--sc)}
   .st-hint{display:block;margin:10px 0 max(16px,env(safe-area-inset-bottom));text-align:center;font-size:12px;color:#8E82B8}
+  .ios-short .st-hint{margin-bottom:12px} /* the home bar sits in iOS's own strip below the page (base.css) */
 }
 
 /* the confirm box */

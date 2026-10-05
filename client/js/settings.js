@@ -6,7 +6,8 @@ const lightMQ=matchMedia('(prefers-color-scheme: light)');
 function applyTheme(){
   const t=SAVE.theme||'system',dark=t==='dark'||(t==='system'&&!lightMQ.matches);
   document.documentElement.dataset.theme=dark?'dark':'light';
-  $('#themeColor').setAttribute('content',dark?'#0E0A1F':'#f6f3ff');
+  // the browser's bar: dark in the dark theme and under the Night Market's sky
+  $('#themeColor').setAttribute('content',dark?'#0E0A1F':document.documentElement.classList.contains('night')?'#0b0824':'#f6f3ff');
 }
 lightMQ.addEventListener('change',()=>{if((SAVE.theme||'system')==='system')applyTheme()});
 function openSettings(){
