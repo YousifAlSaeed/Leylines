@@ -30,8 +30,8 @@ The in-game **How to play** screen shows every rule with an animated example.
 | Mode | Description |
 | --- | --- |
 | **Solo** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
-| **Couch** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
 | **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
+| **Couch** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
 
 ## Rules
 

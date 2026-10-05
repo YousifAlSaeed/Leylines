@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.17.12 (2026-10-05)
+- New order for the mode tabs: **Solo · Daily · Online · Couch**. Playing on your own comes first, then playing with others
+
 ## 0.17.11 (2026-10-05)
 - New names for two modes: **vs Computer** is now **Solo**, and **Same screen** is now **Couch**, each with a new icon: one player for Solo, two side by side for Couch
 - The mode icons now show on phones too (all but the narrowest)

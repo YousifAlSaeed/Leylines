@@ -46,7 +46,8 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-const MODES=[['ai','Solo'],['local','Couch'],['online','Online'],['daily','Daily']];
+// on your own first (Solo, Daily), then with other people (Online, Couch)
+const MODES=[['ai','Solo'],['daily','Daily'],['online','Online'],['local','Couch']];
 // a small fan for Couch: two of Blue's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
