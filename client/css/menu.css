@@ -39,12 +39,15 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .rc.on .em{background:rgba(255,255,255,.25);border-color:rgba(0,0,0,.22)}
 .rc.on::after{content:"✓";position:absolute;top:6px;right:9px;font:900 12px var(--display)}
 .rc.dim{opacity:.42}
+/* Sweep with no trade rule: can't be turned on (setup.js sweepBlock) */
+.rc.off{opacity:.42;cursor:default;border-style:dashed}
+.rc.off:hover,.rc.off:active{transform:none}
 .rc.flip{animation:rcflip .4s var(--ease)}
 @keyframes rcflip{50%{transform:perspective(500px) rotateY(90deg)}}
 .rinfo{margin-top:10px;border-radius:14px;padding:10px 12px;background:var(--surf);border:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;min-height:62px}
 .rinfo svg{width:20px;height:20px;flex:none;margin-top:1px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .rinfo b{display:block;font:700 14px var(--display)} .rinfo span{color:var(--muted);font-size:12.5px;line-height:1.4}
-.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .tc{border-radius:12px;padding:8px 4px;border:1px solid var(--line);background:var(--surf);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:border-color .18s,box-shadow .18s}
 .tc .n{font:900 20px/1 var(--display);color:var(--accent-ink)} .tc small{font-size:11.5px;color:var(--muted)}
 .sgrid{grid-template-columns:repeat(3,1fr)}
@@ -56,6 +59,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .setup .s-diff,.setup .s-room,.setup .s-series,.setup .s-trade{margin-bottom:20px}
   .setup .setup-foot{margin-top:20px}
   .setup .rc b{font-size:14px}
+  .setup .rgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .setup .setup-foot{position:static;background:none;display:flex;justify-content:flex-end;padding:0;margin-left:0;margin-right:0}
   .setup .setup-foot::after{display:none}
   .setup .setup-foot .btn{width:280px}

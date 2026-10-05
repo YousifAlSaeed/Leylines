@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.18.0 (2026-10-05)
+- New rule **Reverse**: lower numbers win. A 1 beats a 2, and X is the weakest. Same and Plus work as usual
+- New rule **Three open**: 3 random cards in each hand are face up for both players. 👁 marks the cards both of you can see
+- **Sweep** is now a rule card instead of a trade rule: win owning the whole board and you take all 5 cards, whatever the trade. It's off when the trade is None. If you played with trade Sweep, you now have trade One with the Sweep card on
+- How to play: a new Reverse tab with an example, and Three open and Sweep added to the Hands and Trade tabs
+
 ## 0.17.14 (2026-10-05)
 - iPhone home-screen app: the strip behind the clock now matches the top of each screen (the night sky on the Night Market), and the page fades into it. Everything starts a little lower, so iPhone's blur under the clock no longer softens the logo or headings
 - Fixed a thin line at the bottom left of the rules screen, under the **Choose cards** button

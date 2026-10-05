@@ -1,4 +1,4 @@
-// The game rules: captures, Same, Same wall, Plus, Combo, Elemental, Chaos and series.
+// The game rules: captures, Same, Same wall, Plus, Combo, Elemental, Reverse, Chaos, Three open, Sweep and series.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { loadGame } from './client.js';
@@ -106,6 +106,73 @@ describe('Elemental', () => {
       assert.ok(n >= 1 && n <= 4, `seed ${seed} gave ${n} squares`);
       assert.deepEqual(g.genElements({ elemental: true }, g.mulberry32(seed)), a);
     }
+  });
+});
+
+describe('Reverse', () => {
+  const enemy = card(1, 1, 1, 5);                   // left side 5
+  test('a lower touching side flips, a higher or equal one does not', () => {
+    assert.equal(place([[1, enemy, 1]], card(1, 4, 1, 1), 0, { reverse: true }).owners[1], 0);
+    assert.equal(place([[1, enemy, 1]], card(1, 6, 1, 1), 0, { reverse: true }).owners[1], 1);
+    assert.equal(place([[1, enemy, 1]], card(1, 5, 1, 1), 0, { reverse: true }).owners[1], 1);
+  });
+  test('Same still works on equal sides', () => {
+    const up = card(1, 1, 6, 1), left = card(1, 7, 1, 1);
+    const { owners } = place([[1, up, 1], [3, left, 1]], card(6, 1, 1, 7), 4, { same: true, reverse: true });
+    assert.deepEqual([owners[1], owners[3]], [0, 0]);
+  });
+  test('Combo chains with the lower side', () => {
+    // Same flips cell 1 (bottom 6 = 6) and cell 3 (right 7 = 7); cell 1's left 2 then beats cell 0's right 9
+    const up = card(1, 1, 6, 2), left = card(1, 7, 1, 1), corner = card(1, 9, 1, 1);
+    const { owners } = place([[0, corner, 1], [1, up, 1], [3, left, 1]], card(6, 1, 1, 7), 4, { same: true, combo: true, reverse: true });
+    assert.equal(owners[0], 0);
+  });
+  test('Elemental still adds and takes 1: a −1 square helps with Reverse', () => {
+    const plain = card(1, 6, 1, 1), el = Array(9).fill(null); el[0] = 'ice';
+    assert.equal(place([[1, enemy, 1]], plain, 0, { reverse: true }, el).owners[1], 1);           // 6 vs 5: no
+    assert.equal(place([[1, enemy, 1]], card(1, 5, 1, 1), 0, { reverse: true, elemental: true }, el).owners[1], 0); // 5−1 vs 5
+  });
+  test('the CPU makes a legal move with Reverse', () => {
+    const s = g.newState([10, 20], [11, 21], 0, Array(9).fill(null));
+    const [hi, cell] = g.aiChoose(s, { reverse: true }, 'hard');
+    assert.ok(hi >= 0 && hi < 2 && cell >= 0 && cell < 9);
+  });
+});
+
+describe('Three open', () => {
+  test('3 different cards of each 5-card hand, the same for the same seed (online sync)', () => {
+    for (let seed = 1; seed < 40; seed++) {
+      const a = g.threePick(g.mulberry32(seed));
+      assert.deepEqual(g.threePick(g.mulberry32(seed)), a);
+      for (const v of a) {
+        assert.equal(new Set(v).size, 3);
+        assert.ok(v.every((i) => Number.isInteger(i) && i >= 0 && i < 5));
+      }
+    }
+  });
+  test('the CPU plans with the face-up cards and a legal move', () => {
+    const s = g.newState([10, 20, 30, 40, 50], [11, 21, 31, 41, 51], 1, Array(9).fill(null));
+    const [hi, cell] = g.aiChoose(s, { same: true }, 'hard', null, [true, false, true, false, true]);
+    assert.ok(hi >= 0 && hi < 5 && cell >= 0 && cell < 9);
+  });
+});
+
+describe('Sweep', () => {
+  test('only counts when cards change hands', () => {
+    assert.equal(g.sweepOn({ sweep: true }, 'one'), true);
+    assert.equal(g.sweepOn({ sweep: true }, 'none'), false);
+    assert.equal(g.sweepOn({}, 'all'), false);
+  });
+  test('is a rule, not a trade', () => {
+    assert.ok(g.RULES.some((r) => r[0] === 'sweep'));
+    assert.ok(!g.TRADES.some((t) => t[0] === 'sweep'));
+  });
+  test('the rules a match lists leave out a Sweep with no trade, and Three open under Open', () => {
+    const keys = (R, t) => [...g.rulesOn(R, t).map((r) => r[0])]; // copied out of the sandbox's own Array
+    assert.deepEqual(keys({ sweep: true, same: true }, 'none'), ['same']);
+    assert.deepEqual(keys({ sweep: true }, 'diff'), ['sweep']);
+    assert.deepEqual(keys({ open: true, threeOpen: true }, 'none'), ['open']);
+    assert.deepEqual(keys({ threeOpen: true }, 'none'), ['threeOpen']);
   });
 });
 

@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const FILES = ['data.js', 'engine.js', 'ai.js'];
 const NAMES = ['CARDS', 'RULES', 'SERIES', 'boOf', 'NB', 'newState', 'cloneS', 'isFull', 'score', 'play',
-  'genElements', 'chaosPick', 'seriesDone', 'mulberry32', 'shuffle', 'genMoves', 'aiChoose', 'TUT', 'TUT_PACK', 'PACKS'];
+  'genElements', 'chaosPick', 'threePick', 'sweepOn', 'rulesOn', 'TRADES', 'seriesDone', 'mulberry32', 'shuffle', 'genMoves', 'aiChoose', 'TUT', 'TUT_PACK', 'PACKS'];
 
 export function loadGame() {
   const ctx = vm.createContext({ performance, console });

@@ -8,22 +8,22 @@ function genMoves(s){
   s.h[p].forEach((id,hi)=>{if(seen.has(id))return;seen.add(id);for(const c of empty)res.push([hi,c])});
   return res;
 }
-function evalFor(s,p){
+function evalFor(s,p,R){
   const q=1-p,diff=score(s,p)-score(s,q);
   if(isFull(s))return diff*100;
-  // exposure: strong open sides are good for owner, weak ones are liabilities
-  let pos=0;
+  // exposure: strong open sides are good for owner, weak ones are liabilities (with Reverse, low sides are the strong ones)
+  let pos=0;const k=R&&R.reverse?-1:1;
   for(let i=0;i<9;i++){
     if(s.b[i]<0)continue;
     const sign=s.o[i]===p?1:-1,cs=CARDS[s.b[i]].s;
-    for(let d=0;d<4;d++){const n=NB[i][d];if(n>=0&&s.b[n]<0)pos+=sign*(cs[d]+s.m[i]-5.5)*.045}
+    for(let d=0;d<4;d++){const n=NB[i][d];if(n>=0&&s.b[n]<0)pos+=sign*k*(cs[d]+s.m[i]-5.5)*.045}
   }
   return diff+pos;
 }
 const TIMEOUT={};
 function negamax(s,R,depth,a,b,ctx){
   if((++ctx.n&1023)===0&&performance.now()>ctx.dl)throw TIMEOUT;
-  if(depth===0||isFull(s))return evalFor(s,s.turn);
+  if(depth===0||isFull(s))return evalFor(s,s.turn,R);
   let best=-Infinity;
   for(const[hi,c] of genMoves(s)){
     const ch=cloneS(s);play(ch,R,hi,c,null);
@@ -38,20 +38,21 @@ function negamax(s,R,depth,a,b,ctx){
 const AI_SEARCH={challenger:{depth:2,slip:.4},boss:{depth:3,slip:.1,fair:true}};
 const STAND_IN=CARDS.find(c=>c.s.every(v=>v===5)).id; // an average card, for hands it can't see
 // forced = the hand index Chaos picked: only squares are chosen for it (deeper turns still look at every card)
-function aiChoose(st,R,level,forced){
+// shown[i]: card i of the other hand is face up anyway (Three open), so a fair CPU may plan with it
+function aiChoose(st,R,level,forced,shown){
   const s=cloneS(st),p=s.turn,moves=forced==null?genMoves(s):s.b.flatMap((x,c)=>x<0?[[forced,c]]:[]);
   const S=AI_SEARCH[level];
   // a fair opponent doesn't peek at a hidden hand: it plans against average cards instead
   // (cards already on the board are face up, so those stay as they are)
-  if(!R.open&&(level==='hard'||S&&S.fair))s.h[1-p]=s.h[1-p].map(()=>STAND_IN);
+  if(!R.open&&(level==='hard'||S&&S.fair))s.h[1-p]=s.h[1-p].map((id,i)=>shown&&shown[i]?id:STAND_IN);
   if(S){
     const ctx={n:0,dl:performance.now()+1100};
     const sc=moves.map(m=>{const ch=cloneS(s);play(ch,R,m[0],m[1],null);
-      let v;try{v=-negamax(ch,R,S.depth-1,-Infinity,Infinity,ctx)}catch(e){if(e!==TIMEOUT)throw e;v=evalFor(ch,p)}
+      let v;try{v=-negamax(ch,R,S.depth-1,-Infinity,Infinity,ctx)}catch(e){if(e!==TIMEOUT)throw e;v=evalFor(ch,p,R)}
       return{m,v:v+Math.random()*.01}}).sort((a,b)=>b.v-a.v);
     return(Math.random()<S.slip&&sc.length>1?sc[1]:sc[0]).m;
   }
-  const scored=moves.map(m=>{const ch=cloneS(s);play(ch,R,m[0],m[1],null);return{m,v:evalFor(ch,p)+Math.random()*.01}});
+  const scored=moves.map(m=>{const ch=cloneS(s);play(ch,R,m[0],m[1],null);return{m,v:evalFor(ch,p,R)+Math.random()*.01}});
   scored.sort((x,y)=>y.v-x.v);
   if(level==='easy'){
     if(Math.random()<.55)return moves[Math.floor(Math.random()*moves.length)];

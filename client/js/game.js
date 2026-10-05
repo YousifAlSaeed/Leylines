@@ -34,11 +34,11 @@ function renderHands(){
     // with Chaos only the picked card can be played; it's marked in either hand
     el.classList.toggle('chaos',chaos);
     el.innerHTML=st.h[p].map((id,i)=>{
-      const ok=can&&(G.forced==null||i===G.forced),fc=chaos&&i===G.forced?'forced '+(G.tut&&G.sel==null?'tut-pulse ':''):'';
-      return hide
+      const ok=can&&(G.forced==null||i===G.forced),fc=(chaos&&i===G.forced?'forced '+(G.tut&&G.sel==null?'tut-pulse ':''):'')+(faceUp(p,i)?'shown ':'');
+      return hide&&!faceUp(p,i)
       ?cardHTML(id,null,{back:true,cls:fc})
       :cardHTML(id,colorOf(p),{cls:fc+(ok?'play ':'')+(ok&&G.sel===i?'sel':''),
-        attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${fc?', picked by Chaos':''}"`:'')})}).join('');
+        attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${chaos&&i===G.forced?', picked by Chaos':''}${faceUp(p,i)?', face up for both players':''}"`:'')})}).join('');
     if(can)el.querySelectorAll('.card.play').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
   // in Couch the active player is shown at the bottom side's highlight
@@ -72,7 +72,7 @@ function renderHud(){
   const tag=p=>G.over||st.turn!==p?'':isHuman(p)?'Your turn':G.mode==='ai'?'Thinking…':'Their turn';
   for(const[el,p]of[[$('#tagBot'),bot],[$('#tagTop'),1-bot]]){const t=tag(p);if(el.textContent!==t){el.textContent=t;el.classList.toggle('on',!!t)}}
   const R=G.rules;
-  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
+  let chips=rulesOn(R,G.mode==='local'?'none':G.trade).map(r=>`<span>${r[1]}</span>`).join('');
   if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;

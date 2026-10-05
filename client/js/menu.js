@@ -63,7 +63,7 @@ function heroPane(m){
   let h,sub,side='',stats=[],row;
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade),bo=boOf(SAVE.bo);
-    h='Solo';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(bo>1?' · Best of '+bo:'');side=dk.fan;
+    h='Solo';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]+(SAVE.rules.sweep?' + Sweep':''))+(bo>1?' · Best of '+bo:'');side=dk.fan;
     // the numbers follow the difficulty you pick
     stats=winStats(MATCH_XP[SAVE.diff][0],MATCH_SHARDS[SAVE.diff]);
     row=`<div class="seg full" id="menuDiff" role="group" aria-label="Difficulty">${

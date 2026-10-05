@@ -14,6 +14,9 @@ function cloneS(s){return{b:s.b.slice(),o:s.o.slice(),m:s.m.slice(),h:[s.h[0].sl
 function isFull(s){return s.b.indexOf(-1)<0}
 function score(s,p){let n=s.h[p].length;for(let i=0;i<9;i++)if(s.o[i]===p)n++;return n}
 
+// does side value a (with its elemental +1/−1) beat b? Reverse: the lower number wins.
+// Elemental still adds or takes 1, so with Reverse a −1 square helps and a +1 hurts.
+const beats=(R,a,b)=>R.reverse?a<b:a>b;
 /* Place hand card `hi` of the current player on `cell`. Mutates s.
    If `ev` is an array, pushes animation events: same / plus / basic / combo. */
 function play(s,R,hi,cell,ev){
@@ -53,7 +56,7 @@ function play(s,R,hi,cell,ev){
   for(let d=0;d<4;d++){
     const n=nb[d];
     if(n<0||s.b[n]<0||s.o[n]!==q)continue;
-    if(S[d]+mod>CARDS[s.b[n]].s[(d+2)&3]+s.m[n]){s.o[n]=p;basic.push(n)}
+    if(beats(R,S[d]+mod,CARDS[s.b[n]].s[(d+2)&3]+s.m[n])){s.o[n]=p;basic.push(n)}
   }
   if(ev&&basic.length)ev.push({t:'basic',cells:basic});
   // combo chain from Same/Plus captures
@@ -66,7 +69,7 @@ function play(s,R,hi,cell,ev){
         for(let d=0;d<4;d++){
           const n=NB[c][d];
           if(n<0||s.b[n]<0||s.o[n]!==q)continue;
-          if(cs[d]+s.m[c]>CARDS[s.b[n]].s[(d+2)&3]+s.m[n]){s.o[n]=p;nx.push(n)}
+          if(beats(R,cs[d]+s.m[c],CARDS[s.b[n]].s[(d+2)&3]+s.m[n])){s.o[n]=p;nx.push(n)}
         }
       }
       if(ev&&nx.length)ev.push({t:'combo',cells:nx});
@@ -75,6 +78,8 @@ function play(s,R,hi,cell,ev){
   }
   s.turn=q;
 }
+// Three open: which of each player's 5 cards are face up (indexes into the hand as dealt)
+const threePick=rng=>[0,1].map(()=>shuffle([0,1,2,3,4],rng).slice(0,3).sort());
 // Chaos: which hand card the player to move must play
 const chaosPick=(s,rng)=>Math.floor(rng()*s.h[s.turn].length);
 // a best-of series is over once every match is played or the leader can't be caught (a draw counts for nobody)

@@ -33,15 +33,21 @@ const RULE_ICON={
   suddenDeath:'<path d="M20 12a8 8 0 11-2.3-5.7"/><path d="M20 4v4h-4"/><path d="M12.5 8.5l-2 4h3l-2 4"/>',
   random:'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/>',
   chaos:'<path d="M3 7h3c4.5 0 7.5 10 12 10h3"/><path d="M3 17h3c4.5 0 7.5-10 12-10h3"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/>',
+  threeOpen:'<rect x="2.5" y="6" width="5.5" height="12" rx="1.2"/><rect x="9.25" y="6" width="5.5" height="12" rx="1.2"/><rect x="16" y="6" width="5.5" height="12" rx="1.2"/><circle cx="5.25" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="18.75" cy="12" r="1" fill="currentColor"/>',
+  reverse:'<path d="M7 20V5M3.5 8.5L7 5l3.5 3.5"/><path d="M17 4v15M13.5 15.5L17 19l3.5-3.5"/>',
+  sweep:'<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17M14.8 3.5v17"/>',
   timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
-const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5',sweep:'9'};
+const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
+// Sweep needs cards to change hands: off in Couch, and with trade None (or a guest in the online room)
+const sweepBlock=()=>setupMode==='local'?'Couch games never trade cards, so Sweep is off.':tradeLocked()?'Card bets are off, so Sweep is off.'
+  :SR().trade==='none'?(roomGuest()?'The trade rule is None, so Sweep is off.':'Pick a trade rule below (not None) to use Sweep.'):'';
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 // Solo keeps its own timer (off by default); Couch and the room use the rules' one
 const setupTimer=()=>setupMode==='ai'?SAVE.cpuTimer:SR().rules.timer;
-const ruleCountText=()=>{const R=SR().rules;return`${RULES.filter(r=>R[r[0]]).length+(setupTimer()?1:0)} on`};
+const ruleCountText=()=>{const R=SR().rules;return`${rulesOn(R,setupMode==='local'?'none':SR().trade).length+(setupTimer()?1:0)} on`};
 function timerInfo(){const t=setupTimer();return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
 // slider positions: 0 = off, 1..17 = 10..90 seconds
 function renderTimerRow(){
@@ -67,16 +73,21 @@ function renderSetup(flipKey){
     return`<button class="dc ${SAVE.diff===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.diff===k}"><span class="pips" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><b>${l}</b><small>${sub}</small></button>`}).join('');
   $$('#diffSeg button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderSetup();refocus('#diffSeg',b)});
   const R=cur.rules;
+  const swb=sweepBlock();
   $('#ruleChips').innerHTML=RULES.map(([k,l])=>{
-    const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus);
-    return`<button class="rc ${R[k]?'on':''} ${dim?'dim':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}"${ro?' aria-readonly="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
-  // the guest can tap a card to read about it, but not turn it on or off
+    const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus),off=k==='sweep'&&swb,on=R[k]&&!off;
+    return`<button class="rc ${on?'on':''} ${dim?'dim':''} ${off?'off':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!on}"${ro?' aria-readonly="true"':''}${off?' aria-disabled="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
+  // the guest can tap a card to read about it, but not turn it on or off (nor can anyone turn on a blocked Sweep)
   $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
-    if(ro){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
-    R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
+    if(ro||k==='sweep'&&swb){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
+    R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;
+    // Open shows the whole hand and Three open just 3 cards: only one of them at a time
+    if(k==='open'&&R.open)R.threeOpen=false;if(k==='threeOpen'&&R.threeOpen)R.open=false;
+    setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
   renderTimerRow();
   const lr=RULES.find(r=>r[0]===setupLast);
-  $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${lr[2]}</span></div>`
+  const lrOn=lr&&R[lr[0]]&&!(lr[0]==='sweep'&&swb);
+  $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${lrOn?'on':'off'}</b><span>${lr[2]}${lr[0]==='sweep'&&swb?` <b class="gold">${swb}</b>`:''}</span></div>`
     :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${ro?'Violet cards are on. Only the host can change them. Tap one to see what it does.':'Violet cards are on. Tap one to turn it on or off and see what it does.'}</span></div>`;
   const lock=ro?' aria-disabled="true"':'',tlock=ro||tradeLocked()?' aria-disabled="true"':'';
   $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${tlock}><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');

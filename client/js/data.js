@@ -70,21 +70,28 @@ const rarName=r=>`${r}★ ${RARITY[r-1]}`;
 const RAR_CAP={4:'2 per deck, counting 5★',5:'1 per deck'};
 const RULES=[
  ['open','Open','Both hands are played face up.'],
+ ['threeOpen','Three open','3 random cards in each hand are face up for both players. The other 2 stay hidden.'],
  ['same','Same','When two or more sides of the placed card equal the touching sides of adjacent cards, those enemy cards flip.'],
  ['sameWall','Same wall','The board edge counts as an X (10) for Same.'],
  ['plus','Plus','When two or more touching pairs add up to the same total, those enemy cards flip.'],
  ['combo','Combo','Cards flipped by Same or Plus then flip their weaker enemy neighbours, chaining on.'],
  ['elemental','Elemental','Some squares carry an element. A matching card gets +1 on every side; any other card gets −1.'],
+ ['reverse','Reverse','Lower numbers win: a 1 beats a 2, and X (10) is the weakest. Same and Plus work as usual.'],
  ['suddenDeath','Sudden death','A draw restarts the game; each player keeps the cards they owned at the end (up to 5 extra rounds).'],
  ['random','Random','Your 5 cards are dealt at random from your collection.'],
- ['chaos','Chaos','Each turn the game picks a random card from your hand, and you must play it. You only choose the square.']
+ ['chaos','Chaos','Each turn the game picks a random card from your hand, and you must play it. You only choose the square.'],
+ ['sweep','Sweep','Win owning all 9 squares and you take all 5 of the loser\'s cards, whatever the trade rule.']
 ];
+// Sweep only means something when cards change hands (setup.js, match.js)
+const sweepOn=(R,trade)=>!!R.sweep&&trade!=='none';
+// the rules a match is really played with: Sweep needs a trade rule, and Open already shows what Three open would
+const rulesOn=(R,trade)=>RULES.filter(([k])=>R[k]&&(k!=='sweep'||sweepOn(R,trade))&&(k!=='threeOpen'||!R.open));
 // turn timer: 0 = off, otherwise 10–90 seconds in steps of 5 (older saves stored true/false)
 const TIMER_MAX=90;
 function timerSec(v){if(v===true)return 45;const n=Math.round(+v/5)*5;return n>=10?Math.min(TIMER_MAX,n):0}
 const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.round(t*.22));
 function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
-const RULE_SHORT={open:'Both hands are face up',same:'Matching sides flip cards',sameWall:'The board edge counts as X for Same',plus:'Equal sums flip cards',
+const RULE_SHORT={open:'Both hands are face up',threeOpen:'3 cards of each hand are face up',reverse:'Lower numbers win',sweep:'A full board takes all 5 cards',same:'Matching sides flip cards',sameWall:'The board edge counts as X for Same',plus:'Equal sums flip cards',
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you',chaos:'You must play a random card each turn'};
 // the tutorial (tutorial.js): one move per lesson. board: the CPU's cards [square, card id]; your hand, with hand[pick]
 // the card to play on square `cell`. The coach says intro, then place once the card is picked, then after.
@@ -108,7 +115,8 @@ const TUT=[
   place:'Put it in the <b>middle</b>, then watch what the flipped cards do.',
   after:'Same flipped 2. Then <b>those</b> flipped 2 more. <b>4 cards in one move!</b>'}
 ];
-const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5), picked only from the loser\'s cards they flipped.'],['all','All','The winner takes all 5 of the loser\'s cards.'],['sweep','Sweep','Win with every square on the board to take all 5 of the loser\'s cards. Any other win trades nothing.']];
+const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5), picked only from the loser\'s cards they flipped.'],['all','All','The winner takes all 5 of the loser\'s cards.']];
+// Sweep was a trade rule before 0.18.0; now it's a rule card that works on top of one (save.js moves old saves over)
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 // best-of series: [matches, label, description]; whoever went first in one match goes second in the next
 const SERIES=[[1,'Single','One match decides it.'],
