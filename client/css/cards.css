@@ -46,6 +46,8 @@
 .card.fx{animation:flipX .46s ease-in-out}
 @keyframes flipY{0%{transform:perspective(30em) rotateY(0)}50%{transform:perspective(30em) rotateY(90deg) scale(1.1)}100%{transform:perspective(30em) rotateY(0)}}
 @keyframes flipX{0%{transform:perspective(30em) rotateX(0)}50%{transform:perspective(30em) rotateX(90deg) scale(1.1)}100%{transform:perspective(30em) rotateX(0)}}
+/* Three open: a hand card both players can see (game.js). Sits under the element icon, in the part a stacked hand still shows; offsets in its own em (.62 of the card) */
+.card.shown::after{content:"👁";position:absolute;right:.3em;top:1.95em;z-index:4;font-size:.62em;line-height:1;padding:.18em .22em;border-radius:.4em;background:rgba(0,0,0,.6)}
 .card.lost{filter:saturate(.7) brightness(.85)}
 .card.lost::after{content:"×0";position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--danger);color:#fff;border-radius:.4em;padding:.2em .45em}
 .lostc{color:var(--danger)!important}

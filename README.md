@@ -29,9 +29,9 @@ The in-game **How to play** screen shows every rule with an animated example.
 
 | Mode | Description |
 | --- | --- |
-| **vs Computer** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
-| **Same Screen** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
+| **Solo** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
 | **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
+| **Couch** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
 
 ## Rules
 
@@ -87,13 +87,13 @@ The 55 cards are split into five rarities:
 
 | Earned from | Shards |
 | --- | --- |
-| Win vs Computer | Easy 10 · Normal 20 · Hard 30 (Daily Duel 25, Gauntlet boss 40) |
+| Solo win | Easy 10 · Normal 20 · Hard 30 (Daily Duel 25, Gauntlet boss 40) |
 | Online match | Win 40 · Draw 20 · Loss 10 |
-| Draw vs Computer | Half a win |
+| Solo draw | Half a win |
 | Daily tab | Duel 50 · Puzzle 30 · Gauntlet 75 (once a day, on top of the limit) |
 
 - Matches pay up to **250 shards a game day**. The limit resets at midnight with the dailies.
-- Same screen and leaving a match early pay nothing.
+- Couch and leaving a match early pay nothing.
 
 The Store has two parts:
 
@@ -141,7 +141,7 @@ An internet connection is needed for:
 
 ### As a phone app
 
-On iPhone, Safari → Share → **Add to Home Screen** (or **Install** on Android) turns the site into an app: full screen, with the game laid out around the notch and home bar. `client/sw.js` keeps a copy of the game's files, so the app still opens without a connection (vs Computer and Same screen work offline) and doesn't wait long when the server is waking up. The screen stays on during a match.
+On iPhone, Safari → Share → **Add to Home Screen** (or **Install** on Android) turns the site into an app: full screen, with the game laid out around the notch and home bar. `client/sw.js` keeps a copy of the game's files, so the app still opens without a connection (Solo and Couch work offline) and doesn't wait long when the server is waking up. The screen stays on during a match.
 
 ### Tests
 

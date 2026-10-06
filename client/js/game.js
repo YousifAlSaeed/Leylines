@@ -34,14 +34,14 @@ function renderHands(){
     // with Chaos only the picked card can be played; it's marked in either hand
     el.classList.toggle('chaos',chaos);
     el.innerHTML=st.h[p].map((id,i)=>{
-      const ok=can&&(G.forced==null||i===G.forced),fc=chaos&&i===G.forced?'forced '+(G.tut&&G.sel==null?'tut-pulse ':''):'';
-      return hide
+      const ok=can&&(G.forced==null||i===G.forced),fc=(chaos&&i===G.forced?'forced '+(G.tut&&G.sel==null?'tut-pulse ':''):'')+(faceUp(p,i)?'shown ':'');
+      return hide&&!faceUp(p,i)
       ?cardHTML(id,null,{back:true,cls:fc})
       :cardHTML(id,colorOf(p),{cls:fc+(ok?'play ':'')+(ok&&G.sel===i?'sel':''),
-        attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${fc?', picked by Chaos':''}"`:'')})}).join('');
+        attrs:`data-p="${p}" data-i="${i}"`+(ok?` role="button" aria-pressed="${G.sel===i}" aria-label="${esc(cardLabel(id))}${chaos&&i===G.forced?', picked by Chaos':''}${faceUp(p,i)?', face up for both players':''}"`:'')})}).join('');
     if(can)el.querySelectorAll('.card.play').forEach(c=>c.addEventListener('pointerdown',onHandDown));
   }
-  // in same-screen mode the active player is shown at the bottom side's highlight
+  // in Couch the active player is shown at the bottom side's highlight
 }
 function setScores(sc){
   // a score that changed pops (CSS), so a flip is easy to notice
@@ -72,7 +72,7 @@ function renderHud(){
   const tag=p=>G.over||st.turn!==p?'':isHuman(p)?'Your turn':G.mode==='ai'?'Thinking…':'Their turn';
   for(const[el,p]of[[$('#tagBot'),bot],[$('#tagTop'),1-bot]]){const t=tag(p);if(el.textContent!==t){el.textContent=t;el.classList.toggle('on',!!t)}}
   const R=G.rules;
-  let chips=RULES.filter(r=>R[r[0]]).map(r=>`<span>${r[1]}</span>`).join('');
+  let chips=rulesOn(R,G.mode==='local'?'none':G.trade).map(r=>`<span>${r[1]}</span>`).join('');
   if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
@@ -132,13 +132,15 @@ window.addEventListener('pointercancel',e=>endDrag(e,true));
 
 /* ---------- responsive sizing ---------- */
 let UI=1; // current --ui zoom; rects from getBoundingClientRect are in window pixels, so divide by it before reusing them as CSS sizes inside a screen
-// iPhone home-screen app quirks (see .ios-app / .ios-short in base.css). On an iPhone 16 Pro Max with iOS 26: the
-// screen is 956 tall, the page only 894, short by exactly the clock's strip (safe-area top 62), with the rest at the bottom.
+// iPhone home-screen app quirks (see .ios-bar / .ios-app / .ios-short in base.css). On an iPhone 16 Pro Max the screen is
+// 956 tall and the page 894, short by exactly the clock's strip (62). With the opaque status bar (index.html) the page
+// starts below that strip (no top safe area). An app added before then runs under the clock (safe-area top 62) and
+// stops 62 short of the bottom.
 function iosFlags(){
   const app=navigator.standalone===true,top=parseFloat(getComputedStyle($('#safe')).paddingTop)||0;
   const full=innerWidth<innerHeight?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height),gap=full-innerHeight;
-  const de=document.documentElement.classList;
-  de.toggle('ios-app',app);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
+  const de=document.documentElement.classList;iosFlags.last={app,top,gap};
+  de.toggle('ios-bar',app&&top===0&&gap>0&&gap<=80);de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
 function layout(){
   iosFlags();
@@ -193,3 +195,8 @@ function fitGame(){
   }
 }
 window.addEventListener('resize',layout);
+// an iPhone home-screen app can come up full height and only then shrink (no resize event), so look again a few times,
+// and whenever it comes back to the front
+window.visualViewport?.addEventListener('resize',layout);addEventListener('pageshow',layout);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)layout()});
+for(const t of [300,1000,2500])setTimeout(layout,t);

@@ -7,7 +7,9 @@ function show(id){
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   keepAwake(id==='game');closeEmotes();
-  $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));if(id==='game')layout();if(id==='menu')renderMenu();
+  $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
+  if(id==='game')layout();if(id==='menu')renderMenu();
+  document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }
@@ -29,8 +31,9 @@ function renderMenu(){
   alertsTipMaybe(); // a tip about alerts, once a player has a few matches in (alerts.js)
 }
 const MODE_ICON={
-  ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>',
-  local:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+  // Solo: one player; Couch: two players side by side
+  ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>',
+  local:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20a5.5 5.5 0 0111 0M10.5 20a5.5 5.5 0 0111 0"/></svg>',
   online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>',
   daily:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'};
 // what the Play card says about your deck, plus the small fan of its cards
@@ -44,8 +47,9 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-const MODES=[['ai','vs Computer'],['local','Same screen'],['online','Online'],['daily','Daily']];
-// a small fan for Same screen: two of Blue's cards (or backs) vs two of Red's
+// on your own first (Solo, Daily), then with other people (Online, Couch)
+const MODES=[['ai','Solo'],['daily','Daily'],['online','Online'],['local','Couch']];
+// a small fan for Couch: two of Blue's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
   return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,'blue')}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
@@ -59,7 +63,7 @@ function heroPane(m){
   let h,sub,side='',stats=[],row;
   if(m==='ai'){
     const dk=heroDeck(SAVE.rules.random),tr=TRADES.find(t=>t[0]===SAVE.trade),bo=boOf(SAVE.bo);
-    h='vs Computer';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1])+(bo>1?' · Best of '+bo:'');side=dk.fan;
+    h='Solo';sub=esc(dk.sub)+' · '+(SAVE.trade==='none'?'Friendly':'Trade: '+tr[1]+(SAVE.rules.sweep?' + Sweep':''))+(bo>1?' · Best of '+bo:'');side=dk.fan;
     // the numbers follow the difficulty you pick
     stats=winStats(MATCH_XP[SAVE.diff][0],MATCH_SHARDS[SAVE.diff]);
     row=`<div class="seg full" id="menuDiff" role="group" aria-label="Difficulty">${
@@ -68,7 +72,7 @@ function heroPane(m){
   }else if(m==='local'){
     // Quick play: last game's rules and both players' cards, straight into the match
     const d=localDecks();
-    h='Same screen';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
+    h='Couch';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
     // no XP or shards here, so the bar says what kind of game it is
     stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
     row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;

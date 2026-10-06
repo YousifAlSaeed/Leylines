@@ -6,6 +6,41 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.18.0 (2026-10-05)
+- New rule **Reverse**: lower numbers win. A 1 beats a 2, and X is the weakest. Same and Plus work as usual
+- New rule **Three open**: 3 random cards in each hand are face up for both players. 👁 marks the cards both of you can see
+- **Sweep** is now a rule card instead of a trade rule: win owning the whole board and you take all 5 cards, whatever the trade. It's off when the trade is None. If you played with trade Sweep, you now have trade One with the Sweep card on
+- How to play: a new Reverse tab with an example, and Three open and Sweep added to the Hands and Trade tabs
+
+## 0.17.14 (2026-10-05)
+- iPhone home-screen app: the strip behind the clock now matches the top of each screen (the night sky on the Night Market), and the page fades into it. Everything starts a little lower, so iPhone's blur under the clock no longer softens the logo or headings
+- Fixed a thin line at the bottom left of the rules screen, under the **Choose cards** button
+
+## 0.17.13 (2026-10-05)
+- iPhone home-screen app on iOS 27: the strip along the bottom can't be removed (iOS keeps it for itself), so every screen now fades softly into it instead of ending in a hard line. Pop-ups too
+- Fixed: going back to the main menu didn't always refresh it, and a match didn't always resize to fit when it started
+
+## 0.17.12 (2026-10-05)
+- New order for the mode tabs: **Solo · Daily · Online · Couch**. Playing on your own comes first, then playing with others
+
+## 0.17.11 (2026-10-05)
+- New names for two modes: **vs Computer** is now **Solo**, and **Same screen** is now **Couch**, each with a new icon: one player for Solo, two side by side for Couch
+- The mode icons now show on phones too (all but the narrowest)
+
+## 0.17.10 (2026-10-05)
+- iPhone home-screen app: no more plain bar along the bottom of every screen. The game now reaches the bottom edge, and the clock and battery get their own strip at the top. To get this, remove Leylines from your home screen and add it again
+
+## 0.17.9 (2026-10-05)
+- Night Market on phones: the market fits the screen with no scrolling. On smaller screens the Merchant's cards shrink a little to make room
+- Night Market in light mode: the iPhone's top blur and bottom strip stay night-dark instead of showing a pale band
+
+## 0.17.8 (2026-10-05)
+- On phones, the big **Sudden Death!** banner now fits on screen instead of running off the edge. Long player names in "… goes first" fit too
+
+## 0.17.7 (2026-10-05)
+- No more turn timer in the Daily. Take your time on the Duel, the Puzzle and the Gauntlet
+- vs Computer now has its own turn timer, and it starts off. Turn it on in the rules if you like the pressure. Online and Same screen keep the timer you set
+
 ## 0.17.6 (2026-10-04)
 - Signed in and played a few matches? A small tip on the main menu offers to turn on alerts, so you never miss an invite. **Not now** asks again in 3 days; ✕ hides it for good
 

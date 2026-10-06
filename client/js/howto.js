@@ -1,6 +1,6 @@
 'use strict';
 /* =====================================================================
-   HOW TO PLAY  (Basics, Same, Plus, Combo, and the other rules in a list)
+   HOW TO PLAY  (Basics, Same, Plus, Combo, Sudden death, Reverse, and the other rules in a list)
    ===================================================================== */
 // runs timed steps on a loop; returns a stop function
 function demoLoop(steps,period){
@@ -116,9 +116,15 @@ const HOW=[
     'Your new hand is <b>every card in your colour</b> when the round ended',
     'So cards you <b>flipped</b> come with you, and cards they flipped from you go to them',
     'The other player goes first']},
+ {tab:'Reverse',tag:'Rule · Reverse',title:'Low beats high',
+  ex:[{...EX_CAP,label:'4 meets 6',card:0,waves:[{pairs:[['0,0',1,'4 ‹ 6',1]],cap:'Lower side flips it'}]},
+      {...EX_CAP,label:'7 meets 6',card:22,waves:[{pairs:[['0,0',1,'7 › 6',0]],cap:'Higher: nothing happens',bad:1}]}],
+  list:['Everything flips around: if your side is <b>lower</b>, their card turns your colour',
+    'A <b>1</b> is the strongest side, and <b>X</b> the weakest',
+    'Same and Plus work as usual. With Elemental, a <b>−1</b> square helps you']},
  {tab:'Hands',tag:'Other rules',title:'Your cards',more:true,
   list:['<b>Your 5</b>Up to one 5★ card, and up to two of 4★ or more.',
-    '<b>Open</b>Both hands are face up, so you can plan around their cards.',
+    '<b>Open · Three open</b>Both hands are face up, or just 3 random cards of each. 👁 marks a card both players can see.',
     '<b>Random</b>Your 5 cards are dealt from your collection.',
     '<b>Chaos</b>Each turn the game picks which card you must play. You only pick the square.']},
  {tab:'Board',tag:'Other rules',title:'The board',more:true,
@@ -130,7 +136,7 @@ const HOW=[
  {tab:'Trade',tag:'Other rules',title:'Win cards, lose cards',more:true,
   list:['<b>None</b>A friendly match. No cards change hands.','<b>One</b>The winner takes 1 card they pick.',
     '<b>Diff</b>The winner takes the score gap (up to 5), from cards they flipped.','<b>All</b>The winner takes all 5.',
-    '<b>Sweep</b>All 5, but only by owning the whole board.']},
+    '<b>Sweep</b>A rule card: own the whole board to take all 5, whatever the trade. Off with None.']},
  {tab:'Tips',tag:'Tips',title:'How to win more',more:true,
   list:['<b>Hide weak sides</b>Corners show only 2 sides, so a weak card is safe there.',
     '<b>Point strong sides out</b>Face your big numbers at the empty squares, where the next card will land.',

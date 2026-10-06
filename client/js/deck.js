@@ -5,7 +5,7 @@
 let DK=null;
 // the picker is the collection binder in "pick" mode: same pages and tray, plus a Play button
 function openDeck(o){
-  // o: {title, pool:[{id,count}], color, pre:[ids], free (Same screen: count kinds, not copies), onDone(ids), onBack()}
+  // o: {title, pool:[{id,count}], color, pre:[ids], free (Couch: count kinds, not copies), onDone(ids), onBack()}
   DK={...o,pfx:'coll',sel:[],deal:-1,saving:false,note:'',render:()=>renderDeck()};
   for(const id of (o.pre||[])){if(DK.sel.length<5&&handRemaining(DK,id)>0&&!rarBlock(DK.sel,id))DK.sel.push(id)}
   const total=o.free?o.pool.length:o.pool.reduce((a,e)=>a+e.count,0);
@@ -133,5 +133,5 @@ function wireHand(P,get){
   $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
 }
 function randomDeck(pool){const all=[];pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});return legalDeck(shuffle(all))}
-// Same screen: any card this account has ever found (even if lost since), up to 5 copies
+// Couch: any card this account has ever found (even if lost since), up to 5 copies
 const foundPool=()=>CARDS.filter(c=>isSeen(c.id)).map(c=>({id:c.id,count:5}));

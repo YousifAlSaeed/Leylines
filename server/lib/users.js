@@ -45,8 +45,8 @@ export function publicProfile(save) {
 
 // A save's match history (client/js/history.js) as others may see it: null when
 // the player hid it, otherwise each entry rebuilt from checked fields only.
-const RULE_KEYS = ['open', 'same', 'sameWall', 'plus', 'combo', 'elemental', 'suddenDeath', 'random', 'chaos'];
-const TRADE_KEYS = ['none', 'one', 'diff', 'all', 'sweep'];
+const RULE_KEYS = ['open', 'same', 'sameWall', 'plus', 'combo', 'elemental', 'suddenDeath', 'random', 'chaos', 'threeOpen', 'reverse', 'sweep'];
+const TRADE_KEYS = ['none', 'one', 'diff', 'all', 'sweep']; // 'sweep': games from before Sweep became a rule
 const cards = (v, n = 5) => (Array.isArray(v) ? v.filter(cardId).slice(0, n) : []);
 export function publicHistory(save) {
   const s = save && typeof save === 'object' ? save : {};

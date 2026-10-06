@@ -6,7 +6,8 @@ const lightMQ=matchMedia('(prefers-color-scheme: light)');
 function applyTheme(){
   const t=SAVE.theme||'system',dark=t==='dark'||(t==='system'&&!lightMQ.matches);
   document.documentElement.dataset.theme=dark?'dark':'light';
-  $('#themeColor').setAttribute('content',dark?'#0E0A1F':'#f6f3ff');
+  // the browser's bar, and on an iPhone app the strip behind the clock: the colour at the top of the page (--bar, base.css)
+  $('#themeColor').setAttribute('content',getComputedStyle(document.documentElement).getPropertyValue('--bar').trim()||(dark?'#0E0A1F':'#f6f3ff'));
 }
 lightMQ.addEventListener('change',()=>{if((SAVE.theme||'system')==='system')applyTheme()});
 function openSettings(){

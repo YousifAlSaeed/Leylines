@@ -9,7 +9,7 @@
    bought pack opens right away.
    ===================================================================== */
 const SHARD_CAP=250;   // from matches, per game day
-// a win; a draw pays half. Online losses pay ONLINE_LOSS, CPU losses nothing. Leaving early and Same screen pay nothing.
+// a win; a draw pays half. Online losses pay ONLINE_LOSS, CPU losses nothing. Leaving early and Couch pay nothing.
 const MATCH_SHARDS={easy:10,normal:20,hard:30,challenger:25,boss:40,online:40};
 const ONLINE_LOSS=10;
 const CARD_PRICE=[30,80,200,600,1800];   // the Merchant, by rarity
@@ -168,7 +168,7 @@ function renderStore(){
   const ring=(n,max,col,label)=>`<div class="st-ring-w"><div class="st-ring" style="--p:${(Math.min(n,max)/max*100).toFixed(1)};--rc:${col}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${n}"><span><b>${fmtSh(n)}</b><small>of ${max}</small></span></div><div class="st-rl">${label}</div></div>`;
   const well=`<div class="st-rings">${ring(d.n,SHARD_CAP,'#6fe3f0','Shards from matches today')}${ring(pity,PITY,'#FFC45C','5★ guarantee')}</div>
     <dl class="st-rates">
-      <div><dt>Win vs Computer</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
+      <div><dt>Solo win</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
       <div><dt>Daily tab</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
     </dl>
@@ -215,11 +215,11 @@ function stSheet(down){
   if(down){
     // the market lifts out of the page and fades away (sideways after a swipe, see stSwipe) while the sky opens out under it
     sc.scrollTo({top:0,behavior:'smooth'});
-    sw.style.top=sw.offsetTop+'px';sw.classList.add('leaving');
+    sw.style.top=sw.offsetTop+'px';sw.style.height=sw.offsetHeight+'px';sw.classList.add('leaving');
     grow();
     requestAnimationFrame(()=>{sw.style.opacity='';sw.classList.add('out')});
     stSheet.t2=setTimeout(()=>{
-      sw.classList.remove('leaving','out');sw.style.top='';sw.style.removeProperty('--ox');sw.style.removeProperty('--oy');
+      sw.classList.remove('leaving','out');sw.style.top=sw.style.height='';sw.style.removeProperty('--ox');sw.style.removeProperty('--oy');
       sc.classList.remove('st-moving');
     },530);
   }else{

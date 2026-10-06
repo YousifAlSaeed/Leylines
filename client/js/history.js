@@ -1,11 +1,11 @@
 'use strict';
 /* =====================================================================
-   MATCH HISTORY  (the last 30 online and vs Computer games, on the profile)
+   MATCH HISTORY  (the last 30 online and Solo games, on the profile)
    A finished game (a whole series for best-of) is saved as one entry in
    SAVE.history: who, both hands, the scores, the rules, the cards traded
    and the XP. Anyone who opens your profile sees it, unless you hide it
    (SAVE.hideHist); the server leaves it out then (server/lib/users.js).
-   Same screen games aren't saved, just like they don't count for stats.
+   Couch games aren't saved, just like they don't count for stats.
    ===================================================================== */
 const HIST_MAX=30,HIST_PAGE=5;
 // an entry: {t: time, m: 'ai' | 'online', d: CPU difficulty, n: their name, u: their username, av: their avatar card,
@@ -26,7 +26,7 @@ function histAdd(r,quit=''){
   if(quit&&quit!=='early'&&G.st&&!G.over)log.push([score(G.st,me),score(G.st,1-me)]);
   const win=r==='w'?me:r==='l'?1-me:-1;
   const h={t:Date.now(),m:online?'online':'ai',bo:G.bo,r,log:log.slice(-5),me:G.decks[me].slice(0,5),op:G.decks[1-me].slice(0,5),
-    ru:RULES.map(x=>x[0]).filter(k=>G.rules[k]),tm:G.rules.timer||0,tr:G.trade,xp:ser.xp||0};
+    ru:rulesOn(G.rules,G.mode==='local'?'none':G.trade).map(x=>x[0]),tm:G.rules.timer||0,tr:G.trade,xp:ser.xp||0};
   if(online){h.n=oppName();if(NET.oppUser)h.u=NET.oppUser;if(NET.oppAv!=null)h.av=NET.oppAv}else h.d=G.diff;
   // a Daily Duel or Gauntlet match (daily.js) is labelled as one
   if(G.daily)h.dk=G.daily.kind;
@@ -53,8 +53,8 @@ function histInner(list,mine,owner){
   const all=list.map((h,i)=>({h,i})).reverse(); // newest first; i is the entry's place in the saved list
   const shown=all.filter(x=>HIST.f==='all'||x.h.m===HIST.f);
   const head=`<h3>Match history ${list.length?`<em>last ${list.length}</em>`:''}</h3>`;
-  if(!list.length)return head+priv+`<p class="pf-hint left">${mine?'Your online and vs Computer games will show up here, with both hands, the rules and any cards traded.':'No matches yet.'}</p>`;
-  const seg=`<div class="seg mh-seg" role="group" aria-label="Show">${[['all','All'],['online','Online'],['ai','vs Computer']].map(([k,l])=>
+  if(!list.length)return head+priv+`<p class="pf-hint left">${mine?'Your online and Solo games will show up here, with both hands, the rules and any cards traded.':'No matches yet.'}</p>`;
+  const seg=`<div class="seg mh-seg" role="group" aria-label="Show">${[['all','All'],['online','Online'],['ai','Solo']].map(([k,l])=>
     `<button data-f="${k}" class="${HIST.f===k?'on':''}" aria-pressed="${HIST.f===k}">${l}</button>`).join('')}</div>`;
   const rows=shown.slice(0,HIST.n).map(x=>histRow(x.h,x.i,mine,owner)).join('');
   const more=shown.length>HIST.n?`<button class="mh-more" data-h="more">Show more</button>`:'';
@@ -85,9 +85,9 @@ function histHand(ids,taken,color){
 function histRow(h,i,mine,owner){
   const open=HIST.open===i,[a,b]=histScore(h),opp=histOpp(h),R={w:'Win',l:'Loss',d:'Draw'}[h.r];
   const av=h.m==='ai'?`<span class="pc-av mh-cpu" aria-hidden="true">${MODE_ICON.ai}</span>`:frAvatar({displayName:opp,avatar:h.av!=null?{c:h.av,r:0}:null});
-  const bits=[h.m==='ai'?'vs Computer':'Online',h.bo>1?`Best of ${h.bo}`:'',h.sw?'Sweep!':'',h.q==='you'?'Left':h.q==='them'?'They left':h.q==='early'?'Stopped early':'',histWhen(h.t)].filter(Boolean);
+  const bits=[h.m==='ai'?'Solo':'Online',h.bo>1?`Best of ${h.bo}`:'',h.sw?'Sweep!':'',h.q==='you'?'Left':h.q==='them'?'They left':h.q==='early'?'Stopped early':'',histWhen(h.t)].filter(Boolean);
   const you=mine?'You':owner;
-  const tr=TRADES.find(t=>t[0]===h.tr);
+  const tr=h.tr==='sweep'?[,'Sweep']:TRADES.find(t=>t[0]===h.tr); // Sweep was a trade rule before 0.18.0
   const rules=[...h.ru.map(k=>(RULES.find(x=>x[0]===k)||[k,k])[1]),h.tm?`Turn timer ${h.tm}s`:'',tr?`Trade: ${tr[1]}`:''].filter(Boolean);
   const traded=h.won&&h.won.length?`<b class="w">${h.won.map(id=>CARDS[id]?CARDS[id].name:'').join(', ')}</b><small>${mine?'You won':'Won'}</small>`
     :h.lost&&h.lost.length?`<b class="l">${h.lost.map(id=>CARDS[id]?CARDS[id].name:'').join(', ')}</b><small>${mine?'You lost':'Lost'}</small>`:'<b>—</b><small>No trade</small>';

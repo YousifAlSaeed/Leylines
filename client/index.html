@@ -28,7 +28,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- an opaque bar: with black-translucent, iOS 26 makes the home-screen app one clock strip short and fills the gap
+     at the bottom with a plain band (WebKit bug 301108). iOS reads this only when the app is added to the home screen.
+     iOS 27 ignores it and runs the app under the clock anyway (base.css blends the band in) -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Leylines">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -11,7 +11,7 @@ function baseMatch(mode,extra){
 }
 function startAI(){
   if(deckable(collPool())<5)ensureMinimum();
-  G=baseMatch('ai',{trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
+  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
   openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
@@ -26,7 +26,7 @@ function startLocal(){
         openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;SAVE.localDecks=G.decks.map(d=>d.slice());save();startMatch()}})}]);
     }});
 }
-// Same screen's Quick play (menu.js): the last two hands, if every card in them has still been found
+// Couch's Quick play (menu.js): the last two hands, if every card in them has still been found
 function localDecks(){
   const d=SAVE.localDecks;
   return Array.isArray(d)&&d.length===2&&d.every(h=>Array.isArray(h)&&h.length===5&&h.every(id=>CARDS[id]&&isSeen(id)))?d:null;
@@ -58,6 +58,8 @@ async function newRound(h0,h1,first){
   // who placed the card on each square, and which card of their deck it is ([player, deck index]), for Diff:
   // h follows each hand as cards leave it, c holds the board
   G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
+  // Three open: 3 cards of each hand are face up, drawn from the seeded random numbers so both online players agree
+  if(G.rules.threeOpen&&!G.rules.open)G.trk.v=threePick(G.rng);
   renderGame();
   const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
   if(G.bo>1&&!G.sd){await banner(`Match ${G.ser.n}`);if(G!==g)return}
@@ -69,6 +71,8 @@ function isHuman(p){return G.mode==='local'||p===G.me}
 function canAct(p){return G&&!G.busy&&!G.over&&!G.timeUp&&G.st.turn===p&&isHuman(p)}
 function colorOf(p){return p===G.bottom?'blue':'red'}
 function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===G.me)}
+// Three open: is card i of player p's hand one of the face-up ones?
+function faceUp(p,i){const t=G.trk;return !!(t&&t.v&&t.v[p]&&t.v[p].includes(t.h[p][i]))}
 
 function nextTurn(){
   if(!G)return;
@@ -90,7 +94,7 @@ function aiTurn(){
   const t0=performance.now();
   setTimeout(async()=>{
     if(G!==g)return;
-    const[hi,cell]=aiChoose(G.st,G.rules,G.diff,G.forced);
+    const[hi,cell]=aiChoose(G.st,G.rules,G.diff,G.forced,G.st.h[0].map((_,i)=>faceUp(0,i)));
     const el=$('#handTop').children[hi];
     await wait(Math.max(0,450-(performance.now()-t0)));
     if(G!==g)return;
@@ -170,14 +174,16 @@ function flipped(w){
   const out=[];G.trk.c.forEach((c,cell)=>{if(c&&c[0]===1-w&&G.st.o[cell]===w)out.push(c[1])});
   return out;
 }
-// in a series: Diff uses the series winner's last win, Sweep counts if any of their wins was a sweep
+// in a series: Diff uses the series winner's last win
 const lastWin=w=>{const won=G.ser.log.filter(m=>m.w===w);return won[won.length-1]};
+// the Sweep rule: a win owning the whole board (in a series, any of the winner's wins) takes all 5, whatever the trade rule
+const sweepWin=w=>w>=0&&sweepOn(G.rules,G.trade)&&G.ser.log.some(m=>m.w===w&&m.sweep);
 // Diff picks only from the cards the winner flipped (indexes in the loser's deck), or null for any card
-const diffPool=w=>{const l=lastWin(w);return G.trade==='diff'&&l&&Array.isArray(l.fl)?l.fl:null};
+const diffPool=w=>{const l=lastWin(w);return G.trade==='diff'&&!sweepWin(w)&&l&&Array.isArray(l.fl)?l.fl:null};
 function tradeCount(s0,s1,w){
-  const won=G.ser.log.filter(m=>m.w===w),last=lastWin(w);
-  const diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),sw=G.bo>1?won.some(m=>m.sweep):swept(w),pool=diffPool(w);
-  return{one:1,diff:Math.min(5,diff,pool?pool.length:5),all:5,sweep:sw?5:0}[G.trade]||0;
+  if(sweepWin(w))return 5;
+  const last=lastWin(w),diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),pool=diffPool(w);
+  return{one:1,diff:Math.min(5,diff,pool?pool.length:5),all:5}[G.trade]||0;
 }
 // a NEW tag on cards you've never found, like in packs
 const NEW_TAG='<em class="cr-new">NEW</em>';
@@ -213,7 +219,7 @@ function finish(s0,s1){
   if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
-  // vs Computer a loss is settled straight away, so closing the app on the result screen can't undo it
+  // in Solo a loss is settled straight away, so closing the app on the result screen can't undo it
   const pool=w<0?null:diffPool(w);
   const cpuTook=G.mode==='ai'&&n&&w!==G.me?loseCards(strongest(G.decks[G.me],n,pool)):null;
   liveClear();
@@ -223,9 +229,8 @@ function finish(s0,s1){
   setTimeout(()=>{
     if(G!==g)return;
     if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?`<p>No cards change hands on a ${G.bo>1?'tied series':'draw'}.</p>`:
-      G.trade==='sweep'?`<p>No sweep: cards only change hands when the winner owns the whole board${G.bo>1?' in a match they won':''}.</p>`:
       G.trade==='diff'?`<p>No trade: with Diff the winner only takes cards they flipped, and none of the loser's cards ended up flipped.</p>`:''));return}
-    if(G.trade==='sweep')head+='<p class="gold"><b>Full board sweep!</b></p>';
+    if(sweepWin(w))head+=`<p class="gold"><b>Full board sweep!</b>${G.trade==='all'?'':' All 5 cards change hands.'}</p>`;
     const loserDeck=G.decks[1-w],online=G.mode==='online';
     if(w===G.me){
       // online the winner can take the cards or spare the loser
@@ -322,12 +327,13 @@ function leaveMatch(){
 /* ---------- leaving early ---------- */
 // the match (or the rest of a series) is still being played, so leaving now gives it up
 function stillPlaying(){return !!(G&&G.st&&!G.done&&!G.tut&&(!G.over||G.bo>1&&!seriesDone(G.bo,G.ser.n,G.ser.wins)))}
-// the cards you give up by leaving: what the trade rule takes on a loss, and at least 1 (so Sweep and a close Diff take 1).
-// Nothing in a same-screen game, the Daily, or with no trade rule.
+// the cards you give up by leaving: what the trade rule takes on a loss, and at least 1 (so a close Diff takes 1).
+// The Sweep rule doesn't add to it: nobody swept.
+// Nothing in a Couch game, the Daily, or with no trade rule.
 function leaveCount(){
   if(!stillPlaying()||G.mode==='local'||G.daily||G.trade==='none')return 0;
   const gap=Math.abs(score(G.st,0)-score(G.st,1));
-  return {one:1,diff:Math.max(1,Math.min(5,gap)),all:5,sweep:1}[G.trade]||0;
+  return {one:1,diff:Math.max(1,Math.min(5,gap)),all:5}[G.trade]||0;
 }
 // the CPU always takes your strongest cards: their indexes in your hand (only from `pool` if given: Diff's flipped cards)
 const strongest=(deck,n,pool)=>(pool||deck.map((_,i)=>i)).slice().sort((a,b)=>cardStrength(deck[b])-cardStrength(deck[a])).slice(0,n);
@@ -340,7 +346,7 @@ function loseCards(idx){
 function tookHTML(who,t){
   return `<p>${who} took:</p>`+rowHTML(t.ids,'red')+(t.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(t.added,'blue'):'');
 }
-// you left, or tapped Give up on a CPU match you closed: a loss, and vs Computer the cards go now
+// you left, or tapped Give up on a CPU match you closed: a loss, and in Solo the cards go now
 function quitMatch(){
   const puzzle=G.daily&&G.daily.kind==='puzzle',n=leaveCount(),ai=G.mode==='ai';
   let took=null;
@@ -358,7 +364,7 @@ function quitMatch(){
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
-  // vs Computer, leaving before you've played a card costs nothing
+  // in Solo, leaving before you've played a card costs nothing
   if(G.mode==='ai'&&!G.daily&&!G.moved&&!G.over&&G.ser.n===1&&!G.sd){
     modal(`<h2>Leave match?</h2><p>You haven't played a card yet, so leaving now costs nothing.</p>`,[
       {label:'Leave',cls:'danger',fn:leaveMatch},{label:'Keep playing',cls:'primary',esc:true}]);
@@ -382,7 +388,7 @@ $('#btnQuit').onclick=()=>{
 };
 
 /* ---------- picking a CPU match back up ---------- */
-// A match vs Computer is saved at the start of every turn (SAVE.live), so closing the app doesn't end it:
+// A Solo match is saved at the start of every turn (SAVE.live), so closing the app doesn't end it:
 // the menu offers to carry on, and giving up counts as leaving. The Daily has its own rules, so it isn't saved.
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
@@ -396,6 +402,8 @@ function liveMatchFrom(L){
   try{
     const ok9=a=>Array.isArray(a)&&a.length===9,st=L.st,hand=h=>Array.isArray(h)&&h.every(i=>CARDS[i]);
     if(L.v!==1||!L.decks.every(d=>Array.isArray(d)&&d.length===5&&hand(d))||!ok9(st.b)||!ok9(st.o)||!ok9(st.m)||!st.h.every(hand)||!Array.isArray(L.ser.wins))return null;
+    // a match saved while Sweep was a trade rule (before 0.18.0)
+    if(L.trade==='sweep'){L.trade='one';L.rules={...L.rules,sweep:true}}
     const g=baseMatch('ai',{rules:{...defSave().rules,...L.rules},trade:netTrade(L.trade),diff:DIFFS.some(d=>d[0]===L.diff)?L.diff:'normal',bo:boOf(L.bo),
       names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved});
     g.rng=mulberry32(L.a|0);
@@ -412,7 +420,7 @@ function liveOffer(){
   const g=liveMatchFrom(L);
   if(!g){liveClear();return}
   G=g;const n=leaveCount(),s=[score(g.st,0),score(g.st,1)];G=null;
-  modal(`<div class="kick">vs Computer · ${esc(DIFFS.find(d=>d[0]===g.diff)[1])}${g.bo>1?` · Best of ${g.bo}`:''}</div><h2>Match in progress</h2>`+
+  modal(`<div class="kick">Solo · ${esc(DIFFS.find(d=>d[0]===g.diff)[1])}${g.bo>1?` · Best of ${g.bo}`:''}</div><h2>Match in progress</h2>`+
     `<p>You left a match before it ended. Pick up where you left off.</p>`+
     (L.next?`<p class="serscore">Series <b class="b">${g.ser.wins[0]}</b> – <b class="r">${g.ser.wins[1]}</b></p>`:`<div class="bigscore"><span class="b">${s[0]}</span> – <span class="r">${s[1]}</span></div>`)+
     `<p class="note">Giving up counts as a loss${n?`. The CPU takes ${n>=5?'all your cards':plural(n,'card')}`:''}.</p>`,[

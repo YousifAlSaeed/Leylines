@@ -1,6 +1,6 @@
 /* ---------- game ---------- */
 #scr-game{padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:hidden}
-.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-short #scr-game{padding-bottom:6px}
+.ios-app #scr-game{padding-top:calc(env(safe-area-inset-top) + 28px)} .ios-bar #scr-game{padding-top:28px} .ios-short #scr-game{padding-bottom:22px}
 /* a match never scrolls: everything is sized to fit (layout, fitGame) */
 #scr-game{overscroll-behavior:none}
 .hud{display:flex;align-items:center;gap:8px;width:100%;max-width:1240px;height:52px;flex:none;position:relative}
@@ -107,11 +107,13 @@ body.land .hand .card.sel ~ .card{--dy:calc(var(--hc) * .16)}
 /* ---------- banners ---------- */
 #banners{position:fixed;inset:0;pointer-events:none;z-index:var(--z-banner);display:grid;place-items:center}
 .banner{grid-area:1/1;display:grid;place-items:center}
-.banner span{font:900 clamp(52px,16vw,136px)/1 var(--display);font-stretch:110%;font-style:italic;text-transform:uppercase;letter-spacing:.01em;padding:0 .14em;white-space:nowrap;
-  background:linear-gradient(180deg,#fff 0%,#EDE6FF 34%,#B894FF 62%,#6A2BAE 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+.banner span{font:900 clamp(52px,16vw,136px)/1 var(--display);font-stretch:110%;font-style:italic;text-transform:uppercase;letter-spacing:.01em;padding:0 .14em;
+  /* too wide for a phone ("Sudden Death!", a long name): wrap to two lines; the gradient repeats every line (1em tall) */
+  max-width:calc(100vw - 16px);text-align:center;text-wrap:balance;overflow-wrap:anywhere;background-size:100% 1em;
+  background-image:linear-gradient(180deg,#fff 0%,#EDE6FF 34%,#B894FF 62%,#6A2BAE 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 4px 0 #1a0c3a) drop-shadow(0 0 18px rgba(0,0,0,.6));animation:pop 1.05s ease-out forwards}
 .banner.small span{font-size:clamp(28px,8vw,56px)}
-.banner.sd span{background:linear-gradient(180deg,#fff 0%,#ffb0b0 40%,#d23b3b 70%,#5a0c0c 100%);-webkit-background-clip:text;background-clip:text}
+.banner.sd span{background-image:linear-gradient(180deg,#fff 0%,#ffb0b0 40%,#d23b3b 70%,#5a0c0c 100%);-webkit-background-clip:text;background-clip:text}
 @keyframes pop{0%{transform:scale(.2) rotate(-6deg);opacity:0}18%{transform:scale(1.16) rotate(1deg);opacity:1}32%{transform:scale(1) rotate(0)}78%{opacity:1;transform:scale(1.02)}100%{opacity:0;transform:scale(1.1)}}
 
 /* ---------- dialogs ---------- */
