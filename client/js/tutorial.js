@@ -45,8 +45,9 @@ function tutPlace(){
   c.style.left=Math.max(12,Math.min(W-w-12,(r.left+r.width/2)/UI-w/2))+'px';
   c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(r.top/UI-4,58))+'px';
   if(!n.hidden){
-    const h=$('#handBot').getBoundingClientRect(),nw=Math.min(W-48,320);
-    n.style.width=nw+'px';n.style.left=(h.left+h.width/2)/UI-nw/2+'px';n.style.top=(h.top+h.height/2)/UI-26+'px';
+    // sized to its text; the CSS translate centres it on the hand
+    const h=$('#handBot').getBoundingClientRect();
+    n.style.left=(h.left+h.width/2)/UI+'px';n.style.top=(h.top+h.height/2)/UI+'px';
   }
   TT.forEach(tagPos);
 }

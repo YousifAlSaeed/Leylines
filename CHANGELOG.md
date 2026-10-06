@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.18.1 (2026-10-06)
+- Tutorial: the Next lesson button is smaller, just big enough for its text
+
 ## 0.18.0 (2026-10-05)
 - New rule **Reverse**: lower numbers win. A 1 beats a 2, and X is the weakest. Same and Plus work as usual
 - New rule **Three open**: 3 random cards in each hand are face up for both players. 👁 marks the cards both of you can see

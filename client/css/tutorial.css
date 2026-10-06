@@ -18,7 +18,7 @@ body.tut #handTop,body.tut-fin #handBot{visibility:hidden}
 @keyframes tutShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .tc-av{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:26px;background:linear-gradient(160deg,var(--blue1),var(--blue2))}
 .tc-k{font:700 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:2px}
-.tut-next{position:fixed;z-index:calc(var(--z-banner) - 2);min-height:52px;font-size:16px;animation:tutIn .35s var(--spring)}
+.tut-next{position:fixed;z-index:calc(var(--z-banner) - 2);translate:-50% -50%;padding:10px 26px;white-space:nowrap;animation:tutIn .35s var(--spring)}
 /* the square to play on, and the card to pick */
 .cell.tut-target{border-color:var(--hot);animation:tutGlow 1.1s ease-in-out infinite}
 @keyframes tutGlow{50%{box-shadow:inset 0 0 26px color-mix(in srgb,var(--hot) 55%,transparent),0 0 18px var(--accent-glow)}}
