@@ -128,10 +128,9 @@ function heroJoin(){
   if(playerName())joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
 }
 $$('[data-go]').forEach(b=>b.onclick=()=>{
-  sfx('click');const g=b.dataset.go;
+  const g=b.dataset.go;if(g==='coll'){openCollection();return}sfx('click');
   if(g==='ai'||g==='local')openSetup(g);
   else if(g==='online')openOnline();
-  else if(g==='coll')openCollection();
   else if(g==='packs')openPacks();
   else if(g==='store')openStore();
   else if(g==='howto')openHow(0);

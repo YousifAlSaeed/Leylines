@@ -20,9 +20,10 @@ function collMode(h,title,meta){
   sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>':'Save hand';
   if(pick)sv.setAttribute('aria-label','Save hand');else sv.removeAttribute('aria-label');
 }
-$('#collBack').onclick=()=>{sfx('click');picking()&&DK.onBack?DK.onBack():show('menu')};
+$('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');show('menu')}};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 function openCollection(){
+  sfx('coll_open');
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
@@ -34,9 +35,10 @@ function openCollection(){
 }
 // card detail: the card lifts out of its sleeve on a binder page
 function collDetail(id){
-  const c=CARDS[id],n=owned(id);sfx('click');
+  const c=CARDS[id],n=owned(id);
   const lost=!n&&isSeen(id);
-  if(!n&&!lost){toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
+  if(!n&&!lost){sfx('coll_locked');toast(`${rarName(c.rar)} card — win it in a match to discover it.`);return}
+  sfx(lost?'coll_lost':'coll_card_out');if(c.rar>=4)setTimeout(()=>sfx('coll_shimmer'),120);
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id);
   const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
@@ -116,16 +118,18 @@ function bdRender(){
   $('#bdTabs').innerHTML=[1,2,3,4,5].map(r=>{
     const [f,t]=rarFound(r);
     return `<button class="bd-tab rar${r}" data-r="${r}"><span class="rt">${r}★</span> ${RARITY[r-1]}${f===t?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
-  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>bdTurn(bdFirst(+b.dataset.r)));
+  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>bdTurn(bdFirst(+b.dataset.r),'tab'));
   bdChrome(BD.p);
 }
 // turn to page `to`: a two-sided sheet rotates around the rings while a shadow sweeps across it
-function bdTurn(to){
+let lastBdPageSound=0;
+function bdTurn(to,source='page'){
   if(BD.done)BD.done();
   to=bdNorm(to);
-  const from=BD.p;if(to===from)return;
+  const from=BD.p;if(source==='tab')sfx('coll_tab');if(to===from)return;
   const fwd=to>from,sp=bdSpread(),binder=$('#binder'),L=$('#bdL'),R=$('#bdR');
-  sfx('click');
+  if(Math.abs(to-from)>(sp?2:1))sfx('coll_riffle');
+  else{let n;do{n=1+Math.floor(Math.random()*4)}while(n===lastBdPageSound);lastBdPageSound=n;sfx(`coll_page_0${n}`)}
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||!binder.animate){BD.p=to;bdRender();return}
   if(!sp){bdTurnSingle(from,to,fwd);return}
   // src: the page the sheet lifts from (the revealed page is drawn into it underneath)
@@ -215,7 +219,12 @@ function bdTurnSingle(from,to,fwd){
   bdChrome(to);
 }
 // finish a turn that's still running first, so quick repeated taps each move one more page
-const bdStep=d=>{if(BD.done)BD.done();bdTurn(BD.p+d*(bdSpread()?2:1))};
+const bdStep=d=>{
+  if(BD.done)BD.done();
+  const to=bdNorm(BD.p+d*(bdSpread()?2:1));
+  if(to===BD.p){sfx('coll_bump');return}
+  bdTurn(to);
+};
 $('#bdPrev').onclick=()=>bdStep(-1);
 $('#bdNext').onclick=()=>bdStep(1);
 $('#binder').addEventListener('click',e=>{
@@ -247,7 +256,7 @@ $('#binder').addEventListener('click',e=>{
    // the ghost lives on <body>, outside the zoomed screen
    g.style.fontSize=parseFloat(getComputedStyle(card).fontSize)*UI+'px';
    g.style.left=d.x+'px';g.style.top=d.y+'px';
-   document.body.append(g);d.g=g;d.el.classList.add('dragging');sfx('click');
+   document.body.append(g);d.g=g;d.el.classList.add('dragging');sfx('coll_lift');
  };
  const end=(e,cancel)=>{
    const d=BD.drag;if(!d)return;BD.drag=null;clearTimeout(d.t);
@@ -255,7 +264,7 @@ $('#binder').addEventListener('click',e=>{
    d.g.remove();d.el.classList.remove('dragging');tray.classList.remove('over');
    // swallow the click that follows, so the card's detail doesn't open
    BD.swiped=true;setTimeout(()=>{BD.swiped=false},0);
-   if(!cancel&&overTray(e.clientX,e.clientY))handAdd(BH,d.id);
+   if(!cancel&&overTray(e.clientX,e.clientY))handAdd(BH,d.id);else sfx('coll_return');
  };
  $('#binder').addEventListener('pointerdown',e=>{
    const b=e.target.closest('.pocket[data-id]');
@@ -284,4 +293,3 @@ $('#binder').addEventListener('click',e=>{
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&$('#binder').classList.contains('single')===bdSpread())bdRender()};
 
 if(window.ResizeObserver)new ResizeObserver(bdFit).observe($('#collBook'));else window.addEventListener('resize',bdFit);
-

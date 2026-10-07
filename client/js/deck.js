@@ -28,10 +28,12 @@ function renderDeck(){
    ===================================================================== */
 function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
 function handAdd(h,id){
-  if(h.sel.length>=5||handRemaining(h,id)<=0)return;
+  if(h.sel.length>=5||handRemaining(h,id)<=0){sfx('coll_deny');return}
   const why=rarBlock(h.sel,id);
-  if(why){h.note=`<span class="bad">${why}</span>`;sfx('click');h.render();return}
-  h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render();
+  if(why){h.note=`<span class="bad">${why}</span>`;sfx('coll_deny');h.render();return}
+  h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('coll_hand_add');
+  if(h.sel.length===5)setTimeout(()=>sfx('coll_hand_full'),120);
+  h.render();
 }
 function renderHand(h){
   const P=h.pfx,col=h.color||'blue',n=h.sel.length;
@@ -43,7 +45,7 @@ function renderHand(h){
       ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   h.deal=-1;
-  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
+  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('coll_hand_remove');h.render()});
   // stats: total power and the best number on each side
   $(`#${P}Power`).textContent=h.sel.reduce((a,id)=>a+CARDS[id].sum,0);
   $(`#${P}Sides`).innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...h.sel.map(id=>CARDS[id].s[i])):0;

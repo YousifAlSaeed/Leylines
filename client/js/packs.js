@@ -52,35 +52,17 @@ function openPack(src){
 // the next pack to open after this one: level packs first, then the daily
 const nextPack=()=>SAVE.packs.length?0:dailyState().ready?'daily':null;
 
-/* ---------- sound (synthesised; follows the sound-effects volume) ---------- */
-let NOISE=null;
-function pkAudio(){
-  if(!SAVE.sound||!SAVE.sfxVol)return null;
-  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return null}
-  if(!NOISE){NOISE=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const d=NOISE.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
-  return AC;
-}
-function noise(dur,f0,f1,vol,q=1.2){
-  const a=pkAudio();if(!a)return;const t=a.currentTime,s=a.createBufferSource(),bp=a.createBiquadFilter(),g=a.createGain();
-  s.buffer=NOISE;bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(f0,t);bp.frequency.exponentialRampToValueAtTime(f1,t+dur);
-  g.gain.setValueAtTime(vol*SAVE.sfxVol/100,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  s.connect(bp).connect(g).connect(a.destination);s.start(t,Math.random()*.5,dur+.05);
-}
-function tone(f,dur,type='triangle',vol=.12,when=0){
-  const a=pkAudio();if(!a)return;const t=a.currentTime+when,o=a.createOscillator(),g=a.createGain();
-  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol*SAVE.sfxVol/100,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05);
-}
+/* ---------- pack sound effects (generated locally; follows the SFX volume) ---------- */
+let lastPackTick=0;
 const PSND={
-  tick:()=>noise(.035,2400+Math.random()*1800,1800,.22,2.5),
-  rip:()=>{noise(.32,5000,900,.5,.9);tone(140,.25,'sine',.25)},
-  snap:()=>noise(.12,900,400,.15),
-  whoosh:()=>noise(.28,600,3000,.18,.7),
-  flip:()=>{noise(.12,3000,1500,.12,1.5);tone(660,.08,'triangle',.06)},
-  build:r=>{for(let i=0;i<(r===5?14:8);i++)tone(220+i*(r===5?45:35),.09,'square',.03,i*(r===5?.11:.12))},
-  reveal:r=>{const N=[[523],[523,659],[523,659,784],[523,659,784,1047],[523,659,784,1047,1319,1568]][r-1];
-    N.forEach((f,i)=>tone(f,r>=4?.6:.25,'triangle',.11,i*.07));if(r>=4)tone(N[0]/2,.9,'sine',.2)},
-  fling:()=>noise(.18,1200,4000,.12,.8),
+  tick:()=>{let n;do{n=1+Math.floor(Math.random()*5)}while(n===lastPackTick);lastPackTick=n;sfx(`pack_tick_0${n}`)},
+  rip:()=>sfx('pack_rip'),
+  snap:()=>sfx('pack_snapback'),
+  whoosh:()=>sfx('pack_whoosh'),
+  flip:()=>sfx('pack_flip'),
+  build:r=>sfx(`pack_build_${r}`),
+  reveal:r=>sfx(`pack_reveal_${r}`),
+  fling:()=>sfx('pack_fling'),
 };
 const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 

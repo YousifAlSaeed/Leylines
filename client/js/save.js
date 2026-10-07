@@ -143,7 +143,13 @@ const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
 const isSeen=id=>unlocked()||SAVE.seen.includes(id);
 const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;
 function collTotal(){return CARDS.reduce((a,c)=>a+owned(c.id),0)}
-function collAdd(id){SAVE.coll[id]=(SAVE.coll[id]||0)+1;if(!SAVE.seen.includes(id))SAVE.seen.push(id)}
+function collAdd(id){
+  SAVE.coll[id]=(SAVE.coll[id]||0)+1;
+  if(!SAVE.seen.includes(id)){
+    const c=CARDS[id],completes=CARDS.filter(x=>x.rar===c.rar).every(x=>x.id===id||SAVE.seen.includes(x.id));
+    SAVE.seen.push(id);if(completes)sfx('coll_set_done');
+  }
+}
 function collRemove(id){if(SAVE.coll[id]){SAVE.coll[id]--;if(SAVE.coll[id]<=0)delete SAVE.coll[id]}}
 function collPool(){return CARDS.map(c=>({id:c.id,count:owned(c.id)})).filter(e=>e.count>0)}
 function ensureMinimum(){

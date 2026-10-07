@@ -50,7 +50,7 @@ function modal(html,btns=[]){
   bg.innerHTML=`<div class="mbox" tabindex="-1">${html}<div class="mbtns"></div></div>`;
   const bx=bg.querySelector('.mbtns');
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'');e.textContent=b.label;if(b.esc)e.dataset.esc='';
-    e.onclick=()=>{sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e)});
+    e.onclick=()=>{if(!bg.querySelector('.cd-box'))sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e)});
   const h=bg.querySelector('h2');
   if(h){h.id='mTitle';bg.setAttribute('aria-labelledby','mTitle')}else bg.removeAttribute('aria-labelledby');
   bg.classList.add('on');
@@ -60,7 +60,8 @@ function modal(html,btns=[]){
   return box;
 }
 function closeModal(){
-  const m=$('#modal');m.classList.remove('on');m.innerHTML='';
+  const m=$('#modal'),collectionCard=!!m.querySelector('.cd-box');m.classList.remove('on');m.innerHTML='';
+  if(collectionCard)sfx('coll_card_in');
   // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
   const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
@@ -80,14 +81,38 @@ function banner(text,cls=''){
 let AC=null;
 const SFX={place:[[300,.07,'triangle']],flip:[[620,.05,'square'],[930,.07,'triangle']],banner:[[523,.08],[659,.08],[784,.08],[1047,.16]],
   win:[[523,.12],[659,.12],[784,.12],[1047,.35]],lose:[[440,.18],[370,.18],[294,.4]],click:[[880,.03]],tick:[[1320,.035,'square']],timeup:[[330,.12,'sawtooth'],[220,.25,'sawtooth']],draw:[[523,.15],[523,.25]],emote:[[660,.05],[990,.09]]};
+const SFX_NAMES=['click','place','flip','banner','win','lose','draw','tick','timeup','emote',
+  'pack_whoosh','pack_tick_01','pack_tick_02','pack_tick_03','pack_tick_04','pack_tick_05',
+  'pack_snapback','pack_rip','pack_flip','pack_build_4','pack_build_5',
+  'pack_reveal_1','pack_reveal_2','pack_reveal_3','pack_reveal_4','pack_reveal_5','pack_fling',
+  'coll_page_01','coll_page_02','coll_page_03','coll_page_04','coll_card_out','coll_card_in',
+  'coll_hand_add','coll_deny','coll_hand_full','coll_set_done','coll_riffle','coll_bump','coll_tab',
+  'coll_open','coll_close','coll_locked','coll_lost','coll_shimmer','coll_lift','coll_return','coll_hand_remove'];
+const SFX_BUFFERS={},SFX_QUEUED={};let SFX_LOADING=null;
+function sfxLoad(){
+  if(SFX_LOADING)return SFX_LOADING;
+  SFX_LOADING=Promise.all(SFX_NAMES.map(async k=>{
+    const r=await fetch(`audio/sfx/${k}.ogg`);if(!r.ok)throw new Error(r.status);
+    SFX_BUFFERS[k]=await AC.decodeAudioData(await r.arrayBuffer());
+  })).catch(()=>{SFX_LOADING=null});
+  return SFX_LOADING;
+}
 function sfx(k){
   const v=SAVE.sfxVol/100;
   if(!SAVE.sound||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
+    if(SFX_BUFFERS[k]){
+      const src=AC.createBufferSource(),g=AC.createGain();src.buffer=SFX_BUFFERS[k];g.gain.value=.32*v;
+      src.connect(g).connect(AC.destination);src.start();return;
+    }
+    if(!SFX[k]&&SFX_LOADING&&!k.startsWith('pack_tick_')&&!SFX_QUEUED[k]){
+      const at=performance.now(),loading=SFX_LOADING;SFX_QUEUED[k]=true;
+      loading.then(()=>{delete SFX_QUEUED[k];if(SFX_BUFFERS[k]&&performance.now()-at<800)sfx(k)});return;
+    }
     let t=AC.currentTime+.01;
-    for(const[f,d,type] of SFX[k]){
+    for(const[f,d,type] of SFX[k]||[]){
       const o=AC.createOscillator(),g=AC.createGain();o.type=type||'triangle';o.frequency.value=f;
       g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16*v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
       o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.03);t+=d*.85;
@@ -111,6 +136,7 @@ MUSIC.data.catch(()=>{});
 function audioUnlock(){
   removeEventListener('pointerdown',audioUnlock,true);removeEventListener('keydown',audioUnlock,true);
   try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return}
+  sfxLoad();
   musicPlay();
 }
 addEventListener('pointerdown',audioUnlock,true);addEventListener('keydown',audioUnlock,true);
