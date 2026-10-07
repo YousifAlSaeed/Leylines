@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.18.3 (2026-10-07)
+- Added a card pickup sound when selecting a card from your hand in a match
+
 ## 0.18.2 (2026-10-07)
 - Replaced the synthesized UI, match, pack-opening and collection effects with locally generated OGG sounds
 

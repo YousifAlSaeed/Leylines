@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import subprocess
+import sys
 import tempfile
 import wave
 from array import array
@@ -14,9 +15,12 @@ FFMPEG = shutil.which('ffmpeg') or os.environ.get('FFMPEG')
 if not FFMPEG:
     raise SystemExit('Install FFmpeg or set the FFMPEG environment variable to its executable path.')
 random.seed(24)
+ONLY = set(sys.argv[1:])
 
 
 def render(name, duration, layers):
+    if ONLY and name not in ONLY:
+        return
     count = round(RATE * duration)
     mix = [0.0] * count
     for start, length, freq, end_freq, amp, shape, wave_type in layers:
@@ -151,4 +155,6 @@ render('coll_lift', .135, [(0,.11,2100,1100,.22,4,'noise'), (.035,.075,520,300,.
 render('coll_return', .255, [(0,.22,650,2800,.2,2.5,'noise'), (.18,.075,310,200,.13,5,'triangle')])
 render('coll_hand_remove', .255, [(0,.2,2800,700,.22,2.7,'noise'), (.14,.105,460,280,.18,5,'triangle'),
                                   (.14,.12,659,523,.09,5,'bell')])
+render('hand_pick', .18, [(0,.135,2200,950,.21,2.8,'noise'), (.015,.12,430,300,.18,3.2,'triangle'),
+                          (.095,.075,1047,880,.11,6,'bell')])
 print(f'Generated synthesized OGG effects in {os.path.abspath(OUT)}')

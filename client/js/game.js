@@ -97,6 +97,7 @@ window.addEventListener('pointermove',e=>{
   if(!drag.moved){
     if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;
     drag.moved=true;
+    sfx('hand_pick');
     const r=drag.el.getBoundingClientRect();
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize='calc(var(--cell) * var(--ui) / 5)'; // the ghost lives on <body>, outside the zoomed screen
@@ -124,7 +125,8 @@ function endDrag(e,cancel){
     renderGame();return;
   }
   if(cancel)return;
-  G.sel=G.forced!=null?G.forced:G.sel===d.hi?null:d.hi;sfx('click');
+  const deselect=G.forced==null&&G.sel===d.hi;
+  G.sel=G.forced!=null?G.forced:deselect?null:d.hi;sfx(deselect?'click':'hand_pick');
   renderHands();renderBoard();
 }
 window.addEventListener('pointerup',e=>endDrag(e,false));
