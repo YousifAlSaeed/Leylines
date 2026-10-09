@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.3 (2026-10-10)
+- Crossroads: when the host leaves, the game ends for everyone, whether the seats are friends or CPUs. That's the Leave button, going back to the menu, or closing or reloading the game; the others see "The host left, so the match is over." A host can't resume a game any more, so nothing is left waiting on the menu
+- If the host's connection just drops, the others wait a minute (it can be a short glitch), with a countdown, then the match ends
+
 ## 0.19.2 (2026-10-10)
 - Fixed: a dragged card could stay stuck on the screen, even on the menu, if a second finger touched the screen during a drag (or the browser missed the release). Holds for the card picker, 1v1 and Crossroads
 - 1v1 on phones: the score numbers glow in each player's colour, like they do on wider screens
