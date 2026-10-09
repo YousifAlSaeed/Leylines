@@ -63,6 +63,10 @@ const CARD_DATA=[
 ['King Oryn','👑',10,[7,9,4,10],'']
 ];
 const CARDS=CARD_DATA.map((c,i)=>({id:i,name:c[0],art:c[1],lv:c[2],rar:Math.ceil(c[2]/2),s:c[3],e:c[4]||null,sum:c[3].reduce((a,b)=>a+b,0)}));
+// The Expedition (expedition.js) plays with its own copies of your cards, upgrades and all. They live in RUNC,
+// at ids from RUN_ID up, so the engine and the card drawing look every card up through cardOf.
+const RUN_ID=1000,RUNC={};
+const cardOf=id=>id>=RUN_ID?RUNC[id]:CARDS[id];
 // players see rarity, not level: levels 1–2 are 1★, 3–4 are 2★ … 9–10 are 5★ (the AI still balances on level)
 const RARITY=['Common','Uncommon','Rare','Epic','Legendary'];
 const rarName=r=>`${r}★ ${RARITY[r-1]}`;

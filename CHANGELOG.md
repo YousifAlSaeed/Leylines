@@ -6,6 +6,15 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.0 (2026-10-09)
+- New mode: **Expedition**, a long run against the computer with 5 of your own cards. Find it on the new Expedition tab
+- 3 acts, each a map: pick your path through matches, elites, forges, markets, camps, chests and **? events**, with a boss at the top
+- Every boss has its own trick: the Rootking's roots, the Tidecaller's rising water, the Mirror Mask copying your cards, King Oryn's decrees, the Ashen Dragon's fire and Stormbringer's lightning
+- Make your cards stronger for the run: **+1 or +2 to a side** at forges and markets. Find **relics** that last the whole run and **scrolls** you use during a match. Each new act starts with a strong boss relic that comes with a catch
+- Beat a computer and **take 1 of its cards**. You have 3 hearts, and each lost match costs one
+- After act 1 and act 2, a **Waystone** lets you go home with your cards, the cards you won and a reward, or go on for more. Lose all 3 hearts and the cards you brought are gone. Pay shards to ward one card and it comes home either way
+- On phones, the mode tabs show just their names so all five fit
+
 ## 0.18.1 (2026-10-06)
 - Tutorial: the Next lesson button is smaller, just big enough for its text
 

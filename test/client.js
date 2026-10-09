@@ -3,9 +3,12 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const FILES = ['data.js', 'engine.js', 'ai.js'];
+const FILES = ['data.js', 'engine.js', 'ai.js', 'exp-core.js'];
 const NAMES = ['CARDS', 'RULES', 'SERIES', 'boOf', 'NB', 'newState', 'cloneS', 'isFull', 'score', 'play',
-  'genElements', 'chaosPick', 'threePick', 'sweepOn', 'rulesOn', 'TRADES', 'seriesDone', 'mulberry32', 'shuffle', 'genMoves', 'aiChoose', 'TUT', 'TUT_PACK', 'PACKS'];
+  'genElements', 'chaosPick', 'threePick', 'sweepOn', 'rulesOn', 'TRADES', 'seriesDone', 'mulberry32', 'shuffle', 'genMoves', 'aiChoose', 'TUT', 'TUT_PACK', 'PACKS',
+  // the Expedition (exp-core.js)
+  'RUN_ID', 'RUNC', 'cardOf', 'EXP_ACTS', 'EXP_BOSS', 'RELICS', 'SCROLLS', 'EVENTS', 'expMap', 'expNext', 'expHand', 'expSides', 'expCards', 'baseId', 'expBon',
+  'maxHearts', 'scrollSlots', 'winEmbers', 'priceOf', 'relicOf'];
 
 export function loadGame() {
   const ctx = vm.createContext({ performance, console });

@@ -7,7 +7,9 @@ function buildBoard(){
   const b=$('#board');b.innerHTML='';CELLS=[];
   for(let i=0;i<9;i++){
     const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.setAttribute('role','button');
-    c.onclick=()=>{if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
+    c.onclick=()=>{
+      if(G&&G.target){expTarget(i);return} // an Expedition scroll waiting for its card
+      if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
     b.append(c);CELLS.push(c);
   }
 }
@@ -15,7 +17,7 @@ function renderGame(){renderBoard();renderHands();renderHud()}
 function renderBoard(){
   const st=G.st;
   for(let i=0;i<9;i++){
-    const el=st.el[i]?`<div class="eicon">${ELEM[st.el[i]]}</div>`:'';
+    const el=(st.el[i]?`<div class="eicon">${ELEM[st.el[i]]}</div>`:'')+(G.exp?expCellHTML(i):'');
     CELLS[i].innerHTML=st.b[i]>=0?el+cardHTML(st.b[i],colorOf(st.o[i]),{mod:st.m[i]}):el;
     // in the tutorial only the lesson's square lights up
     const hot=G.sel!=null&&st.b[i]<0&&canAct(st.turn)&&(!G.tut||i===TUT[G.tut.i].cell);
@@ -23,7 +25,7 @@ function renderBoard(){
     CELLS[i].classList.remove('over');
     CELLS[i].setAttribute('aria-disabled',!hot);
     CELLS[i].setAttribute('aria-label',`Row ${Math.floor(i/3)+1}, column ${i%3+1}: `+
-      (st.b[i]>=0?`${CARDS[st.b[i]].name}, ${colorOf(st.o[i])}`:'empty')+(st.el[i]?`, ${st.el[i]} square`:''));
+      (st.b[i]>=0?`${cardOf(st.b[i]).name}, ${colorOf(st.o[i])}`:'empty')+(st.el[i]?`, ${st.el[i]} square`:'')+(G.exp?expCellLabel(i):''));
   }
   if(G.tut)tutSync();
 }
@@ -78,6 +80,8 @@ function renderHud(){
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
   if(G.daily)chips+=dailyChip();
+  $('#btnScroll').classList.toggle('hidden',!G.exp);
+  if(G.exp)chips+=expChip();
   // the tutorial's lessons, done ones ticked
   if(G.tut)chips=G.tut.single?`<span class="tut-on">Try it · ${TUT[G.tut.i].name}</span>`:
     TUT.map((l,i)=>`<span class="${i===G.tut.i?'tut-on':i<G.tut.i?'tut-done':''}">${i<G.tut.i?'✓ ':''}${l.name}</span>`).join('');

@@ -16,9 +16,9 @@ async function keepAwake(on){
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)keepAwake($('#scr-game').classList.contains('on'))});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function cardStrength(id){const c=CARDS[id];return c.lv*100+c.sum}
+function cardStrength(id){const c=cardOf(id);return c.lv*100+c.sum}
 
-function cardLabel(id){const c=CARDS[id],s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
+function cardLabel(id){const c=cardOf(id),s=c.s;return `${c.name}, ${c.rar} star ${RARITY[c.rar-1]}, top ${fmt(s[0])}, right ${fmt(s[1])}, bottom ${fmt(s[2])}, left ${fmt(s[3])}`+(c.e?`, ${c.e}`:'')}
 // Esc closes the open popup
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
@@ -27,12 +27,13 @@ document.addEventListener('keydown',e=>{
 });
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
-  const c=CARDS[id];
+  const c=cardOf(id),d=c.d||[0,0,0,0];
+  // an Expedition card's upgraded sides are green, lowered ones red (c.d: the change on each side)
   return `<div class="card ${color||'blue'} rar${c.rar}${o.name===false?' nn':''} ${o.cls||''}" ${o.attrs||''}>`+
     `<div class="art">${c.art}</div>`+
-    `<div class="nums"><b class="n0">${fmt(c.s[0])}</b><b class="n1">${fmt(c.s[1])}</b><b class="n2">${fmt(c.s[2])}</b><b class="n3">${fmt(c.s[3])}</b></div>`+
+    `<div class="nums">${c.s.map((v,i)=>`<b class="n${i}${d[i]>0?' up':d[i]<0?' dn':''}">${fmt(v)}</b>`).join('')}</div>`+
     (c.e?`<div class="el">${ELEM[c.e]}</div>`:'')+
-    (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+1':'−1'}</div>`:'')+
+    (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+':'−'}${Math.abs(o.mod)}</div>`:'')+
     (o.count>1?`<div class="cnt">×${o.count}</div>`:'')+
     `<div class="rchip" aria-hidden="true">${c.rar}★</div>`+
     (o.name===false?'':`<div class="nm">${esc(c.name)}</div>`)+

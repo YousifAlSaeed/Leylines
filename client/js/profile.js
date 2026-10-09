@@ -44,6 +44,7 @@ const BADGES=[
   ['elements','🌈','All elements','Find a card of every element',s=>ELEM_KEYS.every(e=>s.seen.some(i=>CARDS[i].e===e))],
   ['foundall','📚','Complete set',`Find all ${CARDS.length} cards`,s=>s.seen.length>=CARDS.length],
   ['lv10','⭐','Seasoned','Reach level 10',s=>levelOf(s.xp)>=10],
+  ['expedition','🗺️','Explorer','Clear an Expedition',s=>!!s.expRec&&s.expRec.clears>=1],
 ];
 const BADGE=Object.fromEntries(BADGES.map(b=>[b[0],b]));
 function earn(id){

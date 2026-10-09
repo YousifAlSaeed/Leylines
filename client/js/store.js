@@ -35,7 +35,8 @@ function shardDay(){
 }
 // recordMatch (profile.js) calls this; the caller saves. Returns {sh: shards given, capped: the limit cut it short}
 function matchShards(res,o={}){
-  if(o.left)return {sh:0,capped:false};
+  // Expedition matches pay Embers instead (expedition.js)
+  if(o.left||o.exp)return {sh:0,capped:false};
   const base=o.online?MATCH_SHARDS.online:MATCH_SHARDS[o.diff]||0;
   const full=res==='w'?base:res==='d'?Math.round(base/2):o.online?ONLINE_LOSS:0;
   if(!full)return {sh:0,capped:false};

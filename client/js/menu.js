@@ -35,7 +35,9 @@ const MODE_ICON={
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>',
   local:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2.5 20a5.5 5.5 0 0111 0M10.5 20a5.5 5.5 0 0111 0"/></svg>',
   online:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>',
-  daily:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'};
+  daily:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+  // Expedition: a folded map
+  exp:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5z"/><path d="M9 4v13M15 6.5v13"/></svg>'};
 // what the Play card says about your deck, plus the small fan of its cards
 function heroDeck(random){
   const mlo=mainLoadout(),d=lastDeckReady(),back=cardHTML(0,null,{back:true});
@@ -47,8 +49,8 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-// on your own first (Solo, Daily), then with other people (Online, Couch)
-const MODES=[['ai','Solo'],['daily','Daily'],['online','Online'],['local','Couch']];
+// on your own first (Solo, Expedition, Daily), then with other people (Online, Couch)
+const MODES=[['ai','Solo'],['exp','Expedition'],['daily','Daily'],['online','Online'],['local','Couch']];
 // a small fan for Couch: two of Blue's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
@@ -79,6 +81,9 @@ function heroPane(m){
   }else if(m==='daily'){
     // daily.js: today's three challenges
     ({h,sub,side,stats,row}=dailyPane());
+  }else if(m==='exp'){
+    // expedition.js: start a run, or carry on with yours
+    ({h,sub,side,stats,row}=expPane());
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
     const dk=heroDeck(false),rj=readRejoin();
@@ -103,6 +108,7 @@ function renderHero(anim){
   body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   if(m==='daily'){bindDaily();return}
+  if(m==='exp'){bindExp();return}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
   const qp=$('#heroQuick');if(qp)qp.onclick=()=>{sfx('click');quickLocal()};
   const rb=$('#heroRejoin');

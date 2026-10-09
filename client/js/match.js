@@ -39,7 +39,8 @@ function quickLocal(){
 }
 function startMatch(){
   G.rng=mulberry32(G.seed);G.sd=0;G.over=false;
-  const first=G.rng()<.5?0:1;
+  // the Expedition's Hourglass relic lets you choose
+  const first=G.firstP!=null?G.firstP:G.rng()<.5?0:1;
   G.ser={n:1,first,wins:[0,0],log:[]};
   if(G.mode==='online')oweAdd();
   show('game');buildBoard();
@@ -60,6 +61,7 @@ async function newRound(h0,h1,first){
   G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
   // Three open: 3 cards of each hand are face up, drawn from the seeded random numbers so both online players agree
   if(G.rules.threeOpen&&!G.rules.open)G.trk.v=threePick(G.rng);
+  if(G.exp)expRound(); // the run's relics and the boss's trick (expedition.js)
   renderGame();
   const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
   if(G.bo>1&&!G.sd){await banner(`Match ${G.ser.n}`);if(G!==g)return}
@@ -135,6 +137,7 @@ async function execMove(hi,cell){
     await wait(520);
   }
   if(G!==g)return;
+  if(G.exp){await expAfter(p);if(G!==g)return}
   if(!G.tut)emoteMove(p,ev);
   G.busy=false;nextTurn();
 }
@@ -198,7 +201,7 @@ function finish(s0,s1){
   renderHud();
   let reward='';
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental,exp:!!G.exp})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
@@ -215,9 +218,10 @@ function finish(s0,s1){
     w=ser.wins[0]>ser.wins[1]?0:ser.wins[1]>ser.wins[0]?1:-1;
     head=`<div class="kick">Best of ${G.bo} · ${G.mode==='online'?'Online series':'Series over'}</div><h2>${w<0?'Series tied':resultTitle(w,' the series')}</h2>`+vs+big(sw[0],sw[1])+
       `<div class="serlog">${ser.log.map((x,i)=>`<span class="${x.w<0?'d':x.w===G.bottom?'b':'r'}">M${i+1} ${x.sb}–${x.sr}</span>`).join('')}</div>`+reward;
-  }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
+  }else head=`<div class="kick">${G.exp?expKick():G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
   if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
+  if(G.exp)head+=expFinish(w);
   const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   // in Solo a loss is settled straight away, so closing the app on the result screen can't undo it
   const pool=w<0?null:diffPool(w);
@@ -303,7 +307,7 @@ function resultModal(html,extra){
   // the match is fully settled (trade included); online, a dropped player can no longer come back to it
   G.done=true;
   // a Daily challenge says what comes next (try again, next opponent), or nothing
-  const again=G.daily?G.daily.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
+  const again=G.daily?G.daily.again:G.exp?G.exp.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
   modal(html,[
     ...(extra?[extra]:[]),
     ...(again?[{label:again.label,cls:extra?'':'primary',fn:again.fn}]:[]),
@@ -331,7 +335,7 @@ function stillPlaying(){return !!(G&&G.st&&!G.done&&!G.tut&&(!G.over||G.bo>1&&!s
 // The Sweep rule doesn't add to it: nobody swept.
 // Nothing in a Couch game, the Daily, or with no trade rule.
 function leaveCount(){
-  if(!stillPlaying()||G.mode==='local'||G.daily||G.trade==='none')return 0;
+  if(!stillPlaying()||G.mode==='local'||G.daily||G.exp||G.trade==='none')return 0;
   const gap=Math.abs(score(G.st,0)-score(G.st,1));
   return {one:1,diff:Math.max(1,Math.min(5,gap)),all:5}[G.trade]||0;
 }
@@ -348,7 +352,7 @@ function tookHTML(who,t){
 }
 // you left, or tapped Give up on a CPU match you closed: a loss, and in Solo the cards go now
 function quitMatch(){
-  const puzzle=G.daily&&G.daily.kind==='puzzle',n=leaveCount(),ai=G.mode==='ai';
+  const puzzle=G.daily&&G.daily.kind==='puzzle',n=leaveCount(),ai=G.mode==='ai',ex=!!G.exp;
   let took=null;
   if(G.mode!=='local'&&!puzzle){
     // between the matches of a series that match already counted; the series is what's given up
@@ -360,19 +364,20 @@ function quitMatch(){
     save();freshToast();
   }
   dailyLeave();leaveMatch();
+  if(ex)expLeft(); // an Expedition match: a heart
   if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true}]);
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
   // in Solo, leaving before you've played a card costs nothing
-  if(G.mode==='ai'&&!G.daily&&!G.moved&&!G.over&&G.ser.n===1&&!G.sd){
+  if(G.mode==='ai'&&!G.daily&&!G.exp&&!G.moved&&!G.over&&G.ser.n===1&&!G.sd){
     modal(`<h2>Leave match?</h2><p>You haven't played a card yet, so leaving now costs nothing.</p>`,[
       {label:'Leave',cls:'danger',fn:leaveMatch},{label:'Keep playing',cls:'primary',esc:true}]);
     return;
   }
   let p;
   if(G.mode==='local')p='<p>The game will be abandoned.</p>';
-  else if(!n)p=`<p>Leaving counts as a loss.</p>`;
+  else if(!n)p=`<p>Leaving counts as a loss${G.exp?': <b class="gold">you lose a heart</b>':''}.</p>`;
   else if(G.mode==='ai'){const d=G.decks[G.me],ids=strongest(d,n).map(i=>d[i]);
     p=`<p>Leaving counts as a loss. <b class="gold">The CPU takes ${n>=5?'all your cards':cards}</b>, the same as if it won.</p>`+rowHTML(ids,'red')+
       (n<5?`<p class="note">The CPU always takes your strongest ${n>1?'cards':'card'}.</p>`:'');}
@@ -391,7 +396,7 @@ $('#btnQuit').onclick=()=>{
 // A Solo match is saved at the start of every turn (SAVE.live), so closing the app doesn't end it:
 // the menu offers to carry on, and giving up counts as leaving. The Daily has its own rules, so it isn't saved.
 function liveSave(next){
-  if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
+  if(!G||G.mode!=='ai'||G.daily||G.exp||!G.st||!next&&(G.over||isFull(G.st)))return;
   SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
     seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk}));
   save();

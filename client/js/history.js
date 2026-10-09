@@ -25,11 +25,13 @@ function histAdd(r,quit=''){
   // left in the middle of a match: its score when they stopped
   if(quit&&quit!=='early'&&G.st&&!G.over)log.push([score(G.st,me),score(G.st,1-me)]);
   const win=r==='w'?me:r==='l'?1-me:-1;
-  const h={t:Date.now(),m:online?'online':'ai',bo:G.bo,r,log:log.slice(-5),me:G.decks[me].slice(0,5),op:G.decks[1-me].slice(0,5),
+  // an Expedition's upgraded cards are saved as the cards they're made from
+  const h={t:Date.now(),m:online?'online':'ai',bo:G.bo,r,log:log.slice(-5),me:G.decks[me].slice(0,5).map(baseId),op:G.decks[1-me].slice(0,5).map(baseId),
     ru:rulesOn(G.rules,G.mode==='local'?'none':G.trade).map(x=>x[0]),tm:G.rules.timer||0,tr:G.trade,xp:ser.xp||0};
   if(online){h.n=oppName();if(NET.oppUser)h.u=NET.oppUser;if(NET.oppAv!=null)h.av=NET.oppAv}else h.d=G.diff;
   // a Daily Duel or Gauntlet match (daily.js) is labelled as one
   if(G.daily)h.dk=G.daily.kind;
+  if(G.exp)h.dk='exp';
   if(win>=0&&ser.log.some(x=>x.sweep&&x.w===win))h.sw=1;
   if(ser.sd)h.sd=1;
   if(quit)h.q=quit;
@@ -60,7 +62,7 @@ function histInner(list,mine,owner){
   const more=shown.length>HIST.n?`<button class="mh-more" data-h="more">Show more</button>`:'';
   return head+priv+seg+(rows||`<p class="pf-hint left">No ${HIST.f==='ai'?'games against the computer':'online games'} here yet.</p>`)+more;
 }
-const histOpp=h=>h.m==='ai'?`CPU · ${h.dk?{duel:'Daily Duel',gauntlet:'Gauntlet'}[h.dk]||'Daily':(DIFFS.find(d=>d[0]===h.d)||DIFFS[1])[1]}`:h.n||'Player';
+const histOpp=h=>h.m==='ai'?`CPU · ${h.dk?{duel:'Daily Duel',gauntlet:'Gauntlet',exp:'Expedition'}[h.dk]||'Daily':(DIFFS.find(d=>d[0]===h.d)||DIFFS[1])[1]}`:h.n||'Player';
 function histWhen(t,long){
   const d=new Date(t),days=(Date.now()-t)/864e5;
   if(long)return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});

@@ -15,7 +15,7 @@ function evalFor(s,p,R){
   let pos=0;const k=R&&R.reverse?-1:1;
   for(let i=0;i<9;i++){
     if(s.b[i]<0)continue;
-    const sign=s.o[i]===p?1:-1,cs=CARDS[s.b[i]].s;
+    const sign=s.o[i]===p?1:-1,cs=cardOf(s.b[i]).s;
     for(let d=0;d<4;d++){const n=NB[i][d];if(n>=0&&s.b[n]<0)pos+=sign*k*(cs[d]+s.m[i]-5.5)*.045}
   }
   return diff+pos;

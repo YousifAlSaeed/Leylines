@@ -30,7 +30,9 @@ function defSave(){
     // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
     gNote:-1,
     // the tutorial (tutorial.js): 0 = not offered yet, 1 = offered, 2 = finished and its pack given
-    tut:0};
+    tut:0,
+    // the Expedition (expedition.js): the run in progress, your record {runs, best: furthest act, clears}, today's shards from it
+    exp:null,expRec:{runs:0,best:0,clears:0},exDay:null};
 }
 // fills in the profile fields; a save from before profiles gets XP for the matches it already played
 function fixProfile(p,s){
@@ -62,6 +64,9 @@ function fixProfile(p,s){
   if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;
   p.tut=[0,1,2].includes(p.tut)?p.tut:0;
   p.badges=ob(p.badges)?p.badges:{};
+  p.exp=ob(p.exp)&&p.exp.v===1&&Array.isArray(p.exp.bag)&&p.exp.bag.every(e=>ob(e)&&Number.isInteger(e.b)&&e.b>=0&&e.b<CARD_DATA.length&&Array.isArray(e.u))&&Array.isArray(p.exp.map)?p.exp:null;
+  const er=ob(p.expRec)?p.expRec:{};p.expRec={runs:Math.max(0,er.runs|0),best:Math.max(0,Math.min(3,er.best|0)),clears:Math.max(0,er.clears|0)};
+  p.exDay=ob(p.exDay)&&(p.exDay.at===null||typeof p.exDay.at==='string')?{at:p.exDay.at&&p.exDay.at.slice(0,10),n:Math.max(0,p.exDay.n|0)}:null;
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
   return p;
@@ -117,9 +122,9 @@ function resetSave(){
 function missingIn(ids,have){const need={},miss=[];ids.forEach((id,k)=>{need[id]=(need[id]||0)+1;if(need[id]>have(id))miss.push(k)});return miss}
 /* deck building rules: at most 1 card of 5★ rarity, at most 2 cards of 4★ or more, 3★ and below have no limit */
 function rarBlock(ids,id){
-  const r=CARDS[id].rar;if(r<4)return '';
-  if(r===5&&ids.some(x=>CARDS[x].rar===5))return 'Only 1 card of 5★ rarity per deck.';
-  if(ids.filter(x=>CARDS[x].rar>=4).length>=2)return 'Only 2 cards of 4★ rarity or more per deck.';
+  const r=cardOf(id).rar;if(r<4)return '';
+  if(r===5&&ids.some(x=>cardOf(x).rar===5))return 'Only 1 card of 5★ rarity per deck.';
+  if(ids.filter(x=>cardOf(x).rar>=4).length>=2)return 'Only 2 cards of 4★ rarity or more per deck.';
   return '';
 }
 // indexes in ids that break the rarity rules (the earlier cards are kept)

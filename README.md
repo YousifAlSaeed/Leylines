@@ -30,6 +30,7 @@ The in-game **How to play** screen shows every rule with an animated example.
 | Mode | Description |
 | --- | --- |
 | **Solo** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
+| **Expedition** | A roguelike run against the CPU with 5 of your own cards: 3 acts, each a branching map of matches, elites, forges, markets, camps, chests and events, with a boss on top. Bosses have their own tricks (roots, high tide, a mirror of your hand, royal decrees, dragonfire, lightning), picked 1 of 2 per act. Upgrades, relics and scrolls last for the run only. Beat a CPU to take 1 of its cards. 3 hearts; a lost match costs one. Go home at a Waystone after act 1 or 2 to keep your cards and a reward; lose all 3 hearts and the cards you brought are gone (unless warded). Rules and data in `client/js/exp-core.js`, screens in `client/js/expedition.js`. |
 | **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
 | **Couch** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
 

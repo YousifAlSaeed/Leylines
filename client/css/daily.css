@@ -4,7 +4,7 @@
 /* the dot on the Daily tab while a challenge can still pay out */
 .modeseg button{position:relative}
 .modeseg .mdot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--surf2)}
-/* four tabs on a narrow phone */
+/* five tabs on a narrow phone */
 @media (max-width:400px){.modeseg button{font-size:12px;padding:6px 3px}}
 
 .dly-no{font-weight:600;color:var(--accent-ink);font-size:.62em;vertical-align:.18em}

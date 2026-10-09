@@ -18,6 +18,8 @@
 .card .nm{position:absolute;left:0;right:0;bottom:0;padding:.2em .3em .24em;font:600 .5em/1.1 var(--body);text-align:center;color:#fff;background:rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .mod{position:absolute;right:.2em;top:1.15em;font:900 .72em/1 var(--display);padding:.12em .25em;border-radius:.3em;background:rgba(0,0,0,.6)}
 .card .mod.up{color:#8dff8d} .card .mod.dn{color:#ff9b9b}
+/* an Expedition card's upgraded (green) and lowered (red) sides */
+.card .nums b.up{color:#8dff8d} .card .nums b.dn{color:#ff9b9b}
 .card .cnt{position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
 /* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a metal frame and a "3★" tag.
    --rc colours the frame on the card; --rt is a text colour that stays readable on the page in both themes. */

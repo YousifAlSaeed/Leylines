@@ -1,0 +1,154 @@
+/* =====================================================================
+   EXPEDITION  (expedition.js): the menu tab, the map screen, its stops,
+   and the marks a boss's trick leaves on the board
+   ===================================================================== */
+:root{--ember:#ffae4a;--ember-ink:#ffc47a;--heart:#ff5f7e;--root:#5EE6B0;--fire:#ff7a2e;--water:#4fa8ff;--zap:#ffe14d}
+:root[data-theme="light"]{--ember:#d9741a;--ember-ink:#a4520a;--heart:#d23a5c;--root:#13935f;--fire:#d4570f;--water:#2b78d6;--zap:#c79a00}
+
+/* Embers: a little flame-shaped drop, and the number next to it */
+.em-i{display:inline-block;width:.72em;height:.72em;margin:0 .22em 0 .1em;border-radius:50% 50% 50% 0;transform:rotate(-45deg);flex:none;vertical-align:-.04em;
+  background:radial-gradient(circle at 60% 40%,#ffe39a,var(--ember) 60%,#b03a00)}
+.pf-reward .pf-ember{display:inline-flex;align-items:center;background:color-mix(in srgb,var(--ember) 16%,transparent);color:var(--ember-ink)}
+.ex-em{display:inline-flex;align-items:center;font-weight:700;color:var(--ember-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ex-hp{color:var(--heart);letter-spacing:.08em;white-space:nowrap;font-size:1.05em}
+.ex-hp i{font-style:normal;opacity:.25;filter:grayscale(1)}
+.ex-g{color:var(--pf-win);font-weight:600} .ex-bd{color:var(--danger);font-weight:600}
+
+/* ---------- the menu tab: the three acts as stamps ---------- */
+.ex-stamps i{font-size:20px}
+@media (min-width:920px) and (min-height:560px){.ex-stamps i{font-size:26px}}
+
+/* ---------- the map screen ---------- */
+.ex-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);
+  background:color-mix(in srgb,var(--ember) 12%,transparent);border:1px solid color-mix(in srgb,var(--ember) 35%,transparent)}
+.ex-wrap{gap:12px;padding-bottom:20px;align-items:stretch}
+/* wide screens: the map on the left, everything else beside it */
+@media (min-width:900px){
+  #scr-exp .topbar{max-width:960px}
+  .ex-wrap{max-width:960px;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);grid-template-rows:auto auto auto 1fr auto;
+    grid-template-areas:"map hud" "map boss" "map bag" "map way" "legend quit";column-gap:28px;align-items:start}
+  .ex-hud{grid-area:hud} .ex-boss{grid-area:boss} .ex-mapbox{grid-area:map} .ex-legend{grid-area:legend} .ex-bag{grid-area:bag}
+  #exWay{grid-area:way;justify-self:start} .ex-quit{grid-area:quit;justify-self:start}
+  .ex-pills{justify-content:flex-start}
+}
+.ex-hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ex-hud>.ex-hp{font-size:20px}
+.ex-pills{flex:1;min-width:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end;background:none;border:0;padding:2px;cursor:pointer;color:var(--muted);font:inherit}
+.ex-pills small{font-size:12.5px}
+.ex-pills em{display:inline-flex;gap:3px;margin-left:8px;font-style:normal}
+.ex-rel{width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;font-size:15px;flex:none;background:var(--surf2);box-shadow:inset 0 0 0 2px var(--rc,var(--line2))}
+.ex-rel.t1{--rc:var(--r1)} .ex-rel.t2{--rc:var(--r2)} .ex-rel.t3{--rc:var(--r3)} .ex-rel.t5{--rc:var(--r5)}
+.ex-scr{width:26px;height:30px;border-radius:7px;display:inline-grid;place-items:center;font-size:14px;background:var(--surf2);border:1px solid var(--line2)}
+.ex-scr.none{border-style:dashed;background:none}
+.ex-boss{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:16px;cursor:pointer;color:var(--text);font:inherit;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--red1) 22%,var(--surf)),var(--surf));border:1px solid color-mix(in srgb,var(--red-ink) 35%,transparent)}
+.ex-boss span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.ex-boss small{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ex-boss b{font:800 17px var(--display)}
+.ex-boss i{font-style:normal;font-size:13px;color:var(--accent-ink)}
+.ex-boss svg{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ex-face{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:26px;flex:none;background:linear-gradient(160deg,var(--red1),var(--red2))}
+.ex-mapbox{border-radius:20px;border:1px solid var(--line);background:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%),var(--well);padding:6px}
+.ex-map{display:block;width:100%;max-width:420px;height:auto;margin:0 auto}
+.ex-map .ex-p{stroke:var(--line2);stroke-width:2;stroke-dasharray:4 5;fill:none}
+.ex-map .ex-p.on{stroke:var(--pf-win);stroke-dasharray:none;opacity:.8}
+.ex-map .ex-p.can{stroke:var(--cta);stroke-dasharray:none}
+.ex-n circle{fill:var(--surf2);stroke:var(--line2);stroke-width:1.5}
+.ex-n text{text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.ex-n.done circle{fill:color-mix(in srgb,var(--pf-win) 18%,var(--surf));stroke:var(--pf-win)}
+.ex-n.done:not(.now) text{opacity:.55}
+.ex-n.now circle{stroke:var(--pf-win);stroke-width:3}
+.ex-n.boss circle{stroke:var(--warn);stroke-width:2.5}
+.ex-n.can{cursor:pointer;outline:none}
+.ex-n.can circle{fill:color-mix(in srgb,var(--cta) 22%,var(--surf2));stroke:var(--cta);stroke-width:2.5;animation:exGlow 1.6s ease-in-out infinite}
+.ex-n.can:hover circle,.ex-n.can:focus-visible circle{fill:color-mix(in srgb,var(--cta) 40%,var(--surf2))}
+@keyframes exGlow{50%{stroke-width:5;stroke-opacity:.6}}
+@media (prefers-reduced-motion:reduce){.ex-n.can circle,.cell .xg{animation:none!important}}
+.ex-legend{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;margin:0;font-size:12px;color:var(--muted)}
+.ex-bag h3{display:flex;justify-content:space-between}
+.ex-bag h3 em{font-style:normal;font-weight:500}
+.ex-bag .cardrow{justify-content:flex-start;margin:0;font-size:11px;gap:8px}
+.ex-bc{position:relative}
+.ex-tag{position:absolute;left:50%;top:-.6em;transform:translateX(-50%);z-index:5;font:800 9.5px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;
+  padding:3px 6px;border-radius:99px;background:var(--surf2);color:var(--muted);border:1px solid var(--line2)}
+.ex-tag.spoil{background:var(--pf-win);color:#06281c;border-color:transparent}
+.ex-tag.hire,.ex-tag.twin{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.ex-quit{align-self:center}
+
+/* ---------- popups: the stops ---------- */
+.mbox .ex-how{text-align:left;margin-top:8px}
+.mbox .ex-how p{max-width:none;margin:8px 0;font-size:14px}
+.mbox .ex-how b{color:var(--text)}
+.ex-bigface{font-size:44px;line-height:1.1;margin:4px 0 2px}
+.ex-trick{display:flex;flex-direction:column;gap:2px;text-align:left;margin:8px 0;padding:10px 12px;border-radius:14px;font-size:13.5px;color:var(--muted);
+  border:1px solid color-mix(in srgb,var(--cta) 45%,transparent);background:color-mix(in srgb,var(--cta) 8%,transparent)}
+.ex-trick b{font:800 14px var(--display);color:var(--text)}
+.ex-vs{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0}
+.ex-vs h2.nm2{margin:0}
+.ex-vs small{color:var(--muted);font-size:12.5px}
+.mbox .ex-foe,.mbox .ex-pickhand{font-size:10.5px;gap:5px}
+.ex-list{display:flex;flex-direction:column;gap:6px;text-align:left;margin:8px 0}
+.ex-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:12px;background:var(--well);border:1px solid var(--line)}
+.ex-row>div{flex:1;min-width:0;display:flex;flex-direction:column;font-size:13px;color:var(--muted);line-height:1.35}
+.ex-row b{font:700 14px var(--display);color:var(--text)}
+.ex-row .btn{align-self:center}
+.ex-auto{align-self:center;font-size:11.5px;color:var(--accent-ink);white-space:nowrap}
+.ex-h3{margin:14px 0 4px;text-align:left}
+.ex-picks{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.ex-pick{display:flex;align-items:flex-start;gap:12px;text-align:left;padding:12px;border-radius:16px;cursor:pointer;font:inherit;color:var(--muted);font-size:13.5px;line-height:1.35;
+  background:var(--surf);border:1px solid var(--line2);transition:transform .2s var(--spring),border-color .15s}
+.ex-pick:hover,.ex-pick:focus-visible{border-color:var(--cta);transform:translateY(-1px)}
+.ex-pick .ex-rel{width:40px;height:40px;font-size:20px}
+.ex-pick span:last-child{display:flex;flex-direction:column;gap:2px}
+.ex-pick b{font:800 15px var(--display);color:var(--text)}
+.ex-pick em{font-style:normal;color:var(--danger);font-weight:600}
+/* the side picker: the card in the middle, a button on each side of it */
+.ex-forge{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto auto;gap:6px;align-items:center;justify-items:center;margin:8px 0}
+.ex-forge .bigcard{margin:0;font-size:20px}
+.ex-forge .ex-side{flex-direction:column;gap:0;min-height:44px;min-width:64px;padding:4px 8px;border-radius:12px}
+.ex-forge .ex-side small{font:600 11px var(--body);color:var(--muted)}
+.ex-forge .ex-side b{font:800 15px var(--display);white-space:nowrap}
+.ex-forge .ex-side i{font-style:normal}
+.ex-forge .ex-side.off{opacity:.35}
+.ex-els{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px}
+.ex-els .btn{min-height:42px;font-size:14px}
+.ex-shop{display:flex;flex-direction:column;gap:6px;margin-top:10px;text-align:left}
+.ex-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--well);border:1px solid var(--line)}
+.ex-item.relic{border-color:color-mix(in srgb,var(--r3) 50%,transparent)}
+.ex-item.sold{opacity:.45}
+.ex-ic{width:34px;flex:none;display:grid;place-items:center;font-size:20px}
+.ex-ic .card{font-size:6.4px}
+.ex-it{flex:1;min-width:0;display:flex;flex-direction:column;font-size:12.5px;line-height:1.3;color:var(--muted)}
+.ex-it b{font:700 14px var(--display);color:var(--text)}
+.ex-item .btn{flex:none;min-width:70px}
+.mbox p.ex-scene{font-style:italic;font-size:14.5px;color:var(--text)}
+.ex-choices{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.ex-ch{flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-height:54px;padding:9px 14px}
+.ex-ch b{font:800 15px var(--display)}
+.ex-ch>span{font:500 12.5px/1.35 var(--body);color:var(--muted)}
+.ex-ch>span b{font:inherit;color:var(--text)}
+.ex-way{display:flex;flex-direction:column;gap:8px;text-align:left;margin-top:8px}
+.ex-wayc{display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;font-size:13px;color:var(--muted);background:var(--well);border:1px solid var(--line2)}
+.ex-wayc>b{font:800 16px var(--display);color:var(--text)}
+.ex-wayc span b{color:var(--text)}
+.ex-wayc.home{border-color:color-mix(in srgb,var(--pf-win) 55%,transparent)}
+.ex-wayc.go{border-color:color-mix(in srgb,var(--cta) 55%,transparent)}
+.ex-price{display:flex;align-items:center;justify-content:center;gap:2px;margin-top:4px;font:700 12px var(--display);color:var(--shard-ink)}
+.ex-price .shd{width:10px;height:12px}
+.ex-lost .card{filter:grayscale(.85) brightness(.7)}
+.ex-gamble{font-size:16px}
+
+/* ---------- in a match ---------- */
+#btnScroll.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.rulebar span.ex-chip{color:var(--text);border-color:color-mix(in srgb,var(--cta) 50%,transparent);background:color-mix(in srgb,var(--cta) 10%,transparent)}
+.rulebar span.ex-chip.rel{background:none;border-color:var(--line);letter-spacing:.08em}
+/* a mark in the corner: a root, or a card that can't be flipped */
+.cell .xo{position:absolute;right:-6px;bottom:-6px;z-index:6;font-size:calc(var(--cell)*.2);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+/* glows over the whole square: under water, the next row to flood, fire coming, lightning coming, a scroll's target */
+.cell .xg{position:absolute;inset:-1px;border-radius:12px;z-index:5;pointer-events:none}
+.cell .xg.water{background:linear-gradient(transparent 35%,color-mix(in srgb,var(--water) 40%,transparent));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--water) 70%,transparent)}
+.cell .xg.tide{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--water) 55%,transparent);border:1px dashed var(--water);opacity:.8}
+.cell .xg.fire{box-shadow:inset 0 0 0 2px var(--fire),0 0 14px -3px var(--fire);animation:exPulse 1.4s ease-in-out infinite}
+.cell .xg.zap{box-shadow:inset 0 0 0 2px var(--zap),0 0 16px -2px var(--zap);animation:exPulse 1s ease-in-out infinite}
+.cell .xg.tgt{box-shadow:inset 0 0 0 3px var(--hot),0 0 18px -2px var(--hot-glow);animation:exPulse 1s ease-in-out infinite;pointer-events:none}
+@keyframes exPulse{50%{opacity:.45}}
