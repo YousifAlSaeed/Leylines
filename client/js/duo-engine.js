@@ -6,14 +6,14 @@
 // 16 squares for 20 cards: everyone places 4 and keeps 1. A flipped card belongs to the seat that flipped it.
 // 2v2 (R.ffa off): seats 0 and 2 are one team, 1 and 3 the other. Turns go 0 → 1 → 2 → 3, so every turn switches
 //   team, the same rhythm as 1v1, and partners' cards never flip each other.
-// Free-for-all (R.ffa on): every seat plays for itself. The first player moves one seat on each round, so over the
-//   4 rounds everyone opens once and closes once, and nobody plays two turns in a row.
+// Free-for-all (R.ffa on): every seat plays for itself. Turns also go round the table from a random first player
+//   (testers found a first player that moved each round felt like a skipped turn).
 const DUO_SEATS=4;
 const duoTeam=p=>p&1;
 // who a seat plays for: its team in 2v2, itself in Free-for-all
 const duoSide=(R,p)=>R.ffa?p:p&1;
-// whose turn move n is (0..15)
-const duoTurnAt=(s,R,n)=>R.ffa?(s.first+(n>>2)+(n&3))%4:(s.first+n)%4;
+// whose turn move n is (0..15): round the table from the first player, in both modes
+const duoTurnAt=(s,R,n)=>(s.first+n)%4;
 // neighbours on the 4×4 board: [top,right,bottom,left]; side d touches the neighbour's side (d+2)&3
 const DNB=[...Array(16)].map((_,i)=>[i>=4?i-4:-1,i%4<3?i+1:-1,i<12?i+4:-1,i%4>0?i-1:-1]);
 // the rows and columns: a Ley line is one of them filled by one team
@@ -22,6 +22,7 @@ const DUO_LINES=[0,1,2,3].flatMap(k=>[[0,1,2,3].map(c=>k*4+c),[0,1,2,3].map(r=>r
 const DUO_RULES=[
   ['leyLines','Ley lines','Fill a whole row or column with your cards (your team\'s, in 2v2) and it seals: those 4 cards can\'t be flipped again.'],
   ['open','Open','Every hand is played face up. In 2v2 your partner\'s hand is always face up for you.'],
+  ['random','Random','Your 5 cards are dealt at random from your collection.'],
   ['same','Same','Two or more sides equal to the cards they touch flip those enemy cards.'],
   ['sameWall','Same wall','The board edge counts as an X (10) for Same.'],
   ['plus','Plus','Two or more touching pairs with the same total flip those enemy cards.'],
@@ -29,7 +30,7 @@ const DUO_RULES=[
   ['elemental','Elemental','2 to 6 squares get an element: +1 for a card of that element, −1 for any other.'],
   ['reverse','Reverse','Lower numbers win. A 1 beats a 2, and X is the weakest.']];
 const DUO_TIMERS=[0,20,30,45,60];
-const duoDefRules=()=>({ffa:false,leyLines:false,open:false,same:false,sameWall:false,plus:false,combo:false,elemental:false,reverse:false,timer:30});
+const duoDefRules=()=>({ffa:false,leyLines:false,open:false,random:false,same:false,sameWall:false,plus:false,combo:false,elemental:false,reverse:false,timer:30});
 
 // b: card ids, o: the seat that owns each square, m: elemental +1/−1, k: sealed by a Ley line, n: moves made
 // first: the seat that opened the match (Free-for-all's turn order counts from it)

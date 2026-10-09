@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.1 (2026-10-10)
+- Crossroads: flips animate again, one after another like 1v1 (Same! / Plus! / Combo! first, the colour turns halfway). They were being cut off before they could play. The host waits for each move's animation before a CPU moves, and the turn timer doesn't run while you watch one
+- Crossroads Free-for-all: turns go round the table from a random first player, like 2v2. The first player no longer moves on each round, which felt like a skipped turn
+- Crossroads room: the turn timer is the same slider as 1v1 (off, or 10 to 90 seconds), the **Random** rule is there, and the host can invite friends while a seat is open or a CPU's
+- Crossroads results: everyone gets **Back to room**, not just the host, and it takes the whole table back. Fixed: after the first match, players who weren't the host didn't see the result screen
+
 ## 0.19.0 (2026-10-09)
 - New: **Crossroads**, online games for 4 players, being tested. **Host a game** now asks: **1v1** or **Crossroads**. Friends join with the code in the usual Join box. Four seats on a 4×4 board: everyone places 4 cards and keeps 1. The host picks the mode:
   - **2v2**: two teams, turns switch team every move, partners never flip each other and see each other's hands

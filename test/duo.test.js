@@ -145,17 +145,14 @@ describe('CPUs', () => {
 describe('Free-for-all', () => {
   const FFA = { ffa: true };
   const weak = card(1, 1, 1, 1), strong = card(9, 9, 9, 9);
-  test('the opener moves one seat each round: everyone opens and closes once, never two turns in a row', () => {
+  test('turns go round the table from the first player, as in 2v2 (nobody waits an extra turn)', () => {
     for (let first = 0; first < 4; first++) {
       const s = { first }, order = [...Array(16).keys()].map((n) => g.duoTurnAt(s, FFA, n));
-      const rounds = [0, 1, 2, 3].map((r) => order.slice(r * 4, r * 4 + 4));
-      rounds.forEach((r) => assert.deepEqual([...r].sort(), [0, 1, 2, 3], 'each seat once a round'));
-      assert.deepEqual(rounds.map((r) => r[0]).sort(), [0, 1, 2, 3], 'each seat opens once');
-      assert.deepEqual(rounds.map((r) => r[3]).sort(), [0, 1, 2, 3], 'each seat closes once');
-      for (let n = 1; n < 16; n++) assert.notEqual(order[n], order[n - 1]);
+      assert.deepEqual(order.slice(0, 5), [0, 1, 2, 3, 4].map((k) => (first + k) % 4));
+      for (let n = 1; n < 16; n++) assert.equal(order[n], (order[n - 1] + 1) % 4, 'always the next seat');
     }
   });
-  test('2v2 order is unchanged: round the table from the opener', () => {
+  test('2v2 order: round the table from the opener', () => {
     const s = { first: 2 };
     assert.deepEqual([0, 1, 2, 3, 4].map((n) => g.duoTurnAt(s, {}, n)), [2, 3, 0, 1, 2]);
   });
@@ -176,7 +173,7 @@ describe('Free-for-all', () => {
     const s = g.duoNew([[1], [2], [3], [4]], 0, noEl());
     assert.deepEqual(g.duoView(s, FFA, 0).h.map((h) => h[0]), [1, g.STAND_IN, g.STAND_IN, g.STAND_IN]);
   });
-  test('a whole match with CPUs: legal moves, the rotating order, 4 cards each, 20 points in all', () => {
+  test('a whole match with CPUs: legal moves, the turn order, 4 cards each, 20 points in all', () => {
     const rng = g.mulberry32(11);
     const pool = g.CARDS.filter((x) => x.lv <= 4).map((x) => x.id);
     const R = { ffa: true, same: true, plus: true, combo: true, leyLines: true };
