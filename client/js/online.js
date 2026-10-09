@@ -78,7 +78,7 @@ function openOnline(code){
   show('online');
 }
 $('#onBack').onclick=()=>{sfx('click');netClose(true);show('menu')};
-$('#btnHost').onclick=()=>{sfx('click');hostStart()};
+$('#btnHost').onclick=()=>{sfx('click');hostPick()}; // 1v1 or Crossroads (duo.js)
 $('#btnJoin').onclick=()=>{sfx('click');joinGame($('#joinCode').value)};
 $('#myName').addEventListener('input',e=>{if(e.target.readOnly)return;SAVE.name=cleanName(e.target.value);save();e.target.classList.remove('need')});
 $('#joinCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,5)});
@@ -132,6 +132,8 @@ function hostPeer(code,onFirstErr,tries=0){
 function onGuest(c){
   const meta=c.metadata||{},old=NET.conn,mine=!!meta.cid&&meta.cid===NET.gcid;
   const refuse=busy=>{const no=()=>{try{c.send({t:'full',busy})}catch(e){}setTimeout(()=>c.close(),500)};c.open?no():c.on('open',no)};
+  // a 2v2 player knocking on a 1v1 room (duo.js)
+  if(meta.duo){refuse(false);return}
   // still choosing what happens to the cards of the match they left
   if(NET.resolving){refuse(true);return}
   // the seat is kept for the player in the match
@@ -453,6 +455,8 @@ function onNet(m){
       else{onPanels('choose');onStatus(msg,true)}
       break;
     }
+    // the code is a 2v2 room: join it as a 2v2 player instead (duo.js)
+    case 'duo':{const code=NET.code;clearRejoin();netClose(true);duoJoin(code);break}
     case 'hello':{
       if(NET.role!=='guest')return;
       setJoining(false);clearTimeout(NET.retryT);

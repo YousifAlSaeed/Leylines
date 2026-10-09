@@ -6,6 +6,7 @@ function show(id){
   if(id!=='game')tutClear(); // leaving ends a tutorial lesson
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
+  if(id==='menu'&&DUO.role)duoQuit(); // and a 2v2 room (duo.js)
   keepAwake(id==='game');closeEmotes();
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
   if(id==='game')layout();if(id==='menu')renderMenu();
@@ -81,11 +82,14 @@ function heroPane(m){
     ({h,sub,side,stats,row}=dailyPane());
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
-    const dk=heroDeck(false),rj=readRejoin();
+    const dk=heroDeck(false),rj=readRejoin(),drj=rj?null:duoResumeInfo();
     h='Online';sub=esc(dk.sub)+' · Host picks the rules';side=dk.fan;
     stats=winStats(MATCH_XP.online[0],MATCH_SHARDS.online);
     // a game this device was in when the app closed: one tap back in
-    row=(rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+`<button class="btn ${rj?'':'primary '}full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
+    // a 2v2 game this device was in, or hosted
+    row=(rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+
+      (drj?`<button class="btn primary full" id="heroDuoRejoin">${drj.host?'Resume':'Rejoin'} Crossroads game ${drj.code}</button>`:'')+
+      `<button class="btn ${rj||drj?'':'primary '}full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
   }
   return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div>`+
     (stats.length?`<div class="hero-stats">${stats.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>`:'')+`<div class="hero-row">${row}</div>`;
@@ -104,6 +108,7 @@ function renderHero(anim){
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   if(m==='daily'){bindDaily();return}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
+  const dr=$('#heroDuoRejoin');if(dr)dr.onclick=()=>{sfx('click');duoRejoin()};
   const qp=$('#heroQuick');if(qp)qp.onclick=()=>{sfx('click');quickLocal()};
   const rb=$('#heroRejoin');
   if(rb)rb.onclick=()=>{sfx('click');const rj=readRejoin();if(!rj){renderHero();return}$('#heroCode').value=rj.code;heroJoin()};
@@ -117,10 +122,8 @@ function renderHero(anim){
 }
 // online from the menu: the online screen still asks for a name if we don't have one yet
 function askName(msg){onStatus(msg);const n=$('#myName');n.classList.add('need');setTimeout(()=>n.focus(),50)}
-function heroHost(){
-  if(playerName()){hostStart();return}
-  openOnline();askName('Enter your name, then tap <b>Host a game</b>.');
-}
+// Host a game: pick 1v1 or Crossroads first (duo.js)
+function heroHost(){hostPick()}
 function heroJoin(){
   const code=$('#heroCode').value.toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){toast('Enter the 5-letter code from your friend.');$('#heroCode').focus();return}

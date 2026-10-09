@@ -52,6 +52,7 @@
 <link rel="stylesheet" href="css/daily.css">
 <link rel="stylesheet" href="css/leaderboard.css">
 <link rel="stylesheet" href="css/store.css">
+<link rel="stylesheet" href="css/duo.css">
 </head>
 <body>
 <!-- shared by the menu logo and the small one in a match; outside the screens, so the glow still works when the menu is hidden -->
@@ -155,6 +156,52 @@
     <div class="side opp" id="sideTop"><div class="pname"><span class="av" id="avTop" aria-hidden="true">C</span><span class="who" id="nameTop">CPU</span><span class="ttag" id="tagTop"></span><span class="sc" id="scTop">5</span></div><div class="hand" id="handTop"></div></div>
     <div class="board" id="board" role="group" aria-label="Board"></div>
     <div class="side me" id="sideBot"><div class="hand" id="handBot"></div><div class="pname"><button class="emb hidden" id="btnEmote" aria-label="Emotes" aria-expanded="false" aria-controls="emoteTray"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10.5h.01M12 10.5h.01M15 10.5h.01"/></svg></button><span class="av" id="avBot" aria-hidden="true">Y</span><span class="who" id="nameBot">You</span><span class="ttag" id="tagBot"></span><span class="sc" id="scBot">5</span><div class="etray hidden" id="emoteTray" role="group" aria-label="Emotes"></div></div></div>
+  </div>
+</section>
+
+<!-- CROSSROADS ROOM (duo.js): the 4-player mode, 2v2 or Free-for-all, four seats, the host's rules -->
+<section id="scr-duoroom" class="screen">
+  <div class="topbar"><button class="iconbtn" id="duoRoomBack" aria-label="Leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2><span id="duoRoomTitle">Crossroads</span> <em class="dbeta">Testing</em></h2></div>
+  <div class="wrap duo-room">
+    <!-- two columns on wide screens (duo.css): the room and its players left, the rules right -->
+    <div class="droom-l">
+    <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="duoCode">·····</div></div>
+      <div class="room-share"><div class="row"><button class="btn small" id="duoCopy">Copy link</button><button class="btn small" id="duoShare">Share</button></div><input class="linkin" id="duoLink" readonly aria-label="Invite link"></div></div>
+    <p class="note">Friends join with this code from <b>Online → Join</b>.</p>
+    <div><h3>Mode</h3><div class="seg" id="duoMode" role="group" aria-label="Mode"></div><p class="note" id="duoModeNote"></p></div>
+    <div id="duoTeams" class="dteams"></div>
+    <p class="note">Empty seats can be CPUs. <b>CPU Easy</b> plays like a casual player: some turns it thinks a move ahead, some turns it doesn't. <b>CPU Normal</b> thinks a move ahead, some turns two, and about 1 turn in 10 it slips.</p>
+    <button class="btn" id="duoFill">Fill empty seats with CPU Normal</button>
+    </div>
+    <div class="droom-r">
+    <div><h3>Rules</h3><div class="drules" id="duoRuleList" role="group" aria-label="Rules"></div></div>
+    <div><h3>Turn timer</h3><div class="seg" id="duoTimer" role="group" aria-label="Turn timer"></div></div>
+    <p class="note">Crossroads is being tested: no cards change hands, and it pays no XP or shards yet.</p>
+    <p class="note" id="duoNote" aria-live="polite"></p>
+    </div>
+    <div class="setup-foot"><button class="btn primary" id="duoGo">Start</button></div>
+  </div>
+</section>
+
+<!-- CROSSROADS MATCH: you at the bottom, the others clockwise (in 2v2 your partner is at the top) -->
+<section id="scr-duo" class="screen">
+  <div class="hud">
+    <button class="iconbtn" id="duoQuitBtn" aria-label="Leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    <span class="wordmark" aria-hidden="true"><svg class="wm-em" viewBox="36 36 224 224"><use href="#lyEmblem"/></svg></span>
+    <div class="dturn" id="duoTurn" aria-live="polite"></div>
+  </div>
+  <div class="tbar off" id="duoTbar" role="timer" aria-live="off"><i id="duoTfill"></i></div>
+  <div class="rulebar" id="duoRules"></div>
+  <div class="dnet hidden" id="duoNet" role="status"></div>
+  <div class="duo-arena">
+    <div class="duo-top" id="duoTop"></div>
+    <div class="duo-mid">
+      <div class="duo-side" id="duoLeft"></div>
+      <div class="duo-board board" id="duoBoard" role="group" aria-label="Board"></div>
+      <div class="duo-side" id="duoRight"></div>
+    </div>
+    <div class="duo-score" id="duoScore"></div>
+    <div class="duo-bot"><div class="dmyhand" id="duoHand"></div><div id="duoMe"></div></div>
   </div>
 </section>
 
@@ -300,6 +347,7 @@
 <script src="js/helpers.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/duo-engine.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/setup.js"></script>
 <script src="js/deck.js"></script>
@@ -311,6 +359,7 @@
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
 <script src="js/spare.js"></script>
+<script src="js/duo.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/history.js"></script>
 <script src="js/packs.js"></script>

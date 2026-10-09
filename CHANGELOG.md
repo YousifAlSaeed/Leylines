@@ -6,6 +6,16 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.0 (2026-10-09)
+- New: **Crossroads**, online games for 4 players, being tested. **Host a game** now asks: **1v1** or **Crossroads**. Friends join with the code in the usual Join box. Four seats on a 4×4 board: everyone places 4 cards and keeps 1. The host picks the mode:
+  - **2v2**: two teams, turns switch team every move, partners never flip each other and see each other's hands
+  - **Free-for-all**: everyone for themselves, each in their own colour (picked in the room from 6, the same on everyone's screen). The first player moves one seat each round, so everyone opens once and closes once and nobody plays twice in a row. The result shows places 1st to 4th; tied players share a place
+- Empty seats can be **CPU Easy** (plays like a casual player: some turns it thinks a move ahead, some it doesn't) or **CPU Normal** (a move ahead, sometimes two, and about 1 turn in 10 it slips)
+- The host can move players to the other team in 2v2 (**Switch team**) and **Remove** a player from the room
+- New rule for Crossroads, **Ley lines** (off unless the host turns it on): fill a row or column with your (team's) cards and it seals, so those cards can't be flipped again
+- A player who drops out has a minute to come back before a CPU plays their cards; they can rejoin from the menu at any point and take their seat back. A host whose app closes can **Resume** the match from the menu
+- Crossroads has no trades and pays no XP or shards while it's being tested
+
 ## 0.18.1 (2026-10-06)
 - Tutorial: the Next lesson button is smaller, just big enough for its text
 
