@@ -620,7 +620,8 @@ function duoHandDown(e){
   const el=e.currentTarget;
   if(!duoMyTurn()||e.button>0)return;
   e.preventDefault();
-  duoDrag={hi:+el.dataset.i,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  if(duoDrag)duoDragEnd({},true); // a drag still open (a second finger): finish it first, so its card can't be left behind
+  duoDrag={hi:+el.dataset.i,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null,pid:e.pointerId};
 }
 // the empty square under the pointer, or null
 function duoCellAt(x,y){
@@ -628,14 +629,14 @@ function duoCellAt(x,y){
   return null;
 }
 window.addEventListener('pointermove',e=>{
-  const d=duoDrag;if(!d)return;
+  const d=duoDrag;if(!d||otherPointer(e,d))return;
   if(!d.moved){
     if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
     d.moved=true;
     // the ghost lives on <body>, outside the zoomed screen, so it takes the card's size times the zoom
     const g=d.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize=parseFloat(getComputedStyle(d.el).fontSize)*(UI||1)+'px';
-    document.body.append(g);d.ghost=g;d.el.classList.add('dragging');
+    ghostSweep();document.body.append(g);d.ghost=g;d.el.classList.add('dragging');
     DUO.sel=d.hi;$$('#duoHand .card.sel').forEach(c=>c!==d.el&&c.classList.remove('sel'));
     DUO_CELLS.forEach((c,i)=>c.classList.toggle('hot',DUO.snap.st.b[i]<0));
   }
@@ -644,9 +645,10 @@ window.addEventListener('pointermove',e=>{
   if(t!==d.over){if(d.over!=null)DUO_CELLS[d.over].classList.remove('over');d.over=t;if(t!=null)DUO_CELLS[t].classList.add('over')}
 },{passive:true});
 function duoDragEnd(e,cancel){
-  const d=duoDrag;if(!d)return;
+  const d=duoDrag;if(!d||otherPointer(e,d))return; // another finger lifting doesn't end this drag
   duoDrag=null;
   if(d.ghost)d.ghost.remove();
+  ghostSweep();
   if(d.moved){
     if(d.over!=null)DUO_CELLS[d.over].classList.remove('over');
     const t=cancel?null:duoCellAt(e.clientX,e.clientY);

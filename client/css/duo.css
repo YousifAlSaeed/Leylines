@@ -121,9 +121,13 @@
 .droom-l,.droom-r{display:flex;flex-direction:column;gap:16px;min-width:0}
 @media (min-width:920px) and (min-height:560px){
   #scr-duoroom .topbar{max-width:1100px}
-  .duo-room{max-width:1100px;display:grid;grid-template-columns:1fr 1.15fr;column-gap:44px;row-gap:20px;align-items:start}
-  /* Start stays pinned to the bottom, as on phones: the players' column can run past a laptop screen */
-  .duo-room .setup-foot{grid-column:1/-1;display:flex;justify-content:flex-end}
+  /* the players on the left; the rules on the right with Start / Ready under them. On a short screen the button
+     stays pinned to the bottom, floating on its own: no strip behind it (its dark background showed as a box) */
+  .duo-room{max-width:1100px;display:grid;grid-template-columns:1fr 1.15fr;grid-template-areas:"l r" "l f";grid-template-rows:auto 1fr;column-gap:44px;row-gap:20px;align-items:start}
+  .droom-l{grid-area:l} .droom-r{grid-area:r}
+  .duo-room .setup-foot{grid-area:f;position:sticky;bottom:16px;align-self:start;background:none;padding:0;margin:0;display:flex;justify-content:flex-end;pointer-events:none}
+  .duo-room .setup-foot .btn{pointer-events:auto}
+  .duo-room .setup-foot::after{display:none}
   .duo-room .setup-foot .btn{width:280px}
 }
 

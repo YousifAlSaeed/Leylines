@@ -7,7 +7,7 @@ function show(id){
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   if(id==='menu'&&DUO.role)duoQuit(); // and a 2v2 room (duo.js)
-  keepAwake(id==='game');closeEmotes();
+  keepAwake(id==='game');closeEmotes();ghostSweep(); // no dragged card follows you to another screen (helpers.js)
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
   if(id==='game')layout();if(id==='menu')renderMenu();
   document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)

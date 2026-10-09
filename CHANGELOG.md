@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.2 (2026-10-10)
+- Fixed: a dragged card could stay stuck on the screen, even on the menu, if a second finger touched the screen during a drag (or the browser missed the release). Holds for the card picker, 1v1 and Crossroads
+- 1v1 on phones: the score numbers glow in each player's colour, like they do on wider screens
+- Crossroads room on a computer: Ready / Start sits under the rules with no dark strip behind it, and floats at the bottom of a short window until you scroll to it
+
 ## 0.19.1 (2026-10-10)
 - Crossroads: flips animate again, one after another like 1v1 (Same! / Plus! / Combo! first, the colour turns halfway). They were being cut off before they could play. The host waits for each move's animation before a CPU moves, and the turn timer doesn't run while you watch one
 - Crossroads Free-for-all: turns go round the table from a random first player, like 2v2. The first player no longer moves on each round, which felt like a skipped turn

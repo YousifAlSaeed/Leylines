@@ -40,6 +40,15 @@ function cardHTML(id,color,o={}){
   `</div>`;
 }
 
+// A dragged card is a copy ("ghost") on <body>: game.js (1v1 hand), duo.js (Crossroads hand), collection.js (card picker).
+// Only one drag runs at a time, so a copy that's still around when a drag starts or ends, the screen changes or the
+// window loses focus was left behind (a second finger, a release the browser never reported) and is removed.
+// keep: the copy of the drag that's running now.
+const otherPointer=(e,d)=>!!e&&e.pointerId!=null&&d.pid!=null&&e.pointerId!==d.pid;
+function ghostSweep(keep){$$('body > .ghost').forEach(g=>{if(g!==keep)g.remove()})}
+addEventListener('blur',()=>ghostSweep());
+document.addEventListener('visibilitychange',()=>{if(document.hidden)ghostSweep()});
+
 let toastT=0;
 function toast(msg,ms=2200){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
 

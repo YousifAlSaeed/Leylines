@@ -51,7 +51,7 @@ body.land .ttag.on{display:none}
 .side.opp .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .av.art{font:400 19px/1 var(--body)}
 .pname .who{flex:1;min-width:0;font:600 14px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s}
-.pname .sc{font:900 28px/1 var(--display);min-width:1.1em;text-align:right}
+.pname .sc{font:900 28px/1 var(--display);min-width:1.1em;text-align:right;text-shadow:0 0 .45em currentColor} /* the same glow as the big landscape scores */
 .side.me .sc{color:var(--blue-ink)} .side.opp .sc{color:var(--red-ink)}
 .side.active .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--hot)}
 .side.crit .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--crit)}

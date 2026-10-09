@@ -90,17 +90,18 @@ function onHandDown(e){
   const el=e.currentTarget,p=+el.dataset.p,hi=+el.dataset.i;
   if(!canAct(p))return;
   e.preventDefault();
-  drag={p,hi,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  if(drag)endDrag({},true); // a drag still open (a second finger): finish it first, so its card can't be left behind
+  drag={p,hi,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null,pid:e.pointerId};
 }
 window.addEventListener('pointermove',e=>{
-  if(!drag)return;
+  if(!drag||otherPointer(e,drag))return;
   if(!drag.moved){
     if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;
     drag.moved=true;
     const r=drag.el.getBoundingClientRect();
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize='calc(var(--cell) * var(--ui) / 5)'; // the ghost lives on <body>, outside the zoomed screen
-    document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
+    ghostSweep();document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
     // dragging picks this card, so drop the highlight from the one picked before
     $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
     G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0&&(!G.tut||i===TUT[G.tut.i].cell)));
@@ -114,9 +115,10 @@ function cellAt(x,y){
   return null;
 }
 function endDrag(e,cancel){
-  if(!drag)return;
+  if(!drag||otherPointer(e,drag))return; // another finger lifting doesn't end this drag
   const d=drag;drag=null;
   if(d.ghost)d.ghost.remove();
+  ghostSweep();
   if(d.moved){
     d.el.classList.remove('dragging');
     const t=cancel?null:cellAt(e.clientX,e.clientY);
