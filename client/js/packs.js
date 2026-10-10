@@ -120,7 +120,8 @@ function fxTick(){
 const rainbow=()=>['#ff8fd0','#ffd76a','#7fe0ff','#b98cff','#fff'][Math.floor(Math.random()*5)];
 
 /* ---------- the stage ---------- */
-const stg=$('#pkStage'),pk=$('#pkPack'),capA=$('#pkStage .pk-capA'),capB=$('#pkStage .pk-capB'),seam=$('#pkStage .pk-seam i'),leak=$('#pkStage .pk-leak');
+const stg=$('#pkStage'),pk=$('#pkPack'),pkBody=$('#pkStage .pk-body'),strip=$('#pkStrip'),lipw=$('#pkStage .pk-lipw'),lip=$('#pkStage .pk-lip'),seam=$('#pkStage .pk-seam'),leak=$('#pkStage .pk-leak');
+const HINT_Y='calc(50% + min(36vh,62vw)*.78 + 18px)';
 FX.cv=$('#pkFx');FX.cx=FX.cv.getContext('2d');
 function pkHint(html,top){const h=$('#pkHint');h.innerHTML=html;h.style.opacity=html?1:0;if(top)h.style.top=top}
 function pkStart(p,ids,fresh){
@@ -134,10 +135,11 @@ function pkStart(p,ids,fresh){
   pk.setAttribute('aria-label',`${T.name} pack, ${T.n} cards. Drag across the top to tear it open, or press Enter.`);
   $('#pkDeck').innerHTML='';$('#pkSum').className='pk-sum';$('#pkSum').innerHTML='';$('#pkCount').style.opacity=0;$('#pkFoot').innerHTML='';
   $('#pkRays').className='pk-rays';
-  capA.style.cssText='';capB.style.cssText='';seam.style.cssText='';leak.style.cssText='';
+  strip.style.cssText='';seam.style.cssText='';leak.style.cssText='';lipw.style.cssText='';
+  cancelAnimationFrame(TR.raf);Object.assign(TR,{on:false,dir:0,p:0,A:0,At:0,va:0,phi:0,phit:0,vp:0,raf:0});buildStrip();
   pk.style.transition='none';pk.style.transform='translateY(60px) scale(.85)';pk.style.opacity=0;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{pk.style.transition='transform .6s var(--spring),opacity .4s';pk.style.transform='';pk.style.opacity=1;PSND.whoosh()}));
-  pkHint('<span class="pk-arr">⟶</span> Drag across the top to tear it open','calc(50% + min(36vh,62vw)*.78 + 18px)');
+  pkHint('<span class="pk-arr">⟶</span> Drag across the top to tear it open',HINT_Y);
   setTimeout(()=>pk.focus({preventScroll:true}),60);
 }
 function pkClose(){
@@ -152,7 +154,7 @@ function pkClose(){
 $('#pkClose').onclick=()=>{sfx('click');pkClose()};
 // the pack tilts toward the pointer and its foil catches the light
 stg.addEventListener('pointermove',e=>{
-  if(PK.state!=='idle'||PK.tear.on||RM.matches)return;
+  if(PK.state!=='idle'||PK.tear.on||PK.tear.p||RM.matches)return;
   const r=pk.getBoundingClientRect(),x=(e.clientX-(r.left+r.width/2))/r.width,y=(e.clientY-(r.top+r.height/2))/r.height;
   pk.style.transform=`rotateY(${x*14}deg) rotateX(${-y*10}deg)`;pk.style.setProperty('--fx',(50+x*60)+'%');
 });
@@ -165,68 +167,122 @@ stg.addEventListener('keydown',e=>{
   else if(PK.state==='cards'){const s=$$('#pkDeck .pk-slot')[PK.i];if(s&&!s.busy)s.revealed?fling(s,1):reveal(s)}
 });
 
-/* ---------- tearing ---------- */
+/* ---------- tearing ----------
+   The strip is cut into thin slices. The torn ones curl toward you around the
+   point the tear has got to, like real foil, along a ragged line that the strip
+   and the pack share. Let go early and the tear stays: the flap droops and
+   you carry on from there. */
 const TR=PK.tear;
+function buildStrip(){
+  const W=pk.offsetWidth,H=Math.round(W*.17),N=Math.max(24,Math.min(48,Math.round(W/6))),w=W/N;
+  pk.style.setProperty('--cap',H+'px');
+  // the tear line: a point every 3px, now and then a bigger tooth
+  const R=[];for(let k=0;k<=Math.ceil(W/3)+2;k++)R.push(H-2+Math.random()*4+(Math.random()<.12?2+Math.random()*3:0));
+  const J=x=>{const k=x/3,a=Math.floor(k),f=k-a;return R[a]*(1-f)+R[a+1]*f};
+  // a half-circle notch cut into each side where the tear starts, like a real pack;
+  // side -1 is the strip (it ends above the notch), 1 the pack (it starts below it)
+  const r=Math.max(5,Math.round(W*.03));pk.style.setProperty('--notch',r+'px');
+  const E=(x,side)=>{const e=Math.min(x,W-x),y=J(x);if(e>=r)return y;const c=H+side*Math.sqrt(r*r-e*e);return side<0?Math.min(y,c):Math.max(y,c)};
+  // the line from x0 to x1: a point every 3px, every 1px round the notches
+  const line=(x0,x1,side)=>{const xs=[x0];for(let x=Math.floor(x0)+1;x<x1;x++)if(x<=r+1||x>=W-r-1||x%3===0)xs.push(x);xs.push(x1);return xs.map(x=>[x,E(x,side)])};
+  const px=pts=>pts.map(([x,y])=>`${x.toFixed(1)}px ${y.toFixed(1)}px`).join(',');
+  let h='';
+  for(let i=0;i<N;i++){const x0=i*w,x1=Math.min(W,x0+w+1.5),ww=x1-x0,L=line(x0,x1,-1).map(([x,y])=>[x-x0,y]),Lr=[...L].reverse();
+    h+=`<div class="pk-sg" style="left:${x0}px;width:${ww}px;clip-path:polygon(0 0,${ww}px 0,${px(Lr)})"><b style="left:${-x0}px;width:${W}px"></b><i></i><u style="clip-path:polygon(${px(L.map(([x,y])=>[x,y-2]))},${px(Lr)})"></u></div>`}
+  const S0=line(0,W,-1);
+  strip.innerHTML=`<div class="pk-whole"><div style="clip-path:polygon(0 0,${W}px 0,${px([...S0].reverse().map(([x,y])=>[x,y+1]))})"><b style="left:0;width:${W}px"></b></div></div>`+h;
+  const B=line(0,W,1),top=H-4;
+  pkBody.style.clipPath=`polygon(${px(B.map(([x,y])=>[x,y-top]))},100% 100%,0 100%)`;
+  lip.style.clipPath=`polygon(${px(B)},${px([...B].reverse().map(([x,y])=>[x,y+2.2]))})`;
+  TR.S={W,H,w,N,r,sg:[...strip.querySelectorAll('.pk-sg')],whole:strip.firstChild};
+}
+function drawTear(){
+  const S=TR.S;if(!S)return;
+  const {W,H,w,N,sg}=S,d=TR.dir||1,p=TR.p,T=d>0?p*W:W-p*W,A=TR.A*Math.PI/180,L=W*.2;
+  // walk out from the tear: each slice turns a little more than the one before
+  let lx=0,lz=0,s=0;
+  for(let n=0;n<N;n++){const i=d>0?N-1-n:n,g=sg[i],c=(i+.5)*w;
+    if(d>0?c>=T:c<=T){if(g.t){g.t=0;g.style.transform='';g.style.removeProperty('--k');g.className='pk-sg'}continue}
+    const th=A*(1-Math.exp(-(s+w/2)/L)),ox=d>0?(i+1)*w:i*w;
+    if(!g.t){g.t=1;g.style.transformOrigin=`${d>0?parseFloat(g.style.width):0}px ${H}px`}
+    g.style.transform=`translate(${(T-ox).toFixed(2)}px,0) rotate(${(TR.phi*d).toFixed(2)}deg) translate3d(${lx.toFixed(2)}px,0,${lz.toFixed(2)}px) rotateY(${(th*d).toFixed(4)}rad)`;
+    const cs=Math.cos(th);g.className=cs<0?'pk-sg off bk':'pk-sg off';g.style.setProperty('--k',((1-Math.abs(cs))*.45).toFixed(3));
+    lx+=d>0?-w*cs:w*cs;lz+=w*Math.sin(th);s+=w;
+  }
+  // light comes out of the torn part only; the perforation goes as it tears
+  if(d>0){leak.style.left=0;leak.style.right=(W-T)+'px';lipw.style.clipPath=`inset(-20px ${W-T}px -20px 0)`;seam.style.clipPath=`inset(-2px 0 -2px ${Math.max(0,T-S.r)}px)`}
+  else{leak.style.left=T+'px';leak.style.right=0;lipw.style.clipPath=`inset(-20px 0 -20px ${T}px)`;seam.style.clipPath=`inset(-2px ${Math.max(0,W-T-S.r)}px -2px 0)`}
+  S.whole.style.clipPath=d>0?`inset(-2px 0 -20px ${T}px)`:`inset(-2px ${W-T}px -20px 0)`;
+  leak.style.opacity=Math.min(1,p*2.5)*.9;
+  if(PK.state==='tearing'||PK.state==='idle'){pk.style.transition='none';pk.style.transform=p?`rotate(${-d*p*2}deg)`:''}
+}
+// the flap moves on a spring: it lags a fast pull, and droops with a bounce when let go
+function tearLoop(){
+  if(TR.raf)return;
+  const f=()=>{const live=PK.state==='tearing',k=live?.22:.09,dm=live?.62:.8;
+    TR.va=(TR.va+(TR.At-TR.A)*k)*dm;TR.A+=TR.va;TR.vp=(TR.vp+(TR.phit-TR.phi)*k)*dm;TR.phi+=TR.vp;drawTear();
+    TR.raf=live||Math.abs(TR.va)>.03||Math.abs(TR.At-TR.A)>.1||Math.abs(TR.vp)>.02?requestAnimationFrame(f):0};
+  TR.raf=requestAnimationFrame(f);
+}
+// how far it curls: more the further it's torn; it lifts toward a raised hand
+const tearAim=fy=>{TR.At=35+65*Math.min(1,TR.p/.3);if(fy!=null)TR.phit=Math.max(8,Math.min(30,14-fy*40))};
+function tearStep(){
+  const step=Math.floor(TR.p*28);if(step<=TR.last)return;TR.last=step;PSND.tick();buzz(4);
+  const r=pkBody.getBoundingClientRect(),x=TR.dir>0?TR.p:1-TR.p;
+  spark(r.left+x*r.width,r.top+4,stg.style.getPropertyValue('--leak'),4,2.4,30,.18);
+}
 pk.addEventListener('pointerdown',e=>{
   if(PK.state!=='idle')return;
-  const r=pk.getBoundingClientRect();
+  const r=pkBody.getBoundingClientRect();
   // anywhere in the top third counts: the strip itself is thin on phones
-  if(e.clientY>r.top+r.height*.33){pk.animate([{transform:'translateY(0)'},{transform:'translateY(-10px)'},{transform:'translateY(0)'}],{duration:300,easing:'ease-out'});return}
-  Object.assign(TR,{on:true,x0:e.clientX,dir:0,p:0,last:0,id:e.pointerId});
-  pk.setPointerCapture(e.pointerId);pk.classList.add('drag');pk.style.transform='';
+  if(e.clientY>r.top+r.width*.32){if(!TR.p)pk.animate([{transform:'translateY(0)'},{transform:'translateY(-10px)'},{transform:'translateY(0)'}],{duration:300,easing:'ease-out'});return}
+  Object.assign(TR,{on:true,x0:e.clientX,p0:TR.p,last:Math.floor(TR.p*28),id:e.pointerId});
+  pk.setPointerCapture(e.pointerId);pk.classList.add('drag');if(!TR.p)pk.style.transform='';
 });
 pk.addEventListener('pointermove',e=>{
   if(!TR.on||e.pointerId!==TR.id)return;
   const dx=e.clientX-TR.x0;
-  if(!TR.dir){if(Math.abs(dx)<6)return;TR.dir=Math.sign(dx);PK.state='tearing';pkHint('')}
-  TR.p=Math.max(0,Math.min(1,dx*TR.dir/(pk.offsetWidth*.92)));
-  drawTear(TR.p);
-  const step=Math.floor(TR.p*28);
-  if(step>TR.last){TR.last=step;PSND.tick();buzz(4);
-    const r=pk.getBoundingClientRect();
-    spark(TR.dir>0?r.left+TR.p*r.width:r.right-TR.p*r.width,r.top+r.width*.17,stg.style.getPropertyValue('--leak'),4,2.4,30,.18)}
+  if(!TR.dir){if(Math.abs(dx)<6)return;TR.dir=Math.sign(dx)}
+  if(PK.state!=='tearing'){if(dx*TR.dir<4)return;PK.state='tearing';pkHint('');tearLoop()}
+  // a tear doesn't mend: pulling back only lowers the flap
+  const q=Math.max(0,Math.min(1,TR.p0+dx*TR.dir/(TR.S.W*.92)));TR.p=Math.max(TR.p,q);
+  const r=pkBody.getBoundingClientRect();tearAim((e.clientY-r.top)/r.width);TR.At-=Math.min(60,(TR.p-q)*300);
+  tearStep();
   if(TR.p>=1)finishTear();
 });
 const tearUp=e=>{
   if(!TR.on||e.pointerId!==TR.id)return;
   TR.on=false;pk.classList.remove('drag');
-  if(TR.p>.7)return finishTear();
-  // not far enough: the strip settles back
-  if(TR.p>0){PSND.snap();tearTo(TR.p,0,260,()=>{if(PK.state==='tearing')PK.state='idle'})}else PK.state='idle';
+  if(TR.p>.82)return finishTear();
+  if(PK.state!=='tearing')return;
+  // not all the way: the flap droops, and the next drag carries on from here
+  PK.state='idle';PSND.snap();TR.At=24;TR.phit=7;tearLoop();
+  pkHint(`<span class="pk-arr"${TR.dir<0?' style="scale:-1 1"':''}>⟶</span> Keep tearing`,HINT_Y);
 };
 pk.addEventListener('pointerup',tearUp);pk.addEventListener('pointercancel',tearUp);
-function drawTear(p){
-  const W=pk.offsetWidth,d=TR.dir||1,cut=p*100;
-  if(d>0){capA.style.clipPath=`inset(0 ${100-cut}% 0 0)`;capA.style.transformOrigin=`${p*W}px 100%`;capB.style.clipPath=`inset(0 0 0 ${cut}%)`;seam.style.left=0;seam.style.right='auto'}
-  else{capA.style.clipPath=`inset(0 0 0 ${100-cut}%)`;capA.style.transformOrigin=`${W-p*W}px 100%`;capB.style.clipPath=`inset(0 ${cut}% 0 0)`;seam.style.right=0;seam.style.left='auto'}
-  // the torn part peels up around the point where it's still attached
-  capA.style.transform=`rotate(${-Math.min(28,p*40)*d}deg) translateY(${-p*10}px)`;
-  seam.style.width=cut+'%';seam.style.opacity=Math.min(1,p*3);leak.style.opacity=p*.9;
-  pk.style.transform=`rotate(${d*p*-2}deg)`;
-}
-function tearTo(a,b,ms,done){
-  const t0=performance.now();
-  const f=now=>{const k=Math.min(1,(now-t0)/ms),e=1-Math.pow(1-k,3);drawTear(a+(b-a)*e);
-    if(k<1)return requestAnimationFrame(f);
-    if(!b){capA.style.cssText='';capB.style.cssText='';pk.style.transform=''}
-    done&&done()};
+// keyboard (and anyone who'd rather not drag): the strip tears itself
+function autoTear(){
+  PK.state='tearing';if(!TR.dir)TR.dir=1;pkHint('');TR.phit=18;
+  const p0=TR.p,t0=performance.now(),ms=150+550*(1-p0);tearLoop();
+  const f=now=>{if(PK.state!=='tearing')return;const k=Math.min(1,(now-t0)/ms);TR.p=p0+(1-p0)*k*k*(3-2*k);tearAim();tearStep();
+    k<1?requestAnimationFrame(f):finishTear()};
   requestAnimationFrame(f);
 }
-// keyboard (and anyone who'd rather not drag): the strip tears itself
-function autoTear(){PK.state='tearing';TR.dir=1;pkHint('');tearTo(0,1,520,finishTear)}
+addEventListener('resize',()=>{if(stg.classList.contains('on')&&PK.state==='idle'&&!TR.p)buildStrip()});
 function finishTear(){
   // already torn, or closed while the strip was still tearing itself
   if(PK.state!=='idle'&&PK.state!=='tearing')return;
-  PK.state='torn';TR.on=false;pkCommit();
-  const d=TR.dir||1,best=CARDS[PK.ids[PK.ids.length-1]].rar,col=rarCol(best);
+  PK.state='torn';TR.on=false;pkCommit();TR.p=1;TR.At=Math.max(TR.At,110);tearLoop();
+  const d=TR.dir||1,best=CARDS[PK.ids[PK.ids.length-1]].rar,col=rarCol(best),{W,H}=TR.S;
   PSND.rip();buzz([20,30,40]);
-  capB.style.opacity=0;
-  capA.style.transition='transform .7s cubic-bezier(.2,.7,.3,1),opacity .7s';capA.style.clipPath='none';capA.style.transformOrigin='50% 100%';
-  capA.style.transform=`translate(${d*260}px,-220px) rotate(${-d*50}deg)`;capA.style.opacity=0;
-  const r=pk.getBoundingClientRect(),sy=r.top+r.width*.17;
+  // the strip comes away in your hand
+  strip.style.transformOrigin=`${d>0?W:0}px ${H}px`;
+  strip.style.transition='transform .8s cubic-bezier(.2,.7,.3,1),opacity .45s .3s';
+  strip.style.transform=`translate3d(${d*W*.5}px,${-W*.75}px,${W*.25}px) rotate(${-d*22}deg)`;strip.style.opacity=0;
+  const r=pkBody.getBoundingClientRect(),sy=r.top+4;
   for(let i=0;i<10;i++)spark(r.left+r.width*i/9,sy,best===5?rainbow:col,best>=4?8:4,best>=4?6:4,best>=4?70:45,.08);
-  leak.style.transition='opacity .3s';leak.style.opacity=1;seam.style.width='100%';
-  pk.classList.add('shake');
+  leak.style.transition='opacity .3s';leak.style.left=leak.style.right='';leak.style.opacity=1;lipw.style.clipPath='none';seam.style.opacity=0;
+  pk.style.transform='';pk.classList.add('shake');
   setTimeout(()=>{
     pk.classList.remove('shake');
     // the pack drops away and the cards rise out of it
