@@ -160,36 +160,40 @@
 #scr-duo.narrow .dname.dn-top .dwho b{font-size:14.5px;max-width:120px}
 #scr-duo.narrow .duo-top{gap:12px}
 
-/* ---------- PC (body.pc, set in game.js layout): like 4-player chess. The board in the middle, each hand touching
-   its edge and as long as it, and each player in the corner on their own right: the top player's is top-left, the
-   right player's top-right, the left player's bottom-left, yours bottom-right. A corner has the big score by the
-   hand (in 2v2 the team's), the name and avatar, and the clock. The score row under the board isn't needed ---------- */
-body.pc #scr-duo:not(.narrow) .duo-arena{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto minmax(0,1fr);
-  grid-template-rows:auto auto auto;align-content:center;gap:8px 10px}
+/* ---------- PC (body.pc, set in game.js layout): like 4-player chess. A square: the board in the middle, a hand on each
+   side as long as the board, and in each corner (where a hand row meets a hand column) the player whose right-hand side
+   it is: the top player's top-left, the right player's top-right, the left player's bottom-left, yours bottom-right.
+   A corner holds the big score, the name and avatar, and the clock. The score row under the board isn't needed ---------- */
+body.pc #scr-duo:not(.narrow) .duo-arena{max-width:none;display:grid;grid-template-columns:var(--dt-row) auto var(--dt-row);
+  grid-template-rows:var(--dt-row) auto var(--dt-row);justify-content:center;align-content:center;gap:10px}
 body.pc #scr-duo:not(.narrow) :is(.duo-top,.duo-mid,.duo-side,.duo-bot,#duoMe){display:contents}
 body.pc #scr-duo:not(.narrow) #duoScore{display:none}
-body.pc #scr-duo:not(.narrow) .dh-top{grid-area:1/3}
-body.pc #scr-duo:not(.narrow) #duoLeft .dhand{grid-area:2/2}
-body.pc #scr-duo:not(.narrow) #duoBoard{grid-area:2/3}
-body.pc #scr-duo:not(.narrow) #duoRight .dhand{grid-area:2/4}
-body.pc #scr-duo:not(.narrow) #duoHand{grid-area:3/3}
-body.pc #scr-duo:not(.narrow) .dhand.dh-side{gap:3px}
-body.pc #scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:0}
-body.pc #scr-duo:not(.narrow) .dname{display:grid;gap:6px 10px;align-items:center;text-align:left;flex-direction:initial}
-body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1/2/3;justify-self:end;justify-items:end;grid-template-areas:"who av sc" "tm tm sc"}
-body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/4/2/6;justify-self:start;justify-items:start;grid-template-areas:"sc av who" "sc tm tm"}
-body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1/4/3;justify-self:end;justify-items:end;grid-template-areas:"tm tm sc" "who av sc"}
-body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/4/4/6;justify-self:start;justify-items:start;grid-template-areas:"sc tm tm" "sc av who"}
-body.pc #scr-duo:not(.narrow) .dname .av{grid-area:av;width:34px;height:34px;border-radius:10px;font-size:16px}
-body.pc #scr-duo:not(.narrow) .dname .av.art{font-size:20px}
+body.pc #scr-duo:not(.narrow) .dh-top{grid-area:1/2;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoLeft .dhand{grid-area:2/1;justify-self:center;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoBoard{grid-area:2/2}
+body.pc #scr-duo:not(.narrow) #duoRight .dhand{grid-area:2/3;justify-self:center;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoHand{grid-area:3/2;align-self:center;min-height:0}
+body.pc #scr-duo:not(.narrow) .dhand.dh-top .card+.card{margin-left:3px}
+body.pc #scr-duo:not(.narrow) #duoHand{gap:3px}
+body.pc #scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:var(--dso)}
+/* a corner: three rows that fill its square, the score on the side by the player's own cards */
+body.pc #scr-duo:not(.narrow) .dname{display:grid;align-self:stretch;align-content:space-between;gap:4px 8px;text-align:left;flex-direction:initial;min-width:0}
+body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1;justify-self:end;justify-items:end;grid-template-areas:"sc sc" "who av" "tm tm"}
+body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/3;justify-self:start;justify-items:start;grid-template-areas:"sc sc" "av who" "tm tm"}
+body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1;justify-self:end;justify-items:end;grid-template-areas:"tm tm" "who av" "sc sc"}
+body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/3;justify-self:start;justify-items:start;grid-template-areas:"tm tm" "av who" "sc sc"}
+body.pc #scr-duo:not(.narrow) .dname .av{grid-area:av;width:28px;height:28px;border-radius:8px;font-size:14px}
+body.pc #scr-duo:not(.narrow) .dname .av.art{font-size:17px}
 body.pc #scr-duo:not(.narrow) .dname .dwho{grid-area:who}
 body.pc #scr-duo:not(.narrow) .dname.dk-tl .dwho,body.pc #scr-duo:not(.narrow) .dname.dk-bl .dwho{text-align:right}
-body.pc #scr-duo:not(.narrow) .dname .dwho b{max-width:170px;font-size:15px}
-body.pc #scr-duo:not(.narrow) .dname .dwho small{display:block;font-size:11.5px}
-body.pc #scr-duo:not(.narrow) .dname .ptm{grid-area:tm}
+body.pc #scr-duo:not(.narrow) .dname .dwho b{max-width:150px;font-size:14px}
+body.pc #scr-duo:not(.narrow) .dname .dwho small{display:none}
+/* the clock spans the corner, like chess.com's */
+body.pc #scr-duo:not(.narrow) .dname .ptm{grid-area:tm;justify-self:stretch;min-width:var(--dt-row);padding:5px 10px;font-size:17px;border-radius:8px}
+body.pc #scr-duo:not(.narrow) .dname .ptm svg{width:17px;height:17px}
 .dsc{display:none}
-body.pc #scr-duo:not(.narrow) .dsc{grid-area:sc;display:block;color:var(--dink);font:900 clamp(44px,calc(var(--dc) * .62),84px)/1 var(--display);
-  font-variant-numeric:tabular-nums;text-shadow:0 0 22px currentColor;align-self:center}
+body.pc #scr-duo:not(.narrow) .dsc{grid-area:sc;display:block;color:var(--dink);font:900 calc(var(--dt-row) * .42)/.9 var(--display);
+  font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor}
 body.pc #scr-duo:not(.narrow) .dsc.pop{animation:scPop .45s var(--spring)}
 #scr-duo .ptm{background:linear-gradient(160deg,var(--dc1),var(--dc2))}
 #scr-duo .ptm.crit{background:var(--crit)}

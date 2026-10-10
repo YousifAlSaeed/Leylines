@@ -802,16 +802,22 @@ function duoFit(){
   for(let k=0;k<60&&dc>40&&!fits();k++){dc-=2;set(dc)}
   DUO.fitKey=duoFitKey();
 }
-// PC (like 4-player chess): every hand as long as the board's side, the corners at least 200px wide
+// PC (like 4-player chess): a square of board, hands and corners. The top and bottom hands are as long as the board
+// (5 cards across it), the side hands as tall (their cards overlap a little), and each corner is the square where a
+// top or bottom row meets a side column: t × t, t being a hand row's height
 function duoFitPC(el,ui){
   const W=innerWidth/ui-20,H=innerHeight/ui;
   const fixed=$('#scr-duo .hud').offsetHeight+$('#duoTbar').offsetHeight+$('#duoRules').offsetHeight+$('#duoNet').offsetHeight+34;
-  // height: two hand rows (1.2 card heights, the cards .8 of a square) + the board (4.8 squares + 26) + gaps;
-  // width: the board (4 squares + 26) + two side hands (.78) + two corners
-  let dc=Math.min((H-fixed-26-16-8)/(4.8+2*1.2*.8),(W-2*200-26-40)/(4+2*.78),150);
+  // the hand cards are (4 squares + 26 - 4 gaps of 3) / 5 wide, a row is 1.2 of that + 8 (t); the board is 4.8 squares + 26 tall;
+  // two rows + the board + two 10px gaps fit the height, and the square plus room for names (2 × 110) fits the width
+  const tOf=dc=>1.2*(4*dc+14)/5+8;
+  let dc=Math.min((H-fixed-26-20-2*(1.2*14/5+8))/(4.8+2*1.2*4/5),(W-220-2*tOf(100)-26-20)/4,150);
   dc=Math.max(40,Math.floor(dc));
-  const hand=Math.floor((4*dc+26-4*5)/5);
-  el.style.setProperty('--dc',dc+'px');el.style.setProperty('--ds',Math.floor(dc*.78)+'px');el.style.setProperty('--dt',hand+'px');el.style.setProperty('--dh',hand+'px');
+  const card=Math.floor((4*dc+14)/5),t=Math.ceil(tOf(dc)),bh=4.8*dc+26,ds=Math.floor(Math.min(.86*t,bh/5.4));
+  el.style.setProperty('--dc',dc+'px');el.style.setProperty('--dt',card+'px');el.style.setProperty('--dh',card+'px');
+  el.style.setProperty('--ds',ds+'px');el.style.setProperty('--dt-row',t+'px');
+  // the side cards share the board's height, overlapping when they must
+  el.style.setProperty('--dso',Math.min(4,(bh-5*1.2*ds)/4)+'px');
 }
 // refit when the window changes, or when the hands first appear (they take room)
 const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}:${document.body.classList.contains('pc')}`;
