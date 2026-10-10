@@ -176,20 +176,33 @@ body.pc #scr-duo:not(.narrow) #duoHand{grid-area:3/2;align-self:center;min-heigh
 body.pc #scr-duo:not(.narrow) .dhand.dh-top .card+.card{margin-left:3px}
 body.pc #scr-duo:not(.narrow) #duoHand{gap:3px}
 body.pc #scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:var(--dso)}
-/* a corner: three rows that fill its square, the score on the side by the player's own cards */
-body.pc #scr-duo:not(.narrow) .dname{display:grid;align-self:stretch;align-content:space-between;gap:4px 8px;text-align:left;flex-direction:initial;min-width:0}
-body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1;justify-self:end;justify-items:end;grid-template-areas:"sc sc" "who av" "tm tm"}
-body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/3;justify-self:start;justify-items:start;grid-template-areas:"sc sc" "av who" "tm tm"}
-body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1;justify-self:end;justify-items:end;grid-template-areas:"tm tm" "who av" "sc sc"}
-body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/3;justify-self:start;justify-items:start;grid-template-areas:"tm tm" "av who" "sc sc"}
+/* a corner: exactly its square, three rows (clock, name and avatar, score) with the score at the end of the player's
+   own cards. Yours reads the usual way; the side players' corners turn to face them (left a quarter turn clockwise,
+   right a quarter turn back), so the same layout lands with its score by their column. The top player's stays upright
+   (upside down would be hard to read), mirrored so its score sits by their row */
+body.pc #scr-duo:not(.narrow) .dname{display:grid;width:var(--dt-row);height:var(--dt-row);box-sizing:border-box;align-content:space-between;gap:4px 8px;
+  text-align:left;flex-direction:initial;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "av who" "sc sc"}
+body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc sc" "who av" "tm tm"}
+/* the side corners, before the turn: the score down the left (it lands by their column), the name along the top (by
+   the next hand's end) and the clock along the bottom (the outer edge, away from the other cards) */
+body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl){grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"sc av who" "sc tm tm";align-content:stretch;align-items:center}
+body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl) .dsc{align-self:center}
+body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl) .ptm{align-self:end}
+body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/3;transform:rotate(-90deg)}
+body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1;transform:rotate(90deg)}
+body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/3}
+/* a line between your cards and the left player's corner, so it doesn't read as part of your row */
+body.pc #scr-duo:not(.narrow) #duoHand{position:relative}
+body.pc #scr-duo:not(.narrow) #duoHand::before{content:"";position:absolute;left:-6px;top:8%;bottom:8%;border-left:2px solid color-mix(in srgb,var(--muted) 45%,transparent);border-radius:1px}
 body.pc #scr-duo:not(.narrow) .dname .av{grid-area:av;width:28px;height:28px;border-radius:8px;font-size:14px}
 body.pc #scr-duo:not(.narrow) .dname .av.art{font-size:17px}
 body.pc #scr-duo:not(.narrow) .dname .dwho{grid-area:who}
-body.pc #scr-duo:not(.narrow) .dname.dk-tl .dwho,body.pc #scr-duo:not(.narrow) .dname.dk-bl .dwho{text-align:right}
-body.pc #scr-duo:not(.narrow) .dname .dwho b{max-width:150px;font-size:14px}
+body.pc #scr-duo:not(.narrow) .dname.dk-tl .dwho{text-align:right}
+body.pc #scr-duo:not(.narrow) .dname .dwho{min-width:0;max-width:100%}
+body.pc #scr-duo:not(.narrow) .dname .dwho b{max-width:100%;font-size:13.5px}
 body.pc #scr-duo:not(.narrow) .dname .dwho small{display:none}
 /* the clock spans the corner, like chess.com's */
-body.pc #scr-duo:not(.narrow) .dname .ptm{grid-area:tm;justify-self:stretch;min-width:var(--dt-row);padding:5px 10px;font-size:17px;border-radius:8px}
+body.pc #scr-duo:not(.narrow) .dname .ptm{grid-area:tm;justify-self:stretch;min-width:0;padding:5px 10px;font-size:17px;border-radius:8px}
 body.pc #scr-duo:not(.narrow) .dname .ptm svg{width:17px;height:17px}
 .dsc{display:none}
 body.pc #scr-duo:not(.narrow) .dsc{grid-area:sc;display:block;color:var(--dink);font:900 calc(var(--dt-row) * .42)/.9 var(--display);
