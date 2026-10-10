@@ -236,7 +236,7 @@ function finishTear(){
 function dealCards(){
   PK.state='deal';
   $('#pkDeck').innerHTML=PK.ids.map((id,i)=>{const c=CARDS[id];
-    return `<div class="pk-slot" data-i="${i}" style="--rc:${RC[c.rar-1]};z-index:${50-i};transform:translate(-50%,10vh) scale(.6);opacity:0">
+    return `<div class="pk-slot" data-i="${i}" style="--rc:${RC[c.rar-1]};--rt:var(--r${c.rar}t);z-index:${50-i};transform:translate(-50%,10vh) scale(.6);opacity:0">
     <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,'blue')}</div></div>
     ${PK.fresh[i]?'<span class="pk-new">NEW</span>':''}<div class="pk-rname"><b>${esc(c.name)}</b><small>${rarName(c.rar)}</small></div></div>`}).join('');
   const slots=$$('#pkDeck .pk-slot');

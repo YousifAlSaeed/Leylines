@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.12 (2026-10-10)
+- Opening a pack in light mode: the background is light too, instead of always dark
+
 ## 0.19.11 (2026-10-10)
 - Daily Puzzle: the goal ("Flip 4 red cards with one card") stays on screen while you think, instead of disappearing after a second
 - Daily Puzzle: missed it? **See why** shows your move and the answer on the board, with what each one flipped and why
