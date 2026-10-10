@@ -38,16 +38,25 @@ const DEVICE_HELP=alertsIOS()?'iPhone Settings → Notifications → Leylines'
   :/Android/.test(navigator.userAgent)?'your phone\'s Settings → Apps → your browser → Notifications'
   :/Windows/.test(navigator.userAgent)?'Windows Settings → System → Notifications (then restart the browser)'
   :'your computer\'s notification settings';
+// Brave keeps push off until this setting is on, and then either never answers or says "push service error"
+const BRAVE_HELP=navigator.brave?'Brave keeps alerts off at first. In Brave\'s settings → Privacy and security, turn on "Use Google services for push messaging", restart Brave and try again.'
+  :'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).';
 function alertsWhy(e){
   const t=(e&&e.name||'')+' '+(e&&e.message||'');
   // the site is allowed, but the device blocks the browser itself (Windows, Android): the browser reports it as "permission denied"
   if(/NotAllowed|permission denied/i.test(t))return `Your device is blocking alerts from your browser. Turn them on in ${DEVICE_HELP} and try again.`;
-  if(/push service|AbortError|not supported/i.test(t))return 'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).';
+  if(/push service|AbortError|not supported/i.test(t)||navigator.brave)return BRAVE_HELP;
   return e&&e.message||'Alerts couldn\'t be turned on. Try again.';
+}
+// the browser's "allow notifications?" question. Some browsers (Brave) tuck it into the address bar or never show it,
+// and then never answer: after a minute that counts as no answer, so nothing waits forever
+function alertsAsk(){
+  const ask=new Promise(res=>{const p=Notification.requestPermission(res);if(p&&p.then)p.then(res)}); // older Safari only calls back
+  return alertsWithin(ask,60000,'Your browser didn\'t ask about alerts. Look for a bell in the address bar, or allow notifications in this site\'s settings, then try again.');
 }
 async function alertsOn(){
   const key=await alertsKey();if(!key)throw new Error('Alerts aren\'t set up on this server yet.');
-  const perm=await Notification.requestPermission();
+  const perm=Notification.permission==='granted'?'granted':await alertsAsk();
   if(perm!=='granted')throw new Error(perm==='denied'?'Alerts are blocked. Allow notifications for this site in your browser settings.':'Alerts stay off.');
   const reg=await alertsReg();
   let sub=await alertsWithin(reg.pushManager.getSubscription(),4000,'This browser didn\'t answer. Try again, or try another browser.');
@@ -167,11 +176,13 @@ async function alertsTipMaybe(){
     sfx('click');const k=b.dataset.k;
     if(k==='x'){tipSave('never');hide();return}
     if(k==='later'){tipSave(Date.now()+TIP_SNOOZE*864e5);hide();return}
-    p.querySelectorAll('button').forEach(x=>x.disabled=true);
-    try{await alertsOn();tipSave('never');hide();toast('Alerts are on. You can turn them off in Settings.',3500)}
+    // the card goes at once, so it can't hang about while the browser takes its time to answer (or never does)
+    hide();
+    if(Notification.permission!=='granted')toast('Choose Allow in the box your browser shows (it can be up by the address bar).',6000);
+    try{await alertsOn();tipSave('never');toast('Alerts are on. You can turn them off in Settings.',3500)}
     catch(e){
       // blocked or failed: don't ask again for a while, and say why
-      tipSave(Date.now()+TIP_SNOOZE*864e5);hide();toast(e.message,7000);
+      tipSave(Date.now()+TIP_SNOOZE*864e5);toast(e.message,9000);
     }
   };
   document.body.append(p);void p.offsetWidth;p.classList.add('on');

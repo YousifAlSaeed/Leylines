@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.16 (2026-10-10)
+- Fixed: turning on alerts from the menu card could leave the card stuck on screen (seen in Brave). The card now closes as soon as you tap Turn on, and if the browser never answers, the game gives up after a minute and says what to do. In Brave it explains the setting to turn on ("Use Google services for push messaging")
+
 ## 0.19.15 (2026-10-10)
 - Crossroads on computers gets the same 4-player-chess layout: every hand touches its side of the board, and each player has a corner with their big glowing score (in 2v2, their team's), name, avatar and clock (the CPUs' clocks stay empty). The side players' corners turn to face them, and their clocks sit between their info and the next hand. The top player is top-left, the right player top-right, the left player bottom-left and you bottom-right. Phones keep their layout
 
