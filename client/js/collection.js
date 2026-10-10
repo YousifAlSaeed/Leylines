@@ -16,9 +16,8 @@ function collMode(h,title,meta){
   $('#collTitle').textContent=title;$('#collMeta').innerHTML=meta;
   $('#collGo').classList.toggle('hidden',!pick);
   const sv=$('#collSave');
-  sv.className=pick?'dk-act ico':'btn primary';
-  sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>':'Save hand';
-  if(pick)sv.setAttribute('aria-label','Save hand');else sv.removeAttribute('aria-label');
+  sv.className=pick?'dk-act':'btn primary';
+  sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Save hand</span>':'Save hand';
 }
 $('#collBack').onclick=()=>{sfx('click');picking()&&DK.onBack?DK.onBack():show('menu')};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};

@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.13 (2026-10-10)
+- Choosing cards for a match: Play gets its own big row at the bottom, and Best 5, Clear and Save hand sit above it as wider buttons with words
+
 ## 0.19.12 (2026-10-10)
 - Opening a pack in light mode: the background is light too, instead of always dark
 
