@@ -98,7 +98,7 @@ function tutMoved(){
 function tutClear(){
   TT.forEach(g=>g.el.remove());TT.length=0;
   $('#tutCoach').hidden=true;$('#tutNext').hidden=true;
-  document.body.classList.remove('tut','tut-fin');
+  document.body.classList.remove('tut','tut-fin','puz'); // puz: the Daily Puzzle's goal (daily.js)
 }
 function tutSeen(){if(!SAVE.tut){SAVE.tut=1;save()}}
 function tutLeave(){const i=G.tut.i;show('menu');openHow(Math.max(0,HOW.findIndex(h=>h.tut===i)))}

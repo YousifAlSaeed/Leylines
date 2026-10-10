@@ -6,8 +6,9 @@
    the start. Each move says who played what and why cards flipped, with
    the tutorial's tags on the edges that did it ("3 + 5 = 8", "7 › 6").
    In a series, tabs pick the match. Back brings the result popup back.
+   A missed Daily Puzzle uses the same view for See why: your move, then the answer.
    ===================================================================== */
-const RV={on:false,m:0,s:0,real:null,go:0};
+const RV={on:false,m:0,s:0,real:null,go:0,puz:false};
 
 // a match can be reviewed when playing its moves again ends on the board it really ended on
 function revOk(m){
@@ -48,14 +49,14 @@ function revOpen(){
 // back to the result popup
 function revClose(){
   if(!RV.on)return;
-  revClear();
-  if(G&&RV.real){G.st=RV.real;renderGame();if(G.res)resultModal(...G.res)}
+  const puz=RV.puz;revClear();
+  if(G&&RV.real){G.st=RV.real;renderGame();if(puz)G.reopen&&G.reopen();else if(G.res)resultModal(...G.res)}
   RV.real=null;
 }
 // leaving the game screen ends a review (menu.js show)
 function revClear(){
   if(!RV.on)return;
-  RV.on=false;RV.go++;revTags();
+  RV.on=false;RV.puz=false;RV.go++;revTags();
   $('#tutCoach').hidden=true;$('#revBar').hidden=true;
   document.body.classList.remove('rev');
   CELLS.forEach(c=>c.classList.remove('rv-last'));
@@ -127,23 +128,23 @@ function revText(m,r,k,st,last,R,steps){
   if(!last){
     const w=revWho(R.first);
     txt=(r>0?'A draw, so Sudden Death: each player takes back the cards they owned on the board. ':'')+`<b>${w}</b> ${w==='You'?'go':'goes'} first.`;
-  }else{
-    const w=revWho(last.p),c=CARDS[last.id];
-    txt=`<b>${w}</b> played <b>${esc(c.name)}</b>.`;
-    if(!last.ev.length)txt+=' Nothing flipped.';
-    for(const e of last.ev){
-      const fl=`${plural(e.cells.length,'card')} flip${e.cells.length===1?'s':''}`;
-      txt+=' '+{same:`<b>Same!</b> Two sides match the numbers they touch, so ${fl}.`,
-        plus:`<b>Plus!</b> Two sides add up to the same total, so ${fl}.`,
-        combo:`<b>Combo!</b> The cards Same or Plus flipped beat their neighbours: ${fl}.`,
-        basic:`It beats ${plural(e.cells.length,'card')} next to it${G.rules.reverse?' (Reverse: lower wins)':''}.`}[e.t];
-    }
-  }
+  }else txt=`<b>${revWho(last.p)}</b> played <b>${esc(CARDS[last.id].name)}</b>. `+revWhy(last);
   // the end of the match: the score it finished on
   if(RV.s===steps.length-1){const a=G.mode==='local'?0:G.me;txt+=` <span class="rv-end">Final score ${score(st,a)}–${score(st,1-a)}</span>`}
   const c=$('#tutCoach');
   c.innerHTML=`<div class="tc-av" aria-hidden="true">🦉</div><div><div class="tc-k">${kick}</div><p>${txt}</p></div>`;
   c.hidden=false;c.classList.remove('dim','shake','in');
+}
+// what a move's flips came from, in words
+function revWhy(last){
+  if(!last.ev.length)return 'Nothing flipped.';
+  return last.ev.map(e=>{
+    const fl=`${plural(e.cells.length,'card')} flip${e.cells.length===1?'s':''}`;
+    return {same:`<b>Same!</b> Two sides match the numbers they touch, so ${fl}.`,
+      plus:`<b>Plus!</b> Two sides add up to the same total, so ${fl}.`,
+      combo:`<b>Combo!</b> The cards Same or Plus flipped beat their neighbours: ${fl}.`,
+      basic:`It beats ${plural(e.cells.length,'card')} next to it${G.rules.reverse?' (Reverse: lower wins)':''}.`}[e.t];
+  }).join(' ');
 }
 function revBar(m,s,steps){
   const ms=revMatches(),b=$('#revBar'),icon=d=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
@@ -162,7 +163,37 @@ function revBar(m,s,steps){
   $('#rvBack').onclick=()=>{sfx('click');revClose()};
   revPlace();
 }
+
+/* ---------- a missed Daily Puzzle: your move, then the answer (daily.js) ---------- */
+function revPuzzle(){
+  if(!G||!G.daily||!G.daily.mine)return;
+  RV.on=true;RV.puz=true;RV.real=G.st;G.sel=null;G.busy=true;
+  document.body.classList.add('rev');
+  revPuzzleShow(0);
+}
+// i: 0 your move, 1 the answer
+function revPuzzleShow(i){
+  const p=G.daily.p,[hi,cell]=i?[p.hi,p.cell]:G.daily.mine,st=cloneS(p.st),pre=cloneS(st),id=st.h[0][hi],ev=[];
+  play(st,G.rules,hi,cell,ev);
+  const last={pre,p:0,id,cell,ev},n=blues(st)-blues(pre)-1;
+  RV.go++;revTags();G.st=st;renderGame();
+  CELLS.forEach(c=>c.classList.remove('rv-last'));CELLS[cell].classList.add('rv-last');
+  let prev=[];for(const e of ev)prev=revWave(e,last,st,prev);
+  const c=$('#tutCoach');
+  c.innerHTML=`<div class="tc-av" aria-hidden="true">🦉</div><div><div class="tc-k">${i?'The answer':'Your move'} · flip ${p.goal}</div>`+
+    `<p>${i?'':'You played '}<b>${esc(CARDS[id].name)}</b> on the ${CELL_NAME[cell]} square. ${revWhy(last)}`+
+    `<span class="rv-end">${i?`That's ${n} of ${p.goal}: solved.`:`That's ${n} of the ${p.goal} needed.`}</span></p></div>`;
+  c.hidden=false;c.classList.remove('dim','shake','in');
+  const b=$('#revBar');
+  b.innerHTML=`<div class="rv-tabs" role="group" aria-label="Show">${['Your move','The answer'].map((l,k)=>
+    `<button data-k="${k}" class="${k===i?'on':''}" aria-pressed="${k===i}">${l}</button>`).join('')}</div><button class="btn small" id="rvBack">Back</button>`;
+  b.hidden=false;
+  b.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{sfx('click');revPuzzleShow(+x.dataset.k)});
+  $('#rvBack').onclick=()=>{sfx('click');revClose()};
+  revPlace();
+}
 function revStep(k){
+  if(RV.puz){revPuzzleShow(k==='prev'||k==='first'?0:1);return}
   const n=revSteps(RV.m).length-1;
   if(k==='first')revShow(RV.m,0);else if(k==='last')revShow(RV.m,n);
   else if(k==='prev')revShow(RV.m,RV.s-1);else if(RV.s<n)revShow(RV.m,RV.s+1,true);
@@ -173,15 +204,20 @@ document.addEventListener('keydown',e=>{
   const k={ArrowLeft:'prev',ArrowRight:'next',Home:'first',End:'last'}[e.key];
   if(k){e.preventDefault();revStep(k)}else if(e.key==='Escape'){e.preventDefault();revClose()}
 });
-// like the tutorial: the words over the top hand, the buttons from the top of yours down (rects are divided by the --ui zoom, game.js)
-function revPlace(){
-  if(!RV.on)return;
-  const c=$('#tutCoach'),b=$('#revBar'),land=document.body.classList.contains('land'),W=innerWidth/UI;
+// like the tutorial: the words over the top hand (also the Daily Puzzle's goal, daily.js),
+// the buttons from the top of yours down. Rects are divided by the --ui zoom (game.js)
+function coachPlace(){
+  const c=$('#tutCoach'),land=document.body.classList.contains('land'),W=innerWidth/UI;
   const r=(land?$('#sideTop'):$('#handTop')).getBoundingClientRect(),w=land?Math.max(240,r.width/UI):Math.min(W-24,440);
   c.style.width=w+'px';
   c.style.left=Math.max(12,Math.min(W-w-12,(r.left+r.width/2)/UI-w/2))+'px';
   c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(r.top/UI-4,58))+'px';
-  const h=$('#handBot').getBoundingClientRect();
+}
+function revPlace(){
+  if(document.body.classList.contains('puz'))coachPlace();
+  if(!RV.on)return;
+  coachPlace();
+  const b=$('#revBar'),h=$('#handBot').getBoundingClientRect();
   b.style.left=(h.left+h.width/2)/UI+'px';b.style.top=h.top/UI+'px';
   TT.forEach(tagPos);
 }

@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.11 (2026-10-10)
+- Daily Puzzle: the goal ("Flip 4 red cards with one card") stays on screen while you think, instead of disappearing after a second
+- Daily Puzzle: missed it? **See why** shows your move and the answer on the board, with what each one flipped and why
+
 ## 0.19.10 (2026-10-10)
 - **Review a game.** After a game, the result popup has a Review button. Step through every move on the board: who played what, and why cards flipped, with tags like "3 + 5 = 8" on the edges that did it (Same, Plus, Combo, and plain captures). In a Best of 3 or 5, pick the match at the top. Back to results takes you back to the popup
 

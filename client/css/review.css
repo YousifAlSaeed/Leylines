@@ -16,3 +16,5 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 /* the square the move was played on */
 .cell.rv-last{outline:3px solid var(--hot);outline-offset:3px;box-shadow:0 0 18px var(--accent-glow)}
 .rv-end{display:block;margin-top:4px;color:var(--text);font-weight:700}
+/* the Daily Puzzle: the goal stays in the owl's bubble where red's hand was (daily.js) */
+body.puz #handTop,body.puz #tagTop{visibility:hidden}

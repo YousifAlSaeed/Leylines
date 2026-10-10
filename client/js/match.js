@@ -112,7 +112,7 @@ function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.tut&&!tutMove(cell))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
-  if(G.daily)dailyMoved();
+  if(G.daily)dailyMoved(hi,cell);
   execMove(hi,cell);
 }
 async function execMove(hi,cell){
