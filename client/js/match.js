@@ -466,14 +466,15 @@ function stopTurnTimer(){
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
   setTimerLevel('');paintClocks();
 }
-// PC: each player's clock in their corner (game.js layout), for players who have a turn timer (not the CPU).
-// The one whose turn it is counts down; the other shows a full turn, faded
+// PC: each player's clock in their corner (game.js layout). The one whose turn it is counts down; the other shows a full
+// turn, faded. Both corners always have the box, so they have the same shape: the CPU's (it plays at once), or both
+// with no turn timer, stay empty
 function paintClocks(){
   for(const[el,p]of[[$('#ptmBot'),G?G.bottom:0],[$('#ptmTop'),G?1-G.bottom:1]]){
-    const on=!!(G&&G.st&&G.rules.timer&&!G.tut&&!G.over&&!(G.mode==='ai'&&p!==G.me));
+    const on=!!(G&&G.st&&!G.tut&&!G.over);
     el.hidden=!on;if(!on)continue;
-    const run=TMR.g===G&&TMR.p===p&&TMR.sec>=0;
-    el.classList.toggle('idle',!run);el.querySelector('b').textContent=fmtLeft(run?TMR.sec:G.rules.timer);
+    const timed=G.rules.timer&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
+    el.classList.toggle('idle',!run);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:G.rules.timer):'';
   }
 }
 function setTimerLevel(lvl){

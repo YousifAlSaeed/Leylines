@@ -676,10 +676,12 @@ function duoPname(S,i,where,k){
     `<b class="dsc">${shown?duoSeatScore(S,shown,i):''}</b>${duoClock(S,i)}</div>`;
 }
 const duoSeatScore=(S,st,q)=>S.rules.ffa?duoPts(st,S.rules,q):duoScore(st,duoTeam(q));
-// a player's clock, like 1v1's (match.js paintClocks): a full turn, faded, until duoTimerBar counts down the one whose turn it is. CPUs have none
+// a player's clock, like 1v1's (match.js paintClocks): a full turn, faded, until duoTimerBar counts down the one whose turn it is.
+// Every corner has the box, so they all have the same shape: a CPU's (it plays at once), or anyone's with no turn timer, is empty
 const DUO_CLOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 function duoClock(S,i){
-  if(!S.rules.timer||S.phase!=='play'||S.seats[i].kind==='cpu')return '';
+  if(S.phase!=='play')return '';
+  if(!S.rules.timer||S.seats[i].kind==='cpu')return `<span class="ptm idle">${DUO_CLOCK}<b></b></span>`;
   return `<span class="ptm idle" data-q="${i}">${DUO_CLOCK}<b>${fmtLeft(S.rules.timer)}</b></span>`;
 }
 function duoHandHTML(S,i,cls){

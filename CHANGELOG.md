@@ -7,10 +7,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
 ## 0.19.15 (2026-10-10)
-- Crossroads on computers gets the same 4-player-chess layout: every hand touches its side of the board, and each player has a corner with their big glowing score (in 2v2, their team's), name, avatar and clock. The top player is top-left, the right player top-right, the left player bottom-left and you bottom-right. Phones keep their layout
+- Crossroads on computers gets the same 4-player-chess layout: every hand touches its side of the board, and each player has a corner with their big glowing score (in 2v2, their team's), name, avatar and clock (the CPUs' clocks stay empty). The side players' corners turn to face them, and their clocks sit between their info and the next hand. The top player is top-left, the right player top-right, the left player bottom-left and you bottom-right. Phones keep their layout
 
 ## 0.19.14 (2026-10-10)
-- New game layout on computers, like 4-player chess: the CPU's cards above the board and yours below, both centred on it. Each player gets a corner: the other player top-left, you bottom-right, with a big glowing score, your name and avatar, and a clock when the turn timer is on. Phones and tablets keep their layouts
+- New game layout on computers, like 4-player chess: the CPU's cards above the board and yours below, both centred on it. Each player gets a corner: the other player top-left, you bottom-right, with a big glowing score, your name and avatar, and a clock (left empty for the CPU, or when there's no turn timer). Phones and tablets keep their layouts
 
 ## 0.19.13 (2026-10-10)
 - Choosing cards for a match: Play gets its own big row at the bottom, and Best 5, Clear and Save hand sit above it as wider buttons with words

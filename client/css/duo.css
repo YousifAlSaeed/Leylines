@@ -183,17 +183,11 @@ body.pc #scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:var(--dso)}
 body.pc #scr-duo:not(.narrow) .dname{display:grid;width:var(--dt-row);height:var(--dt-row);box-sizing:border-box;align-content:space-between;gap:4px 8px;
   text-align:left;flex-direction:initial;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "av who" "sc sc"}
 body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc sc" "who av" "tm tm"}
-/* the side corners, before the turn: the score down the left (it lands by their column), the name along the top (by
-   the next hand's end) and the clock along the bottom (the outer edge, away from the other cards) */
-body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl){grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"sc av who" "sc tm tm";align-content:stretch;align-items:center}
-body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl) .dsc{align-self:center}
-body.pc #scr-duo:not(.narrow) .dname:is(.dk-tr,.dk-bl) .ptm{align-self:end}
+/* turned, the side corners' clocks land on their inner edge: the left player's between your cards and their name,
+   the right player's between the top hand and theirs, so each clock also marks where a player's corner starts */
 body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/3;transform:rotate(-90deg)}
 body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1;transform:rotate(90deg)}
 body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/3}
-/* a line between your cards and the left player's corner, so it doesn't read as part of your row */
-body.pc #scr-duo:not(.narrow) #duoHand{position:relative}
-body.pc #scr-duo:not(.narrow) #duoHand::before{content:"";position:absolute;left:-6px;top:8%;bottom:8%;border-left:2px solid color-mix(in srgb,var(--muted) 45%,transparent);border-radius:1px}
 body.pc #scr-duo:not(.narrow) .dname .av{grid-area:av;width:28px;height:28px;border-radius:8px;font-size:14px}
 body.pc #scr-duo:not(.narrow) .dname .av.art{font-size:17px}
 body.pc #scr-duo:not(.narrow) .dname .dwho{grid-area:who}
