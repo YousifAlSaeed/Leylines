@@ -64,7 +64,8 @@ function pkCommit(){
   else{let k=SAVE.packs.indexOf(p);if(k<0)k=SAVE.packs.findIndex(x=>String(x.ids)===String(PK.ids));if(k>=0)SAVE.packs.splice(k,1)}
   // a second copy of a new card in the same pack isn't new
   PK.fresh=PK.ids.map(id=>{const f=!SAVE.seen.includes(id);collAdd(id);return f});
-  profCheck();save();
+  SAVE.opened++; // for the pack badges
+  profCheck();save();freshToast();
 }
 // the next pack to open after this one: level packs first, then the daily
 const nextPack=()=>SAVE.packs.length?0:dailyState().ready?'daily':null;

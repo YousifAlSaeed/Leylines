@@ -4,6 +4,9 @@
   color:var(--text);text-align:left;font:inherit;cursor:pointer;transition:background .18s,border-color .18s,transform .15s}
 .pcard:hover{background:rgba(var(--tint),.06);border-color:var(--line2)}
 .pcard:active{transform:scale(.99)}
+/* badges with shards to claim on the profile: the same dot as the Daily tab's (daily.css) */
+.pcard{position:relative}
+.pc-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--bg1)}
 .pc-av{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surf2);border:1px solid var(--line2);color:var(--muted);font:800 16px/1 var(--display)}
 .pc-av svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pc-av.on{background:var(--accent);color:var(--on-accent);border-color:transparent}

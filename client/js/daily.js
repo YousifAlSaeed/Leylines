@@ -27,7 +27,7 @@ const dailyRules=(on={},timer=0)=>({open:true,same:false,sameWall:false,plus:fal
 
 /* ---------- today's progress ---------- */
 // duel: 1 once won, dt: tries; puz: 0 not tried, 1 missed, 2 solved;
-// g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, paid: today's shards claimed, live: in a match, deck}
+// gw: the Gauntlet was cleared today (the Full day badge); g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, paid: today's shards claimed, live: in a match, deck}
 function trial(){
   const t=SAVE.trial;
   if(t&&t.at>=today()&&t.g&&typeof t.g==='object'){
@@ -129,6 +129,7 @@ function puzzleDone(){
   $('#tutCoach').hidden=true;document.body.classList.remove('puz');
   let chips='';
   if(ok&&fresh&&t.puz!==2){t.puz=2;chips=dailyGive(DAILY_REWARD.puzzle);profCheck();save()}
+  if(ok){earn('puzzle');dailyBadges(t);save();chips+=freshHTML()}
   sfx(ok?'win':'lose');
   const g=G;
   setTimeout(()=>{if(G!==g)return;
@@ -183,6 +184,8 @@ function startGauntStage(){
   G.decks=[g.deck.slice(),S.hand];startMatch();
 }
 
+// Full day: the Duel won, the Puzzle solved and the Gauntlet cleared on the same day
+function dailyBadges(t){if(t.duel&&t.puz===2&&t.gw)earn('fullday')}
 /* ---------- match hooks (match.js) ---------- */
 // the end of a Daily Duel or Gauntlet match: rewards, and what the result screen's main button does
 function dailyFinish(w){
@@ -190,7 +193,8 @@ function dailyFinish(w){
   d.again=null;
   if(t.at!==d.at)return dailyBox('',"This challenge ended at midnight. Today's is ready on the Daily tab.");
   if(d.kind==='duel'){
-    if(won&&!t.duel){t.duel=1;save();d.again={label:'Play again',fn:startDuel};return dailyBox(dailyGive(DAILY_REWARD.duel),'Daily Duel won. Come back tomorrow for a new one.')}
+    if(won)earn('duel');
+    if(won&&!t.duel){t.duel=1;dailyBadges(t);save();d.again={label:'Play again',fn:startDuel};return dailyBox(dailyGive(DAILY_REWARD.duel),'Daily Duel won. Come back tomorrow for a new one.')}
     d.again={label:won?'Play again':'Try again',fn:startDuel};
     return won?dailyBox('','Already won today, so no reward this time.'):t.duel?'':dailyBox('',`Try again: the ${rewardText(DAILY_REWARD.duel)} are still waiting for your first win.`);
   }
@@ -204,7 +208,7 @@ function dailyFinish(w){
   const first=g.run===1,tier=DAILY_REWARD.gauntlet[g.stage-1];
   if(first&&tier.pack)chips+=dailyGive({pack:tier.pack});
   if(tier.shards&&!g.paid){g.paid=1;chips+=dailyGive({shards:tier.shards})}
-  if(g.stage>=3)g.over=1;
+  if(g.stage>=3){g.over=1;earn('gauntlet');t.gw=1;dailyBadges(t)}
   save();
   if(g.stage<3){
     const nx=gauntStage(g.stage);

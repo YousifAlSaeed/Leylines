@@ -80,6 +80,26 @@
 .pf-bdg:hover{transform:translateY(-2px);border-color:var(--line2)}
 .pf-bdg.off{opacity:.38}
 .pf-bdg.off span{filter:grayscale(1)}
+/* the tier shows in the border, in the rarity colours (cards.css): bronze, silver, gold, prism */
+.pf-bdg{position:relative}
+.pf-bdg.t-b{border-color:color-mix(in srgb,var(--r1) 55%,transparent)}
+.pf-bdg.t-s{border-color:color-mix(in srgb,var(--r2) 50%,transparent)}
+.pf-bdg.t-g{border-color:color-mix(in srgb,var(--r3) 60%,transparent)}
+.pf-bdg.t-p{border-color:transparent;background:linear-gradient(var(--surf),var(--surf)) padding-box,var(--prism-ring) border-box}
+/* shards waiting: the badge glows, with its shards in the corner */
+.pf-bdg.claim{animation:pf-glow 1.8s ease-in-out infinite}
+@keyframes pf-glow{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--shard) 30%,transparent),0 0 18px color-mix(in srgb,var(--shard) 40%,transparent)}}
+.pf-bsh{position:absolute;top:-8px;right:-6px;display:flex;align-items:center;padding:1px 6px;border-radius:99px;font:800 10.5px/1.4 var(--display);font-style:normal;
+  color:#05232b;background:var(--shard)}
+.pf-bsh .shd{background:#05232b;margin-right:.2em}
+.pf-bfly{position:absolute;left:50%;top:0;font:800 15px var(--display);font-style:normal;color:var(--shard-ink);pointer-events:none;animation:pf-fly .9s var(--ease) forwards}
+@keyframes pf-fly{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-38px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pf-bdg.claim{animation:none;box-shadow:0 0 0 2px var(--shard)}.pf-bfly{animation:none;opacity:0}}
+.pf-bgrp{display:flex;justify-content:space-between;margin:16px 0 8px;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pf-bgrp:first-of-type{margin-top:4px}
+.pf-bgrp span{letter-spacing:0;font-weight:500}
+.pf-bwait{margin:-4px 0 4px;font-size:13px;color:var(--shard-ink)}
+.pf-bwait:empty{display:none}
 
 /* collection */
 .pf-found{display:flex;justify-content:space-between;align-items:baseline;gap:8px}

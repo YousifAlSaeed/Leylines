@@ -10,6 +10,8 @@ function defSave(){
     trade:'one',diff:'normal',bo:1,cpuTimer:0,stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
+    // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
+    bclaim:{},opened:0,
     // the same for online matches only (the leaderboard ranks these): win streak, best streak, last results
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
@@ -38,7 +40,7 @@ function fixProfile(p,s){
   if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
   // the first time with packs: one for every level already reached
   if(p.pv<2){p.packLv=1;p.pv=2}
-  for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards'])p[k]=Math.max(0,+p[k]|0);
+  for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards','opened'])p[k]=Math.max(0,+p[k]|0);
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.gifts=(Array.isArray(p.gifts)?p.gifts:[]).filter(Number.isInteger).slice(-100);
@@ -64,6 +66,7 @@ function fixProfile(p,s){
   if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;
   p.tut=[0,1,2].includes(p.tut)?p.tut:0;
   p.badges=ob(p.badges)?p.badges:{};
+  p.bclaim=ob(p.bclaim)?p.bclaim:{};
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
   return p;

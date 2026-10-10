@@ -230,7 +230,7 @@ function finish(s0,s1){
   renderHud();
   let reward='';
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,rules:G.rules})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
@@ -250,6 +250,12 @@ function finish(s0,s1){
   }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':G.wb?wbName(G.wb):'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
   if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
+  // badges for how it was won: a series (from behind), or with everything on the line
+  if(G.mode!=='local'&&w===G.me){
+    if(G.bo>1){earn('series');if(ser.log[0].w===1-G.me)earn('comeback')}
+    if(G.trade==='all'&&!G.daily)earn('tradeall');
+  }
+  head+=freshHTML();
   let n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
   // a Win them back try won: only your own cards can be taken back
   if(n&&G.wb&&w===G.me)n=Math.min(n,G.wb.idx.length);
@@ -276,7 +282,7 @@ function finish(s0,s1){
         if(idx==='spare'){netSend({t:'trade',idx:[],spare:true});forfeitPost(NET.oppUser,matchKey(),[]);resultModal(head+spareHTML(oppName(),spareGive()));return}
         const ids=idx.map(i=>loserDeck[i]),fresh=[];
         // a second copy of a new card isn't new
-        ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');profCheck();histTrade('won',ids);save();
+        ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');if(G.wb){earn('winback');if(wbLast())earn('laststand')}profCheck();histTrade('won',ids);save();
         // also through the server, in case they close the game before it reaches them
         if(online){netSend({t:'trade',idx});forfeitPost(NET.oppUser,matchKey(),ids)}
         resultModal(head+`<p>You won ${G.wb?`back your ${ids.length>1?'cards':'card'}`:ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue',fresh)+freshHTML());

@@ -36,7 +36,7 @@ export function publicProfile(save) {
     beat: Number.isInteger(s.beat) && s.beat >= 0 && s.beat <= 2 ? s.beat : -1,
     recent: results(s.recent), orecent: results(s.orecent),
     badges: Object.fromEntries(Object.entries(s.badges && typeof s.badges === 'object' ? s.badges : {})
-      .filter(([k, v]) => /^[a-z0-9]{1,16}$/.test(k) && typeof v === 'string').slice(0, 50).map(([k, v]) => [k, v.slice(0, 24)])),
+      .filter(([k, v]) => /^[a-z0-9]{1,16}$/.test(k) && typeof v === 'string').slice(0, 80).map(([k, v]) => [k, v.slice(0, 24)])),
     showcase: (Array.isArray(s.showcase) ? s.showcase : []).filter(cardId).slice(0, 3),
     seen: (Array.isArray(s.seen) ? s.seen : []).filter(cardId),
     avatar: av && cardId(av.c) ? { c: av.c, r: nat(av.r, 5) } : null,

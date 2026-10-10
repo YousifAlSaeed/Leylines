@@ -110,7 +110,7 @@ function tutSkip(){
 }
 function tutDone(){
   const T=PACKS[TUT_PACK],reward=SAVE.tut<2;
-  if(reward){SAVE.packs.push({t:TUT_PACK,tut:1});SAVE.tut=2;save()}
+  if(reward){SAVE.packs.push({t:TUT_PACK,tut:1});SAVE.tut=2;profCheck();save()}
   show('menu');
   modal(`<div class="kick">Tutorial complete</div><h2>You're ready!</h2>`+
     (reward?`<div class="tut-pk">${miniPack(TUT_PACK,'big ready')}</div>`+dailyBox(`<span class="pf-pack">🎁 ${T.name} pack</span>`,'The other rules (Elemental, Chaos and more) are in <b>How to play</b>.')
