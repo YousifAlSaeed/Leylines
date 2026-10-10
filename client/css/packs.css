@@ -91,17 +91,14 @@
 /* ---------- the opening stage: a night sky in dark mode, a soft lilac room in light mode ---------- */
 .pk-stage{--text:#F1ECFF;--muted:#B9AEDD;--surf:#140C33;--surf2:#1E1450;--line:rgba(184,148,255,.13);--line2:rgba(184,148,255,.26);
   --cta:#FF5FA8;--cta-hi:#FF86C4;--on-cta:#1e0b2a;--blue1:#2F5FD0;--blue2:#142a6e;--tint:255,255,255;--sh:4,2,14;--shk:1;
-  --r1t:#c99a6c;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#c7a2ff;--r5t:#ff9fd6;
   position:fixed;inset:0;z-index:88;display:none;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--text);color-scheme:dark;
   background:radial-gradient(60% 50% at 50% 45%,#1d1250,#07040f 75%)}
 /* light mode: the theme's own colours on a light background; the packs and cards keep theirs */
 :root[data-theme="light"] .pk-stage{--text:#1a1238;--muted:#54497a;--surf:#ffffff;--surf2:#f0ebff;--line:rgba(40,20,90,.12);--line2:rgba(40,20,90,.22);
   --cta:var(--ley-pink-700);--cta-hi:#dc5aad;--on-cta:#fff;--blue1:#3a6bdb;--blue2:#1e3f99;--tint:0,0,0;--sh:40,20,90;--shk:.3;
-  --r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#7446c8;--r5t:#b8337f;
   color-scheme:light;background:radial-gradient(60% 50% at 50% 45%,#ffffff,#e4dcf7 75%)}
 :root[data-theme="light"] .pk-dim{background:#2a1a5e}
 :root[data-theme="light"] .pk-stage.focus .pk-dim{opacity:.3}
-:root[data-theme="light"] .pk-rname small{color:var(--rt)}
 :root[data-theme="light"] .pk-sum h3{background-image:linear-gradient(180deg,var(--text) 25%,var(--ley-violet-700))}
 :root[data-theme="light"] .pk-pack:focus-visible .pk-body{outline-color:var(--ley-violet-700)}
 .pk-stage.on{display:block}
@@ -152,6 +149,8 @@
 .pk-seam{position:absolute;left:0;right:0;top:var(--cap);height:2px;z-index:4;border-top:2px dashed rgba(255,255,255,.45)}
 .pk-seam i{position:absolute;top:-4px;height:6px;background:#fff;border-radius:3px;box-shadow:0 0 12px 4px var(--leak,#fff),0 0 34px 10px var(--leak,#fff);opacity:0}
 .pk-leak{position:absolute;left:5%;right:5%;top:calc(var(--cap) - 30px);height:60px;border-radius:50%;background:var(--leak,#fff);filter:blur(24px);opacity:0}
+/* a 5★ inside: the light from the tear is the prism */
+.pk-stage.best5 .pk-leak{background:var(--prism)}
 .pk-pack.shake{animation:pkShake .35s linear}
 @keyframes pkShake{20%{transform:translate(-4px,2px) rotate(-1.5deg)}40%{transform:translate(4px,-2px) rotate(1.5deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(3px,0)}}
 
@@ -179,7 +178,7 @@
 .pk-rname{position:absolute;left:50%;top:6.5em;transform:translateX(-50%);white-space:nowrap;text-align:center;opacity:0;transition:opacity .3s .2s}
 .pk-slot.shown .pk-rname{opacity:1}
 .pk-rname b{display:block;font:800 .55em/1.1 var(--display)}
-.pk-rname small{font:700 .32em/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--rc)}
+.pk-rname small{font:700 .32em/1 var(--body);letter-spacing:.14em;text-transform:uppercase}
 .pk-count{position:absolute;left:0;right:0;top:calc(50% - min(5vh,8.4vw)*3 - 40px);z-index:5;text-align:center;font:700 13px var(--body);color:var(--muted);opacity:0;transition:opacity .3s}
 
 /* the summary */
@@ -205,5 +204,5 @@
 .pity-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
 .pity-h b{font:700 14px/1 var(--display);letter-spacing:0;color:var(--text);font-variant-numeric:tabular-nums}
 .pity-bar{height:10px;border-radius:99px;background:rgba(var(--tint),.08);overflow:hidden;border:1px solid var(--line)}
-.pity-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff8fd0,#ffd76a);transition:width .4s var(--ease)}
+.pity-bar i{display:block;height:100%;border-radius:inherit;background:var(--prism);transition:width .4s var(--ease)}
 .pity-note{margin:8px 0 0;color:var(--muted);font-size:12.5px}

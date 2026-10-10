@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.17 (2026-10-10)
+- One colour for each rarity, the same everywhere: 1★ bronze, 2★ silver, 3★ gold, 4★ violet (a deeper, stronger one) and 5★ prism, a rainbow. 5★ cards no longer glow gold when a pack opens (that looked like a 3★); "5★ Legendary" and the 5★ tag are written in the rainbow
+
 ## 0.19.16 (2026-10-10)
 - Fixed: turning on alerts from the menu card could leave the card stuck on screen (seen in Brave). The card now closes as soon as you tap Turn on, and if the browser never answers, the game gives up after a minute and says what to do. In Brave it explains the setting to turn on ("Use Google services for push messaging")
 

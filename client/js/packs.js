@@ -7,8 +7,10 @@
    the next. The cards are added to the collection the moment it tears,
    so closing early never loses them; closing before that keeps the pack.
    ===================================================================== */
-const RC=['#b08358','#cfd8e0','#f0c35c','#b98cff','#ff8fd0'];
-const rarCol=r=>r===5?'#ffd76a':RC[r-1];
+// the rarity colours, from cards.css (--r1 … --r5), so they're set in one place
+const RC=[1,2,3,4,5].map(r=>getComputedStyle(document.documentElement).getPropertyValue('--r'+r).trim());
+// one colour for a rarity's light: 5★ is the prism, so its light is white and its sparks and rays are rainbow
+const rarCol=r=>r===5?'#ffffff':RC[r-1];
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const PK={src:null,ids:[],fresh:[],i:0,state:'',ret:null,tear:{on:false}};
 
@@ -124,7 +126,7 @@ function pkStart(p,ids,fresh){
   const T=PACKS[p.t],best=CARDS[ids[ids.length-1]].rar;
   Object.assign(PK,{src:p,ids,fresh,i:0,state:'idle'});
   if(!stg.classList.contains('on'))PK.ret=document.activeElement;
-  stg.className='pk-stage on t-'+p.t;stg.style.setProperty('--leak',rarCol(best));
+  stg.className='pk-stage on t-'+p.t+(best===5?' best5':'');stg.style.setProperty('--leak',rarCol(best));
   $$('.screen').forEach(s=>s.inert=true);fxFit();
   $('#pkTitle').textContent=p.daily?`Daily pack · day ${p.daily}`:p.lv?`Level ${p.lv} pack`:T.name+' pack';
   $('#pkName').textContent=T.name;$('#pkSub').textContent=`${T.n} cards`+(p.mile?' · 4★ inside':'');
@@ -238,7 +240,7 @@ function dealCards(){
   $('#pkDeck').innerHTML=PK.ids.map((id,i)=>{const c=CARDS[id];
     return `<div class="pk-slot" data-i="${i}" style="--rc:${RC[c.rar-1]};--rt:var(--r${c.rar}t);z-index:${50-i};transform:translate(-50%,10vh) scale(.6);opacity:0">
     <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,'blue')}</div></div>
-    ${PK.fresh[i]?'<span class="pk-new">NEW</span>':''}<div class="pk-rname"><b>${esc(c.name)}</b><small>${rarName(c.rar)}</small></div></div>`}).join('');
+    ${PK.fresh[i]?'<span class="pk-new">NEW</span>':''}<div class="pk-rname"><b>${esc(c.name)}</b><small class="rt rar${c.rar}">${rarName(c.rar)}</small></div></div>`}).join('');
   const slots=$$('#pkDeck .pk-slot');
   slots.forEach((s,i)=>{bindSlot(s);setTimeout(()=>{s.style.opacity=1;s.style.transform=`translate(-50%,-50%) translate(${-i*3}px,${-i*4}px)`},120+i*90)});
   setTimeout(()=>{
