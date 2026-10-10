@@ -188,3 +188,41 @@ describe('Free-for-all', () => {
     assert.equal([0, 1, 2, 3].reduce((a, p) => a + g.duoPts(s, R, p), 0), 20);
   });
 });
+
+describe('the Review', () => {
+  // a whole match played by the CPUs, keeping [card, square] for every move like the host does
+  function match(rules, seed) {
+    const rng = g.mulberry32(seed);
+    const s = g.duoNew([0, 1, 2, 3].map(() => g.duoCpuDeck('normal')), Math.floor(rng() * 4), g.duoElements(rules, rng));
+    const first = s.first, moves = [], boards = [];
+    while (!g.duoFull(s)) {
+      const [hi, cell] = g.duoChoose(s, rules, 'easy');
+      moves.push([s.h[s.turn][hi], cell]);
+      g.duoPlay(s, rules, hi, cell, null);
+      boards.push({ b: [...s.b], o: [...s.o], k: [...s.k], pts: [0, 1, 2, 3].map(q => g.duoPts(s, rules, g.duoSide(rules, q))) });
+    }
+    return { s, first, moves, boards };
+  }
+  for (const rules of [{}, { ffa: true }, { same: true, plus: true, combo: true, elemental: true, leyLines: true }, { ffa: true, reverse: true, leyLines: true }]) {
+    test(`the moves played again give the same board and scores after every move (${JSON.stringify(rules)})`, () => {
+      const { s, first, moves, boards } = match(rules, 7);
+      for (let k = 1; k <= 16; k++) {
+        const { st, last } = g.duoRevAt(first, s.el, moves, rules, k), want = boards[k - 1];
+        assert.deepEqual([...st.b], want.b);
+        assert.deepEqual([...st.o], want.o);
+        assert.deepEqual([...st.k], want.k);
+        assert.deepEqual([0, 1, 2, 3].map(q => g.duoPts(st, rules, g.duoSide(rules, q))), want.pts);
+        assert.deepEqual([last.id, last.cell], [...moves[k - 1]]);
+        assert.equal(last.p, (first + k - 1) % 4);
+      }
+    });
+  }
+  test('before any move the board is empty and everyone holds 5 cards', () => {
+    const { s, first, moves } = match({}, 3);
+    const { st, last } = g.duoRevAt(first, s.el, moves, {}, 0);
+    assert.equal(last, null);
+    assert.ok(st.b.every(x => x < 0));
+    assert.deepEqual([...st.h].map(h => h.length), [5, 5, 5, 5]);
+    assert.equal(st.turn, first);
+  });
+});

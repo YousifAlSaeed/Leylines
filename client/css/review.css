@@ -7,7 +7,7 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 .rv-nav{display:flex;align-items:center;gap:6px}
 .rv-nav .iconbtn:disabled{opacity:.35;cursor:default}
 .rv-nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.rv-pos{min-width:58px;text-align:center;font:700 15px var(--body);font-variant-numeric:tabular-nums;color:var(--muted)}
+.rv-pos{min-width:76px;text-align:center;font:700 15px var(--body);font-variant-numeric:tabular-nums;color:var(--muted)}
 /* the matches of a series, like the result popup's M1 5–5 chips */
 .rv-tabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .rv-tabs button{font:600 12px/26px var(--body);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:7px;padding:0 9px;
@@ -18,3 +18,8 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 .rv-end{display:block;margin-top:4px;color:var(--text);font-weight:700}
 /* the Daily Puzzle: the goal stays in the owl's bubble where red's hand was (daily.js) */
 body.puz #sideTop{visibility:hidden}
+/* Crossroads (review.js): the hands make room for the words and the buttons; the names and scores stay */
+body.drev #scr-duo .dhand,body.drev #duoHand{visibility:hidden}
+body.drev #duoQuitBtn,body.drev #scr-duo.narrow #duoMe{visibility:hidden}
+/* who played, in their seat's colour */
+.tut-coach b.rv-who{color:var(--dink)}
