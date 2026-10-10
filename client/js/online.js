@@ -437,7 +437,7 @@ function beginOnline(cfg){
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
   openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,onDone:done,
-    onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',fn:()=>{clearRejoin();netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
+    onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',wait:true,fn:()=>{clearRejoin();netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
 function validDeck(ids){return Array.isArray(ids)&&ids.length===5&&ids.every(i=>Number.isInteger(i)&&i>=0&&i<CARDS.length)}

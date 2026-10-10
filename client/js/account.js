@@ -133,7 +133,7 @@ function acctWipe(){
 if(SAVE.wipe&&!ACCT.token)resetSave();
 function acctSignOut(){
   modal(`<h2 class="nm2">Sign out?</h2><p>Your progress is kept on your account. This device goes back to a fresh start until you sign in again.</p>`,[
-    {label:'Sign out',cls:'danger',fn:async()=>{
+    {label:'Sign out',cls:'danger',wait:true,fn:async()=>{
       // let a sync that's on its way finish, then send what's left
       while(ACCT.busy)await new Promise(r=>setTimeout(r,200));
       if(ACCT.dirty)await acctPush();
@@ -141,7 +141,7 @@ function acctSignOut(){
       // couldn't reach the server: signing out now would lose what hasn't synced
       if(ACCT.dirty&&(ACCT.state==='offline'||ACCT.state==='error')){
         modal(`<h2 class="nm2">Not synced yet</h2><p>Your latest progress couldn't be saved to your account. Signing out now loses it. Try again when you're online.</p>`,[
-          {label:'Sign out anyway',cls:'danger',fn:acctLeave},
+          {label:'Sign out anyway',cls:'danger',wait:true,fn:acctLeave},
           {label:'Stay signed in',cls:'primary',esc:true}]);
         return;
       }

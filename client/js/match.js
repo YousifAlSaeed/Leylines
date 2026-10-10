@@ -270,8 +270,8 @@ function pickCards(head,deck,n,o={}){
     const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>{const can=pool.includes(i),on=all&&can;
       return `<div class="pk${on?' on':''}${can?'':' off'}" data-i="${i}" role="button" aria-pressed="${on}"${can?'':' aria-disabled="true"'} aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}${can?'':', not flipped'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`}).join('')}</div>`+
       (o.spare?`<p class="note">💛 Spare: they keep their cards, and you count a spare. Every ${SPARE_PACK} spares give a free pack.</p>`:''),
-      [{label:all?'Take all':'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
-       ...(o.spare?[{label:'Spare 💛',fn:()=>res('spare')}]:[])]);
+      [{label:all?'Take all':'Take',cls:'primary',keep:true,wait:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
+       ...(o.spare?[{label:'Spare 💛',wait:true,fn:()=>res('spare')}]:[])]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=!all;
     if(!all)box.querySelectorAll('.pk:not(.off)').forEach(el=>el.onclick=()=>{
       const i=+el.dataset.i;
@@ -360,7 +360,7 @@ function quitMatch(){
     save();freshToast();
   }
   dailyLeave();leaveMatch();
-  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true}]);
+  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true,wait:true}]);
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
@@ -379,7 +379,7 @@ function askLeave(){
   else p=`<p>Leaving counts as a loss. <b class="gold">${opp} can take ${n>=5?'all your cards':cards}</b>, or spare you.</p>`;
   // between the matches of a series, the way back is the Next match button
   const back=G.over?{label:'Next match',cls:'primary',keep:G.mode==='online',fn:readyNext}:{label:'Keep playing',cls:'primary',esc:true};
-  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',fn:()=>{if(G)quitMatch()}},back]);
+  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',wait:true,fn:()=>{if(G)quitMatch()}},back]);
 }
 $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;

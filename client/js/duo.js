@@ -400,7 +400,7 @@ function duoLeave(){
   if(!inMatch&&!(host&&DUO.seats.some((s,i)=>i!==DUO.me&&s.kind==='human'))){go();return}
   modal(host?`<h2>${inMatch?'End the match?':'Close the room?'}</h2><p>${inMatch?'You\'re the host, so the match ends for everyone.':'Everyone in the room is sent back to the menu.'}</p>`
     :inMatch?`<h2>Leave the match?</h2><p>A CPU plays your cards${DUO.snap&&DUO.snap.rules.ffa?'':' for your partner'}. You can rejoin from the menu while the match is on.</p>`:'<h2>Leave the room?</h2>',
-    [{label:host?(inMatch?'End match':'Close room'):'Leave',cls:'danger',fn:go},{label:'Stay',cls:'primary',esc:true}]);
+    [{label:host?(inMatch?'End match':'Close room'):'Leave',cls:'danger',wait:true,fn:go},{label:'Stay',cls:'primary',esc:true}]);
 }
 
 /* =====================================================================
@@ -552,7 +552,7 @@ function duoRoomRender(){
   $$('#duoTeams [data-col]').forEach(b=>b.onclick=()=>{sfx('click');if(host)duoSetCol(DUO.me,b.dataset.col);else duoSend({t:'color',c:b.dataset.col})});
   $$('#duoTeams [data-swap]').forEach(b=>b.onclick=()=>{sfx('click');const i=+b.dataset.swap;duoSwap(i,(i+1)%4)});
   $$('#duoTeams [data-kick]').forEach(b=>b.onclick=()=>{sfx('click');const i=+b.dataset.kick;
-    modal(`<h2>Remove ${esc(DUO.seats[i].name)}?</h2><p>They leave the room and can't join it again.</p>`,[{label:'Remove',cls:'danger',fn:()=>duoKick(i)},{label:'Cancel',cls:'primary',esc:true}])});
+    modal(`<h2>Remove ${esc(DUO.seats[i].name)}?</h2><p>They leave the room and can't join it again.</p>`,[{label:'Remove',cls:'danger',wait:true,fn:()=>duoKick(i)},{label:'Cancel',cls:'primary',esc:true}])});
   $$('#duoTeams [data-seat]').forEach(b=>b.onclick=()=>{sfx('click');duoSetSeat(+b.dataset.seat,b.dataset.k)});
   $$('#duoTeams [data-sit]').forEach(b=>b.onclick=()=>{sfx('click');const to=+b.dataset.sit;if(host)duoSit(DUO.me,to);else duoSend({t:'sit',i:to})});
   // the rules: the host changes them, everyone sees them

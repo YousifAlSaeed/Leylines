@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.9 (2026-10-10)
+- Important popups give you 3 seconds to read before the main button works: leaving a match, signing out, deleting a loadout, removing a friend or player, buying in the Night Market, taking or sparing cards, and the news when you lost cards. The button counts down 3, 2, 1. Cancel, Stay and Escape still work right away
+
 ## 0.19.8 (2026-10-10)
 - Night Market: the Merchant doesn't sell 5★ cards any more. The top card is always a 4★
 

@@ -53,13 +53,24 @@ let toastT=0;
 function toast(msg,ms=2200){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
 
 let modalReturn=null;
+// important popups (a choice that costs something, or news of a loss): a button with wait:true counts down
+// READ_WAIT seconds before it works, so there's time to read first. Cancel / Stay / Escape never wait.
+const READ_WAIT=3;
+function readWait(e,label){
+  let n=READ_WAIT;e.classList.add('waiting');e.setAttribute('aria-disabled','true');
+  const tick=()=>{if(!e.isConnected)return;
+    if(n>0){e.textContent=`${label} (${n--})`;setTimeout(tick,1000)}
+    else{e.textContent=label;e.classList.remove('waiting');e.removeAttribute('aria-disabled')}};
+  tick();
+}
 function modal(html,btns=[]){
   const bg=$('#modal');
   if(!bg.classList.contains('on'))modalReturn=document.activeElement;
   bg.innerHTML=`<div class="mbox" tabindex="-1">${html}<div class="mbtns"></div></div>`;
   const bx=bg.querySelector('.mbtns');
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'');e.textContent=b.label;if(b.esc)e.dataset.esc='';
-    e.onclick=()=>{sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e)});
+    e.onclick=()=>{if(e.classList.contains('waiting'))return;sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e);
+    if(b.wait)readWait(e,b.label)});
   const h=bg.querySelector('h2');
   if(h){h.id='mTitle';bg.setAttribute('aria-labelledby','mTitle')}else bg.removeAttribute('aria-labelledby');
   bg.classList.add('on');

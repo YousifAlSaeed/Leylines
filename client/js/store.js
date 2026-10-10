@@ -88,7 +88,7 @@ function buyCard(i){
   const c=CARDS[it.id];
   modal(`<div class="kick">Wandering Merchant</div><h2>Buy ${esc(c.name)}?</h2><div class="st-one">${cardHTML(it.id,'blue')}</div>
     <p class="st-cost">${shd()}<b>${fmtSh(it.price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy',cls:'primary',fn:()=>{
+    [{label:'Buy',cls:'primary',wait:true,fn:()=>{
       const s2=shopDay();
       if(s2.at!==s.at||s2.got[i]!=null||SAVE.shards<it.price){renderStore();return}
       const fresh=!SAVE.seen.includes(it.id);
@@ -108,7 +108,7 @@ function buyPack(t,deal){
   modal(`<div class="kick">${deal?'Wandering Merchant':'Pack Counter'}</div><h2>Buy ${aPack(t)}?</h2>
     <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${pitySure(t)?', the last one a sure 5★ (guarantee)':T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
     <p class="st-cost">${shd()}<b>${fmtSh(price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy and open',cls:'primary',fn:()=>{
+    [{label:'Buy and open',cls:'primary',wait:true,fn:()=>{
       if(SAVE.shards<price)return;
       if(s){const s2=shopDay();if(s2.at!==s.at||deal&&s2.got.deal||myth&&s2.myth>=MYTHIC_WEEK){renderStore();return}
         if(deal)s2.got.deal=1;if(myth)s2.myth++}

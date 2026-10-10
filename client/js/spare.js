@@ -55,7 +55,7 @@ function oweNews(){
   modal(`<h2>While you were away</h2><p>You left a match before it ended, so it counted as a loss.</p>`+news.map(x=>x.spared
     ?`<p><b class="gold">${esc(x.name)}</b> spared you 💛 You kept your cards.</p>`
     :`<p><b class="gold">${esc(x.name)}</b> took:</p>`+rowHTML(x.ids,'red')+(x.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(x.added,'blue'):'')).join(''),
-    [{label:'OK',cls:'primary',esc:true}]);
+    [{label:'OK',cls:'primary',esc:true,wait:true}]);
   renderMenu();
 }
 // the server also says when one comes in (pulse.js); this is in case that check misses it
@@ -135,7 +135,7 @@ function selfForfeit(){
   if(host){NET.ended=NET.sid;hostBackToRoom('')}else{netClose(true);G=null;stopTurnTimer()}
   modal(`<h2>Match over</h2><p>You were away for more than a minute, so the match went to <b class="gold">${esc(opp)}</b>.</p>`+
     (n?`<p>They can take ${n>=5?'all your cards':plural(n,'card')} or spare you. If they take any, you'll see it here.</p>`:''),
-    [{label:'OK',cls:'primary',esc:true,fn:()=>{if(!host)show('menu')}}]);
+    [{label:'OK',cls:'primary',esc:true,wait:true,fn:()=>{if(!host)show('menu')}}]);
 }
 // this side still reaches the matchmaking server, so it's the other player who's gone
 function meOnline(){const p=NET.peer;return navigator.onLine!==false&&!!p&&p.open&&!p.disconnected&&!p.destroyed}
