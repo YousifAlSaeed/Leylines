@@ -6,9 +6,19 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
-## 0.22.1 (2026-10-11)
+## 0.22.4 (2026-10-11)
 - Opening a pack feels real now: the strip tears along a ragged line and curls up toward you as you pull. Let go halfway and the tear stays, so you can carry on. Packs have crimped edges and a little notch on each side to start the tear, like real foil packs
 - Packs and card backs now show the new Leylines logo
+
+## 0.22.3 (2026-10-10)
+- Review: a move with a Combo takes two steps now. The move shows its Same or Plus numbers, then a half step (6.5) shows the Combo's flips, in 1v1 and Crossroads
+- Review: the number tags of the step on screen all stay bright
+
+## 0.22.2 (2026-10-10)
+- Review tags read the way the cards sit: when the other card is on the left, its number comes first (4 ‹ 6, 2 + 1 = 3), in 1v1 and Crossroads
+
+## 0.22.1 (2026-10-10)
+- Crossroads has the Review now: after a 2v2 or Free-for-all match, tap Review on the result to step through all 16 moves on the board, with who played what and why cards flipped
 
 ## 0.22.0 (2026-10-10)
 - New Bank timer, like a chess clock: each player gets 1 to 5 minutes for the whole match, and every card you play adds 2 seconds back. Choose what running out does: a random card is played for you, or you lose the match

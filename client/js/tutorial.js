@@ -76,15 +76,17 @@ function tutWave(e,cell){
   }
   if(e.t!=='basic')t.prev=e.cells;
 }
-function tutTag(c,d,txt){
+// cells, nb: the board's squares and neighbours (Crossroads' 4×4 board has its own, review.js)
+function tutTag(c,d,txt,cells=CELLS,nb=NB){
   const el=document.createElement('div');el.className='tut-tag';el.textContent=txt;el.setAttribute('aria-hidden','true');
-  document.body.append(el);const g={el,c,d};TT.push(g);tagPos(g);
+  if(cells!==CELLS)el.style.fontSize=cells[c].offsetWidth*.13+'px';
+  document.body.append(el);const g={el,c,d,cells,nb};TT.push(g);tagPos(g);
   requestAnimationFrame(()=>el.classList.add('on'));
-  CELLS[c].querySelector('.n'+d)?.classList.add('hl');CELLS[NB[c][d]].querySelector('.n'+((d+2)&3))?.classList.add('hl');
+  cells[c].querySelector('.n'+d)?.classList.add('hl');cells[nb[c][d]].querySelector('.n'+((d+2)&3))?.classList.add('hl');
 }
 // on the edge between square c and its neighbour on side d
-function tagPos({el,c,d}){
-  const a=CELLS[c].getBoundingClientRect(),b=CELLS[NB[c][d]].getBoundingClientRect();
+function tagPos({el,c,d,cells=CELLS,nb=NB}){
+  const a=cells[c].getBoundingClientRect(),b=cells[nb[c][d]].getBoundingClientRect();
   const x=d===1?(a.right+b.left)/2:d===3?(a.left+b.right)/2:a.left+a.width/2;
   const y=d===0?(a.top+b.bottom)/2:d===2?(a.bottom+b.top)/2:a.top+a.height/2;
   el.style.left=x/UI+'px';el.style.top=y/UI+'px';
