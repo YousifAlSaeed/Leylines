@@ -71,7 +71,7 @@ async function alertsSync(){
   alertsMark(!!sub);
   if(sub)api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}}).catch(()=>{});
 }
-// Settings → Alerts → Test: the server sends one to each of your devices and says how it went
+// Settings → Alerts → Test (developer accounts only): the server sends one to each of your devices and says how it went
 async function alertsTest(){
   const r=await api('/push/test',{method:'POST'});
   if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
@@ -96,12 +96,13 @@ async function alertsPaint(box){
   const draw=on=>{
     say(on?'On for this device. Invites, friend requests and match news reach you even with the game closed.':'Invites, friend requests and match news, even with the game closed',
       `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
-      (on?'<button class="btn small" id="alertsTest">Test</button>':''));
+      // Test: developer accounts only (and a local copy of the game)
+      (on&&isDev()?'<button class="btn small" id="alertsTest">Test</button>':''));
     ctl.querySelectorAll('.seg button').forEach(b=>b.onclick=async()=>{
       if(ALERTS.busy||(b.dataset.k==='on')===on)return;
       sfx('click');ALERTS.busy=true;ctl.querySelectorAll('button').forEach(x=>x.disabled=true);
       try{
-        if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on. Tap Test to try one.',3000)}
+        if(b.dataset.k==='on'){await alertsOn();toast(isDev()?'Alerts are on. Tap Test to try one.':'Alerts are on',3000)}
         else{await alertsOff();toast('Alerts are off')}
       }catch(e){toast(e.message,7000)}
       finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
