@@ -27,7 +27,7 @@ function defSave(){
     shards:150,shardDay:null,shop:null,
     // Couch's last two hands [blue, red], for Quick play (match.js)
     localDecks:null,
-    // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
+    // the guest popup (account.js): how many matches were played when it last showed (-1 = never)
     gNote:-1,
     // the tutorial (tutorial.js): 0 = not offered yet, 1 = offered, 2 = finished and its pack given
     tut:0};

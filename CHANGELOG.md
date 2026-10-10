@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.6 (2026-10-10)
+- The "You're playing as a guest" reminder is now a popup you can close with Later, instead of a box on the menu. It shows after your first match, then again every 10 matches
+
 ## 0.19.5 (2026-10-10)
 - Match history only shows Solo and online games now. Daily games aren't saved there, and old ones are cleared out
 - Daily games don't count as wins, losses or draws on your record any more (they still give XP)
