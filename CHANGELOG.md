@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.20.0 (2026-10-10)
+- New: **Win them back**. When the CPU takes your cards in Solo, you can play it again right away. It swaps its weakest cards for the ones it took, so you can win them back. Win and the trade rule says how many of them you take back (only your own cards). Lose and it takes more
+- With Trade One or Diff, a second loss gives you a **Last chance**: the CPU holds every card it took. Win and they all come back. Lose and it takes that many more. With Diff there's no Last chance if that's more than 5 cards
+- With Trade All you get one try: win and all 5 come back, lose and it takes 5 more
+- A draw on a try lets you play it again for the same cards
+
 ## 0.19.18 (2026-10-10)
 - Fixed: on a phone, the Daily Puzzle's goal and the Review's notes could cover the numbers on the board's top row. They now always end just above the board
 - Fixed: on a narrow computer window, the emote tray could open off the right edge of the screen

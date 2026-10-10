@@ -229,3 +229,36 @@ describe('best-of series', () => {
     assert.equal(g.boOf('5'), 1);
   });
 });
+
+describe('Win them back', () => {
+  const cpu = [10, 11, 12, 13, 14];
+  const str = id => ({ 10: 5, 11: 1, 12: 4, 13: 2, 14: 3 })[id];   // 11 is the weakest, then 13, 14
+  test('the CPU swaps its weakest for your best, its second weakest for your second', () => {
+    const wb = g.winBackNext('one', null, [90], cpu);
+    assert.equal(wb.step, 2);
+    assert.deepEqual([...g.winBackHand(wb, str).h], [10, 90, 12, 13, 14]);
+    const last = g.winBackNext('one', wb, [91], [10, 90, 12, 13, 14]);
+    assert.equal(last.step, 3);
+    const { h, idx } = g.winBackHand(last, str);
+    assert.deepEqual([...h], [10, 90, 12, 91, 14]);
+    assert.deepEqual([...idx], [1, 3]);
+  });
+  test('Trade One: two tries, then it ends', () => {
+    const wb = g.winBackNext('one', null, [90], cpu), last = g.winBackNext('one', wb, [91], cpu);
+    assert.deepEqual([...last.lost], [90, 91]);
+    assert.equal(g.winBackNext('one', last, [92, 93], cpu).end, 'last');
+  });
+  test('Trade All: one try only', () => {
+    const wb = g.winBackNext('all', null, [90, 91, 92, 93, 94], cpu);
+    assert.deepEqual([...g.winBackHand(wb, str).h].sort(), [90, 91, 92, 93, 94]);
+    assert.equal(g.winBackNext('all', wb, [1, 2, 3, 4, 5], cpu).end, 'all');
+  });
+  test('Diff: no Last chance once the CPU would need more than 5 of your cards', () => {
+    const wb = g.winBackNext('diff', null, [90, 91, 92], cpu);
+    assert.equal(g.winBackNext('diff', wb, [93, 94], cpu).step, 3);
+    assert.equal(g.winBackNext('diff', wb, [93, 94, 95], cpu).end, 'full');
+  });
+  test('nothing taken, nothing to win back', () => {
+    assert.equal(g.winBackNext('one', null, [], cpu), null);
+  });
+});

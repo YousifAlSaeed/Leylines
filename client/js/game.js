@@ -78,6 +78,7 @@ function renderHud(){
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
+  if(G.wb)chips+=`<span>${wbName(G.wb)}</span>`;
   if(G.daily)chips+=dailyChip();
   // the tutorial's lessons, done ones ticked
   if(G.tut)chips=G.tut.single?`<span class="tut-on">Try it · ${TUT[G.tut.i].name}</span>`:

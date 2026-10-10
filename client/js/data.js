@@ -117,6 +117,25 @@ const TUT=[
 ];
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5), picked only from the loser\'s cards they flipped.'],['all','All','The winner takes all 5 of the loser\'s cards.']];
 // Sweep was a trade rule before 0.18.0; now it's a rule card that works on top of one (save.js moves old saves over)
+/* Win them back (Solo, match.js): after the CPU takes your cards you can play it again, and it plays holding them.
+   wb = {step: 2 (Win them back) | 3 (Last chance), cpu: the CPU's first hand, l1: the cards it took first, lost: every card it took, best first}
+   What comes after a Solo match the CPU won and took cards in (took: their ids, best first; cpu: its hand in that match):
+   the next try, or why there's none ('last': the Last chance is over, 'all': Trade All gets one try, 'full': more than a hand can hold) */
+function winBackNext(trade,wb,took,cpu){
+  if(!took.length)return null;
+  if(!wb)return{step:2,cpu:cpu.slice(),l1:took.slice(),lost:took.slice()};
+  if(wb.step===3)return{end:'last'};
+  if(trade==='all')return{end:'all'};
+  const lost=[...wb.l1,...took];
+  return lost.length>5?{end:'full'}:{step:3,cpu:wb.cpu.slice(),l1:wb.l1.slice(),lost};
+}
+// the CPU's hand for a try: its weakest card swapped for your best, its second weakest for your second, and so on.
+// idx: where your cards sit in it
+function winBackHand(wb,strength){
+  const h=wb.cpu.slice(),idx=h.map((_,i)=>i).sort((a,b)=>strength(h[a])-strength(h[b])||a-b).slice(0,wb.lost.length);
+  idx.forEach((i,k)=>h[i]=wb.lost[k]);
+  return{h,idx};
+}
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 // best-of series: [matches, label, description]; whoever went first in one match goes second in the next
 const SERIES=[[1,'Single','One match decides it.'],
