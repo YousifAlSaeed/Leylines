@@ -16,7 +16,7 @@ const CARD_PRICE=[30,80,200,600,1800];   // the Merchant, by rarity
 const PACK_PRICE={spark:120,arcane:300,ley:700,mythic:1600};
 const MYTHIC_WEEK=1;   // Mythic packs a week from the Pack Counter
 const DEAL_OFF=.25;    // the Merchant's pack of the day
-// the Merchant's shared slots, as [lowest, highest] rarity, then a 4★ (a 5★ on 1 day in 10)
+// the Merchant's shared slots, as [lowest, highest] rarity, then a 4★. The Merchant never sells a 5★
 const MERCH_RAR=[[1,2],[3,3]];
 
 const shd=()=>'<i class="shd" aria-hidden="true"></i>';
@@ -60,7 +60,8 @@ function merchStock(n=dayNo()){
   const rng=mulberry32(daySeed(20,n)),ids=[];
   const pick=(lo,hi)=>{const id=pickOne(CARDS.filter(c=>c.rar>=lo&&c.rar<=hi&&!ids.includes(c.id)),rng).id;ids.push(id);return id};
   const cards=MERCH_RAR.map(([lo,hi])=>({id:pick(lo,hi)}));
-  const r4=rng()<.1?5:4;cards.push({id:pick(r4,r4)});
+  // the roll that once made this a 5★ on some days stays, so the rest of the stock doesn't move
+  rng();cards.push({id:pick(4,4)});
   const deal=pickOne(['spark','arcane','arcane','ley'],rng);
   // the card for you, kept for the day once picked: one you haven't found (up to 3★), or any 1★–3★ once you've found them all
   const s=shopDay();

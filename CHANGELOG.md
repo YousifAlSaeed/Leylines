@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.8 (2026-10-10)
+- Night Market: the Merchant doesn't sell 5★ cards any more. The top card is always a 4★
+
 ## 0.19.7 (2026-10-10)
 - Settings → Alerts: the Test button is gone for players. Only developer accounts still have it
 
