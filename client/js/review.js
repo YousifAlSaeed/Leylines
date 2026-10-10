@@ -211,7 +211,9 @@ function coachPlace(){
   const r=(land?$('#sideTop'):$('#handTop')).getBoundingClientRect(),w=land?Math.max(240,r.width/UI):Math.min(W-24,440);
   c.style.width=w+'px';
   c.style.left=Math.max(12,Math.min(W-w-12,(r.left+r.width/2)/UI-w/2))+'px';
-  c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(r.top/UI-4,58))+'px';
+  // upright (phones, PC): the bubble ends just above the board and grows upwards over the names if its words need
+  // the room, so it never covers the top row's numbers
+  c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(58,$('#board').getBoundingClientRect().top/UI-c.offsetHeight-8))+'px';
 }
 function revPlace(){
   if(document.body.classList.contains('puz'))coachPlace();

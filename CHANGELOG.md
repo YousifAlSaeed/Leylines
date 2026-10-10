@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.18 (2026-10-10)
+- Fixed: on a phone, the Daily Puzzle's goal and the Review's notes could cover the numbers on the board's top row. They now always end just above the board
+- Fixed: on a narrow computer window, the emote tray could open off the right edge of the screen
+
 ## 0.19.17 (2026-10-10)
 - One colour for each rarity, the same everywhere: 1★ bronze, 2★ silver, 3★ gold, 4★ violet (a deeper, stronger one) and 5★ prism, a rainbow. 5★ cards no longer glow gold when a pack opens (that looked like a 3★); "5★ Legendary" and the 5★ tag are written in the rainbow
 

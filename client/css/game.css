@@ -205,8 +205,8 @@ body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space
 @keyframes emCool{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(0 0 0 100%)}}
 .etray{position:absolute;left:0;bottom:calc(100% + 8px);z-index:30;width:max(100%,280px);box-sizing:border-box;background:var(--surf);border:1px solid var(--line2);border-radius:20px;padding:10px;
   box-shadow:0 20px 50px rgba(var(--sh),calc(.7*var(--shk)));transform-origin:20% 100%;animation:emPop .26s var(--spring)}
-/* in landscape your cards are the right-hand column, so the tray grows leftwards and stays on screen */
-body.land .etray{left:auto;right:0;transform-origin:90% 100%}
+/* in landscape your cards are the right-hand column, and on PC your corner is bottom-right: the tray grows leftwards and stays on screen */
+body.land .etray,body.pc .etray{left:auto;right:0;transform-origin:90% 100%}
 @keyframes emPop{from{transform:scale(.6) translateY(16px);opacity:0}}
 .egrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .em{border:1px solid var(--line);background:rgba(var(--tint),.04);border-radius:14px;padding:6px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--text);font:600 11px var(--body);white-space:nowrap}
