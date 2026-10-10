@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.4 (2026-10-10)
+- Fixed: closing a pack with X before tearing it opened it anyway. Now the pack stays in your list, unopened. The cards inside stay the same, so opening it again later shows the same ones
+
 ## 0.19.3 (2026-10-10)
 - Crossroads: when the host leaves, the game ends for everyone, whether the seats are friends or CPUs. That's the Leave button, going back to the menu, or closing or reloading the game; the others see "The host left, so the match is over." A host can't resume a game any more, so nothing is left waiting on the menu
 - If the host's connection just drops, the others wait a minute (it can be a short glitch), with a countdown, then the match ends

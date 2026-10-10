@@ -4,8 +4,8 @@
    Opening: drag across the top strip to tear it, light leaks out in the
    best card's colour, then the cards come out worst to best. Tap one to
    flip it (rarer cards glow and shake longer first), swipe it away for
-   the next. The cards are added to the collection before any of that,
-   so closing early never loses them.
+   the next. The cards are added to the collection the moment it tears,
+   so closing early never loses them; closing before that keeps the pack.
    ===================================================================== */
 const RC=['#b08358','#cfd8e0','#f0c35c','#b98cff','#ff8fd0'];
 const rarCol=r=>r===5?'#ffd76a':RC[r-1];
@@ -37,17 +37,32 @@ function rollPack(p){
   }
   return out.sort((a,b)=>CARDS[a].rar-CARDS[b].rar);
 }
-// src: an index into SAVE.packs, or 'daily'
+// a roll kept for a pack shown but not torn yet (validated: saves can be edited)
+const keptRoll=(ids,t)=>Array.isArray(ids)&&ids.length===PACKS[t].n&&ids.every(i=>Number.isInteger(i)&&CARDS[i])?ids:null;
+// src: an index into SAVE.packs, or 'daily'. The pack is only used up once it's
+// torn (pkCommit): closing it before that keeps it. Its cards are rolled now and
+// kept with it, so closing and opening again can't roll new ones.
 function openPack(src){
-  let p;
-  if(src==='daily'){const d=dailyState();if(!d.ready)return;p={t:d.t,daily:d.day};SAVE.daily={at:today(),n:d.n}}
-  else{p=SAVE.packs[src];if(!p)return;SAVE.packs.splice(src,1)}
-  const ids=rollPack(p),fresh=[];
+  let p,ids;
+  if(src==='daily'){const d=dailyState();if(!d.ready)return;p={t:d.t,daily:d.day,n:d.n};
+    const r=SAVE.dailyRoll;ids=r&&r.at===today()&&keptRoll(r.ids,p.t);
+    if(!ids){ids=rollPack(p);SAVE.dailyRoll={at:today(),ids};pityAdd(p,ids)}}
+  else{p=SAVE.packs[src];if(!p)return;ids=keptRoll(p.ids,p.t);
+    if(!ids){ids=p.ids=rollPack(p);pityAdd(p,ids)}}
+  save();
+  pkStart(p,ids,[]);
+}
+// the guarantee counts a pack when its cards are rolled
+function pityAdd(p,ids){SAVE.pity=ids.some(id=>CARDS[id].rar===5)?0:Math.min(PITY,SAVE.pity+PITY_PTS[p.t])}
+// the pack is torn: use it up and add its cards
+function pkCommit(){
+  const p=PK.src;
+  if(p.daily){SAVE.daily={at:today(),n:p.n};SAVE.dailyRoll=null}
+  // found by its cards too: a cloud sync may have swapped SAVE since it was shown
+  else{let k=SAVE.packs.indexOf(p);if(k<0)k=SAVE.packs.findIndex(x=>String(x.ids)===String(PK.ids));if(k>=0)SAVE.packs.splice(k,1)}
   // a second copy of a new card in the same pack isn't new
-  ids.forEach(id=>{fresh.push(!SAVE.seen.includes(id));collAdd(id)});
-  SAVE.pity=ids.some(id=>CARDS[id].rar===5)?0:Math.min(PITY,SAVE.pity+PITY_PTS[p.t]);
+  PK.fresh=PK.ids.map(id=>{const f=!SAVE.seen.includes(id);collAdd(id);return f});
   profCheck();save();
-  pkStart(p,ids,fresh);
 }
 // the next pack to open after this one: level packs first, then the daily
 const nextPack=()=>SAVE.packs.length?0:dailyState().ready?'daily':null;
@@ -174,7 +189,7 @@ const tearUp=e=>{
   TR.on=false;pk.classList.remove('drag');
   if(TR.p>.7)return finishTear();
   // not far enough: the strip settles back
-  if(TR.p>0){PSND.snap();tearTo(TR.p,0,260,()=>{PK.state='idle'})}else PK.state='idle';
+  if(TR.p>0){PSND.snap();tearTo(TR.p,0,260,()=>{if(PK.state==='tearing')PK.state='idle'})}else PK.state='idle';
 };
 pk.addEventListener('pointerup',tearUp);pk.addEventListener('pointercancel',tearUp);
 function drawTear(p){
@@ -197,8 +212,9 @@ function tearTo(a,b,ms,done){
 // keyboard (and anyone who'd rather not drag): the strip tears itself
 function autoTear(){PK.state='tearing';TR.dir=1;pkHint('');tearTo(0,1,520,finishTear)}
 function finishTear(){
-  if(PK.state==='torn'||PK.state==='cards'||PK.state==='sum')return;
-  PK.state='torn';TR.on=false;
+  // already torn, or closed while the strip was still tearing itself
+  if(PK.state!=='idle'&&PK.state!=='tearing')return;
+  PK.state='torn';TR.on=false;pkCommit();
   const d=TR.dir||1,best=CARDS[PK.ids[PK.ids.length-1]].rar,col=rarCol(best);
   PSND.rip();buzz([20,30,40]);
   capB.style.opacity=0;

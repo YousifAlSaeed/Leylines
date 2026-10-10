@@ -14,8 +14,8 @@ function defSave(){
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
-    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, 5★ guarantee points (data.js)
-    packs:[],packLv:1,daily:null,pity:0,
+    // packs (packs.js): unopened packs [{t: tier, lv, mile, ids: cards once shown}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, today's daily cards once shown {at, ids}, 5★ guarantee points (data.js)
+    packs:[],packLv:1,daily:null,dailyRoll:null,pity:0,
     // ids of the packs a developer gave you that were added already (packs.js)
     gifts:[],
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
@@ -43,6 +43,7 @@ function fixProfile(p,s){
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.gifts=(Array.isArray(p.gifts)?p.gifts:[]).filter(Number.isInteger).slice(-100);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  p.dailyRoll=ob(p.dailyRoll)&&typeof p.dailyRoll.at==='string'&&Array.isArray(p.dailyRoll.ids)?{at:p.dailyRoll.at.slice(0,10),ids:p.dailyRoll.ids.slice(0,10)}:null;
   p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
   p.live=ob(p.live)?p.live:null;
   p.owes=(Array.isArray(p.owes)?p.owes:[]).filter(o=>ob(o)&&typeof o.k==='string'&&Number.isFinite(o.at)&&Array.isArray(o.deck)&&
