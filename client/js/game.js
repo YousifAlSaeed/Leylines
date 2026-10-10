@@ -74,7 +74,7 @@ function renderHud(){
   for(const[el,p]of[[$('#tagBot'),bot],[$('#tagTop'),1-bot]]){const t=tag(p);if(el.textContent!==t){el.textContent=t;el.classList.toggle('on',!!t)}}
   const R=G.rules;
   let chips=rulesOn(R,G.mode==='local'?'none':G.trade).map(r=>`<span>${r[1]}</span>`).join('');
-  if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
+  if(timedOn(R))chips+=isBank(R)?`<span>⏱ ${fmtLeft(R.bank)} bank</span>`:`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;

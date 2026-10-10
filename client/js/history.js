@@ -9,7 +9,7 @@
    ===================================================================== */
 const HIST_MAX=30,HIST_PAGE=5;
 // an entry: {t: time, m: 'ai' | 'online', d: CPU difficulty, n: their name, u: their username, av: their avatar card,
-//   bo, r: 'w' | 'l' | 'd' (yours), log: [[your score, theirs]] per match, me / op: both hands, ru: rules on, tm: turn timer,
+//   bo, r: 'w' | 'l' | 'd' (yours), log: [[your score, theirs]] per match, me / op: both hands, ru: rules on, tm: turn timer, bk: bank timer,
 //   tr: trade, won / lost: cards that changed hands, xp, sw: the winner swept a match, sd: sudden death, q: 'you' | 'them' | 'early'}
 const HIST={f:'all',n:HIST_PAGE,open:-1};
 
@@ -27,7 +27,7 @@ function histAdd(r,quit=''){
   if(quit&&quit!=='early'&&G.st&&!G.over)log.push([score(G.st,me),score(G.st,1-me)]);
   const win=r==='w'?me:r==='l'?1-me:-1;
   const h={t:Date.now(),m:online?'online':'ai',bo:G.bo,r,log:log.slice(-5),me:G.decks[me].slice(0,5),op:G.decks[1-me].slice(0,5),
-    ru:rulesOn(G.rules,G.mode==='local'?'none':G.trade).map(x=>x[0]),tm:G.rules.timer||0,tr:G.trade,xp:ser.xp||0};
+    ru:rulesOn(G.rules,G.mode==='local'?'none':G.trade).map(x=>x[0]),tm:isBank(G.rules)||!timedOn(G.rules)?0:G.rules.timer,bk:isBank(G.rules)?G.rules.bank:0,tr:G.trade,xp:ser.xp||0};
   if(online){h.n=oppName();if(NET.oppUser)h.u=NET.oppUser;if(NET.oppAv!=null)h.av=NET.oppAv}else h.d=G.diff;
   if(win>=0&&ser.log.some(x=>x.sweep&&x.w===win))h.sw=1;
   if(ser.sd)h.sd=1;
@@ -87,7 +87,7 @@ function histRow(h,i,mine,owner){
   const bits=[h.m==='ai'?'Solo':'Online',h.bo>1?`Best of ${h.bo}`:'',h.sw?'Sweep!':'',h.q==='you'?'Left':h.q==='them'?'They left':h.q==='early'?'Stopped early':'',histWhen(h.t)].filter(Boolean);
   const you=mine?'You':owner;
   const tr=h.tr==='sweep'?[,'Sweep']:TRADES.find(t=>t[0]===h.tr); // Sweep was a trade rule before 0.18.0
-  const rules=[...h.ru.map(k=>(RULES.find(x=>x[0]===k)||[k,k])[1]),h.tm?`Turn timer ${h.tm}s`:'',tr?`Trade: ${tr[1]}`:''].filter(Boolean);
+  const rules=[...h.ru.map(k=>(RULES.find(x=>x[0]===k)||[k,k])[1]),h.tm?`Turn timer ${h.tm}s`:'',h.bk?`Bank timer ${fmtLeft(h.bk)}`:'',tr?`Trade: ${tr[1]}`:''].filter(Boolean);
   const traded=h.won&&h.won.length?`<b class="w">${h.won.map(id=>CARDS[id]?CARDS[id].name:'').join(', ')}</b><small>${mine?'You won':'Won'}</small>`
     :h.lost&&h.lost.length?`<b class="l">${h.lost.map(id=>CARDS[id]?CARDS[id].name:'').join(', ')}</b><small>${mine?'You lost':'Lost'}</small>`:'<b>—</b><small>No trade</small>';
   const quit=h.q==='you'?`${you} left the match, so it counts as a loss.`:h.q==='them'?`${esc(opp)} left the match, so it counts as a win.`:h.q==='early'?'The series was stopped before it was over.':'';

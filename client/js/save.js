@@ -6,8 +6,8 @@ const SKEY='ninefold.save.v1';
 const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
-  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45},
-    trade:'one',diff:'normal',bo:1,cpuTimer:0,stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45,tkind:'turn',bank:180,flag:'random'},
+    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
@@ -90,11 +90,13 @@ function loadSave(){
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
-SAVE.rules.timer=timerSec(SAVE.rules.timer);
+normTimer(SAVE.rules);
 // Sweep used to be a trade rule: it's a rule card now, played on top of a trade rule (One, the gentlest)
 if(SAVE.trade==='sweep'){SAVE.trade='one';SAVE.rules.sweep=true}
 // Solo has its own turn timer, off unless the player turns it on (rules.timer is for people)
 SAVE.cpuTimer=timerSec(SAVE.cpuTimer);
+// and its own timer type and bank (cpuTk: tkind, bank, flag)
+{const c=normTimer({...(SAVE.cpuTk&&typeof SAVE.cpuTk==='object'?SAVE.cpuTk:{}),timer:0});SAVE.cpuTk={tkind:c.tkind,bank:c.bank,flag:c.flag}}
 // every change goes through here; account.js (loaded later) syncs it to a signed-in account
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}if(typeof acctChanged==='function')acctChanged()}
 // stable per-device id so the host can recognise a guest who reconnects

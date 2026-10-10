@@ -12,7 +12,7 @@ function baseMatch(mode,extra){
 }
 function startAI(){
   if(deckable(collPool())<5)ensureMinimum();
-  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
+  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer,...SAVE.cpuTk},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
   openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
@@ -78,7 +78,9 @@ function nextMatch(){
 }
 async function newRound(h0,h1,first){
   const g=G;
-  G.first=first;G.sel=null;G.busy=true;
+  G.first=first;G.sel=null;G.busy=true;G.timeUp=false;G.flagged=null;
+  // bank timer: a full clock for each player every match (and every Sudden Death replay)
+  G.bank=isBank(G.rules)?[G.rules.bank*1000,G.rules.bank*1000]:null;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
   // a new round of this match (Sudden Death adds one) starts a new list of moves for the Review
   if(G.ser){const rv=G.ser.rev=G.ser.rev||[],m=rv[G.ser.n-1]=rv[G.ser.n-1]||{rounds:[]};
@@ -135,13 +137,16 @@ function aiTurn(){
 function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.tut&&!tutMove(cell))return;
-  if(G.mode==='online')netSend({t:'move',hi,cell});
+  if(G.mode==='online')netSend({t:'move',hi,cell,bk:bankNow(G.st.turn)});
   if(G.daily)dailyMoved(hi,cell);
   execMove(hi,cell);
 }
 async function execMove(hi,cell){
   const g=G,st=G.st,p=st.turn,q=1-p,id=st.h[p][hi];
   G.busy=true;G.sel=null;G.timeUp=false;stopTurnTimer();
+  // bank timer: an online opponent's clock is what their side said it was; every card played adds the bonus
+  if(G.bank){if(G.netBk!=null)G.bank[p]=G.netBk;G.bank[p]+=BANK_BONUS}
+  G.netBk=null;
   if(p===G.me)G.moved=true;
   const sc=[score(st,0),score(st,1)];
   if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
@@ -222,7 +227,8 @@ function rowHTML(ids,color,fresh=[]){return`<div class="cardrow">${ids.map((id,i
 const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
   G.over=true;G.busy=true;
-  const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
+  // a player out of time with "You lose" on loses, whatever the score
+  const m=G.bottom===0?[s0,s1]:[s1,s0],mw=G.flagged!=null?1-G.flagged:s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});
   const rm=ser.rev&&ser.rev[ser.n-1];if(rm)rm.end={b:G.st.b.slice(),o:G.st.o.slice()};
   if(G.sd>0)ser.sd=1;
@@ -232,7 +238,8 @@ function finish(s0,s1){
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
     {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,rules:G.rules})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
-  const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
+  const ran=G.flagged!=null?`<p class="note">${G.mode==='local'?(G.flagged===0?'Blue':'Red')+' ran':G.flagged===G.me?'You ran':esc(G.mode==='ai'?'The CPU':oppName())+' ran'} out of time.</p>`:'';
+  const vs=ran+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'');
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
   const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
   if(G.bo>1&&!seriesDone(G.bo,ser.n,ser.wins)){
@@ -440,7 +447,7 @@ $('#btnQuit').onclick=()=>{
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
   SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
-    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk,wb:G.wb||null}));
+    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk,wb:G.wb||null,bank:G.bank}));
   save();
 }
 function liveClear(){if(SAVE.live){SAVE.live=null;save()}}
@@ -456,6 +463,8 @@ function liveMatchFrom(L){
     const g=baseMatch('ai',{rules:{...defSave().rules,...L.rules},trade:netTrade(L.trade),diff:DIFFS.some(d=>d[0]===L.diff)?L.diff:'normal',bo:boOf(L.bo),
       names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved,wb});
     g.rng=mulberry32(L.a|0);
+    normTimer(g.rules);
+    g.bank=isBank(g.rules)&&Array.isArray(L.bank)&&L.bank.length===2&&L.bank.every(n=>Number.isFinite(n)&&n>=0)?L.bank:isBank(g.rules)?[g.rules.bank*1000,g.rules.bank*1000]:null;
     // which card each player placed (Diff); a save from before it was tracked lets any card be taken
     const t=L.trk;
     g.trk=t&&Array.isArray(t.h)&&t.h.length===2&&t.h.every(Array.isArray)&&ok9(t.c)?t:null;
@@ -493,28 +502,39 @@ function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.s
 const RING=106.8;
 let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0,lt:0};
 function startTurnTimer(){
-  // the CPU doesn't need a clock; everyone else gets the chosen time per turn
-  if(!G||!G.rules.timer||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
-  const dur=G.rules.timer*1000;
+  // the CPU doesn't need a clock; everyone else gets the chosen time per turn, or what's left of their bank
+  if(!G||!timedOn(G.rules)||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
+  bankKeep(); // started again mid-turn (back after a reconnect): the bank goes on from where it was
+  const p=G.st.turn,bank=!!G.bank,tot=(bank?G.rules.bank:G.rules.timer)*1000,dur=bank?G.bank[p]:tot;
   cancelAnimationFrame(TMR.raf);
-  TMR={g:G,end:performance.now()+dur,dur,p:G.st.turn,fired:false,sec:-1,raf:0};
+  TMR={g:G,end:performance.now()+dur,dur,tot,bank,p,fired:false,sec:-1,raf:0};
+  $('#timer').classList.toggle('bank',bank);
   $('#timer').classList.remove('off');$('#tbar').classList.remove('off');
   tickTimer();drawTimer(performance.now());
 }
 function stopTurnTimer(){
+  bankKeep();
   TMR.g=null;cancelAnimationFrame(TMR.raf);
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
   setTimerLevel('');paintClocks();
 }
+// a running bank keeps what's left of it
+function bankKeep(){if(TMR.g&&TMR.bank&&TMR.g.bank)TMR.g.bank[TMR.p]=Math.max(0,TMR.end-performance.now())}
+// what's left of player p's bank right now (ms), sent with each move so both sides agree
+function bankNow(p){
+  if(!G||!G.bank)return undefined;
+  return Math.round(TMR.g===G&&TMR.bank&&TMR.p===p?Math.max(0,TMR.end-performance.now()):G.bank[p]);
+}
 // PC: each player's clock in their corner (game.js layout). The one whose turn it is counts down; the other shows a full
-// turn, faded. Both corners always have the box, so they have the same shape: the CPU's (it plays at once), or both
-// with no turn timer, stay empty
+// turn (or what's left of their bank), faded. Both corners always have the box, so they have the same shape: the CPU's
+// (it plays at once), or both with no timer, stay empty
 function paintClocks(){
   for(const[el,p]of[[$('#ptmBot'),G?G.bottom:0],[$('#ptmTop'),G?1-G.bottom:1]]){
     const on=!!(G&&G.st&&!G.tut&&!G.over);
     el.hidden=!on;if(!on)continue;
-    const timed=G.rules.timer&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
-    el.classList.toggle('idle',!run);el.classList.toggle('none',!timed);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:G.rules.timer):'';
+    const timed=timedOn(G.rules)&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
+    const idle=G.bank?Math.ceil(G.bank[p]/1000):G.rules.timer;
+    el.classList.toggle('idle',!run);el.classList.toggle('none',!timed);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:idle):'';
   }
 }
 function setTimerLevel(lvl){
@@ -527,7 +547,7 @@ function setTimerLevel(lvl){
 const tProg=$('#tProg'),tFill=$('#tFill');
 function drawTimer(now){
   if(!TMR.g)return;
-  const f=Math.max(0,TMR.end-now)/TMR.dur;
+  const f=Math.min(1,Math.max(0,TMR.end-now)/TMR.tot);
   tProg.style.strokeDashoffset=(RING*(1-f)).toFixed(3);
   tFill.style.transform=`scaleX(${f.toFixed(6)})`;
   if(f>0)TMR.raf=requestAnimationFrame(drawTimer);
@@ -540,11 +560,13 @@ function tickTimer(){
   const now=performance.now();
   if(TMR.lt&&now-TMR.lt>2000)TMR.end+=now-TMR.lt-100;
   TMR.lt=now;
-  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.dur/1000;
+  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.tot/1000;
   if(sec!==TMR.sec){
     TMR.sec=sec;
-    setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
-    $('#tNum').textContent=sec;paintClocks();
+    // a bank turns orange in its last 30 seconds and red in its last 10
+    const[warn,crit]=TMR.bank?[30,10]:[timerWarn(t),timerCrit(t)];
+    setTimerLevel(sec<=crit?'crit':sec<=warn?'warn':'');
+    $('#tNum').textContent=TMR.bank&&sec>=60?fmtLeft(sec):sec;paintClocks();
     $('#tbar').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }
@@ -554,6 +576,7 @@ setInterval(tickTimer,100);
 async function onTimeUp(p){
   // each client only auto-plays for its own player; an online opponent's move arrives over the network
   if(!isHuman(p))return;
+  if(G.rules.flag==='lose'){outOfTime(p);return}
   const g=G;
   G.timeUp=true;G.sel=null;
   if(drag)endDrag({},true);
@@ -565,6 +588,18 @@ async function onTimeUp(p){
   const moves=genMoves(G.st).filter(m=>G.forced==null||m[0]===G.forced),pick=moves[Math.floor(Math.random()*moves.length)];
   // genMoves skips a second copy of the same card, so the Chaos card picks a random empty square itself
   const hi=G.forced!=null?G.forced:pick[0],cell=G.forced!=null?(e=>e[Math.floor(Math.random()*e.length)])(G.st.b.flatMap((x,i)=>x<0?[i]:[])):pick[1];
-  if(G.mode==='online')netSend({t:'move',hi,cell});
+  if(G.mode==='online')netSend({t:'move',hi,cell,bk:0});
   execMove(hi,cell);
+}
+// out of time with "You lose" on (either timer): player p loses the match. Online, the other side hears it as a move (pump)
+async function outOfTime(p){
+  const g=G;
+  G.timeUp=true;G.sel=null;G.busy=true;G.flagged=p;
+  if(G.mode==='online'&&isHuman(p))netSend({t:'move',flag:true});
+  if(drag)endDrag({},true);
+  stopTurnTimer();renderHands();renderBoard();
+  sfx('timeup');
+  await banner('Out of time!','small');
+  if(G!==g)return;
+  finish(score(G.st,0),score(G.st,1));
 }

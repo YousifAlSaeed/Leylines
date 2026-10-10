@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.22.0 (2026-10-10)
+- New Bank timer, like a chess clock: each player gets 1 to 5 minutes for the whole match, and every card you play adds 2 seconds back. Choose what running out does: a random card is played for you, or you lose the match
+- The per-turn timer has the same choice now: a random card, or you lose the match
+- Match setup is simpler: Difficulty, Timer, Match length and Trade are now short rows that show what is picked. Tap a row to change it. The timer can be Off, Per turn or Bank
+- On a computer, the rule cards in Match setup are bigger and line up with the boxes on the left, and each card says what its rule does
+
 ## 0.21.1 (2026-10-10)
 - Badges on your profile are now a card for each group, with a dot where shards wait and a gold frame once a group is complete. Tap a group to see its badges: what each one takes, how close you are, and a Claim button for the ones whose shards wait
 - Profile order: on a computer, Badges sits on the right and Account on the left. On a phone: Showcase, Record, History, Collection, Badges, Account
