@@ -198,7 +198,7 @@ function finish(s0,s1){
   renderHud();
   let reward='';
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
@@ -352,7 +352,7 @@ function quitMatch(){
   let took=null;
   if(G.mode!=='local'&&!puzzle){
     // between the matches of a series that match already counted; the series is what's given up
-    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',left:true}));
+    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',daily:!!G.daily,left:true}));
     const h=histAdd('l','you');
     if(ai&&n)took=loseCards(strongest(G.decks[G.me],n));
     // online the other player decides; it reaches you through the server (spare.js)

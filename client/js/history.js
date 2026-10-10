@@ -5,7 +5,7 @@
    SAVE.history: who, both hands, the scores, the rules, the cards traded
    and the XP. Anyone who opens your profile sees it, unless you hide it
    (SAVE.hideHist); the server leaves it out then (server/lib/users.js).
-   Couch games aren't saved, just like they don't count for stats.
+   Couch games, Daily games and tutorial lessons aren't saved.
    ===================================================================== */
 const HIST_MAX=30,HIST_PAGE=5;
 // an entry: {t: time, m: 'ai' | 'online', d: CPU difficulty, n: their name, u: their username, av: their avatar card,
@@ -19,7 +19,8 @@ function histXp(rec){if(G&&G.ser&&rec)G.ser.xp=(G.ser.xp||0)+rec.gain;return rec
 // r: your result. quit: 'you' (you left), 'them' (they left), 'early' (stopped between matches of a series).
 // The caller saves. Returns the entry, which stays on G so the trade can be added to it.
 function histAdd(r,quit=''){
-  if(!G||G.mode==='local'||G.hist||!G.decks[0]||!G.decks[1])return null;
+  // only Solo and online games: not couch games, Daily games (daily.js) or tutorial lessons
+  if(!G||G.mode==='local'||G.daily||G.tut||G.hist||!G.decks[0]||!G.decks[1])return null;
   const me=G.me,ser=G.ser||{log:[]},online=G.mode==='online';
   const log=ser.log.map(x=>G.bottom===me?[x.sb,x.sr]:[x.sr,x.sb]);
   // left in the middle of a match: its score when they stopped
@@ -28,8 +29,6 @@ function histAdd(r,quit=''){
   const h={t:Date.now(),m:online?'online':'ai',bo:G.bo,r,log:log.slice(-5),me:G.decks[me].slice(0,5),op:G.decks[1-me].slice(0,5),
     ru:rulesOn(G.rules,G.mode==='local'?'none':G.trade).map(x=>x[0]),tm:G.rules.timer||0,tr:G.trade,xp:ser.xp||0};
   if(online){h.n=oppName();if(NET.oppUser)h.u=NET.oppUser;if(NET.oppAv!=null)h.av=NET.oppAv}else h.d=G.diff;
-  // a Daily Duel or Gauntlet match (daily.js) is labelled as one
-  if(G.daily)h.dk=G.daily.kind;
   if(win>=0&&ser.log.some(x=>x.sweep&&x.w===win))h.sw=1;
   if(ser.sd)h.sd=1;
   if(quit)h.q=quit;
@@ -60,7 +59,7 @@ function histInner(list,mine,owner){
   const more=shown.length>HIST.n?`<button class="mh-more" data-h="more">Show more</button>`:'';
   return head+priv+seg+(rows||`<p class="pf-hint left">No ${HIST.f==='ai'?'games against the computer':'online games'} here yet.</p>`)+more;
 }
-const histOpp=h=>h.m==='ai'?`CPU · ${h.dk?{duel:'Daily Duel',gauntlet:'Gauntlet'}[h.dk]||'Daily':(DIFFS.find(d=>d[0]===h.d)||DIFFS[1])[1]}`:h.n||'Player';
+const histOpp=h=>h.m==='ai'?`CPU · ${(DIFFS.find(d=>d[0]===h.d)||DIFFS[1])[1]}`:h.n||'Player';
 function histWhen(t,long){
   const d=new Date(t),days=(Date.now()-t)/864e5;
   if(long)return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});

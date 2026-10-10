@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.5 (2026-10-10)
+- Match history only shows Solo and online games now. Daily games aren't saved there, and old ones are cleared out
+- Daily games don't count as wins, losses or draws on your record any more (they still give XP)
+
 ## 0.19.4 (2026-10-10)
 - Fixed: closing a pack with X before tearing it opened it anyway. Now the pack stays in your list, unopened. The cards inside stay the same, so opening it again later shows the same ones
 

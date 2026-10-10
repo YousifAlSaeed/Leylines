@@ -51,7 +51,8 @@ const cards = (v, n = 5) => (Array.isArray(v) ? v.filter(cardId).slice(0, n) : [
 export function publicHistory(save) {
   const s = save && typeof save === 'object' ? save : {};
   if (s.hideHist) return null;
-  return (Array.isArray(s.history) ? s.history : []).slice(-30).filter((h) => h && typeof h === 'object').map((h) => {
+  // Daily games (dk) were saved by old versions: history is Solo and online games only
+  return (Array.isArray(s.history) ? s.history : []).slice(-30).filter((h) => h && typeof h === 'object' && !h.dk).map((h) => {
     const e = {
       t: Number.isFinite(h.t) ? h.t : 0, m: h.m === 'online' ? 'online' : 'ai', bo: [3, 5].includes(h.bo) ? h.bo : 1,
       r: ['w', 'l', 'd'].includes(h.r) ? h.r : 'd',
@@ -61,7 +62,6 @@ export function publicHistory(save) {
     };
     if (e.m === 'ai') {
       e.d = ['easy', 'normal', 'hard'].includes(h.d) ? h.d : 'normal';
-      if (['duel', 'gauntlet'].includes(h.dk)) e.dk = h.dk; // a Daily challenge match (client/js/daily.js)
     } else {
       e.n = cleanName(h.n) || 'Player';
       if (typeof h.u === 'string' && USERNAME.test(h.u)) e.u = h.u;

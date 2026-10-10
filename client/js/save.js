@@ -57,7 +57,8 @@ function fixProfile(p,s){
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
   p.recent=res(p.recent);p.orecent=res(p.orecent);
-  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
+  // Daily games (dk) were saved before 0.19.5; history is Solo and online only now
+  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&!h.dk&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
   p.hideHist=!!p.hideHist;
   // saves from before the tutorial: anyone who has played already isn't offered it on launch
   if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;
