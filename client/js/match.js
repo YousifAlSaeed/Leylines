@@ -474,7 +474,7 @@ function paintClocks(){
     const on=!!(G&&G.st&&!G.tut&&!G.over);
     el.hidden=!on;if(!on)continue;
     const timed=G.rules.timer&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
-    el.classList.toggle('idle',!run);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:G.rules.timer):'';
+    el.classList.toggle('idle',!run);el.classList.toggle('none',!timed);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:G.rules.timer):'';
   }
 }
 function setTimerLevel(lvl){

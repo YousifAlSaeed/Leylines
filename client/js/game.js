@@ -184,6 +184,7 @@ function layout(){
   }
   cell=Math.max(48,Math.floor(cell));hc=Math.max(40,Math.floor(hc));
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
+  rs.setProperty('--t',Math.ceil(hc*1.2+6)+'px'); // PC: a hand row's height, and so a corner's
   // the emote button (36 + a 10px gap) hangs off the left of the player rows; when the space beside them is
   // smaller than that, the rows start further in by the difference (screen padding is 10px a side)
   const row=Math.min(W-20,hc*5+24);
@@ -205,6 +206,7 @@ function fitGame(){
     const f=1-over/(Math.max(...parts.map(r=>r.bottom))-top),cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
     if(cell<=48&&hc<=40)return;
     rs.setProperty('--cell',Math.max(48,Math.floor(cell*f))+'px');rs.setProperty('--hc',Math.max(40,Math.floor(hc*f))+'px');
+    rs.setProperty('--t',Math.ceil(Math.max(40,Math.floor(hc*f))*1.2+6)+'px');
   }
 }
 window.addEventListener('resize',layout);

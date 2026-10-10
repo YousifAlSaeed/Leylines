@@ -107,28 +107,35 @@ body.land .hand .card.sel ~ .card{--dy:calc(var(--hc) * .16)}
 body.pc .turn{display:flex;position:absolute;left:50%;transform:translateX(-50%);justify-content:center}
 body.pc .pill .timer,body.pc .ttag.on{display:none}
 body.pc .timer:not(.off)+#turnTxt{padding-left:12px}
-body.pc .arena{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:auto auto auto;align-content:center;gap:8px 16px}
+body.pc .arena{display:grid;grid-template-columns:minmax(var(--t),1fr) auto minmax(var(--t),1fr);grid-template-rows:var(--t) auto var(--t);align-content:center;gap:8px 12px}
 body.pc .side{display:contents}
 body.pc #handTop{grid-area:1/2}
 body.pc #board{grid-area:2/2}
 body.pc #handBot{grid-area:3/2}
 body.pc .hand{width:calc(var(--cell) * 3 + 26px);min-width:0}
-body.pc .pname{display:grid;width:auto;height:auto;min-width:0;gap:8px 10px;padding:0;align-items:center}
-body.pc #sideTop .pname{grid-area:1/1/3/2;align-self:start;justify-self:end;justify-items:end;grid-template-areas:"sc sc" "who av" "tm tm"}
-body.pc #sideBot .pname{grid-area:2/3/4/4;align-self:end;justify-self:start;justify-items:start;grid-template-areas:"tm tm tm" "av who emb" "sc sc sc"}
-body.pc .pname .av{grid-area:av}
-body.pc .pname .who{grid-area:who;max-width:200px;font-size:15px}
-body.pc #btnEmote{grid-area:emb}
-body.pc .pname .sc{grid-area:sc;margin:0;min-width:0;font-size:clamp(52px,calc(var(--cell) * .62),96px);text-shadow:0 0 26px currentColor}
+/* a corner fits in its hand row's height (--t, game.js layout), never reaching past the board's edge:
+   three rows (score, name and avatar, clock), the score at the end of the player's own cards */
+body.pc .pname{display:grid;width:auto;height:var(--t);box-sizing:border-box;min-width:0;gap:3px 8px;padding:0;align-items:center;align-content:space-between}
+body.pc #sideTop .pname{grid-area:1/1;justify-self:end;justify-items:end;grid-template-areas:"sc sc" "who av" "tm tm"}
+body.pc #sideBot .pname{grid-area:3/3;justify-self:start;justify-items:start;grid-template-areas:"tm tm tm" "av who emb" "sc sc sc"}
+body.pc .pname .av{grid-area:av;width:calc(var(--t) * .27);height:calc(var(--t) * .27);border-radius:7px;font-size:calc(var(--t) * .14)}
+body.pc .pname .av.art{font-size:calc(var(--t) * .18)}
+body.pc .pname .who{grid-area:who;max-width:180px;font-size:13.5px}
+body.pc #btnEmote{grid-area:emb;width:calc(var(--t) * .27);height:calc(var(--t) * .27);border-radius:7px}
+body.pc #btnEmote svg{width:60%;height:60%}
+body.pc .pname .sc{grid-area:sc;margin:0;min-width:0;font-size:calc(var(--t) * .36);line-height:.9;text-shadow:0 0 18px currentColor}
+body.pc .side.active .av,body.pc .side.crit .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 3px var(--hot)}
 body.pc .ptm{grid-area:tm}
 /* the clock, like chess.com's: the player whose turn it is counts down, the other shows a full turn, faded */
 .ptm{display:none}
-body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:132px;box-sizing:border-box;padding:7px 12px;border-radius:9px;
-  color:#fff;font:800 20px/1 var(--display);font-variant-numeric:tabular-nums;transition:opacity .25s,background .25s}
-.ptm svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:110px;box-sizing:border-box;padding:3px 10px;border-radius:7px;
+  color:#fff;font:800 calc(var(--t) * .17)/1.15 var(--display);font-variant-numeric:tabular-nums;transition:opacity .25s,background .25s}
+.ptm svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .side.me .ptm{background:linear-gradient(160deg,var(--blue1),var(--blue2))}
 .side.opp .ptm{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .ptm.idle{opacity:.4}
+/* a clock that never runs (the CPU's, or with no turn timer): just the box */
+.ptm.none svg{visibility:hidden}
 .side.crit .ptm{background:var(--crit)}
 /* a score that changes gives a little pop */
 .pname .sc.pop{animation:scPop .45s var(--spring)}
