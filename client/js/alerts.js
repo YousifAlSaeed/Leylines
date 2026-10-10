@@ -38,16 +38,25 @@ const DEVICE_HELP=alertsIOS()?'iPhone Settings → Notifications → Leylines'
   :/Android/.test(navigator.userAgent)?'your phone\'s Settings → Apps → your browser → Notifications'
   :/Windows/.test(navigator.userAgent)?'Windows Settings → System → Notifications (then restart the browser)'
   :'your computer\'s notification settings';
+// Brave keeps push off until this setting is on, and then either never answers or says "push service error"
+const BRAVE_HELP=navigator.brave?'Brave keeps alerts off at first. In Brave\'s settings → Privacy and security, turn on "Use Google services for push messaging", restart Brave and try again.'
+  :'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).';
 function alertsWhy(e){
   const t=(e&&e.name||'')+' '+(e&&e.message||'');
   // the site is allowed, but the device blocks the browser itself (Windows, Android): the browser reports it as "permission denied"
   if(/NotAllowed|permission denied/i.test(t))return `Your device is blocking alerts from your browser. Turn them on in ${DEVICE_HELP} and try again.`;
-  if(/push service|AbortError|not supported/i.test(t))return 'This browser can\'t get alerts (in Brave, turn on "Use Google services for push messaging" in its settings).';
+  if(/push service|AbortError|not supported/i.test(t)||navigator.brave)return BRAVE_HELP;
   return e&&e.message||'Alerts couldn\'t be turned on. Try again.';
+}
+// the browser's "allow notifications?" question. Some browsers (Brave) tuck it into the address bar or never show it,
+// and then never answer: after a minute that counts as no answer, so nothing waits forever
+function alertsAsk(){
+  const ask=new Promise(res=>{const p=Notification.requestPermission(res);if(p&&p.then)p.then(res)}); // older Safari only calls back
+  return alertsWithin(ask,60000,'Your browser didn\'t ask about alerts. Look for a bell in the address bar, or allow notifications in this site\'s settings, then try again.');
 }
 async function alertsOn(){
   const key=await alertsKey();if(!key)throw new Error('Alerts aren\'t set up on this server yet.');
-  const perm=await Notification.requestPermission();
+  const perm=Notification.permission==='granted'?'granted':await alertsAsk();
   if(perm!=='granted')throw new Error(perm==='denied'?'Alerts are blocked. Allow notifications for this site in your browser settings.':'Alerts stay off.');
   const reg=await alertsReg();
   let sub=await alertsWithin(reg.pushManager.getSubscription(),4000,'This browser didn\'t answer. Try again, or try another browser.');
@@ -71,7 +80,7 @@ async function alertsSync(){
   alertsMark(!!sub);
   if(sub)api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}}).catch(()=>{});
 }
-// Settings → Alerts → Test: the server sends one to each of your devices and says how it went
+// Settings → Alerts → Test (developer accounts only): the server sends one to each of your devices and says how it went
 async function alertsTest(){
   const r=await api('/push/test',{method:'POST'});
   if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
@@ -96,12 +105,13 @@ async function alertsPaint(box){
   const draw=on=>{
     say(on?'On for this device. Invites, friend requests and match news reach you even with the game closed.':'Invites, friend requests and match news, even with the game closed',
       `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
-      (on?'<button class="btn small" id="alertsTest">Test</button>':''));
+      // Test: developer accounts only (and a local copy of the game)
+      (on&&isDev()?'<button class="btn small" id="alertsTest">Test</button>':''));
     ctl.querySelectorAll('.seg button').forEach(b=>b.onclick=async()=>{
       if(ALERTS.busy||(b.dataset.k==='on')===on)return;
       sfx('click');ALERTS.busy=true;ctl.querySelectorAll('button').forEach(x=>x.disabled=true);
       try{
-        if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on. Tap Test to try one.',3000)}
+        if(b.dataset.k==='on'){await alertsOn();toast(isDev()?'Alerts are on. Tap Test to try one.':'Alerts are on',3000)}
         else{await alertsOff();toast('Alerts are off')}
       }catch(e){toast(e.message,7000)}
       finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
@@ -166,11 +176,13 @@ async function alertsTipMaybe(){
     sfx('click');const k=b.dataset.k;
     if(k==='x'){tipSave('never');hide();return}
     if(k==='later'){tipSave(Date.now()+TIP_SNOOZE*864e5);hide();return}
-    p.querySelectorAll('button').forEach(x=>x.disabled=true);
-    try{await alertsOn();tipSave('never');hide();toast('Alerts are on. You can turn them off in Settings.',3500)}
+    // the card goes at once, so it can't hang about while the browser takes its time to answer (or never does)
+    hide();
+    if(Notification.permission!=='granted')toast('Choose Allow in the box your browser shows (it can be up by the address bar).',6000);
+    try{await alertsOn();tipSave('never');toast('Alerts are on. You can turn them off in Settings.',3500)}
     catch(e){
       // blocked or failed: don't ask again for a while, and say why
-      tipSave(Date.now()+TIP_SNOOZE*864e5);hide();toast(e.message,7000);
+      tipSave(Date.now()+TIP_SNOOZE*864e5);toast(e.message,9000);
     }
   };
   document.body.append(p);void p.offsetWidth;p.classList.add('on');

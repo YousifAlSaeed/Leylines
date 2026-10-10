@@ -11,7 +11,8 @@
 const PULSE_MS=5000,PULSE_SLOW=25000; // how often to check without the live line, and with it
 const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],away:[],alerts:[],soonT:0};
 // hosting or joining an online game (NET.role stays set after netClose, so closing counts as out)
-const inOnline=()=>!!NET.role&&!NET.closing;
+// in a 1v1 room or a Crossroads one (duo.js)
+const inOnline=()=>!!NET.role&&!NET.closing||!!DUO.role;
 // free to play: not in a match or an online game. Friends can invite you (also while the game is minimised: then it's "away").
 const isFree=()=>!G&&!inOnline()&&!$('#scr-online').classList.contains('on');
 const frFree=name=>PULSE.online.some(u=>frKey(u)===frKey(name));
@@ -40,7 +41,7 @@ async function pulse(){
   const names=l=>Array.isArray(l)?l.filter(u=>typeof u==='string'):[];
   const online=names(r.online),away=names(r.away),alerts=names(r.alerts);
   if([online,away,alerts].join('|')!==[PULSE.online,PULSE.away,PULSE.alerts].join('|')){
-    PULSE.online=online;PULSE.away=away;PULSE.alerts=alerts;renderFriendTile();renderFriends();roomOpen()&&renderRoom();
+    PULSE.online=online;PULSE.away=away;PULSE.alerts=alerts;renderFriendTile();renderFriends();invRoomRender();
     if(online.length)loadPeerJS().catch(()=>{}); // ready for a quick invite
   }
   for(const n of Array.isArray(r.declined)?r.declined:[])invDeclined(String(n));
@@ -109,21 +110,22 @@ const INV={sent:new Map(),code:'',done:new Set(),cur:null,t:0};
 function inviteFriend(name){
   if(!ACCT.token||!name)return;
   // not hosting yet: open a room first. Its code is picked straight away (NET.want), so the invite goes out now.
-  if(NET.role!=='host'||NET.closing)hostStart();
+  // (hosting a Crossroads room, duo.js, invites go to that room's code)
+  if(DUO.role!=='host'&&(NET.role!=='host'||NET.closing))hostStart();
   INV.sent.set(frKey(name),'wait');
-  invFlush();roomOpen()&&renderRoom();
+  invFlush();invRoomRender();
 }
 // send what's waiting. again: the room's code changed (the first one was taken), so send them all again
 function invFlush(again){
-  const code=NET.code||NET.want;
-  if(NET.role!=='host'||NET.closing||!code)return;
+  const code=DUO.role==='host'?DUO.code:NET.role==='host'&&!NET.closing?NET.code||NET.want:'';
+  if(!code)return;
   for(const [k,st] of INV.sent){
     if(st!=='wait'&&!(again&&st==='sent'))continue;
     // shown as sent at once; taken back if the server says no
     INV.sent.set(k,'sent');INV.code=code;
     if(!again)toast(`Invite sent to ${frName(k)}`);
     api('/pulse/invite',{method:'POST',body:{to:k,code}})
-      .catch(e=>{if(INV.code===code){INV.sent.delete(k);toast(e.message,3000);roomOpen()&&renderRoom()}});
+      .catch(e=>{if(INV.code===code){INV.sent.delete(k);toast(e.message,3000);invRoomRender()}});
   }
 }
 // the room closed, or someone took the seat: the invites still out are taken down
@@ -135,9 +137,11 @@ function invDeclined(name){
   const k=[...INV.sent.keys()].find(k=>frName(k)===name||k===frKey(name));
   if(k)INV.sent.set(k,'no');
   toast(`${name} can't play right now.`,3000);
-  roomOpen()&&renderRoom();
+  invRoomRender();
 }
-// the invite list in the room you're hosting, while the seat is empty (setup.js)
+// redraw whichever room is hosting: 1v1 (setup.js) or Crossroads (duo.js)
+function invRoomRender(){roomOpen()&&renderRoom();DUO.role==='host'&&duoOn('duoroom')&&duoRoomRender()}
+// the invite list in the room you're hosting, while the seat is empty (setup.js, duo.js)
 function roomInvHTML(){
   if(!ACCT.token||!FR.friends.length)return '';
   const tag={sent:'<span class="fr-tag ok">Invited</span>'};

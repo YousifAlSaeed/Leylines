@@ -4,7 +4,8 @@
    ===================================================================== */
 let G=null;
 /* G = {mode, rules, trade, diff, bo, ser, me, bottom, names[], decks[[],[]], seed, rng, st, first, sd, sel, busy, over, inbox[]}
-   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[]} */
+   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[], rev[]}
+   ser.rev: each match's moves, for the Review after the game (review.js): [{rounds: [{h: [hand, hand], first, el, moves: [[hand index, square]]}], end: final board}] */
 function baseMatch(mode,extra){
   return{mode,rules:{...SAVE.rules},trade:'none',diff:SAVE.diff,bo:boOf(SAVE.bo),ser:null,me:0,bottom:0,names:['You','CPU'],decks:[null,null],
     seed:rand32(),sd:0,sel:null,busy:false,over:false,inbox:[],...extra};
@@ -55,6 +56,9 @@ async function newRound(h0,h1,first){
   const g=G;
   G.first=first;G.sel=null;G.busy=true;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
+  // a new round of this match (Sudden Death adds one) starts a new list of moves for the Review
+  if(G.ser){const rv=G.ser.rev=G.ser.rev||[],m=rv[G.ser.n-1]=rv[G.ser.n-1]||{rounds:[]};
+    m.rounds.push({h:[h0.slice(),h1.slice()],first,el:G.st.el.slice(),moves:[]})}
   // who placed the card on each square, and which card of their deck it is ([player, deck index]), for Diff:
   // h follows each hand as cards leave it, c holds the board
   G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
@@ -108,7 +112,7 @@ function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.tut&&!tutMove(cell))return;
   if(G.mode==='online')netSend({t:'move',hi,cell});
-  if(G.daily)dailyMoved();
+  if(G.daily)dailyMoved(hi,cell);
   execMove(hi,cell);
 }
 async function execMove(hi,cell){
@@ -117,6 +121,7 @@ async function execMove(hi,cell){
   if(p===G.me)G.moved=true;
   const sc=[score(st,0),score(st,1)];
   if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
+  const rm=G.ser&&G.ser.rev&&G.ser.rev[G.ser.n-1];if(rm)rm.rounds[rm.rounds.length-1].moves.push([hi,cell]);
   const ev=[];play(st,G.rules,hi,cell,ev);
   if(G.mode!=='local'&&p===G.me&&!G.tut)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
@@ -193,12 +198,13 @@ function finish(s0,s1){
   G.over=true;G.busy=true;
   const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});
+  const rm=ser.rev&&ser.rev[ser.n-1];if(rm)rm.end={b:G.st.b.slice(),o:G.st.o.slice()};
   if(G.sd>0)ser.sd=1;
   if(mw>=0)ser.wins[mw]++;
   renderHud();
   let reward='';
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
   const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
@@ -270,8 +276,8 @@ function pickCards(head,deck,n,o={}){
     const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>{const can=pool.includes(i),on=all&&can;
       return `<div class="pk${on?' on':''}${can?'':' off'}" data-i="${i}" role="button" aria-pressed="${on}"${can?'':' aria-disabled="true"'} aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}${can?'':', not flipped'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`}).join('')}</div>`+
       (o.spare?`<p class="note">💛 Spare: they keep their cards, and you count a spare. Every ${SPARE_PACK} spares give a free pack.</p>`:''),
-      [{label:all?'Take all':'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
-       ...(o.spare?[{label:'Spare 💛',fn:()=>res('spare')}]:[])]);
+      [{label:all?'Take all':'Take',cls:'primary',keep:true,wait:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
+       ...(o.spare?[{label:'Spare 💛',wait:true,fn:()=>res('spare')}]:[])]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=!all;
     if(!all)box.querySelectorAll('.pk:not(.off)').forEach(el=>el.onclick=()=>{
       const i=+el.dataset.i;
@@ -302,11 +308,14 @@ function checkNext(){
 function resultModal(html,extra){
   // the match is fully settled (trade included); online, a dropped player can no longer come back to it
   G.done=true;
+  // kept so the Review can bring this popup back
+  G.res=[html,extra];
   // a Daily challenge says what comes next (try again, next opponent), or nothing
   const again=G.daily?G.daily.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
   modal(html,[
     ...(extra?[extra]:[]),
     ...(again?[{label:again.label,cls:extra?'':'primary',fn:again.fn}]:[]),
+    ...(revAvail()?[{label:'Review',fn:revOpen}]:[]),
     {label:'Menu',cls:again||extra?'':'primary',fn:leaveMatch}
   ]);
 }
@@ -352,7 +361,7 @@ function quitMatch(){
   let took=null;
   if(G.mode!=='local'&&!puzzle){
     // between the matches of a series that match already counted; the series is what's given up
-    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',left:true}));
+    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',daily:!!G.daily,left:true}));
     const h=histAdd('l','you');
     if(ai&&n)took=loseCards(strongest(G.decks[G.me],n));
     // online the other player decides; it reaches you through the server (spare.js)
@@ -360,7 +369,7 @@ function quitMatch(){
     save();freshToast();
   }
   dailyLeave();leaveMatch();
-  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true}]);
+  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true,wait:true}]);
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
@@ -379,7 +388,7 @@ function askLeave(){
   else p=`<p>Leaving counts as a loss. <b class="gold">${opp} can take ${n>=5?'all your cards':cards}</b>, or spare you.</p>`;
   // between the matches of a series, the way back is the Next match button
   const back=G.over?{label:'Next match',cls:'primary',keep:G.mode==='online',fn:readyNext}:{label:'Keep playing',cls:'primary',esc:true};
-  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',fn:()=>{if(G)quitMatch()}},back]);
+  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',wait:true,fn:()=>{if(G)quitMatch()}},back]);
 }
 $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;
@@ -455,7 +464,18 @@ function startTurnTimer(){
 function stopTurnTimer(){
   TMR.g=null;cancelAnimationFrame(TMR.raf);
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
-  setTimerLevel('');
+  setTimerLevel('');paintClocks();
+}
+// PC: each player's clock in their corner (game.js layout). The one whose turn it is counts down; the other shows a full
+// turn, faded. Both corners always have the box, so they have the same shape: the CPU's (it plays at once), or both
+// with no turn timer, stay empty
+function paintClocks(){
+  for(const[el,p]of[[$('#ptmBot'),G?G.bottom:0],[$('#ptmTop'),G?1-G.bottom:1]]){
+    const on=!!(G&&G.st&&!G.tut&&!G.over);
+    el.hidden=!on;if(!on)continue;
+    const timed=G.rules.timer&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
+    el.classList.toggle('idle',!run);el.classList.toggle('none',!timed);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:G.rules.timer):'';
+  }
 }
 function setTimerLevel(lvl){
   for(const el of [$('#timer'),$('#tbar')]){el.classList.toggle('warn',lvl==='warn');el.classList.toggle('crit',lvl==='crit')}
@@ -484,7 +504,7 @@ function tickTimer(){
   if(sec!==TMR.sec){
     TMR.sec=sec;
     setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
-    $('#tNum').textContent=sec;
+    $('#tNum').textContent=sec;paintClocks();
     $('#tbar').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }

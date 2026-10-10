@@ -14,8 +14,8 @@ function defSave(){
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
-    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, 5★ guarantee points (data.js)
-    packs:[],packLv:1,daily:null,pity:0,
+    // packs (packs.js): unopened packs [{t: tier, lv, mile, ids: cards once shown}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, today's daily cards once shown {at, ids}, 5★ guarantee points (data.js)
+    packs:[],packLv:1,daily:null,dailyRoll:null,pity:0,
     // ids of the packs a developer gave you that were added already (packs.js)
     gifts:[],
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
@@ -27,7 +27,7 @@ function defSave(){
     shards:150,shardDay:null,shop:null,
     // Couch's last two hands [blue, red], for Quick play (match.js)
     localDecks:null,
-    // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
+    // the guest popup (account.js): how many matches were played when it last showed (-1 = never)
     gNote:-1,
     // the tutorial (tutorial.js): 0 = not offered yet, 1 = offered, 2 = finished and its pack given
     tut:0};
@@ -43,6 +43,7 @@ function fixProfile(p,s){
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.gifts=(Array.isArray(p.gifts)?p.gifts:[]).filter(Number.isInteger).slice(-100);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  p.dailyRoll=ob(p.dailyRoll)&&typeof p.dailyRoll.at==='string'&&Array.isArray(p.dailyRoll.ids)?{at:p.dailyRoll.at.slice(0,10),ids:p.dailyRoll.ids.slice(0,10)}:null;
   p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
   p.live=ob(p.live)?p.live:null;
   p.owes=(Array.isArray(p.owes)?p.owes:[]).filter(o=>ob(o)&&typeof o.k==='string'&&Number.isFinite(o.at)&&Array.isArray(o.deck)&&
@@ -56,7 +57,8 @@ function fixProfile(p,s){
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
   p.recent=res(p.recent);p.orecent=res(p.orecent);
-  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
+  // Daily games (dk) were saved before 0.19.5; history is Solo and online only now
+  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&!h.dk&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
   p.hideHist=!!p.hideHist;
   // saves from before the tutorial: anyone who has played already isn't offered it on launch
   if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;

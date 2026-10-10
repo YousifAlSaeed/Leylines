@@ -108,26 +108,37 @@ function startPuzzle(){
   G.st=cloneS(p.st);G.first=0;G.ser={n:1,first:0,wins:[0,0],log:[]};G.sd=0;G.over=false;
   G.busy=true;show('game');buildBoard();renderGame();
   const g=G;
-  banner(`Flip ${p.goal} in one move`,'small').then(()=>{if(G!==g)return;G.busy=false;nextTurn()});
+  banner(`Flip ${p.goal} in one move`,'small').then(()=>{if(G!==g)return;G.busy=false;nextTurn();puzzleGoal()});
+}
+// the goal stays on screen, in the owl's bubble over the red hand (red never plays in a puzzle)
+function puzzleGoal(){
+  const c=$('#tutCoach');document.body.classList.add('puz');
+  c.innerHTML=`<div class="tc-av" aria-hidden="true">🦉</div><div><div class="tc-k">Daily Puzzle #${dayNo()}</div>`+
+    `<p>Flip <b>${G.daily.p.goal} red cards</b> with one card. One try: the first card you place is your answer.</p></div>`;
+  c.hidden=false;c.classList.remove('dim','shake');c.classList.add('in');coachPlace();
 }
 // the one move is placed: the try is used up, even if the app closes during the animation
-function dailyMoved(){
+function dailyMoved(hi,cell){
   if(!G.daily||G.daily.kind!=='puzzle'||G.daily.moved)return;
-  G.daily.moved=true;const t=trial();if(t.at===G.daily.at&&!t.puz){t.puz=1;save()}
+  // kept for See why (review.js)
+  G.daily.moved=true;G.daily.mine=[hi,cell];const t=trial();if(t.at===G.daily.at&&!t.puz){t.puz=1;save()}
 }
 function puzzleDone(){
   const d=G.daily,p=d.p,flips=blues(G.st)-d.before-1,ok=flips>=p.goal,t=trial(),fresh=t.at===d.at;
   G.over=true;G.busy=true;renderHud();stopTurnTimer();
+  $('#tutCoach').hidden=true;document.body.classList.remove('puz');
   let chips='';
   if(ok&&fresh&&t.puz!==2){t.puz=2;chips=dailyGive(DAILY_REWARD.puzzle);profCheck();save()}
   sfx(ok?'win':'lose');
   const g=G;
   setTimeout(()=>{if(G!==g)return;
     G.done=true;
-    modal(`<div class="kick">Daily Puzzle #${dayNo()}</div><h2>${ok?'Solved!':'Not this time'}</h2>`+
+    const html=`<div class="kick">Daily Puzzle #${dayNo()}</div><h2>${ok?'Solved!':'Not this time'}</h2>`+
       `<p>You flipped <b>${flips}</b> of the <b>${p.goal}</b> needed.</p>`+
-      dailyBox(chips,ok?'':`The answer was ${esc(puzzleAnswer(p))}. A new puzzle comes at midnight.`),
-      [{label:'Menu',cls:'primary',fn:leaveMatch}]);
+      dailyBox(chips,ok?'':`The answer was ${esc(puzzleAnswer(p))}. A new puzzle comes at midnight.`);
+    // missed: See why shows your move and the answer on the board (review.js), and comes back here
+    G.reopen=()=>modal(html,[...(ok||!d.mine?[]:[{label:'See why',cls:'primary',fn:revPuzzle}]),{label:'Menu',cls:ok?'primary':'',fn:leaveMatch}]);
+    G.reopen();
   },900);
 }
 

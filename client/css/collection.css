@@ -197,7 +197,8 @@
 .coll-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
 .coll-row .dk-power{flex:none;margin-right:4px}
 .coll-row .dk-act{flex:none;min-height:42px}
-.coll-row #collClear{width:42px;padding:0}
+#scr-coll:not(.pick) .coll-row #collClear{width:42px;padding:0}
+#scr-coll:not(.pick) .coll-row #collClear span{display:none}
 .coll-row .btn.primary{flex:1;min-width:0;min-height:42px;padding:6px 12px;font-size:15px}
 #scr-coll .dk-lohead{min-height:22px}
 #scr-coll .dk-lonote:empty{display:none}
@@ -210,9 +211,12 @@
 .coll-row .btn.primary{white-space:nowrap}
 /* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
 @container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
-/* picking cards for a match: Save hand shrinks to an icon next to Clear, and Play takes the wide spot */
-.coll-row .dk-act.ico{width:42px;padding:0}
-@container (max-width:400px){#scr-coll.pick .coll-row .dk-act span{display:none}#scr-coll.pick .coll-row #collBest{width:42px;padding:0}}
+/* picking cards for a match: Best 5, Clear and Save hand share the row with their words, and Play gets its own row under them */
+#scr-coll.pick .coll-row{flex-wrap:wrap}
+#scr-coll.pick .coll-row .dk-act{flex:1 1 0;width:auto;padding:6px 8px;white-space:nowrap}
+#scr-coll.pick .coll-row .dk-act span{display:inline}
+#scr-coll.pick .coll-row #collGo{flex:1 0 100%;min-height:48px;font-size:16px}
+@container (max-width:360px){#scr-coll.pick .coll-row .dk-act svg{display:none}}
 /* a card you can't add right now (every copy in hand, hand full, over the rarity limit) fades */
 .pk-cell.used .pocket{opacity:.35}
 @media (min-width:700px) and (orientation:landscape){

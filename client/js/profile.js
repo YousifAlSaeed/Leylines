@@ -65,22 +65,25 @@ function freshToast(){
 
 /* ---------- match tracking (match.js and online.js call these) ---------- */
 // res: 'w' | 'l' | 'd'. o: {online, diff, sweep, sd, elemental, left: left early (no shards)}. Returns what the result screen shows.
+// o.daily: a Daily game (daily.js) gives XP but isn't a win, loss or draw on your record
 function recordMatch(res,o={}){
-  const k=(o.online?'o':'')+res;
-  SAVE.stats[k]=(SAVE.stats[k]||0)+1;
+  const k=(o.online?'o':'')+res,rec=!o.daily;
+  if(rec)SAVE.stats[k]=(SAVE.stats[k]||0)+1;
   const lv0=levelOf(SAVE.xp),xp=MATCH_XP[o.online?'online':o.diff]||MATCH_XP.normal,gain=o.left?0:xp['wdl'.indexOf(res)];
   SAVE.xp+=gain;
   const packs=grantPacks(SAVE),{sh,capped}=matchShards(res,o);
   // a draw doesn't break a streak, it just doesn't add to it
-  if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
-  SAVE.recent=[...SAVE.recent,res].slice(-10);
+  if(rec){
+    if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
+    SAVE.recent=[...SAVE.recent,res].slice(-10);
+  }
   if(o.online){
     if(res==='w'){SAVE.ostreak++;SAVE.obest=Math.max(SAVE.obest,SAVE.ostreak)}else if(res==='l')SAVE.ostreak=0;
     SAVE.orecent=[...SAVE.orecent,res].slice(-10);
   }
   if(res==='w'){
     const di=DIFFS.findIndex(d=>d[0]===o.diff);
-    if(!o.online&&di>SAVE.beat)SAVE.beat=di;
+    if(!o.online&&rec&&di>SAVE.beat)SAVE.beat=di;
     if(o.sweep)earn('sweep');
     if(o.sd)earn('sudden');
     if(o.elemental)earn('elemental');

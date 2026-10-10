@@ -79,7 +79,7 @@ async function frDrop(path,msg){
 function frRemove(name){
   const shown=esc(frName(name));
   modal(`<h2 class="nm2">Remove ${shown}?</h2><p>You'll leave each other's friend lists. You can add each other again later.</p>`,[
-    {label:'Remove',cls:'danger',fn:()=>frDrop('/friends/'+encodeURIComponent(name),`${frName(name)} removed from your friends.`)},
+    {label:'Remove',cls:'danger',wait:true,fn:()=>frDrop('/friends/'+encodeURIComponent(name),`${frName(name)} removed from your friends.`)},
     {label:'Cancel',cls:'primary',esc:true}]);
 }
 
