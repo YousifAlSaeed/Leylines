@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.14 (2026-10-10)
+- New game layout on computers, like 4-player chess: the CPU's cards above the board and yours below, both centred on it. Each player gets a corner: the other player top-left, you bottom-right, with a big glowing score, your name and avatar, and a clock when the turn timer is on. Phones and tablets keep their layouts
+
 ## 0.19.13 (2026-10-10)
 - Choosing cards for a match: Play gets its own big row at the bottom, and Best 5, Clear and Save hand sit above it as wider buttons with words
 

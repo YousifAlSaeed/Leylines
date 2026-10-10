@@ -464,7 +464,17 @@ function startTurnTimer(){
 function stopTurnTimer(){
   TMR.g=null;cancelAnimationFrame(TMR.raf);
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
-  setTimerLevel('');
+  setTimerLevel('');paintClocks();
+}
+// PC: each player's clock in their corner (game.js layout), for players who have a turn timer (not the CPU).
+// The one whose turn it is counts down; the other shows a full turn, faded
+function paintClocks(){
+  for(const[el,p]of[[$('#ptmBot'),G?G.bottom:0],[$('#ptmTop'),G?1-G.bottom:1]]){
+    const on=!!(G&&G.st&&G.rules.timer&&!G.tut&&!G.over&&!(G.mode==='ai'&&p!==G.me));
+    el.hidden=!on;if(!on)continue;
+    const run=TMR.g===G&&TMR.p===p&&TMR.sec>=0;
+    el.classList.toggle('idle',!run);el.querySelector('b').textContent=fmtLeft(run?TMR.sec:G.rules.timer);
+  }
 }
 function setTimerLevel(lvl){
   for(const el of [$('#timer'),$('#tbar')]){el.classList.toggle('warn',lvl==='warn');el.classList.toggle('crit',lvl==='crit')}
@@ -493,7 +503,7 @@ function tickTimer(){
   if(sec!==TMR.sec){
     TMR.sec=sec;
     setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
-    $('#tNum').textContent=sec;
+    $('#tNum').textContent=sec;paintClocks();
     $('#tbar').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }

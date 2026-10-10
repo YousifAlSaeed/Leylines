@@ -60,6 +60,7 @@ function renderHud(){
   setScores([score(st,0),score(st,1)]);
   $('#sideBot').classList.toggle('active',!G.over&&st.turn===bot);
   $('#sideTop').classList.toggle('active',!G.over&&st.turn!==bot);
+  paintClocks();
   let msg;
   if(G.tut)msg=G.over?'Well played!':'Your turn';
   else if(G.over)msg='Game over';
@@ -144,6 +145,7 @@ function iosFlags(){
   const de=document.documentElement.classList;iosFlags.last={app,top,gap};
   de.toggle('ios-bar',app&&top===0&&gap>0&&gap<=80);de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
+const PCMQ=matchMedia('(hover:hover) and (pointer:fine)');PCMQ.addEventListener('change',()=>layout());
 function layout(){
   iosFlags();
   const vh=innerHeight;
@@ -154,8 +156,10 @@ function layout(){
   // screen's padding bigger than the usual 6px top/bottom and 10px sides; the extra comes off the space
   const pad=getComputedStyle($('#scr-game')),p=k=>parseFloat(pad['padding'+k])||0;
   const W=innerWidth/ui-Math.max(0,p('Left')-10)-Math.max(0,p('Right')-10);
-  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08;
-  document.body.classList.toggle('land',land);
+  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08,pc=land&&PCMQ.matches;
+  // a wide window with a mouse gets the PC layout (like 4-player chess: hands above and below, each player in a corner);
+  // phones and tablets turned sideways keep the hands beside the board
+  document.body.classList.toggle('land',land&&!pc);document.body.classList.toggle('pc',pc);
   let cell,hc;
   if(!land){
     // hud 52, timer bar + rule bar 30, two player strips 46, gaps 8, screen padding 12, spare 4;
@@ -165,6 +169,12 @@ function layout(){
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
     hc=Math.min(hc,cell*.7);
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
+  }else if(pc){
+    // the board (3.6 cells + 26) with a hand row above and below (1.2 card heights + 6, and an 8px gap each),
+    // the cards sized so 5 of them span the board; a corner of at least 210px each side for the player
+    const avail=H-52-10-22-24;
+    cell=Math.min((avail-26-2*14)/(3.6+2*1.2*.6),(W-40-2*210)/3,200);
+    hc=(cell*3+6)/5;
   }else{
     const avail=H-52-10-22-24; // hud + timer bar + rulebar + padding
     cell=Math.min(avail/3.7,(W-80-2*180)/3.25,200);
@@ -188,7 +198,8 @@ function fitGame(){
   const sg=$('#scr-game');if(!sg.classList.contains('on'))return;
   const rs=document.documentElement.style,limit=innerHeight-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
   for(let k=0;k<3;k++){
-    const parts=[$('#sideTop'),$('#board'),$('#sideBot')].map(e=>e.getBoundingClientRect());
+    // on PC the sides are laid out by their parts (display: contents), so measure the hands
+    const parts=(document.body.classList.contains('pc')?[$('#handTop'),$('#board'),$('#handBot')]:[$('#sideTop'),$('#board'),$('#sideBot')]).map(e=>e.getBoundingClientRect());
     const top=Math.min(...parts.map(r=>r.top)),over=Math.max(...parts.map(r=>r.bottom))-limit;
     if(over<=1)return;
     const f=1-over/(Math.max(...parts.map(r=>r.bottom))-top),cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
