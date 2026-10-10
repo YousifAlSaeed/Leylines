@@ -6,6 +6,118 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.22.4 (2026-10-11)
+- Opening a pack feels real now: the strip tears along a ragged line and curls up toward you as you pull. Let go halfway and the tear stays, so you can carry on. Packs have crimped edges and a little notch on each side to start the tear, like real foil packs
+- Packs and card backs now show the new Leylines logo
+
+## 0.22.3 (2026-10-10)
+- Review: a move with a Combo takes two steps now. The move shows its Same or Plus numbers, then a half step (6.5) shows the Combo's flips, in 1v1 and Crossroads
+- Review: the number tags of the step on screen all stay bright
+
+## 0.22.2 (2026-10-10)
+- Review tags read the way the cards sit: when the other card is on the left, its number comes first (4 ‹ 6, 2 + 1 = 3), in 1v1 and Crossroads
+
+## 0.22.1 (2026-10-10)
+- Crossroads has the Review now: after a 2v2 or Free-for-all match, tap Review on the result to step through all 16 moves on the board, with who played what and why cards flipped
+
+## 0.22.0 (2026-10-10)
+- New Bank timer, like a chess clock: each player gets 1 to 5 minutes for the whole match, and every card you play adds 2 seconds back. Choose what running out does: a random card is played for you, or you lose the match
+- The per-turn timer has the same choice now: a random card, or you lose the match
+- Match setup is simpler: Difficulty, Timer, Match length and Trade are now short rows that show what is picked. Tap a row to change it. The timer can be Off, Per turn or Bank
+- On a computer, the rule cards in Match setup are bigger and line up with the boxes on the left, and each card says what its rule does
+
+## 0.21.1 (2026-10-10)
+- Badges on your profile are now a card for each group, with a dot where shards wait and a gold frame once a group is complete. Tap a group to see its badges: what each one takes, how close you are, and a Claim button for the ones whose shards wait
+- Profile order: on a computer, Badges sits on the right and Account on the left. On a phone: Showcase, Record, History, Collection, Badges, Account
+
+## 0.21.0 (2026-10-10)
+- Badges reworked: 51 badges in 10 groups (25 new ones for the tutorial, packs, friends, emotes, series, the Reverse, Chaos and Random rules, Trade: All, Win them back, the dailies, the Store and higher levels)
+- Every badge now pays shards: Bronze 20, Silver 50, Gold 120, Prism 300. Earned badges glow on your profile: tap one to claim its shards. Badges you already had can be claimed too
+- A dot on your profile box shows when badges have shards waiting
+- Tap a badge you don't have yet to see how close you are (like 11/50)
+
+## 0.20.0 (2026-10-10)
+- New: **Win them back**. When the CPU takes your cards in Solo, you can play it again right away. It swaps its weakest cards for the ones it took, so you can win them back. Win and the trade rule says how many of them you take back (only your own cards). Lose and it takes more
+- With Trade One or Diff, a second loss gives you a **Last chance**: the CPU holds every card it took. Win and they all come back. Lose and it takes that many more. With Diff there's no Last chance if that's more than 5 cards
+- With Trade All you get one try: win and all 5 come back, lose and it takes 5 more
+- A draw on a try lets you play it again for the same cards
+
+## 0.19.18 (2026-10-10)
+- Fixed: on a phone, the Daily Puzzle's goal and the Review's notes could cover the numbers on the board's top row. They now always end just above the board
+- Fixed: on a narrow computer window, the emote tray could open off the right edge of the screen
+
+## 0.19.17 (2026-10-10)
+- One colour for each rarity, the same everywhere: 1★ bronze, 2★ silver, 3★ gold, 4★ violet (a deeper, stronger one) and 5★ prism, a rainbow. 5★ cards no longer glow gold when a pack opens (that looked like a 3★); "5★ Legendary" and the 5★ tag are written in the rainbow
+
+## 0.19.16 (2026-10-10)
+- Fixed: turning on alerts from the menu card could leave the card stuck on screen (seen in Brave). The card now closes as soon as you tap Turn on, and if the browser never answers, the game gives up after a minute and says what to do. In Brave it explains the setting to turn on ("Use Google services for push messaging")
+
+## 0.19.15 (2026-10-10)
+- Crossroads on computers gets the same 4-player-chess layout: every hand touches its side of the board, and each player has a corner with their big glowing score (in 2v2, their team's), name, avatar and clock (the CPUs' clocks stay empty). The side players' corners turn to face them, and their clocks sit between their info and the next hand. The top player is top-left, the right player top-right, the left player bottom-left and you bottom-right. Phones keep their layout
+
+## 0.19.14 (2026-10-10)
+- New game layout on computers, like 4-player chess: the CPU's cards above the board and yours below, both centred on it. Each player gets a corner: the other player top-left, you bottom-right, with a big glowing score, your name and avatar, and a clock (left empty for the CPU, or when there's no turn timer). Phones and tablets keep their layouts
+
+## 0.19.13 (2026-10-10)
+- Choosing cards for a match: Play gets its own big row at the bottom, and Best 5, Clear and Save hand sit above it as wider buttons with words
+
+## 0.19.12 (2026-10-10)
+- Opening a pack in light mode: the background is light too, instead of always dark
+
+## 0.19.11 (2026-10-10)
+- Daily Puzzle: the goal ("Flip 4 red cards with one card") stays on screen while you think, instead of disappearing after a second
+- Daily Puzzle: missed it? **See why** shows your move and the answer on the board, with what each one flipped and why
+
+## 0.19.10 (2026-10-10)
+- **Review a game.** After a game, the result popup has a Review button. Step through every move on the board: who played what, and why cards flipped, with tags like "3 + 5 = 8" on the edges that did it (Same, Plus, Combo, and plain captures). In a Best of 3 or 5, pick the match at the top. Back to results takes you back to the popup
+
+## 0.19.9 (2026-10-10)
+- Important popups give you 3 seconds to read before the main button works: leaving a match, signing out, deleting a loadout, removing a friend or player, buying in the Night Market, taking or sparing cards, and the news when you lost cards. The button counts down 3, 2, 1. Cancel, Stay and Escape still work right away
+
+## 0.19.8 (2026-10-10)
+- Night Market: the Merchant doesn't sell 5★ cards any more. The top card is always a 4★
+
+## 0.19.7 (2026-10-10)
+- Settings → Alerts: the Test button is gone for players. Only developer accounts still have it
+
+## 0.19.6 (2026-10-10)
+- The "You're playing as a guest" reminder is now a popup you can close with Later, instead of a box on the menu. It shows after your first match, then again every 10 matches
+
+## 0.19.5 (2026-10-10)
+- Match history only shows Solo and online games now. Daily games aren't saved there, and old ones are cleared out
+- Daily games don't count as wins, losses or draws on your record any more (they still give XP)
+
+## 0.19.4 (2026-10-10)
+- Fixed: closing a pack with X before tearing it opened it anyway. Now the pack stays in your list, unopened. The cards inside stay the same, so opening it again later shows the same ones
+
+## 0.19.3 (2026-10-10)
+- Crossroads: when the host leaves, the game ends for everyone, whether the seats are friends or CPUs. That's the Leave button, going back to the menu, or closing or reloading the game; the others see "The host left, so the match is over." A host can't resume a game any more, so nothing is left waiting on the menu
+- If the host's connection just drops, the others wait a minute (it can be a short glitch), with a countdown, then the match ends
+
+## 0.19.2 (2026-10-10)
+- Fixed: a dragged card could stay stuck on the screen, even on the menu, if a second finger touched the screen during a drag (or the browser missed the release). Holds for the card picker, 1v1 and Crossroads
+- 1v1 on phones: the score numbers glow in each player's colour, like they do on wider screens
+- Crossroads room on a computer: Ready / Start sits under the rules with no dark strip behind it, and floats at the bottom of a short window until you scroll to it
+
+## 0.19.1 (2026-10-10)
+- Crossroads: flips animate again, one after another like 1v1 (Same! / Plus! / Combo! first, the colour turns halfway). They were being cut off before they could play. The host waits for each move's animation before a CPU moves, and the turn timer doesn't run while you watch one
+- Crossroads Free-for-all: turns go round the table from a random first player, like 2v2. The first player no longer moves on each round, which felt like a skipped turn
+- Crossroads room: the turn timer is the same slider as 1v1 (off, or 10 to 90 seconds), the **Random** rule is there, and the host can invite friends while a seat is open or a CPU's
+- Crossroads results: everyone gets **Back to room**, not just the host, and it takes the whole table back. Fixed: after the first match, players who weren't the host didn't see the result screen
+
+## 0.19.0 (2026-10-09)
+- New: **Crossroads**, online games for 4 players, being tested. **Host a game** now asks: **1v1** or **Crossroads**. Friends join with the code in the usual Join box. Four seats on a 4×4 board: everyone places 4 cards and keeps 1. The host picks the mode:
+  - **2v2**: two teams, turns switch team every move, partners never flip each other and see each other's hands
+  - **Free-for-all**: everyone for themselves, each in their own colour (picked in the room from 6, the same on everyone's screen). The first player moves one seat each round, so everyone opens once and closes once and nobody plays twice in a row. The result shows places 1st to 4th; tied players share a place
+- Empty seats can be **CPU Easy** (plays like a casual player: some turns it thinks a move ahead, some it doesn't) or **CPU Normal** (a move ahead, sometimes two, and about 1 turn in 10 it slips)
+- The host can move players to the other team in 2v2 (**Switch team**) and **Remove** a player from the room
+- New rule for Crossroads, **Ley lines** (off unless the host turns it on): fill a row or column with your (team's) cards and it seals, so those cards can't be flipped again
+- A player who drops out has a minute to come back before a CPU plays their cards; they can rejoin from the menu at any point and take their seat back. A host whose app closes can **Resume** the match from the menu
+- Crossroads has no trades and pays no XP or shards while it's being tested
+
+## 0.18.1 (2026-10-06)
+- Tutorial: the Next lesson button is smaller, just big enough for its text
+
 ## 0.18.0 (2026-10-05)
 - New rule **Reverse**: lower numbers win. A 1 beats a 2, and X is the weakest. Same and Plus work as usual
 - New rule **Three open**: 3 random cards in each hand are face up for both players. 👁 marks the cards both of you can see

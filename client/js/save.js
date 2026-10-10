@@ -6,16 +6,18 @@ const SKEY='ninefold.save.v1';
 const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
-  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45},
-    trade:'one',diff:'normal',bo:1,cpuTimer:0,stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+  return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45,tkind:'turn',bank:180,flag:'random'},
+    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
+    // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
+    bclaim:{},opened:0,
     // the same for online matches only (the leaderboard ranks these): win streak, best streak, last results
     ostreak:0,obest:0,orecent:[],
     // match history (history.js): the last 30 games, and whether others may see it
     history:[],hideHist:false,
-    // packs (packs.js): unopened packs [{t: tier, lv, mile}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, 5★ guarantee points (data.js)
-    packs:[],packLv:1,daily:null,pity:0,
+    // packs (packs.js): unopened packs [{t: tier, lv, mile, ids: cards once shown}], the last level that gave one, the daily pack {at: game day (clock.js), n: streak}, today's daily cards once shown {at, ids}, 5★ guarantee points (data.js)
+    packs:[],packLv:1,daily:null,dailyRoll:null,pity:0,
     // ids of the packs a developer gave you that were added already (packs.js)
     gifts:[],
     // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
@@ -27,7 +29,7 @@ function defSave(){
     shards:150,shardDay:null,shop:null,
     // Couch's last two hands [blue, red], for Quick play (match.js)
     localDecks:null,
-    // the menu's guest notice (account.js): how many matches were played when it was last closed (-1 = never)
+    // the guest popup (account.js): how many matches were played when it last showed (-1 = never)
     gNote:-1,
     // the tutorial (tutorial.js): 0 = not offered yet, 1 = offered, 2 = finished and its pack given
     tut:0};
@@ -38,11 +40,12 @@ function fixProfile(p,s){
   if(!s.pv){const t=p.stats;p.xp=t.w*40+t.d*20+t.l*10+t.ow*60+t.od*30+t.ol*15;p.pv=1}
   // the first time with packs: one for every level already reached
   if(p.pv<2){p.packLv=1;p.pv=2}
-  for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards'])p[k]=Math.max(0,+p[k]|0);
+  for(const k of ['xp','streak','best','pity','ostreak','obest','spares','shards','opened'])p[k]=Math.max(0,+p[k]|0);
   p.packLv=Math.max(1,+p.packLv|0);
   p.packs=(Array.isArray(p.packs)?p.packs:[]).filter(k=>ob(k)&&PACKS[k.t]).slice(0,200);
   p.gifts=(Array.isArray(p.gifts)?p.gifts:[]).filter(Number.isInteger).slice(-100);
   p.daily=ob(p.daily)&&typeof p.daily.at==='string'?{at:p.daily.at.slice(0,10),n:Math.max(0,p.daily.n|0)}:null;
+  p.dailyRoll=ob(p.dailyRoll)&&typeof p.dailyRoll.at==='string'&&Array.isArray(p.dailyRoll.ids)?{at:p.dailyRoll.at.slice(0,10),ids:p.dailyRoll.ids.slice(0,10)}:null;
   p.trial=ob(p.trial)&&typeof p.trial.at==='string'&&ob(p.trial.g)?p.trial:null;
   p.live=ob(p.live)?p.live:null;
   p.owes=(Array.isArray(p.owes)?p.owes:[]).filter(o=>ob(o)&&typeof o.k==='string'&&Number.isFinite(o.at)&&Array.isArray(o.deck)&&
@@ -56,12 +59,14 @@ function fixProfile(p,s){
   p.beat=[0,1,2].includes(p.beat)?p.beat:-1;
   const res=v=>(Array.isArray(v)?v:[]).filter(r=>r==='w'||r==='l'||r==='d').slice(-10);
   p.recent=res(p.recent);p.orecent=res(p.orecent);
-  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
+  // Daily games (dk) were saved before 0.19.5; history is Solo and online only now
+  p.history=(Array.isArray(p.history)?p.history:[]).filter(h=>ob(h)&&!h.dk&&Array.isArray(h.log)&&Array.isArray(h.me)&&Array.isArray(h.op)&&Array.isArray(h.ru)).slice(-30);
   p.hideHist=!!p.hideHist;
   // saves from before the tutorial: anyone who has played already isn't offered it on launch
   if(!('tut' in s))p.tut=Object.values(p.stats).some(v=>+v>0)||p.xp>0?1:0;
   p.tut=[0,1,2].includes(p.tut)?p.tut:0;
   p.badges=ob(p.badges)?p.badges:{};
+  p.bclaim=ob(p.bclaim)?p.bclaim:{};
   p.showcase=(Array.isArray(p.showcase)?p.showcase:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<CARD_DATA.length).slice(0,3);
   p.avatar=ob(p.avatar)&&Number.isInteger(p.avatar.c)&&p.avatar.c>=0&&p.avatar.c<CARD_DATA.length?{c:p.avatar.c,r:Math.max(0,Math.min(5,p.avatar.r|0))}:null;
   return p;
@@ -85,11 +90,13 @@ function loadSave(){
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
-SAVE.rules.timer=timerSec(SAVE.rules.timer);
+normTimer(SAVE.rules);
 // Sweep used to be a trade rule: it's a rule card now, played on top of a trade rule (One, the gentlest)
 if(SAVE.trade==='sweep'){SAVE.trade='one';SAVE.rules.sweep=true}
 // Solo has its own turn timer, off unless the player turns it on (rules.timer is for people)
 SAVE.cpuTimer=timerSec(SAVE.cpuTimer);
+// and its own timer type and bank (cpuTk: tkind, bank, flag)
+{const c=normTimer({...(SAVE.cpuTk&&typeof SAVE.cpuTk==='object'?SAVE.cpuTk:{}),timer:0});SAVE.cpuTk={tkind:c.tkind,bank:c.bank,flag:c.flag}}
 // every change goes through here; account.js (loaded later) syncs it to a signed-in account
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}if(typeof acctChanged==='function')acctChanged()}
 // stable per-device id so the host can recognise a guest who reconnects

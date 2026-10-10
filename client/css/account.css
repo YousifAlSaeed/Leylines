@@ -4,6 +4,9 @@
   color:var(--text);text-align:left;font:inherit;cursor:pointer;transition:background .18s,border-color .18s,transform .15s}
 .pcard:hover{background:rgba(var(--tint),.06);border-color:var(--line2)}
 .pcard:active{transform:scale(.99)}
+/* badges with shards to claim on the profile: the same dot as the Daily tab's (daily.css) */
+.pcard{position:relative}
+.pc-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--bg1)}
 .pc-av{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surf2);border:1px solid var(--line2);color:var(--muted);font:800 16px/1 var(--display)}
 .pc-av svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pc-av.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
@@ -48,16 +51,3 @@
 .pc-av.art{background:var(--surf2);font:400 20px/1 var(--body);border-color:transparent;box-shadow:0 0 0 2px var(--ring)}
 .pc-main .pc-lv{color:var(--accent-ink);font-weight:600}
 .acctrow .pc-av.art{margin-left:2px}
-/* the menu's guest notice (account.js) */
-.gnote{display:flex;align-items:center;gap:10px;border-radius:14px;padding:10px 8px 10px 12px;font-size:12.5px;line-height:1.4;color:var(--muted);
-  border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.gnote[hidden]{display:none}
-.gnote p{flex:1;min-width:0;margin:0}
-.gnote b{color:var(--text)}
-.gnote svg{width:18px;height:18px;flex:none;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.gnote .btn{flex:none}
-.gnote-x{flex:none;width:32px;height:32px;border:0;border-radius:10px;background:none;color:var(--muted);font:400 22px/1 var(--body);cursor:pointer}
-.gnote-x:hover{background:rgba(var(--tint),.08);color:var(--text)}
-/* phones: the text across, the button under it, the × in the corner */
-@media (max-width:420px){.gnote{position:relative;flex-wrap:wrap;padding-right:12px}.gnote p{flex-basis:calc(100% - 28px);padding-right:22px}
-  .gnote .btn{margin-left:28px}.gnote-x{position:absolute;top:4px;right:4px}}

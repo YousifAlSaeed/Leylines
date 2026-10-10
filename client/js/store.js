@@ -16,7 +16,7 @@ const CARD_PRICE=[30,80,200,600,1800];   // the Merchant, by rarity
 const PACK_PRICE={spark:120,arcane:300,ley:700,mythic:1600};
 const MYTHIC_WEEK=1;   // Mythic packs a week from the Pack Counter
 const DEAL_OFF=.25;    // the Merchant's pack of the day
-// the Merchant's shared slots, as [lowest, highest] rarity, then a 4★ (a 5★ on 1 day in 10)
+// the Merchant's shared slots, as [lowest, highest] rarity, then a 4★. The Merchant never sells a 5★
 const MERCH_RAR=[[1,2],[3,3]];
 
 const shd=()=>'<i class="shd" aria-hidden="true"></i>';
@@ -60,7 +60,8 @@ function merchStock(n=dayNo()){
   const rng=mulberry32(daySeed(20,n)),ids=[];
   const pick=(lo,hi)=>{const id=pickOne(CARDS.filter(c=>c.rar>=lo&&c.rar<=hi&&!ids.includes(c.id)),rng).id;ids.push(id);return id};
   const cards=MERCH_RAR.map(([lo,hi])=>({id:pick(lo,hi)}));
-  const r4=rng()<.1?5:4;cards.push({id:pick(r4,r4)});
+  // the roll that once made this a 5★ on some days stays, so the rest of the stock doesn't move
+  rng();cards.push({id:pick(4,4)});
   const deal=pickOne(['spark','arcane','arcane','ley'],rng);
   // the card for you, kept for the day once picked: one you haven't found (up to 3★), or any 1★–3★ once you've found them all
   const s=shopDay();
@@ -87,11 +88,11 @@ function buyCard(i){
   const c=CARDS[it.id];
   modal(`<div class="kick">Wandering Merchant</div><h2>Buy ${esc(c.name)}?</h2><div class="st-one">${cardHTML(it.id,'blue')}</div>
     <p class="st-cost">${shd()}<b>${fmtSh(it.price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy',cls:'primary',fn:()=>{
+    [{label:'Buy',cls:'primary',wait:true,fn:()=>{
       const s2=shopDay();
       if(s2.at!==s.at||s2.got[i]!=null||SAVE.shards<it.price){renderStore();return}
       const fresh=!SAVE.seen.includes(it.id);
-      SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();
+      SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();earnNow('shop');
       sfx('win');renderStore();renderStoreTile();
       toast(`${c.name} added to your collection${fresh?' (new!)':''}.`);freshToast();
     }},{label:'Cancel',esc:true}]);
@@ -107,11 +108,11 @@ function buyPack(t,deal){
   modal(`<div class="kick">${deal?'Wandering Merchant':'Pack Counter'}</div><h2>Buy ${aPack(t)}?</h2>
     <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${pitySure(t)?', the last one a sure 5★ (guarantee)':T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
     <p class="st-cost">${shd()}<b>${fmtSh(price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy and open',cls:'primary',fn:()=>{
+    [{label:'Buy and open',cls:'primary',wait:true,fn:()=>{
       if(SAVE.shards<price)return;
       if(s){const s2=shopDay();if(s2.at!==s.at||deal&&s2.got.deal||myth&&s2.myth>=MYTHIC_WEEK){renderStore();return}
         if(deal)s2.got.deal=1;if(myth)s2.myth++}
-      SAVE.shards-=price;SAVE.packs.push({t,src:'shop'});save();
+      SAVE.shards-=price;SAVE.packs.push({t,src:'shop'});save();earnNow('shop');
       renderStore();renderStoreTile();openPack(SAVE.packs.length-1);
     }},{label:'Cancel',esc:true}]);
 }

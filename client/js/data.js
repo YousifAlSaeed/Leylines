@@ -90,7 +90,18 @@ const rulesOn=(R,trade)=>RULES.filter(([k])=>R[k]&&(k!=='sweep'||sweepOn(R,trade
 const TIMER_MAX=90;
 function timerSec(v){if(v===true)return 45;const n=Math.round(+v/5)*5;return n>=10?Math.min(TIMER_MAX,n):0}
 const timerWarn=t=>Math.min(20,Math.round(t*.45)),timerCrit=t=>Math.min(10,Math.round(t*.22));
-function timerDesc(t){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. When time runs out, a random card is played to a random empty square.`:'No time limit. Take as long as you like.'}
+// bank timer (like a chess clock): each player has one clock for the whole match, 0 = off, otherwise 1 to 5 minutes in steps
+// of 30 seconds. Each card played adds BANK_BONUS back. flag (both timers): what running out does, 'random' (a random card) or 'lose'
+const BANK_MAX=300,BANK_BONUS=2000;
+function bankSec(v){const n=Math.round(+v/30)*30;return n>=60?Math.min(BANK_MAX,n):0}
+// a rules object with its timer fields cleaned up (tkind: 'turn' or 'bank')
+function normTimer(R){R.timer=timerSec(R.timer);R.tkind=R.tkind==='bank'?'bank':'turn';R.bank=bankSec(R.bank);R.flag=R.flag==='lose'?'lose':'random';return R}
+const isBank=R=>R.tkind==='bank'&&R.bank>0;
+const timedOn=R=>isBank(R)||R.tkind!=='bank'&&R.timer>0;
+function bankDesc(t,flag){return t?`Each player gets ${fmtLeft(t)} for the whole match, like a chess clock. Your clock only runs on your turn, and every card you play adds ${BANK_BONUS/1000} seconds back. `+
+  (flag==='lose'?'Run out and you lose the match.':'Run out and a random card is played for you. After that you only get the 2 seconds each turn.'):'No time limit. Take as long as you like.'}
+function timerDesc(t,flag){return t?`Each turn has a ${t}-second limit. The clock turns orange at ${timerWarn(t)} seconds and red at ${timerCrit(t)}. `+
+  (flag==='lose'?'Run out and you lose the match.':'When time runs out, a random card is played to a random empty square.'):'No time limit. Take as long as you like.'}
 const RULE_SHORT={open:'Both hands are face up',threeOpen:'3 cards of each hand are face up',reverse:'Lower numbers win',sweep:'A full board takes all 5 cards',same:'Matching sides flip cards',sameWall:'The board edge counts as X for Same',plus:'Equal sums flip cards',
   combo:'Flipped cards keep flipping',elemental:'Squares boost or weaken cards',suddenDeath:'A draw replays the match',random:'Your 5 cards are dealt for you',chaos:'You must play a random card each turn'};
 // the tutorial (tutorial.js): one move per lesson. board: the CPU's cards [square, card id]; your hand, with hand[pick]
@@ -117,6 +128,25 @@ const TUT=[
 ];
 const TRADES=[['none','None','Friendly match. No cards change hands.'],['one','One','The winner takes 1 card of their choice from the loser.'],['diff','Diff','The winner takes as many cards as the score difference (max 5), picked only from the loser\'s cards they flipped.'],['all','All','The winner takes all 5 of the loser\'s cards.']];
 // Sweep was a trade rule before 0.18.0; now it's a rule card that works on top of one (save.js moves old saves over)
+/* Win them back (Solo, match.js): after the CPU takes your cards you can play it again, and it plays holding them.
+   wb = {step: 2 (Win them back) | 3 (Last chance), cpu: the CPU's first hand, l1: the cards it took first, lost: every card it took, best first}
+   What comes after a Solo match the CPU won and took cards in (took: their ids, best first; cpu: its hand in that match):
+   the next try, or why there's none ('last': the Last chance is over, 'all': Trade All gets one try, 'full': more than a hand can hold) */
+function winBackNext(trade,wb,took,cpu){
+  if(!took.length)return null;
+  if(!wb)return{step:2,cpu:cpu.slice(),l1:took.slice(),lost:took.slice()};
+  if(wb.step===3)return{end:'last'};
+  if(trade==='all')return{end:'all'};
+  const lost=[...wb.l1,...took];
+  return lost.length>5?{end:'full'}:{step:3,cpu:wb.cpu.slice(),l1:wb.l1.slice(),lost};
+}
+// the CPU's hand for a try: its weakest card swapped for your best, its second weakest for your second, and so on.
+// idx: where your cards sit in it
+function winBackHand(wb,strength){
+  const h=wb.cpu.slice(),idx=h.map((_,i)=>i).sort((a,b)=>strength(h[a])-strength(h[b])||a-b).slice(0,wb.lost.length);
+  idx.forEach((i,k)=>h[i]=wb.lost[k]);
+  return{h,idx};
+}
 const DIFFS=[['easy','Easy'],['normal','Normal'],['hard','Hard']];
 // best-of series: [matches, label, description]; whoever went first in one match goes second in the next
 const SERIES=[[1,'Single','One match decides it.'],

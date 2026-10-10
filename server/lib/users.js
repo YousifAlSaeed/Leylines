@@ -36,7 +36,7 @@ export function publicProfile(save) {
     beat: Number.isInteger(s.beat) && s.beat >= 0 && s.beat <= 2 ? s.beat : -1,
     recent: results(s.recent), orecent: results(s.orecent),
     badges: Object.fromEntries(Object.entries(s.badges && typeof s.badges === 'object' ? s.badges : {})
-      .filter(([k, v]) => /^[a-z0-9]{1,16}$/.test(k) && typeof v === 'string').slice(0, 50).map(([k, v]) => [k, v.slice(0, 24)])),
+      .filter(([k, v]) => /^[a-z0-9]{1,16}$/.test(k) && typeof v === 'string').slice(0, 80).map(([k, v]) => [k, v.slice(0, 24)])),
     showcase: (Array.isArray(s.showcase) ? s.showcase : []).filter(cardId).slice(0, 3),
     seen: (Array.isArray(s.seen) ? s.seen : []).filter(cardId),
     avatar: av && cardId(av.c) ? { c: av.c, r: nat(av.r, 5) } : null,
@@ -51,7 +51,8 @@ const cards = (v, n = 5) => (Array.isArray(v) ? v.filter(cardId).slice(0, n) : [
 export function publicHistory(save) {
   const s = save && typeof save === 'object' ? save : {};
   if (s.hideHist) return null;
-  return (Array.isArray(s.history) ? s.history : []).slice(-30).filter((h) => h && typeof h === 'object').map((h) => {
+  // Daily games (dk) were saved by old versions: history is Solo and online games only
+  return (Array.isArray(s.history) ? s.history : []).slice(-30).filter((h) => h && typeof h === 'object' && !h.dk).map((h) => {
     const e = {
       t: Number.isFinite(h.t) ? h.t : 0, m: h.m === 'online' ? 'online' : 'ai', bo: [3, 5].includes(h.bo) ? h.bo : 1,
       r: ['w', 'l', 'd'].includes(h.r) ? h.r : 'd',
@@ -61,7 +62,6 @@ export function publicHistory(save) {
     };
     if (e.m === 'ai') {
       e.d = ['easy', 'normal', 'hard'].includes(h.d) ? h.d : 'normal';
-      if (['duel', 'gauntlet'].includes(h.dk)) e.dk = h.dk; // a Daily challenge match (client/js/daily.js)
     } else {
       e.n = cleanName(h.n) || 'Player';
       if (typeof h.u === 'string' && USERNAME.test(h.u)) e.u = h.u;

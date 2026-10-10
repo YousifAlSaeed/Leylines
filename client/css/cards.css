@@ -19,24 +19,32 @@
 .card .mod{position:absolute;right:.2em;top:1.15em;font:900 .72em/1 var(--display);padding:.12em .25em;border-radius:.3em;background:rgba(0,0,0,.6)}
 .card .mod.up{color:#8dff8d} .card .mod.dn{color:#ff9b9b}
 .card .cnt{position:absolute;right:.35em;top:2.2em;z-index:2;font:800 .62em/1 var(--display);background:var(--accent);color:var(--on-accent);border-radius:.4em;padding:.2em .45em}
-/* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a metal frame and a "3★" tag.
+/* rarity: 1★ Common … 5★ Legendary (two old levels per star). Each gets a frame and a "3★" tag in its colour:
+   bronze, silver, gold, violet, and for 5★ "prism", a rainbow (--r5 is only its fallback where one colour is needed).
+   These are the only place the colours live: packs.js reads --r1 … --r5 for the pack opening.
    --rc colours the frame on the card; --rt is a text colour that stays readable on the page in both themes. */
-:root{--r1:#b08358;--r2:#cfd8e0;--r3:#f0c35c;--r4:#b98cff;--r5:#ff8fd0;--r1t:#c99a6c;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#c7a2ff;--r5t:#ff9fd6}
-:root[data-theme="light"]{--r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#7446c8;--r5t:#b8337f}
+:root{--r1:#c08a5b;--r2:#c9d3dc;--r3:#f0c35c;--r4:#9d6bff;--r5:#ff8fd0;
+  --prism:linear-gradient(90deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff);--prism-ring:conic-gradient(from 200deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);
+  --r1t:#d29d6e;--r2t:#d5dde4;--r3t:#f0c35c;--r4t:#b594ff;--r5t:#ff9fd6;--prism-t:linear-gradient(90deg,#ff9fd6,#ffd76a,#7fe0ff,#c7a2ff)}
+:root[data-theme="light"]{--r1t:#8a5a2b;--r2t:#5f6b76;--r3t:#946a0c;--r4t:#6a3dc8;--r5t:#b8337f;--prism-t:linear-gradient(90deg,#b8337f,#946a0c,#0e6f86,#6a3dc8)}
 .rar1{--rc:var(--r1);--rt:var(--r1t)} .rar2{--rc:var(--r2);--rt:var(--r2t)} .rar3{--rc:var(--r3);--rt:var(--r3t)} .rar4{--rc:var(--r4);--rt:var(--r4t)} .rar5{--rc:var(--r5);--rt:var(--r5t)}
 .rt{color:var(--rt)}
+/* 5★ words ("5★", "Legendary") are written in the prism */
+.rar5 .rt,.rt.rar5{background:var(--prism-t);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .card .rf{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
 .card.rar5 .rf{box-shadow:inset 0 0 .55em .05em color-mix(in srgb,var(--r5) 45%,transparent)}
-.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:conic-gradient(from 200deg,#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);
+.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:var(--prism-ring);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 /* the tag sits above the name strip with a clear gap (the strip is ~.77em tall), so a long name is never covered.
    Offsets are in the tag's own em (its font is .5 of the card's): 2.05em = 1.03 card-em up, .5em = .25 card-em in. */
 .card .rchip{position:absolute;left:.5em;bottom:2.05em;z-index:2;font:800 .5em/1 var(--display);padding:.18em .38em .2em;border-radius:.35em;white-space:nowrap;
   background:rgba(0,0,0,.62);color:var(--rc);border:.08em solid var(--rc)}
+.card.rar5 .rchip{color:#fff;border-color:transparent;background:linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.62)) padding-box,var(--prism) border-box}
 .card.nn .rchip{bottom:.6em}
 .card.back .rf,.card.back .rchip{display:none}
 .card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
-.card.back::after{content:"";position:absolute;inset:28% 30%;border:.1em solid var(--accent);transform:rotate(45deg);border-radius:.15em;opacity:.75}
+/* the back: the Leylines emblem */
+.card.back::after{content:"";position:absolute;left:50%;top:50%;width:54%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--accent);-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
 .card.back i{display:none}
 .card.unknown{background:var(--surf);box-shadow:inset 0 0 0 .05em var(--line2)}
 .card.unknown i{position:absolute;inset:0;display:grid;place-items:center;font:900 2em var(--display);color:var(--muted);opacity:.45;font-style:normal}

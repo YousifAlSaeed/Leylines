@@ -27,7 +27,7 @@ const dailyRules=(on={},timer=0)=>({open:true,same:false,sameWall:false,plus:fal
 
 /* ---------- today's progress ---------- */
 // duel: 1 once won, dt: tries; puz: 0 not tried, 1 missed, 2 solved;
-// g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, paid: today's shards claimed, live: in a match, deck}
+// gw: the Gauntlet was cleared today (the Full day badge); g: the Gauntlet {run: runs started, stage: wins this run, over: run ended, paid: today's shards claimed, live: in a match, deck}
 function trial(){
   const t=SAVE.trial;
   if(t&&t.at>=today()&&t.g&&typeof t.g==='object'){
@@ -108,26 +108,38 @@ function startPuzzle(){
   G.st=cloneS(p.st);G.first=0;G.ser={n:1,first:0,wins:[0,0],log:[]};G.sd=0;G.over=false;
   G.busy=true;show('game');buildBoard();renderGame();
   const g=G;
-  banner(`Flip ${p.goal} in one move`,'small').then(()=>{if(G!==g)return;G.busy=false;nextTurn()});
+  banner(`Flip ${p.goal} in one move`,'small').then(()=>{if(G!==g)return;G.busy=false;nextTurn();puzzleGoal()});
+}
+// the goal stays on screen, in the owl's bubble over the red hand (red never plays in a puzzle)
+function puzzleGoal(){
+  const c=$('#tutCoach');document.body.classList.add('puz');
+  c.innerHTML=`<div class="tc-av" aria-hidden="true">🦉</div><div><div class="tc-k">Daily Puzzle #${dayNo()}</div>`+
+    `<p>Flip <b>${G.daily.p.goal} red cards</b> with one card. One try: the first card you place is your answer.</p></div>`;
+  c.hidden=false;c.classList.remove('dim','shake');c.classList.add('in');coachPlace();
 }
 // the one move is placed: the try is used up, even if the app closes during the animation
-function dailyMoved(){
+function dailyMoved(hi,cell){
   if(!G.daily||G.daily.kind!=='puzzle'||G.daily.moved)return;
-  G.daily.moved=true;const t=trial();if(t.at===G.daily.at&&!t.puz){t.puz=1;save()}
+  // kept for See why (review.js)
+  G.daily.moved=true;G.daily.mine=[hi,cell];const t=trial();if(t.at===G.daily.at&&!t.puz){t.puz=1;save()}
 }
 function puzzleDone(){
   const d=G.daily,p=d.p,flips=blues(G.st)-d.before-1,ok=flips>=p.goal,t=trial(),fresh=t.at===d.at;
   G.over=true;G.busy=true;renderHud();stopTurnTimer();
+  $('#tutCoach').hidden=true;document.body.classList.remove('puz');
   let chips='';
   if(ok&&fresh&&t.puz!==2){t.puz=2;chips=dailyGive(DAILY_REWARD.puzzle);profCheck();save()}
+  if(ok){earn('puzzle');dailyBadges(t);save();chips+=freshHTML()}
   sfx(ok?'win':'lose');
   const g=G;
   setTimeout(()=>{if(G!==g)return;
     G.done=true;
-    modal(`<div class="kick">Daily Puzzle #${dayNo()}</div><h2>${ok?'Solved!':'Not this time'}</h2>`+
+    const html=`<div class="kick">Daily Puzzle #${dayNo()}</div><h2>${ok?'Solved!':'Not this time'}</h2>`+
       `<p>You flipped <b>${flips}</b> of the <b>${p.goal}</b> needed.</p>`+
-      dailyBox(chips,ok?'':`The answer was ${esc(puzzleAnswer(p))}. A new puzzle comes at midnight.`),
-      [{label:'Menu',cls:'primary',fn:leaveMatch}]);
+      dailyBox(chips,ok?'':`The answer was ${esc(puzzleAnswer(p))}. A new puzzle comes at midnight.`);
+    // missed: See why shows your move and the answer on the board (review.js), and comes back here
+    G.reopen=()=>modal(html,[...(ok||!d.mine?[]:[{label:'See why',cls:'primary',fn:revPuzzle}]),{label:'Menu',cls:ok?'primary':'',fn:leaveMatch}]);
+    G.reopen();
   },900);
 }
 
@@ -172,6 +184,8 @@ function startGauntStage(){
   G.decks=[g.deck.slice(),S.hand];startMatch();
 }
 
+// Full day: the Duel won, the Puzzle solved and the Gauntlet cleared on the same day
+function dailyBadges(t){if(t.duel&&t.puz===2&&t.gw)earn('fullday')}
 /* ---------- match hooks (match.js) ---------- */
 // the end of a Daily Duel or Gauntlet match: rewards, and what the result screen's main button does
 function dailyFinish(w){
@@ -179,7 +193,8 @@ function dailyFinish(w){
   d.again=null;
   if(t.at!==d.at)return dailyBox('',"This challenge ended at midnight. Today's is ready on the Daily tab.");
   if(d.kind==='duel'){
-    if(won&&!t.duel){t.duel=1;save();d.again={label:'Play again',fn:startDuel};return dailyBox(dailyGive(DAILY_REWARD.duel),'Daily Duel won. Come back tomorrow for a new one.')}
+    if(won)earn('duel');
+    if(won&&!t.duel){t.duel=1;dailyBadges(t);save();d.again={label:'Play again',fn:startDuel};return dailyBox(dailyGive(DAILY_REWARD.duel),'Daily Duel won. Come back tomorrow for a new one.')}
     d.again={label:won?'Play again':'Try again',fn:startDuel};
     return won?dailyBox('','Already won today, so no reward this time.'):t.duel?'':dailyBox('',`Try again: the ${rewardText(DAILY_REWARD.duel)} are still waiting for your first win.`);
   }
@@ -193,7 +208,7 @@ function dailyFinish(w){
   const first=g.run===1,tier=DAILY_REWARD.gauntlet[g.stage-1];
   if(first&&tier.pack)chips+=dailyGive({pack:tier.pack});
   if(tier.shards&&!g.paid){g.paid=1;chips+=dailyGive({shards:tier.shards})}
-  if(g.stage>=3)g.over=1;
+  if(g.stage>=3){g.over=1;earn('gauntlet');t.gw=1;dailyBadges(t)}
   save();
   if(g.stage<3){
     const nx=gauntStage(g.stage);

@@ -3,6 +3,7 @@
 import { Router } from 'express';
 import { rateLimit } from '../lib/rateLimit.js';
 import { requireAuth } from '../lib/sessions.js';
+import { config } from '../config.js';
 
 // the browsers' push services. The server only ever sends to these, so a made-up
 // "device" can't point it at some other address.
@@ -32,8 +33,10 @@ export function pushRouter(db, push) {
     res.status(204).end();
   });
 
-  // → { devices, sent, failed }: a test alert to every device of yours (Settings → Alerts → Test)
+  // → { devices, sent, failed }: a test alert to every device of yours (Settings → Alerts → Test).
+  // Developer accounts (DEV_USERS) only.
   r.post('/test', limit, requireAuth(db), async (req, res) => {
+    if (!config.devUsers.includes(req.user.username.toLowerCase())) return res.status(403).json({ error: 'Only developers can send a test alert.' });
     if (!push) return res.status(503).json({ error: 'Alerts are not set up on this server.' });
     res.json(await push.notify(req.user.id, { title: 'Leylines', body: 'Alerts work on this device.', tag: 'test', url: './', ttl: 600 }));
   });

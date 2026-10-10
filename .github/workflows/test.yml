@@ -1,5 +1,11 @@
 # Runs the tests (npm test) on every push to dev or main and on every pull
 # request; a red ✗ on GitHub means something broke.
+#
+# After a push passes, it also tells Render to deploy that branch: dev goes to
+# the test site (Leylines-dev), main to the live site (leylines). Render can't
+# see pushes on its own here, so this calls each service's Deploy Hook (Render →
+# service → Settings → Deploy Hook), saved as repo secrets RENDER_HOOK_DEV and
+# RENDER_HOOK_MAIN. Without the secret the deploy step just skips.
 name: Tests
 on:
   push:
@@ -16,3 +22,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tell Render to deploy
+        env:
+          HOOK: ${{ github.ref_name == 'main' && secrets.RENDER_HOOK_MAIN || secrets.RENDER_HOOK_DEV }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "No Render deploy hook secret for ${{ github.ref_name }}, skipping."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Render deploy started for ${{ github.ref_name }}."

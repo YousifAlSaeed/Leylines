@@ -20,7 +20,7 @@ function openSetup(mode){
   $('#scr-setup').classList.toggle('ro',roomGuest());
   $('#setupGo').disabled=false;
   $('#setupNote').innerHTML=mode==='local'?'Free play: each player picks 5 cards from every card this account has found, even ones you lost. The same card can be picked more than once. No cards are traded.':'';
-  setupLast=null;renderSetup();show('setup');
+  setupLast=null;setupOpen=null;renderSetup();show('setup');
 }
 function refocus(host,old){const a=document.activeElement;if(!a||a===document.body||!a.isConnected){const n=$(`${host} [data-k="${old.dataset.k}"]`);n&&n.focus()}}
 const RULE_ICON={
@@ -40,43 +40,81 @@ const RULE_ICON={
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
 const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[3,'2–3★ cards, plans ahead']};
-const TRADE_MARK={none:'0',one:'1',diff:'±',all:'5'};
+// the trade rule in plain words, for the setup screen
+const STAKE={none:'Nothing',one:'1 card',diff:'Diff',all:'All 5'};
+const seriesName=n=>n===1?'1 match':'Best of '+n;
 // Sweep needs cards to change hands: off in Couch, and with trade None (or a guest in the online room)
 const sweepBlock=()=>setupMode==='local'?'Couch games never trade cards, so Sweep is off.':tradeLocked()?'Card bets are off, so Sweep is off.'
   :SR().trade==='none'?(roomGuest()?'The trade rule is None, so Sweep is off.':'Pick a trade rule below (not None) to use Sweep.'):'';
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
-// Solo keeps its own timer (off by default); Couch and the room use the rules' one
+// Solo keeps its own timer (off by default); Couch and the room use the rules' one.
+// The per-turn seconds are SAVE.cpuTimer / rules.timer; the type, bank and out-of-time rule are SAVE.cpuTk / the rules
 const setupTimer=()=>setupMode==='ai'?SAVE.cpuTimer:SR().rules.timer;
-const ruleCountText=()=>{const R=SR().rules;return`${rulesOn(R,setupMode==='local'?'none':SR().trade).length+(setupTimer()?1:0)} on`};
-function timerInfo(){const t=setupTimer();return`${ruleSvg('timer')}<div><b>Turn timer · ${t?t+' seconds':'off'}</b><span>${timerDesc(t)}</span></div>`}
-// slider positions: 0 = off, 1..17 = 10..90 seconds
+const setupTk=()=>setupMode==='ai'?SAVE.cpuTk:SR().rules;
+const setupBank=()=>setupTk().tkind==='bank';
+const ruleCountText=()=>{const R=SR().rules;return`${rulesOn(R,setupMode==='local'?'none':SR().trade).length} on`};
+const TKINDS=[['off','Off'],['turn','Per turn'],['bank','Bank']];
+const FLAGS=[['random','Random card'],['lose','You lose']];
+// what the timer is set to: 'off', 'turn' or 'bank'
+const setupTkind=()=>setupBank()?(setupTk().bank?'bank':'off'):setupTimer()?'turn':'off';
+const setTurnSec=n=>{if(setupMode==='ai')SAVE.cpuTimer=n;else SAVE.rules.timer=n};
+// the slider: per turn 10 to 90 seconds in 5s, a bank 1:00 to 5:00 in 30s
+const T_RANGE={turn:[10,TIMER_MAX,5,[10,30,50,70,90],v=>v],bank:[60,BANK_MAX,30,[60,120,180,240,300],v=>fmtLeft(v)]};
+function timerVal(){const k=setupTkind();return k==='off'?'Off':k==='turn'?setupTimer()+'s a turn':fmtLeft(setupTk().bank)+' each'}
 function renderTimerRow(){
-  const row=$('#timerRow'),t=setupTimer();
-  if(!row.firstChild){
-    row.innerHTML=`${ruleSvg('timer')}<b id="timerName">Turn timer</b><output id="timerOut" for="timerSl"></output>`+
-      `<input type="range" class="rng" id="timerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="timerName">`+
-      `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
-    const sl=$('#timerSl');
-    sl.oninput=()=>{const v=+sl.value,n=v?(v+1)*5:0;if(roomGuest()||n===setupTimer())return;if(setupMode==='ai')SAVE.cpuTimer=n;else SAVE.rules.timer=n;save();setupLast='timer';sfx('click');
-      renderTimerRow();$('#ruleInfo').innerHTML=timerInfo();if(inRoom()){roomSync();renderRoom()}};
+  const ro=roomGuest(),tk=setupTk(),kind=setupTkind(),lock=ro?' aria-disabled="true"':'';
+  $('#tkindSeg').innerHTML=TKINDS.map(([k,l])=>`<button class="tc ${kind===k?'on':''}" data-k="${k}" aria-pressed="${kind===k}"${lock}><span class="k">${l}</span></button>`).join('');
+  $$('#tkindSeg button').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(ro||k===setupTkind())return;
+    // picking a type that was off turns it on at its usual time
+    if(k==='off'){tk.tkind='turn';setTurnSec(0)}
+    else if(k==='turn'){tk.tkind='turn';if(!setupTimer())setTurnSec(45)}
+    else{tk.tkind='bank';if(!tk.bank)tk.bank=180}
+    timerChanged();refocus('#tkindSeg',b)});
+  const row=$('#timerRow');
+  row.hidden=kind==='off';
+  if(kind!=='off'){
+    const[min,max,step,ticks,lab]=T_RANGE[kind],bank=kind==='bank';
+    if(row.dataset.k!==kind){
+      row.dataset.k=kind;
+      row.innerHTML=`<b id="timerName">${bank?'Time for each player':'Time per turn'}</b><span></span><output id="timerOut" for="timerSl"></output>`+
+        `<input type="range" class="rng" id="timerSl" min="${min}" max="${max}" step="${step}" aria-labelledby="timerName">`+
+        `<div class="ticks" aria-hidden="true">${ticks.map(v=>`<span style="--p:${(v-min)/(max-min)}">${lab(v)}</span>`).join('')}</div>`;
+      const sl=$('#timerSl');
+      sl.oninput=()=>{const v=+sl.value;if(roomGuest())return;
+        if(setupBank()){if(v===setupTk().bank)return;setupTk().bank=v}else{if(v===setupTimer())return;setTurnSec(v)}
+        timerChanged()};
+    }
+    const sl=$('#timerSl'),t=bank?tk.bank:setupTimer();
+    sl.disabled=ro;sl.value=t;sl.style.setProperty('--f',((t-min)/(max-min)*100)+'%');
+    sl.setAttribute('aria-valuetext',bank?fmtLeft(t)+' for each player':t+' seconds per turn');
+    $('#timerOut').textContent=bank?fmtLeft(t):t+' s';
   }
-  const sl=$('#timerSl'),pos=t?t/5-1:0;
-  sl.disabled=roomGuest();sl.value=pos;sl.style.setProperty('--f',(pos/(+sl.max)*100)+'%');
-  sl.setAttribute('aria-valuetext',t?t+' seconds per turn':'Off, no time limit');
-  $('#timerOut').textContent=t?t+' s':'Off';
-  row.classList.toggle('off',!t);
+  // what running out does: a random card, or you lose (both timers)
+  $('#flagRow').hidden=kind==='off';
+  $('#flagSeg').innerHTML=FLAGS.map(([k,l])=>`<button class="tc ${tk.flag===k?'on':''}" data-k="${k}" aria-pressed="${tk.flag===k}"${lock}><span class="k">${l}</span></button>`).join('');
+  $$('#flagSeg button').forEach(b=>b.onclick=()=>{if(ro||b.dataset.k===tk.flag)return;tk.flag=b.dataset.k;timerChanged();refocus('#flagSeg',b)});
+  $('#timerDesc').textContent=kind==='bank'?bankDesc(tk.bank,tk.flag):timerDesc(kind==='turn'?setupTimer():0,tk.flag);
+  setVal('timer',timerVal(),kind==='off');
   $('#ruleCount').textContent=ruleCountText();
 }
+// the match settings rows (index.html .srow): the open one, and what each shows it's set to
+let setupOpen=null;
+function setVal(k,v,off){const el=$('#val-'+k);el.textContent=v;el.classList.toggle('off',!!off)}
+function renderRows(){$$('#setupOpts .srow').forEach(r=>{const on=r.dataset.row===setupOpen;r.classList.toggle('open',on);r.querySelector('.srh').setAttribute('aria-expanded',on)})}
+$$('#setupOpts .srh').forEach(b=>b.onclick=()=>{const k=b.dataset.row;setupOpen=setupOpen===k?null:k;sfx('click');renderRows()});
+function timerChanged(){save();sfx('click');renderTimerRow();if(inRoom()){roomSync();renderRoom()}}
 function renderSetup(flipKey){
   const ro=roomGuest(),cur=SR();
   $('#diffSeg').innerHTML=DIFFS.map(([k,l])=>{const[n,sub]=DIFF_INFO[k];
     return`<button class="dc ${SAVE.diff===k?'on':''}" data-k="${k}" aria-pressed="${SAVE.diff===k}"><span class="pips" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'f':''}"></i>`).join('')}</span><b>${l}</b><small>${sub}</small></button>`}).join('');
   $$('#diffSeg button').forEach(b=>b.onclick=()=>{SAVE.diff=b.dataset.k;save();sfx('click');renderSetup();refocus('#diffSeg',b)});
+  setVal('diff',DIFFS.find(d=>d[0]===SAVE.diff)[1]);
+  renderRows();
   const R=cur.rules;
   const swb=sweepBlock();
   $('#ruleChips').innerHTML=RULES.map(([k,l])=>{
     const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus),off=k==='sweep'&&swb,on=R[k]&&!off;
-    return`<button class="rc ${on?'on':''} ${dim?'dim':''} ${off?'off':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!on}"${ro?' aria-readonly="true"':''}${off?' aria-disabled="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b></button>`}).join('');
+    return`<button class="rc ${on?'on':''} ${dim?'dim':''} ${off?'off':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!on}"${ro?' aria-readonly="true"':''}${off?' aria-disabled="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b><small class="rd" aria-hidden="true">${off?swb:RULE_SHORT[k]}</small></button>`}).join('');
   // the guest can tap a card to read about it, but not turn it on or off (nor can anyone turn on a blocked Sweep)
   $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
     if(ro||k==='sweep'&&swb){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
@@ -87,10 +125,11 @@ function renderSetup(flipKey){
   renderTimerRow();
   const lr=RULES.find(r=>r[0]===setupLast);
   const lrOn=lr&&R[lr[0]]&&!(lr[0]==='sweep'&&swb);
-  $('#ruleInfo').innerHTML=setupLast==='timer'?timerInfo():lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${lrOn?'on':'off'}</b><span>${lr[2]}${lr[0]==='sweep'&&swb?` <b class="gold">${swb}</b>`:''}</span></div>`
+  $('#ruleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${lrOn?'on':'off'}</b><span>${lr[2]}${lr[0]==='sweep'&&swb?` <b class="gold">${swb}</b>`:''}</span></div>`
     :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${ro?'Violet cards are on. Only the host can change them. Tap one to see what it does.':'Violet cards are on. Tap one to turn it on or off and see what it does.'}</span></div>`;
   const lock=ro?' aria-disabled="true"':'',tlock=ro||tradeLocked()?' aria-disabled="true"':'';
-  $('#tradeSeg').innerHTML=TRADES.map(([k,l])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${tlock}><span class="n" aria-hidden="true">${TRADE_MARK[k]}</span><small>${l}</small></button>`).join('');
+  $('#tradeSeg').innerHTML=TRADES.map(([k])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${tlock}><span class="k">${STAKE[k]}</span></button>`).join('');
+  setVal('trade',STAKE[cur.trade]+(tradeLocked()?' 🔒':''),cur.trade==='none');
   $$('#tradeSeg button').forEach(b=>b.onclick=()=>{if(ro||tradeLocked())return;SAVE.trade=b.dataset.k;save();sfx('click');renderSetup();refocus('#tradeSeg',b)});
   const tr=TRADES.find(t=>t[0]===cur.trade);
   $('#tradeDesc').textContent=tr[2];
@@ -100,7 +139,8 @@ function renderSetup(flipKey){
       :`<b>🔒 Card bets are off.</b> You're playing as a guest. Create an account to play online for cards.`)
     :cur.trade==='none'||setupMode==='local'?'':`<b>⚠ Leaving mid-match counts as a loss.</b> ${inRoom()?'Your opponent can take your cards or spare you.':'The CPU takes your cards as if it won.'}`;
   const bo=cur.bo;
-  $('#seriesSeg').innerHTML=SERIES.map(([n,l])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"${lock}><span class="n" aria-hidden="true">${n}</span><small>${l}</small></button>`).join('');
+  $('#seriesSeg').innerHTML=SERIES.map(([n])=>`<button class="tc ${bo===n?'on':''}" data-k="${n}" aria-pressed="${bo===n}"${lock}><span class="k">${seriesName(n)}</span></button>`).join('');
+  setVal('series',seriesName(bo));
   $$('#seriesSeg button').forEach(b=>b.onclick=()=>{if(ro)return;SAVE.bo=+b.dataset.k;save();sfx('click');renderSetup();refocus('#seriesSeg',b)});
   $('#seriesDesc').textContent=SERIES.find(s=>s[0]===bo)[2];
   if(inRoom()){roomSync();renderRoom()}

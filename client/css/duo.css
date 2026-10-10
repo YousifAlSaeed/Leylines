@@ -1,0 +1,206 @@
+/* ---------- 2v2 (duo.js) ---------- */
+/* Host a game: 1v1 or Crossroads (hostPick) */
+.hostpick{display:grid;gap:10px;margin:6px 0 4px;text-align:left}
+.hostpick .hp{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:14px;border:1px solid var(--line2);background:var(--surf2);color:var(--text);cursor:pointer;font:inherit;text-align:left;transition:border-color .18s,transform .15s,box-shadow .2s}
+.hostpick .hp:hover,.hostpick .hp:focus-visible{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 6px 18px -8px var(--accent-glow);transform:translateY(-1px)}
+.hostpick .hp b{font:800 19px var(--display);display:flex;align-items:center;gap:4px}
+.hostpick .hp span{font-size:13px;color:var(--muted);line-height:1.4}
+.dbeta{font:700 10px/1 var(--body);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--line2);border-radius:5px;padding:3px 6px;vertical-align:4px;margin-left:6px}
+
+/* the room */
+.duo-room h3{margin:0 0 8px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dteams{display:grid;gap:14px}
+.dteam .room-pl li{flex-wrap:wrap}
+/* seat colours, from where you sit (duoCol): blue and red in 2v2; blue, red, gold, green in Free-for-all */
+.dc-blue{--dc1:var(--blue1);--dc2:var(--blue2);--dink:var(--blue-ink)}
+.dc-red{--dc1:var(--red1);--dc2:var(--red2);--dink:var(--red-ink)}
+.dc-gold{--dc1:#c98a1e;--dc2:#5a3208;--dink:#e9b44c}
+.dc-green{--dc1:#1f9e70;--dc2:#0b4a35;--dink:#3fd49c}
+:root[data-theme="light"] .dc-gold{--dink:#9a6a0a} :root[data-theme="light"] .dc-green{--dink:#13865c}
+.dc-purple{--dc1:#8a52e8;--dc2:#2e1470;--dink:#b48cff}
+.dc-teal{--dc1:#1aa3b8;--dc2:#07414c;--dink:#4fd3e6}
+:root[data-theme="light"] .dc-purple{--dink:#6a2bae} :root[data-theme="light"] .dc-teal{--dink:#0e7d8f}
+.card.gold{--c1:#c98a1e;--c2:#5a3208} .card.green{--c1:#1f9e70;--c2:#0b4a35}
+.card.purple{--c1:#8a52e8;--c2:#2e1470} .card.teal{--c1:#1aa3b8;--c2:#07414c}
+/* Free-for-all: picking your colour in the room */
+.dcolors{margin-top:12px}
+.dsw{display:flex;gap:10px;flex-wrap:wrap}
+.dsw button{width:42px;height:42px;border-radius:12px;border:2px solid transparent;background:linear-gradient(160deg,var(--dc1),var(--dc2));color:#fff;font:800 18px var(--display);cursor:pointer;transition:transform .15s,box-shadow .2s}
+.dsw button:hover:not(:disabled){transform:translateY(-2px)}
+.dsw button.on{border-color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--dc1) 55%,transparent),0 0 16px var(--dc1)}
+.dsw button:disabled{opacity:.4;cursor:not-allowed;background:linear-gradient(135deg,transparent 46%,rgba(255,255,255,.75) 47% 53%,transparent 54%),linear-gradient(160deg,var(--dc1),var(--dc2))}
+.room-pl li .av{background:linear-gradient(160deg,var(--dc1),var(--dc2))}
+.room-pl li.empty .av{background:var(--well);color:var(--muted)}
+.room-pl .av{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font:800 15px var(--display);color:#fff;flex:none}
+.room-pl .av.art{font:400 19px/1 var(--body)}
+.dtag{font:700 10px/1 var(--body);font-style:normal;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:4px 6px;flex:none}
+.dtag.ok{color:var(--ley-success);border-color:color-mix(in srgb,var(--ley-success) 45%,transparent)}
+.dctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.dctl:has(.dseat){flex:1 1 100%;margin-left:0}
+.dseat{flex:1}
+.dseat button{font-size:12.5px;padding:4px 8px;min-height:34px;white-space:nowrap}
+.drules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.drules{grid-template-columns:minmax(0,1fr)}}
+.drule{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--surf);color:var(--muted);cursor:pointer;font:inherit}
+.drule b{font:700 14px var(--display);color:var(--text)}
+.drule span{font-size:12px;line-height:1.4}
+.drule.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surf));box-shadow:inset 0 0 0 1px var(--accent)}
+.drule:disabled{cursor:default}
+.drule:not(.on):disabled{opacity:.6}
+#duoTimer button:disabled{cursor:default}
+
+/* the match: sizes set by duoFit (--dc square, --ds side cards, --dt partner's cards, --dh your hand) */
+#scr-duo{--dc:64px;--ds:30px;--dt:36px;--dh:56px;overflow:hidden;overscroll-behavior:none;
+  padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+.ios-app #scr-duo{padding-top:calc(env(safe-area-inset-top) + 28px)}
+.dturn{flex:1;min-width:0;text-align:center;font:700 15px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:44px}
+.dnet{max-width:640px;width:100%;margin:4px 0;padding:7px 12px;border-radius:10px;background:color-mix(in srgb,var(--warn) 14%,var(--surf));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);font-size:13px;text-align:center}
+.duo-arena{flex:1;min-height:0;width:100%;max-width:820px;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:4px}
+.duo-top{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.duo-mid{display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
+.duo-side{width:calc(var(--ds) + 8px);display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
+#duoBoard{display:grid;grid-template-columns:repeat(4,var(--dc));gap:4px;padding:6px;border-radius:16px}
+#duoBoard .cell{width:var(--dc);height:calc(var(--dc)*1.2);border-radius:9px}
+#duoBoard .cell .card{font-size:calc(var(--dc)/5)}
+#duoBoard .cell .eicon{font-size:calc(var(--dc)*.32)}
+/* a sealed Ley line: a ring in the owner's colour, and a glow when it just sealed */
+#duoBoard .cell.sealed .card{box-shadow:inset 0 0 0 .1em rgba(255,255,255,.85),0 0 .5em var(--accent-glow)}
+#duoBoard .cell.seal-new .card{animation:dseal .9s ease-out}
+@keyframes dseal{0%{filter:brightness(1.9)}100%{filter:none}}
+@media (prefers-reduced-motion:reduce){#duoBoard .cell.seal-new .card{animation:none}}
+
+/* players around the board */
+.dname{display:flex;align-items:center;gap:7px;min-width:0}
+.dname .av{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font:800 13px var(--display);color:#fff;flex:none;transition:box-shadow .25s}
+.dname .av.art{font:400 17px/1 var(--body)}
+.dname .av{background:linear-gradient(160deg,var(--dc1),var(--dc2))}
+.dname.dactive .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--hot)}
+.dname.daway{opacity:.6}
+.dwho{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.dwho b{font:600 13px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.dwho small{font-size:11px;color:var(--muted);white-space:nowrap}
+.dname.dactive .dwho b{color:var(--hot)}
+.dname.dn-side{flex-direction:column;gap:3px;text-align:center}
+.dname.dn-side .dwho b{max-width:calc(var(--ds) + 40px);font-size:clamp(11px,calc(var(--ds) * .28),13px)}
+.dname.dn-side .dwho small{display:none}
+.dhand{display:flex;justify-content:center}
+.dhand.dh-top .card{font-size:calc(var(--dt)/5)}
+.dhand.dh-top .card+.card{margin-left:3px}
+.dhand.dh-top{min-height:calc(var(--dt) * 1.2)} /* room for the hand before the cards are dealt */
+.dhand.dh-side{flex-direction:column}
+.dhand.dh-side .card{font-size:calc(var(--ds)/5)}
+.dhand.dh-side .card+.card{margin-top:calc(var(--ds) * -0.75)}
+.duo-score{display:flex;gap:44px;justify-content:center;font:900 26px/1 var(--display);font-variant-numeric:tabular-nums}
+/* each score: its name over a big number, in both modes */
+.duo-score span{display:flex;flex-direction:column;align-items:center;gap:2px}
+.duo-score small{font:600 11px var(--body);color:var(--muted)}
+.duo-score span{color:var(--dink)}
+/* the numbers: big and glowing in the player's colour, like 1v1's scores */
+.duo-score b{font:900 clamp(30px,calc(var(--dc) * .58),66px)/1 var(--display);text-shadow:0 0 .45em currentColor}
+.duo-score.ffa b{font-size:clamp(28px,calc(var(--dc) * .48),56px)}
+.duo-score b.pop{animation:scPop .45s var(--spring)}
+.duo-score.ffa{gap:14px 22px;flex-wrap:wrap}
+.duo-score.ffa small{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the Free-for-all result: places 1st to 4th */
+.dplaces{list-style:none;margin:10px 0;padding:0;display:grid;gap:6px;text-align:left}
+.dplaces li{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:var(--surf);border:1px solid var(--line);border-left:4px solid var(--dc1)}
+.dplaces li.dme{border-color:var(--line2);border-left-color:var(--dc1);background:var(--surf2)}
+.dplaces b{font:800 16px var(--display);color:var(--dink)}
+.dplaces span{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dplaces em{font:900 22px var(--display);font-style:normal;color:var(--dink)}
+.duo-bot{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dmyhand{display:flex;gap:5px;justify-content:center;min-height:calc(var(--dh)*1.2 + 4px)}
+.dmyhand .card{font-size:calc(var(--dh)/5);transition:transform .28s var(--spring),box-shadow .2s}
+.dmyhand .card.play{cursor:grab;touch-action:none}
+.dmyhand .card.dragging{opacity:.25}
+.dmyhand .card.sel{transform:translateY(-14%);box-shadow:inset 0 0 0 .05em rgba(255,255,255,.35),0 0 0 .1em var(--hot),0 .5em 1.2em -.3em var(--hot-glow)}
+@media (hover:hover){.dmyhand .card.play:not(.sel):hover{transform:translateY(-6%)}}
+.dmyhand:not(:has(.play)) .card{opacity:.85}
+
+/* the room's two halves stack on phones, and sit side by side on wide screens (like the match setup screen) */
+.droom-l,.droom-r{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (min-width:920px) and (min-height:560px){
+  #scr-duoroom .topbar{max-width:1100px}
+  /* the players on the left; the rules on the right with Start / Ready under them. On a short screen the button
+     stays pinned to the bottom, floating on its own: no strip behind it (its dark background showed as a box) */
+  .duo-room{max-width:1100px;display:grid;grid-template-columns:1fr 1.15fr;grid-template-areas:"l r" "l f";grid-template-rows:auto 1fr;column-gap:44px;row-gap:20px;align-items:start}
+  .droom-l{grid-area:l} .droom-r{grid-area:r}
+  .duo-room .setup-foot{grid-area:f;position:sticky;bottom:16px;align-self:start;background:none;padding:0;margin:0;display:flex;justify-content:flex-end;pointer-events:none}
+  .duo-room .setup-foot .btn{pointer-events:auto}
+  .duo-room .setup-foot::after{display:none}
+  .duo-room .setup-foot .btn{width:280px}
+}
+
+/* wide screens: big side players (phones keep the small columns above) */
+#scr-duo:not(.narrow) .duo-side{width:calc(var(--ds) + 44px);gap:10px}
+#scr-duo:not(.narrow) .dname.dn-side{gap:6px}
+#scr-duo:not(.narrow) .dname.dn-side .av{width:calc(var(--ds) * .62);height:calc(var(--ds) * .62);border-radius:calc(var(--ds) * .2);font-size:calc(var(--ds) * .3)}
+#scr-duo:not(.narrow) .dname.dn-side .av.art{font-size:calc(var(--ds) * .38)}
+#scr-duo:not(.narrow) .dname.dn-side .dwho b{max-width:calc(var(--ds) + 44px);font-size:clamp(12px,calc(var(--ds) * .22),15px)}
+#scr-duo:not(.narrow) .dname.dn-side .dwho small{display:block;font-size:clamp(10px,calc(var(--ds) * .17),12px)}
+#scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:calc(var(--ds) * -0.68)}
+/* the top player's avatar and name match the side players' */
+#scr-duo:not(.narrow) .dname.dn-top .av{width:calc(var(--ds) * .62);height:calc(var(--ds) * .62);border-radius:calc(var(--ds) * .2);font-size:calc(var(--ds) * .3)}
+#scr-duo:not(.narrow) .dname.dn-top .av.art{font-size:calc(var(--ds) * .38)}
+#scr-duo:not(.narrow) .dname.dn-top .dwho b{font-size:clamp(12px,calc(var(--ds) * .22),15px);max-width:180px}
+/* your name sits under your hand on phones; wide screens use the room for bigger cards */
+#scr-duo:not(.narrow) #duoMe{display:none}
+/* phones: a long side name wraps onto two lines inside its column instead of running off the screen */
+#scr-duo.narrow .dname.dn-side .dwho b{white-space:normal;overflow-wrap:break-word;max-width:calc(var(--ds) + 18px);font-size:11.5px;line-height:1.1;text-align:center}
+/* phones: bigger side players, paid for with tighter gaps round the board instead of a smaller board */
+#scr-duo.narrow .duo-mid{gap:4px}
+#scr-duo.narrow .duo-side{width:calc(var(--ds) + 6px);gap:7px}
+#scr-duo.narrow .dname.dn-side .av{width:calc(var(--ds) * .94);height:calc(var(--ds) * .94);border-radius:calc(var(--ds) * .28);font-size:calc(var(--ds) * .42)}
+#scr-duo.narrow .dname.dn-side .av.art{font-size:calc(var(--ds) * .55)}
+#scr-duo.narrow #duoBoard{padding:5px;gap:3px}
+/* phones: the top player as big as the side players (avatar) with bigger cards and name */
+#scr-duo.narrow .dname.dn-top{gap:8px}
+#scr-duo.narrow .dname.dn-top .av{width:calc(var(--ds) * .94);height:calc(var(--ds) * .94);border-radius:calc(var(--ds) * .28);font-size:calc(var(--ds) * .42)}
+#scr-duo.narrow .dname.dn-top .av.art{font-size:calc(var(--ds) * .55)}
+#scr-duo.narrow .dname.dn-top .dwho b{font-size:14.5px;max-width:120px}
+#scr-duo.narrow .duo-top{gap:12px}
+
+/* ---------- PC (body.pc, set in game.js layout): like 4-player chess. A square: the board in the middle, a hand on each
+   side as long as the board, and in each corner (where a hand row meets a hand column) the player whose right-hand side
+   it is: the top player's top-left, the right player's top-right, the left player's bottom-left, yours bottom-right.
+   A corner holds the big score, the name and avatar, and the clock. The score row under the board isn't needed ---------- */
+body.pc #scr-duo:not(.narrow) .duo-arena{max-width:none;display:grid;grid-template-columns:var(--dt-row) auto var(--dt-row);
+  grid-template-rows:var(--dt-row) auto var(--dt-row);justify-content:center;align-content:center;gap:10px}
+body.pc #scr-duo:not(.narrow) :is(.duo-top,.duo-mid,.duo-side,.duo-bot,#duoMe){display:contents}
+body.pc #scr-duo:not(.narrow) #duoScore{display:none}
+body.pc #scr-duo:not(.narrow) .dh-top{grid-area:1/2;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoLeft .dhand{grid-area:2/1;justify-self:center;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoBoard{grid-area:2/2}
+body.pc #scr-duo:not(.narrow) #duoRight .dhand{grid-area:2/3;justify-self:center;align-self:center}
+body.pc #scr-duo:not(.narrow) #duoHand{grid-area:3/2;align-self:center;min-height:0}
+body.pc #scr-duo:not(.narrow) .dhand.dh-top .card+.card{margin-left:3px}
+body.pc #scr-duo:not(.narrow) #duoHand{gap:3px}
+body.pc #scr-duo:not(.narrow) .dhand.dh-side .card+.card{margin-top:var(--dso)}
+/* a corner: exactly its square, three rows (clock, name and avatar, score) with the score at the end of the player's
+   own cards. Yours reads the usual way; the side players' corners turn to face them (left a quarter turn clockwise,
+   right a quarter turn back), so the same layout lands with its score by their column. The top player's stays upright
+   (upside down would be hard to read), mirrored so its score sits by their row */
+body.pc #scr-duo:not(.narrow) .dname{display:grid;width:var(--dt-row);height:var(--dt-row);box-sizing:border-box;align-content:space-between;gap:4px 8px;
+  text-align:left;flex-direction:initial;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "av who" "sc sc"}
+body.pc #scr-duo:not(.narrow) .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc sc" "who av" "tm tm"}
+/* turned, the side corners' clocks land on their inner edge: the left player's between your cards and their name,
+   the right player's between the top hand and theirs, so each clock also marks where a player's corner starts */
+body.pc #scr-duo:not(.narrow) .dname.dk-tr{grid-area:1/3;transform:rotate(-90deg)}
+body.pc #scr-duo:not(.narrow) .dname.dk-bl{grid-area:3/1;transform:rotate(90deg)}
+body.pc #scr-duo:not(.narrow) .dname.dk-br{grid-area:3/3}
+body.pc #scr-duo:not(.narrow) .dname .av{grid-area:av;width:28px;height:28px;border-radius:8px;font-size:14px}
+body.pc #scr-duo:not(.narrow) .dname .av.art{font-size:17px}
+body.pc #scr-duo:not(.narrow) .dname .dwho{grid-area:who}
+body.pc #scr-duo:not(.narrow) .dname.dk-tl .dwho{text-align:right}
+body.pc #scr-duo:not(.narrow) .dname .dwho{min-width:0;max-width:100%}
+body.pc #scr-duo:not(.narrow) .dname .dwho b{max-width:100%;font-size:13.5px}
+body.pc #scr-duo:not(.narrow) .dname .dwho small{display:none}
+/* the clock spans the corner, like chess.com's */
+body.pc #scr-duo:not(.narrow) .dname .ptm{grid-area:tm;justify-self:stretch;min-width:0;padding:5px 10px;font-size:17px;border-radius:8px}
+body.pc #scr-duo:not(.narrow) .dname .ptm svg{width:17px;height:17px}
+.dsc{display:none}
+body.pc #scr-duo:not(.narrow) .dsc{grid-area:sc;display:block;color:var(--dink);font:900 calc(var(--dt-row) * .42)/.9 var(--display);
+  font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor}
+body.pc #scr-duo:not(.narrow) .dsc.pop{animation:scPop .45s var(--spring)}
+#scr-duo .ptm{background:linear-gradient(160deg,var(--dc1),var(--dc2))}
+#scr-duo .ptm.crit{background:var(--crit)}

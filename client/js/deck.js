@@ -118,7 +118,7 @@ function deleteLoadout(h,i){
   const l=SAVE.loadouts[i];if(!l)return;
   modal(`<h2 class="nm2">Delete “${esc(l.name)}”?</h2><p>This removes the saved hand. The cards stay in your collection.</p>`,
     [{label:'Cancel',esc:true},
-     {label:'Delete',cls:'danger',fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render()}}]);
+     {label:'Delete',cls:'danger',wait:true,fn:()=>{SAVE.loadouts[i]=null;fixMain();save();h.note=`Deleted <b>${esc(l.name)}</b>.`;h.render()}}]);
 }
 // Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
 function wireHand(P,get){

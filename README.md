@@ -31,6 +31,7 @@ The in-game **How to play** screen shows every rule with an animated example.
 | --- | --- |
 | **Solo** | Play the CPU on Easy, Normal or Hard. Hard searches ahead with minimax. |
 | **Online** | Play a friend over the internet. The host gets a 5-letter code and an invite link to share, then both wait in a room where the host sets the rules and the friend sees them. The friend taps Ready, then the host starts. |
+| **Crossroads** (testing) | Online only, 4 players on a 4×4 board: **2v2** (two teams) or **Free-for-all** (everyone for themselves, each in their own colour). **Host a game** asks 1v1 or Crossroads, friends join with its code, and empty seats can be CPU Easy or CPU Normal. A player who drops out gets a minute to come back before a CPU plays their cards. No trades, no rewards yet. |
 | **Couch** | Two players on one device. Each picks 5 cards from every card the account has found (even lost ones); the same card can be picked more than once. No cards are traded. |
 
 ## Rules

@@ -60,6 +60,7 @@ function renderHud(){
   setScores([score(st,0),score(st,1)]);
   $('#sideBot').classList.toggle('active',!G.over&&st.turn===bot);
   $('#sideTop').classList.toggle('active',!G.over&&st.turn!==bot);
+  paintClocks();
   let msg;
   if(G.tut)msg=G.over?'Well played!':'Your turn';
   else if(G.over)msg='Game over';
@@ -73,10 +74,11 @@ function renderHud(){
   for(const[el,p]of[[$('#tagBot'),bot],[$('#tagTop'),1-bot]]){const t=tag(p);if(el.textContent!==t){el.textContent=t;el.classList.toggle('on',!!t)}}
   const R=G.rules;
   let chips=rulesOn(R,G.mode==='local'?'none':G.trade).map(r=>`<span>${r[1]}</span>`).join('');
-  if(R.timer)chips+=`<span>⏱ ${R.timer}s</span>`;
+  if(timedOn(R))chips+=isBank(R)?`<span>⏱ ${fmtLeft(R.bank)} bank</span>`:`<span>⏱ ${R.timer}s</span>`;
   if(G.mode!=='local'&&G.trade!=='none')chips+=`<span>Trade: ${TRADES.find(t=>t[0]===G.trade)[1]}</span>`;
   if(G.bo>1&&G.ser)chips+=`<span class="ser">Best of ${G.bo} · Match ${G.ser.n} · ${G.ser.wins[G.bottom]}–${G.ser.wins[1-G.bottom]}</span>`;
   if(G.sd)chips+=`<span class="sd">Sudden death ${G.sd}</span>`;
+  if(G.wb)chips+=`<span>${wbName(G.wb)}</span>`;
   if(G.daily)chips+=dailyChip();
   // the tutorial's lessons, done ones ticked
   if(G.tut)chips=G.tut.single?`<span class="tut-on">Try it · ${TUT[G.tut.i].name}</span>`:
@@ -90,17 +92,18 @@ function onHandDown(e){
   const el=e.currentTarget,p=+el.dataset.p,hi=+el.dataset.i;
   if(!canAct(p))return;
   e.preventDefault();
-  drag={p,hi,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  if(drag)endDrag({},true); // a drag still open (a second finger): finish it first, so its card can't be left behind
+  drag={p,hi,el,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null,pid:e.pointerId};
 }
 window.addEventListener('pointermove',e=>{
-  if(!drag)return;
+  if(!drag||otherPointer(e,drag))return;
   if(!drag.moved){
     if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;
     drag.moved=true;
     const r=drag.el.getBoundingClientRect();
     const g=drag.el.cloneNode(true);g.classList.remove('sel','play');g.classList.add('ghost');
     g.style.fontSize='calc(var(--cell) * var(--ui) / 5)'; // the ghost lives on <body>, outside the zoomed screen
-    document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
+    ghostSweep();document.body.append(g);drag.ghost=g;drag.el.classList.add('dragging');
     // dragging picks this card, so drop the highlight from the one picked before
     $$('.hand .card.sel').forEach(c=>c!==drag.el&&c.classList.remove('sel'));
     G.sel=drag.hi;CELLS.forEach((c,i)=>c.classList.toggle('hot',G.st.b[i]<0&&(!G.tut||i===TUT[G.tut.i].cell)));
@@ -114,9 +117,10 @@ function cellAt(x,y){
   return null;
 }
 function endDrag(e,cancel){
-  if(!drag)return;
+  if(!drag||otherPointer(e,drag))return; // another finger lifting doesn't end this drag
   const d=drag;drag=null;
   if(d.ghost)d.ghost.remove();
+  ghostSweep();
   if(d.moved){
     d.el.classList.remove('dragging');
     const t=cancel?null:cellAt(e.clientX,e.clientY);
@@ -142,6 +146,7 @@ function iosFlags(){
   const de=document.documentElement.classList;iosFlags.last={app,top,gap};
   de.toggle('ios-bar',app&&top===0&&gap>0&&gap<=80);de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
+const PCMQ=matchMedia('(hover:hover) and (pointer:fine)');PCMQ.addEventListener('change',()=>layout());
 function layout(){
   iosFlags();
   const vh=innerHeight;
@@ -152,8 +157,10 @@ function layout(){
   // screen's padding bigger than the usual 6px top/bottom and 10px sides; the extra comes off the space
   const pad=getComputedStyle($('#scr-game')),p=k=>parseFloat(pad['padding'+k])||0;
   const W=innerWidth/ui-Math.max(0,p('Left')-10)-Math.max(0,p('Right')-10);
-  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08;
-  document.body.classList.toggle('land',land);
+  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08,pc=land&&PCMQ.matches;
+  // a wide window with a mouse gets the PC layout (like 4-player chess: hands above and below, each player in a corner);
+  // phones and tablets turned sideways keep the hands beside the board
+  document.body.classList.toggle('land',land&&!pc);document.body.classList.toggle('pc',pc);
   let cell,hc;
   if(!land){
     // hud 52, timer bar + rule bar 30, two player strips 46, gaps 8, screen padding 12, spare 4;
@@ -163,6 +170,12 @@ function layout(){
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
     hc=Math.min(hc,cell*.7);
     cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
+  }else if(pc){
+    // the board (3.6 cells + 26) with a hand row above and below (1.2 card heights + 6, and an 8px gap each),
+    // the cards sized so 5 of them span the board; a corner of at least 210px each side for the player
+    const avail=H-52-10-22-24;
+    cell=Math.min((avail-26-2*14)/(3.6+2*1.2*.6),(W-40-2*210)/3,200);
+    hc=(cell*3+6)/5;
   }else{
     const avail=H-52-10-22-24; // hud + timer bar + rulebar + padding
     cell=Math.min(avail/3.7,(W-80-2*180)/3.25,200);
@@ -172,6 +185,7 @@ function layout(){
   }
   cell=Math.max(48,Math.floor(cell));hc=Math.max(40,Math.floor(hc));
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
+  rs.setProperty('--t',Math.ceil(hc*1.2+6)+'px'); // PC: a hand row's height, and so a corner's
   // the emote button (36 + a 10px gap) hangs off the left of the player rows; when the space beside them is
   // smaller than that, the rows start further in by the difference (screen padding is 10px a side)
   const row=Math.min(W-20,hc*5+24);
@@ -186,12 +200,14 @@ function fitGame(){
   const sg=$('#scr-game');if(!sg.classList.contains('on'))return;
   const rs=document.documentElement.style,limit=innerHeight-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
   for(let k=0;k<3;k++){
-    const parts=[$('#sideTop'),$('#board'),$('#sideBot')].map(e=>e.getBoundingClientRect());
+    // on PC the sides are laid out by their parts (display: contents), so measure the hands
+    const parts=(document.body.classList.contains('pc')?[$('#handTop'),$('#board'),$('#handBot')]:[$('#sideTop'),$('#board'),$('#sideBot')]).map(e=>e.getBoundingClientRect());
     const top=Math.min(...parts.map(r=>r.top)),over=Math.max(...parts.map(r=>r.bottom))-limit;
     if(over<=1)return;
     const f=1-over/(Math.max(...parts.map(r=>r.bottom))-top),cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
     if(cell<=48&&hc<=40)return;
     rs.setProperty('--cell',Math.max(48,Math.floor(cell*f))+'px');rs.setProperty('--hc',Math.max(40,Math.floor(hc*f))+'px');
+    rs.setProperty('--t',Math.ceil(Math.max(40,Math.floor(hc*f))*1.2+6)+'px');
   }
 }
 window.addEventListener('resize',layout);

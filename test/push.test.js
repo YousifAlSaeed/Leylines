@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-Object.assign(process.env, { EMAIL_KEY: 'test-email-key-0123456789abcdefghij', APP_URL: 'https://game.test' });
+Object.assign(process.env, { EMAIL_KEY: 'test-email-key-0123456789abcdefghij', APP_URL: 'https://game.test', DEV_USERS: 'bob, ana' });
 delete process.env.RESEND_API_KEY;
 delete process.env.RENDER;
 delete process.env.VAPID_PUBLIC_KEY;
@@ -143,6 +143,10 @@ describe('push alerts', () => {
     assert.deepEqual(r.body.failed, []);
     assert.equal(sent.at(-1).tag, 'test');
     assert.equal((await api('/push/test', { method: 'POST', token: T.ana })).body.devices, 0);
+  });
+
+  test('only developer accounts can send a test alert', async () => {
+    assert.equal((await api('/push/test', { method: 'POST', token: T.cyd })).status, 403);
   });
 
   test('a device the push service says is gone is forgotten', async () => {

@@ -16,9 +16,8 @@ function collMode(h,title,meta){
   $('#collTitle').textContent=title;$('#collMeta').innerHTML=meta;
   $('#collGo').classList.toggle('hidden',!pick);
   const sv=$('#collSave');
-  sv.className=pick?'dk-act ico':'btn primary';
-  sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>':'Save hand';
-  if(pick)sv.setAttribute('aria-label','Save hand');else sv.removeAttribute('aria-label');
+  sv.className=pick?'dk-act':'btn primary';
+  sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Save hand</span>':'Save hand';
 }
 $('#collBack').onclick=()=>{sfx('click');picking()&&DK.onBack?DK.onBack():show('menu')};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
@@ -247,25 +246,29 @@ $('#binder').addEventListener('click',e=>{
    // the ghost lives on <body>, outside the zoomed screen
    g.style.fontSize=parseFloat(getComputedStyle(card).fontSize)*UI+'px';
    g.style.left=d.x+'px';g.style.top=d.y+'px';
-   document.body.append(g);d.g=g;d.el.classList.add('dragging');sfx('click');
+   ghostSweep();document.body.append(g);d.g=g;d.el.classList.add('dragging');sfx('click');
  };
  const end=(e,cancel)=>{
-   const d=BD.drag;if(!d)return;BD.drag=null;clearTimeout(d.t);
+   const d=BD.drag;if(!d||otherPointer(e,d))return; // another finger lifting doesn't end this drag
+   BD.drag=null;clearTimeout(d.t);
    if(!d.g)return;
-   d.g.remove();d.el.classList.remove('dragging');tray.classList.remove('over');
+   d.g.remove();ghostSweep();d.el.classList.remove('dragging');tray.classList.remove('over');
    // swallow the click that follows, so the card's detail doesn't open
    BD.swiped=true;setTimeout(()=>{BD.swiped=false},0);
    if(!cancel&&overTray(e.clientX,e.clientY))handAdd(BH,d.id);
  };
  $('#binder').addEventListener('pointerdown',e=>{
+   // a drag still open (a second finger, or a release the browser never reported): finish it first, so its card
+   // can't be left behind on the screen
+   if(BD.drag)end({},true);
    const b=e.target.closest('.pocket[data-id]');
    if(!b||e.button>0||BD.done)return;
    const id=+b.dataset.id;if(BH.sel.length>=5||handRemaining(BH,id)<=0)return;
-   const d=BD.drag={id,el:b,x:e.clientX,y:e.clientY,g:null,touch:e.pointerType!=='mouse',t:0};
+   const d=BD.drag={id,el:b,x:e.clientX,y:e.clientY,g:null,touch:e.pointerType!=='mouse',t:0,pid:e.pointerId};
    if(d.touch)d.t=setTimeout(()=>{if(BD.drag===d)lift(d)},280);
  });
  window.addEventListener('pointermove',e=>{
-   const d=BD.drag;if(!d)return;
+   const d=BD.drag;if(!d||otherPointer(e,d))return;
    if(!d.g){
      if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
      if(d.touch){clearTimeout(d.t);BD.drag=null;return} // moved before the hold: it's a swipe or scroll

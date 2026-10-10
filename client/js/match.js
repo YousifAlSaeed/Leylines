@@ -4,18 +4,43 @@
    ===================================================================== */
 let G=null;
 /* G = {mode, rules, trade, diff, bo, ser, me, bottom, names[], decks[[],[]], seed, rng, st, first, sd, sel, busy, over, inbox[]}
-   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[]} */
+   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[], rev[]}
+   ser.rev: each match's moves, for the Review after the game (review.js): [{rounds: [{h: [hand, hand], first, el, moves: [[hand index, square]]}], end: final board}] */
 function baseMatch(mode,extra){
   return{mode,rules:{...SAVE.rules},trade:'none',diff:SAVE.diff,bo:boOf(SAVE.bo),ser:null,me:0,bottom:0,names:['You','CPU'],decks:[null,null],
     seed:rand32(),sd:0,sel:null,busy:false,over:false,inbox:[],...extra};
 }
 function startAI(){
   if(deckable(collPool())<5)ensureMinimum();
-  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
+  G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer,...SAVE.cpuTk},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
   openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},onBack:()=>openSetup('ai')});
+}
+// Win them back (rules in data.js): the CPU plays holding the cards it took, and you pick a new hand
+function wbStart(wb){
+  if(deckable(collPool())<5)ensureMinimum();
+  const p=G,{h,idx}=winBackHand(wb,cardStrength);
+  G=baseMatch('ai',{rules:{...p.rules},trade:p.trade,diff:p.diff,bo:p.bo,names:p.names.slice(),wb:{...wb,idx}});
+  G.decks[1]=h;
+  if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
+  openDeck({title:wbName(G.wb),pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
+    onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},
+    onBack:()=>modal(`<h2>Give up?</h2><p>The cards the CPU took stay with it.</p>`,[
+      {label:'Give up',cls:'danger',fn:()=>{G=null;show('menu')}},{label:'Keep choosing',cls:'primary',esc:true}])});
+}
+const wbName=wb=>wb.step===3?'Last chance':'Win them back';
+// the Last chance has its own stakes: win and every card comes back, lose and as many more go
+const wbLast=()=>!!(G.wb&&G.wb.step===3);
+// under the result: what the next try is, or why there's none
+function wbHTML(x){
+  if(!x)return'';
+  if(x.end)return`<p class="note">${x.end==='full'?'The CPU can only hold 5 of your cards, so there is no Last chance.':'That was your last try.'} The cards it took are gone.</p>`;
+  const n=x.lost.length;
+  if(x.step===3)return`<p class="note"><b>Last chance:</b> play the CPU again. It holds ${n===2?'both cards':`all ${n} cards`} it took. Win and they all come back. Lose and it takes ${n} more.</p>`;
+  return`<p class="note"><b>Win them back:</b> play the CPU again. It holds the ${n>1?'cards':'card'} it took. `+
+    (G.trade==='all'?'Win and you take all 5 back. Lose and it takes 5 more. You get one try.</p>':'Win and the trade rule says how many of them you take back. Lose and it takes more.</p>');
 }
 function startLocal(){
   G=baseMatch('local',{names:['Blue','Red']});
@@ -53,8 +78,13 @@ function nextMatch(){
 }
 async function newRound(h0,h1,first){
   const g=G;
-  G.first=first;G.sel=null;G.busy=true;
+  G.first=first;G.sel=null;G.busy=true;G.timeUp=false;G.flagged=null;
+  // bank timer: a full clock for each player every match (and every Sudden Death replay)
+  G.bank=isBank(G.rules)?[G.rules.bank*1000,G.rules.bank*1000]:null;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
+  // a new round of this match (Sudden Death adds one) starts a new list of moves for the Review
+  if(G.ser){const rv=G.ser.rev=G.ser.rev||[],m=rv[G.ser.n-1]=rv[G.ser.n-1]||{rounds:[]};
+    m.rounds.push({h:[h0.slice(),h1.slice()],first,el:G.st.el.slice(),moves:[]})}
   // who placed the card on each square, and which card of their deck it is ([player, deck index]), for Diff:
   // h follows each hand as cards leave it, c holds the board
   G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
@@ -107,16 +137,20 @@ function aiTurn(){
 function requestMove(hi,cell){
   if(!canAct(G.st.turn)||G.st.b[cell]>=0||(G.forced!=null&&hi!==G.forced))return;
   if(G.tut&&!tutMove(cell))return;
-  if(G.mode==='online')netSend({t:'move',hi,cell});
-  if(G.daily)dailyMoved();
+  if(G.mode==='online')netSend({t:'move',hi,cell,bk:bankNow(G.st.turn)});
+  if(G.daily)dailyMoved(hi,cell);
   execMove(hi,cell);
 }
 async function execMove(hi,cell){
   const g=G,st=G.st,p=st.turn,q=1-p,id=st.h[p][hi];
   G.busy=true;G.sel=null;G.timeUp=false;stopTurnTimer();
+  // bank timer: an online opponent's clock is what their side said it was; every card played adds the bonus
+  if(G.bank){if(G.netBk!=null)G.bank[p]=G.netBk;G.bank[p]+=BANK_BONUS}
+  G.netBk=null;
   if(p===G.me)G.moved=true;
   const sc=[score(st,0),score(st,1)];
   if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
+  const rm=G.ser&&G.ser.rev&&G.ser.rev[G.ser.n-1];if(rm)rm.rounds[rm.rounds.length-1].moves.push([hi,cell]);
   const ev=[];play(st,G.rules,hi,cell,ev);
   if(G.mode!=='local'&&p===G.me&&!G.tut)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
@@ -178,9 +212,11 @@ function flipped(w){
 const lastWin=w=>{const won=G.ser.log.filter(m=>m.w===w);return won[won.length-1]};
 // the Sweep rule: a win owning the whole board (in a series, any of the winner's wins) takes all 5, whatever the trade rule
 const sweepWin=w=>w>=0&&sweepOn(G.rules,G.trade)&&G.ser.log.some(m=>m.w===w&&m.sweep);
-// Diff picks only from the cards the winner flipped (indexes in the loser's deck), or null for any card
-const diffPool=w=>{const l=lastWin(w);return G.trade==='diff'&&!sweepWin(w)&&l&&Array.isArray(l.fl)?l.fl:null};
+// Diff picks only from the cards the winner flipped (indexes in the loser's deck), or null for any card.
+// Winning a Win them back try you take only your own cards back, flipped or not
+const diffPool=w=>{const l=lastWin(w);return G.trade==='diff'&&!sweepWin(w)&&!(G.wb&&(wbLast()||w===G.me))&&l&&Array.isArray(l.fl)?l.fl:null};
 function tradeCount(s0,s1,w){
+  if(wbLast())return G.wb.lost.length;
   if(sweepWin(w))return 5;
   const last=lastWin(w),diff=G.bo>1?(last?last.diff:0):Math.abs(s0-s1),pool=diffPool(w);
   return{one:1,diff:Math.min(5,diff,pool?pool.length:5),all:5}[G.trade]||0;
@@ -191,16 +227,19 @@ function rowHTML(ids,color,fresh=[]){return`<div class="cardrow">${ids.map((id,i
 const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
   G.over=true;G.busy=true;
-  const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
+  // a player out of time with "You lose" on loses, whatever the score
+  const m=G.bottom===0?[s0,s1]:[s1,s0],mw=G.flagged!=null?1-G.flagged:s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});
+  const rm=ser.rev&&ser.rev[ser.n-1];if(rm)rm.end={b:G.st.b.slice(),o:G.st.o.slice()};
   if(G.sd>0)ser.sd=1;
   if(mw>=0)ser.wins[mw]++;
   renderHud();
   let reward='';
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
-    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,sweep:swept(mw),sd:G.sd>0,elemental:!!G.rules.elemental})));
+    {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,rules:G.rules})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
-  const vs=G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'';
+  const ran=G.flagged!=null?`<p class="note">${G.mode==='local'?(G.flagged===0?'Blue':'Red')+' ran':G.flagged===G.me?'You ran':esc(G.mode==='ai'?'The CPU':oppName())+' ran'} out of time.</p>`:'';
+  const vs=ran+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'');
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
   const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
   if(G.bo>1&&!seriesDone(G.bo,ser.n,ser.wins)){
@@ -215,36 +254,47 @@ function finish(s0,s1){
     w=ser.wins[0]>ser.wins[1]?0:ser.wins[1]>ser.wins[0]?1:-1;
     head=`<div class="kick">Best of ${G.bo} · ${G.mode==='online'?'Online series':'Series over'}</div><h2>${w<0?'Series tied':resultTitle(w,' the series')}</h2>`+vs+big(sw[0],sw[1])+
       `<div class="serlog">${ser.log.map((x,i)=>`<span class="${x.w<0?'d':x.w===G.bottom?'b':'r'}">M${i+1} ${x.sb}–${x.sr}</span>`).join('')}</div>`+reward;
-  }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
+  }else head=`<div class="kick">${G.daily?'Daily · '+(G.daily.kind==='duel'?'Duel':'Gauntlet'):G.mode==='online'?'Online match':G.wb?wbName(G.wb):'Match over'}</div><h2>${resultTitle(w)}</h2>`+vs+big(m[0],m[1])+reward;
   if(histAdd(w<0?'d':w===G.me?'w':'l'))save();
   if(G.daily)head+=dailyFinish(w);
-  const n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
+  // badges for how it was won: a series (from behind), or with everything on the line
+  if(G.mode!=='local'&&w===G.me){
+    if(G.bo>1){earn('series');if(ser.log[0].w===1-G.me)earn('comeback')}
+    if(G.trade==='all'&&!G.daily)earn('tradeall');
+  }
+  head+=freshHTML();
+  let n=(G.mode==='local'||w<0)?0:tradeCount(s0,s1,w);
+  // a Win them back try won: only your own cards can be taken back
+  if(n&&G.wb&&w===G.me)n=Math.min(n,G.wb.idx.length);
   // in Solo a loss is settled straight away, so closing the app on the result screen can't undo it
   const pool=w<0?null:diffPool(w);
   const cpuTook=G.mode==='ai'&&n&&w!==G.me?loseCards(strongest(G.decks[G.me],n,pool)):null;
+  // Win them back: the next try after the CPU took cards; a draw on a try plays it again
+  const wbn=G.mode!=='ai'||G.daily?null:cpuTook?winBackNext(G.trade,G.wb,cpuTook.ids,G.decks[1]):w<0?G.wb:null;
+  const wbBtn=label=>wbn&&wbn.step?{label:label||wbName(wbn),cls:'primary',fn:()=>wbStart(wbn)}:null;
   liveClear();
   // online, nothing more is owed unless you lost cards (then it's settled when the winner decides)
   if(G.mode==='online'&&!(n&&w!==G.me))oweClear(matchKey());
   const g=G;
   setTimeout(()=>{
     if(G!==g)return;
-    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?`<p>No cards change hands on a ${G.bo>1?'tied series':'draw'}.</p>`:
-      G.trade==='diff'?`<p>No trade: with Diff the winner only takes cards they flipped, and none of the loser's cards ended up flipped.</p>`:''));return}
+    if(!n){resultModal(head+(G.mode==='local'||G.trade==='none'?'':w<0?`<p>No cards change hands on a ${G.bo>1?'tied series':'draw'}.</p>`+(wbn?'<p class="note">Play it again for the same cards.</p>':''):
+      G.trade==='diff'?`<p>No trade: with Diff the winner only takes cards they flipped, and none of the loser's cards ended up flipped.</p>`:''),wbBtn('Try again'));return}
     if(sweepWin(w))head+=`<p class="gold"><b>Full board sweep!</b>${G.trade==='all'?'':' All 5 cards change hands.'}</p>`;
     const loserDeck=G.decks[1-w],online=G.mode==='online';
     if(w===G.me){
       // online the winner can take the cards or spare the loser
-      pickCards(head,loserDeck,n,{spare:online,only:pool}).then(idx=>{
+      pickCards(head,loserDeck,n,{spare:online,only:G.wb?G.wb.idx:pool,ask:G.wb?`Choose <b>${n}</b> of your cards to take back.`:null}).then(idx=>{
         if(G!==g)return;
         if(idx==='spare'){netSend({t:'trade',idx:[],spare:true});forfeitPost(NET.oppUser,matchKey(),[]);resultModal(head+spareHTML(oppName(),spareGive()));return}
         const ids=idx.map(i=>loserDeck[i]),fresh=[];
         // a second copy of a new card isn't new
-        ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');profCheck();histTrade('won',ids);save();
+        ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');if(G.wb){earn('winback');if(wbLast())earn('laststand')}profCheck();histTrade('won',ids);save();
         // also through the server, in case they close the game before it reaches them
         if(online){netSend({t:'trade',idx});forfeitPost(NET.oppUser,matchKey(),ids)}
-        resultModal(head+`<p>You won ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue',fresh)+freshHTML());
+        resultModal(head+`<p>You won ${G.wb?`back your ${ids.length>1?'cards':'card'}`:ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue',fresh)+freshHTML());
       });
-    }else if(cpuTook)resultModal(head+tookHTML('The CPU',cpuTook));
+    }else if(cpuTook)resultModal(head+tookHTML('The CPU',cpuTook)+wbHTML(wbn),wbBtn());
     else{
       // online the winner decides: these cards, or a spare
       const decided=idx=>{
@@ -270,8 +320,8 @@ function pickCards(head,deck,n,o={}){
     const box=modal(head+`<p>${ask}</p><div class="cardrow">${deck.map((id,i)=>{const can=pool.includes(i),on=all&&can;
       return `<div class="pk${on?' on':''}${can?'':' off'}" data-i="${i}" role="button" aria-pressed="${on}"${can?'':' aria-disabled="true"'} aria-label="${esc(cardLabel(id))}${isSeen(id)?'':', new'}${can?'':', not flipped'}">${isSeen(id)?'':NEW_TAG}${cardHTML(id,'red')}</div>`}).join('')}</div>`+
       (o.spare?`<p class="note">💛 Spare: they keep their cards, and you count a spare. Every ${SPARE_PACK} spares give a free pack.</p>`:''),
-      [{label:all?'Take all':'Take',cls:'primary',keep:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
-       ...(o.spare?[{label:'Spare 💛',fn:()=>res('spare')}]:[])]);
+      [{label:all?'Take all':'Take',cls:'primary',keep:true,wait:true,fn:()=>{if(sel.size===n||all){closeModal();res([...sel])}}},
+       ...(o.spare?[{label:'Spare 💛',wait:true,fn:()=>res('spare')}]:[])]);
     const btn=box.querySelector('.mbtns .btn');btn.disabled=!all;
     if(!all)box.querySelectorAll('.pk:not(.off)').forEach(el=>el.onclick=()=>{
       const i=+el.dataset.i;
@@ -302,11 +352,14 @@ function checkNext(){
 function resultModal(html,extra){
   // the match is fully settled (trade included); online, a dropped player can no longer come back to it
   G.done=true;
+  // kept so the Review can bring this popup back
+  G.res=[html,extra];
   // a Daily challenge says what comes next (try again, next opponent), or nothing
   const again=G.daily?G.daily.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
   modal(html,[
     ...(extra?[extra]:[]),
     ...(again?[{label:again.label,cls:extra?'':'primary',fn:again.fn}]:[]),
+    ...(revAvail()?[{label:'Review',fn:revOpen}]:[]),
     {label:'Menu',cls:again||extra?'':'primary',fn:leaveMatch}
   ]);
 }
@@ -332,6 +385,7 @@ function stillPlaying(){return !!(G&&G.st&&!G.done&&!G.tut&&(!G.over||G.bo>1&&!s
 // Nothing in a Couch game, the Daily, or with no trade rule.
 function leaveCount(){
   if(!stillPlaying()||G.mode==='local'||G.daily||G.trade==='none')return 0;
+  if(wbLast())return G.wb.lost.length;
   const gap=Math.abs(score(G.st,0)-score(G.st,1));
   return {one:1,diff:Math.max(1,Math.min(5,gap)),all:5}[G.trade]||0;
 }
@@ -352,7 +406,7 @@ function quitMatch(){
   let took=null;
   if(G.mode!=='local'&&!puzzle){
     // between the matches of a series that match already counted; the series is what's given up
-    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',left:true}));
+    if(!G.over)histXp(recordMatch('l',{online:G.mode==='online',daily:!!G.daily,left:true}));
     const h=histAdd('l','you');
     if(ai&&n)took=loseCards(strongest(G.decks[G.me],n));
     // online the other player decides; it reaches you through the server (spare.js)
@@ -360,7 +414,7 @@ function quitMatch(){
     save();freshToast();
   }
   dailyLeave();leaveMatch();
-  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true}]);
+  if(took)modal(`<h2>Match over</h2><p>You left, so it counts as a loss.</p>`+tookHTML('The CPU',took),[{label:'OK',cls:'primary',esc:true,wait:true}]);
 }
 function askLeave(){
   const n=leaveCount(),opp=G.mode==='ai'?'The CPU':esc(oppName()),cards=plural(n,'card');
@@ -379,7 +433,7 @@ function askLeave(){
   else p=`<p>Leaving counts as a loss. <b class="gold">${opp} can take ${n>=5?'all your cards':cards}</b>, or spare you.</p>`;
   // between the matches of a series, the way back is the Next match button
   const back=G.over?{label:'Next match',cls:'primary',keep:G.mode==='online',fn:readyNext}:{label:'Keep playing',cls:'primary',esc:true};
-  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',fn:()=>{if(G)quitMatch()}},back]);
+  modal(`<h2>Leave ${G.over?'the series':'match'}?</h2>${p}`,[{label:'Leave',cls:'danger',wait:true,fn:()=>{if(G)quitMatch()}},back]);
 }
 $('#btnQuit').onclick=()=>{
   sfx('click');if(!G)return;
@@ -393,7 +447,7 @@ $('#btnQuit').onclick=()=>{
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
   SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
-    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk}));
+    seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk,wb:G.wb||null,bank:G.bank}));
   save();
 }
 function liveClear(){if(SAVE.live){SAVE.live=null;save()}}
@@ -404,9 +458,13 @@ function liveMatchFrom(L){
     if(L.v!==1||!L.decks.every(d=>Array.isArray(d)&&d.length===5&&hand(d))||!ok9(st.b)||!ok9(st.o)||!ok9(st.m)||!st.h.every(hand)||!Array.isArray(L.ser.wins))return null;
     // a match saved while Sweep was a trade rule (before 0.18.0)
     if(L.trade==='sweep'){L.trade='one';L.rules={...L.rules,sweep:true}}
+    // a Win them back try (data.js)
+    const w=L.wb,wb=w&&(w.step===2||w.step===3)&&[w.cpu,w.l1,w.lost].every(hand)&&w.cpu.length===5&&w.lost.length<=5&&Array.isArray(w.idx)&&w.idx.length===w.lost.length&&w.idx.every(i=>i>=0&&i<5)?w:null;
     const g=baseMatch('ai',{rules:{...defSave().rules,...L.rules},trade:netTrade(L.trade),diff:DIFFS.some(d=>d[0]===L.diff)?L.diff:'normal',bo:boOf(L.bo),
-      names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved});
+      names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved,wb});
     g.rng=mulberry32(L.a|0);
+    normTimer(g.rules);
+    g.bank=isBank(g.rules)&&Array.isArray(L.bank)&&L.bank.length===2&&L.bank.every(n=>Number.isFinite(n)&&n>=0)?L.bank:isBank(g.rules)?[g.rules.bank*1000,g.rules.bank*1000]:null;
     // which card each player placed (Diff); a save from before it was tracked lets any card be taken
     const t=L.trk;
     g.trk=t&&Array.isArray(t.h)&&t.h.length===2&&t.h.every(Array.isArray)&&ok9(t.c)?t:null;
@@ -444,18 +502,40 @@ function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.s
 const RING=106.8;
 let TMR={g:null,end:0,dur:0,p:-1,fired:false,sec:-1,raf:0,lt:0};
 function startTurnTimer(){
-  // the CPU doesn't need a clock; everyone else gets the chosen time per turn
-  if(!G||!G.rules.timer||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
-  const dur=G.rules.timer*1000;
+  // the CPU doesn't need a clock; everyone else gets the chosen time per turn, or what's left of their bank
+  if(!G||!timedOn(G.rules)||G.over||(G.mode==='ai'&&G.st.turn!==G.me)){stopTurnTimer();return}
+  bankKeep(); // started again mid-turn (back after a reconnect): the bank goes on from where it was
+  const p=G.st.turn,bank=!!G.bank,tot=(bank?G.rules.bank:G.rules.timer)*1000,dur=bank?G.bank[p]:tot;
   cancelAnimationFrame(TMR.raf);
-  TMR={g:G,end:performance.now()+dur,dur,p:G.st.turn,fired:false,sec:-1,raf:0};
+  TMR={g:G,end:performance.now()+dur,dur,tot,bank,p,fired:false,sec:-1,raf:0};
+  $('#timer').classList.toggle('bank',bank);
   $('#timer').classList.remove('off');$('#tbar').classList.remove('off');
   tickTimer();drawTimer(performance.now());
 }
 function stopTurnTimer(){
+  bankKeep();
   TMR.g=null;cancelAnimationFrame(TMR.raf);
   $('#timer').classList.add('off');$('#tbar').classList.add('off');
-  setTimerLevel('');
+  setTimerLevel('');paintClocks();
+}
+// a running bank keeps what's left of it
+function bankKeep(){if(TMR.g&&TMR.bank&&TMR.g.bank)TMR.g.bank[TMR.p]=Math.max(0,TMR.end-performance.now())}
+// what's left of player p's bank right now (ms), sent with each move so both sides agree
+function bankNow(p){
+  if(!G||!G.bank)return undefined;
+  return Math.round(TMR.g===G&&TMR.bank&&TMR.p===p?Math.max(0,TMR.end-performance.now()):G.bank[p]);
+}
+// PC: each player's clock in their corner (game.js layout). The one whose turn it is counts down; the other shows a full
+// turn (or what's left of their bank), faded. Both corners always have the box, so they have the same shape: the CPU's
+// (it plays at once), or both with no timer, stay empty
+function paintClocks(){
+  for(const[el,p]of[[$('#ptmBot'),G?G.bottom:0],[$('#ptmTop'),G?1-G.bottom:1]]){
+    const on=!!(G&&G.st&&!G.tut&&!G.over);
+    el.hidden=!on;if(!on)continue;
+    const timed=timedOn(G.rules)&&!(G.mode==='ai'&&p!==G.me),run=timed&&TMR.g===G&&TMR.p===p&&TMR.sec>=0;
+    const idle=G.bank?Math.ceil(G.bank[p]/1000):G.rules.timer;
+    el.classList.toggle('idle',!run);el.classList.toggle('none',!timed);el.querySelector('b').textContent=timed?fmtLeft(run?TMR.sec:idle):'';
+  }
 }
 function setTimerLevel(lvl){
   for(const el of [$('#timer'),$('#tbar')]){el.classList.toggle('warn',lvl==='warn');el.classList.toggle('crit',lvl==='crit')}
@@ -467,7 +547,7 @@ function setTimerLevel(lvl){
 const tProg=$('#tProg'),tFill=$('#tFill');
 function drawTimer(now){
   if(!TMR.g)return;
-  const f=Math.max(0,TMR.end-now)/TMR.dur;
+  const f=Math.min(1,Math.max(0,TMR.end-now)/TMR.tot);
   tProg.style.strokeDashoffset=(RING*(1-f)).toFixed(3);
   tFill.style.transform=`scaleX(${f.toFixed(6)})`;
   if(f>0)TMR.raf=requestAnimationFrame(drawTimer);
@@ -480,11 +560,13 @@ function tickTimer(){
   const now=performance.now();
   if(TMR.lt&&now-TMR.lt>2000)TMR.end+=now-TMR.lt-100;
   TMR.lt=now;
-  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.dur/1000;
+  const rem=Math.max(0,TMR.end-performance.now()),sec=Math.ceil(rem/1000),t=TMR.tot/1000;
   if(sec!==TMR.sec){
     TMR.sec=sec;
-    setTimerLevel(sec<=timerCrit(t)?'crit':sec<=timerWarn(t)?'warn':'');
-    $('#tNum').textContent=sec;
+    // a bank turns orange in its last 30 seconds and red in its last 10
+    const[warn,crit]=TMR.bank?[30,10]:[timerWarn(t),timerCrit(t)];
+    setTimerLevel(sec<=crit?'crit':sec<=warn?'warn':'');
+    $('#tNum').textContent=TMR.bank&&sec>=60?fmtLeft(sec):sec;paintClocks();
     $('#tbar').setAttribute('aria-label',`${sec} seconds left`);
     if(sec>0&&sec<=5&&isHuman(TMR.p))sfx('tick');
   }
@@ -494,6 +576,7 @@ setInterval(tickTimer,100);
 async function onTimeUp(p){
   // each client only auto-plays for its own player; an online opponent's move arrives over the network
   if(!isHuman(p))return;
+  if(G.rules.flag==='lose'){outOfTime(p);return}
   const g=G;
   G.timeUp=true;G.sel=null;
   if(drag)endDrag({},true);
@@ -505,6 +588,18 @@ async function onTimeUp(p){
   const moves=genMoves(G.st).filter(m=>G.forced==null||m[0]===G.forced),pick=moves[Math.floor(Math.random()*moves.length)];
   // genMoves skips a second copy of the same card, so the Chaos card picks a random empty square itself
   const hi=G.forced!=null?G.forced:pick[0],cell=G.forced!=null?(e=>e[Math.floor(Math.random()*e.length)])(G.st.b.flatMap((x,i)=>x<0?[i]:[])):pick[1];
-  if(G.mode==='online')netSend({t:'move',hi,cell});
+  if(G.mode==='online')netSend({t:'move',hi,cell,bk:0});
   execMove(hi,cell);
+}
+// out of time with "You lose" on (either timer): player p loses the match. Online, the other side hears it as a move (pump)
+async function outOfTime(p){
+  const g=G;
+  G.timeUp=true;G.sel=null;G.busy=true;G.flagged=p;
+  if(G.mode==='online'&&isHuman(p))netSend({t:'move',flag:true});
+  if(drag)endDrag({},true);
+  stopTurnTimer();renderHands();renderBoard();
+  sfx('timeup');
+  await banner('Out of time!','small');
+  if(G!==g)return;
+  finish(score(G.st,0),score(G.st,1));
 }

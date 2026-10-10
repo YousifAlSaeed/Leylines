@@ -133,7 +133,7 @@ function acctWipe(){
 if(SAVE.wipe&&!ACCT.token)resetSave();
 function acctSignOut(){
   modal(`<h2 class="nm2">Sign out?</h2><p>Your progress is kept on your account. This device goes back to a fresh start until you sign in again.</p>`,[
-    {label:'Sign out',cls:'danger',fn:async()=>{
+    {label:'Sign out',cls:'danger',wait:true,fn:async()=>{
       // let a sync that's on its way finish, then send what's left
       while(ACCT.busy)await new Promise(r=>setTimeout(r,200));
       if(ACCT.dirty)await acctPush();
@@ -141,7 +141,7 @@ function acctSignOut(){
       // couldn't reach the server: signing out now would lose what hasn't synced
       if(ACCT.dirty&&(ACCT.state==='offline'||ACCT.state==='error')){
         modal(`<h2 class="nm2">Not synced yet</h2><p>Your latest progress couldn't be saved to your account. Signing out now loses it. Try again when you're online.</p>`,[
-          {label:'Sign out anyway',cls:'danger',fn:acctLeave},
+          {label:'Sign out anyway',cls:'danger',wait:true,fn:acctLeave},
           {label:'Stay signed in',cls:'primary',esc:true}]);
         return;
       }
@@ -274,32 +274,35 @@ function acctStatus(){
 function renderProfile(){
   const el=$('#pcard');if(!el)return;
   const u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up,lv=levelOf(SAVE.xp),name=u?u.displayName:profName();
-  el.innerHTML=avatar(u)+
+  // a dot in the corner, like the Daily tab's: badges with shards waiting on your profile
+  const wait=toClaim().length;
+  el.innerHTML=(wait?'<span class="pc-dot" aria-hidden="true"></span>':'')+avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
     // your shards in the corner, and for a guest who could sign up, a button under them
     `<span class="pc-side"><span class="pc-sh" id="pcShards">${shd()}${fmtSh(SAVE.shards)}</span>`+
     (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'')+'</span>';
-  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}. ${acctStatus()}. Open profile.`);
+  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}.${wait?` ${plural(wait,'badge')} to claim.`:''} ${acctStatus()}. Open profile.`);
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
   renderGuestNote();
 }
-// the menu's guest notice: after a guest's first match, a reminder that their progress lives on this device only.
-// Closing it hides it until they've played GNOTE_EVERY more matches.
+// the guest popup: after a guest's first match, back on the menu, a reminder that their progress lives on this device only.
+// It shows once, then again after GNOTE_EVERY more matches. It waits for any other popup to close first.
 const GNOTE_EVERY=10;
 const matchesPlayed=()=>Object.values(SAVE.stats).reduce((a,b)=>a+(+b||0),0);
+const gNoteDue=()=>{const n=matchesPlayed(),last=Number.isInteger(SAVE.gNote)?SAVE.gNote:-1;
+  return !ACCT.token&&ACCT.up&&n>0&&(last<0||n>=last+GNOTE_EVERY)&&$('#scr-menu').classList.contains('on')&&
+    !$('#modal').classList.contains('on')&&!$('#pkStage').classList.contains('on')};
+let gNoteT=0;
 function renderGuestNote(){
-  const el=$('#gNote');if(!el)return;
-  const n=matchesPlayed(),last=Number.isInteger(SAVE.gNote)?SAVE.gNote:-1;
-  const on=!ACCT.token&&ACCT.up&&n>0&&(last<0||n>=last+GNOTE_EVERY);
-  el.hidden=!on;if(!on){el.innerHTML='';return}
-  if(el.firstChild)return;
-  el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`+
-    `<p><b>You're playing as a guest.</b> Your cards and progress are saved on this device only. Create an account to keep them and to play online for cards.</p>`+
-    `<button class="btn small primary" id="gNoteGo">Create account</button><button class="gnote-x" id="gNoteX" aria-label="Hide this notice">×</button>`;
-  $('#gNoteGo').onclick=()=>{sfx('click');openAuth('up')};
-  $('#gNoteX').onclick=()=>{sfx('click');SAVE.gNote=matchesPlayed();save();renderGuestNote()};
+  if(gNoteT||!gNoteDue())return;
+  // a moment after the menu shows, so it doesn't land on top of something opening right then
+  gNoteT=setTimeout(()=>{gNoteT=0;if(!gNoteDue())return;
+    SAVE.gNote=matchesPlayed();save();
+    modal(`<h2>You're playing as a guest</h2><p>Your cards and progress are saved on this device only. Create an account to keep them and to play online for cards.</p>`,
+      [{label:'Later',esc:true},{label:'Create account',cls:'primary',fn:()=>openAuth('up')}]);
+  },700);
 }
 $('#pcard').onclick=()=>{sfx('click');openProfile()};
 // the first row of Settings; empty when there's no server to sign in to
