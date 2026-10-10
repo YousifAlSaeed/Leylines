@@ -502,6 +502,9 @@ function duoScoreRow(S,st){
   if(DUO.scores&&DUO.scores.length===nums.length)$$('#duoScore b').forEach((x,k)=>{if(nums[k]!==DUO.scores[k])x.classList.add('pop')});
   DUO.scores=nums;
   $('#duoScore').classList.toggle('ffa',!!S.rules.ffa);
+  // PC: the scores in the players' corners
+  $$('#scr-duo .dname[data-q] .dsc').forEach(x=>{const v=st?String(duoSeatScore(S,st,+x.parentNode.dataset.q)):'';
+    if(x.textContent!==v){if(x.textContent)x.classList.add('pop');x.textContent=v}});
 }
 // the board is sized at the end of the next duoRender, once the hands are drawn (sizing an empty screen would overshoot)
 function duoShowGame(){show('duo');keepAwake(true);DUO.fitKey=''}
@@ -662,12 +665,22 @@ function duoDragEnd(e,cancel){
 window.addEventListener('pointerup',e=>duoDragEnd(e,false));
 window.addEventListener('pointercancel',e=>duoDragEnd(e,true));
 function duoAv(s){return s.kind==='cpu'?'🤖':s.av!=null?CARDS[s.av].art:esc((s.name||'?')[0].toUpperCase())}
-function duoPname(S,i,where){
-  const s=S.seats[i],st=S.st,turn=st&&S.phase==='play'&&st.turn===i;
+// k: the player's corner on PC (body.pc, like 4-player chess): tl top player, tr right, bl left, br you
+function duoPname(S,i,where,k){
+  const s=S.seats[i],st=S.st,turn=st&&S.phase==='play'&&st.turn===i,shown=DUO.boardSt||st;
   const status=s.kind==='cpu'?'':s.bot?'CPU is playing':s.away?`Away · ${fmtLeft(s.left)}`:
     S.phase==='decks'&&!s.deck?'Choosing cards…':i===S.you?'You':!S.rules.ffa&&duoTeam(i)===duoTeam(S.you)?'Partner':'';
-  return `<div class="dname dn-${where} dc-${duoCol(S,i)}${turn?' dactive':''}${s.away&&!s.bot?' daway':''}">`+
-    `<span class="av${s.av!=null&&s.kind==='human'?' art':''}">${duoAv(s)}</span><span class="dwho"><b>${esc(duoSeatName(s,i))}</b><small>${status}</small></span></div>`;
+  return `<div class="dname dn-${where} dk-${k} dc-${duoCol(S,i)}${turn?' dactive':''}${s.away&&!s.bot?' daway':''}" data-q="${i}">`+
+    `<span class="av${s.av!=null&&s.kind==='human'?' art':''}">${duoAv(s)}</span><span class="dwho"><b>${esc(duoSeatName(s,i))}</b><small>${status}</small></span>`+
+    // PC only (CSS): the score by their cards (in 2v2 their team's) and their clock
+    `<b class="dsc">${shown?duoSeatScore(S,shown,i):''}</b>${duoClock(S,i)}</div>`;
+}
+const duoSeatScore=(S,st,q)=>S.rules.ffa?duoPts(st,S.rules,q):duoScore(st,duoTeam(q));
+// a player's clock, like 1v1's (match.js paintClocks): a full turn, faded, until duoTimerBar counts down the one whose turn it is. CPUs have none
+const DUO_CLOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+function duoClock(S,i){
+  if(!S.rules.timer||S.phase!=='play'||S.seats[i].kind==='cpu')return '';
+  return `<span class="ptm idle" data-q="${i}">${DUO_CLOCK}<b>${fmtLeft(S.rules.timer)}</b></span>`;
 }
 function duoHandHTML(S,i,cls){
   const h=S.st?S.st.h[i]:[],col=duoCol(S,i);
@@ -678,10 +691,10 @@ function duoRender(){
   if(DUO_CELLS.length!==16)duoBuild();
   const me=S.you,st=S.st,L=(me+1)%4,T=(me+2)%4,Rr=(me+3)%4;
   // the other three players around the board, you at the bottom
-  $('#duoTop').innerHTML=duoPname(S,T,'top')+duoHandHTML(S,T,'top');
-  $('#duoLeft').innerHTML=duoPname(S,L,'side')+duoHandHTML(S,L,'side');
-  $('#duoRight').innerHTML=duoPname(S,Rr,'side')+duoHandHTML(S,Rr,'side');
-  $('#duoMe').innerHTML=duoPname(S,me,'me');
+  $('#duoTop').innerHTML=duoPname(S,T,'top','tl')+duoHandHTML(S,T,'top');
+  $('#duoLeft').innerHTML=duoPname(S,L,'side','bl')+duoHandHTML(S,L,'side');
+  $('#duoRight').innerHTML=duoPname(S,Rr,'side','tr')+duoHandHTML(S,Rr,'side');
+  $('#duoMe').innerHTML=duoPname(S,me,'me','br');
   // the board: while a move plays, duoAnimMove draws it; otherwise the board on screen (or the latest)
   if(!DUO.animating)duoDrawBoard(S,DUO.boardSt||st);
   // your hand
@@ -715,6 +728,8 @@ function duoTimerBar(){
     const left=Math.max(0,end-Date.now());
     bar.classList.remove('off');bar.classList.toggle('warn',left<10000);bar.classList.toggle('crit',left<5000);
     $('#duoTfill').style.transform=`scaleX(${left/tot})`;
+    const c=$(`#scr-duo .ptm[data-q="${DUO.snap.st.turn}"]`);
+    if(c){c.classList.remove('idle');c.classList.toggle('crit',left<5000);c.querySelector('b').textContent=fmtLeft(Math.ceil(left/1000))}
   };
   step();duoTbT=setInterval(step,250);
 }
@@ -771,7 +786,8 @@ function duoFit(){
   const W=Math.min(innerWidth/ui,860)-20,H=innerHeight/ui,el=$('#scr-duo');
   // phones held upright keep the first 2v2 layout (small side columns, your name under your hand);
   // wider screens get big side players
-  const narrow=W<540;el.classList.toggle('narrow',narrow);
+  const narrow=W<540&&!document.body.classList.contains('pc');el.classList.toggle('narrow',narrow);
+  if(document.body.classList.contains('pc')){duoFitPC(el,ui);DUO.fitKey=duoFitKey();return}
   const sideOf=dc=>narrow?Math.max(30,Math.min(46,W*.094)):Math.max(34,Math.min(78,dc*.72));
   const set=dc=>{
     const ds=sideOf(dc),dt=narrow?Math.max(34,Math.min(56,dc*.7)):Math.max(30,Math.min(58,dc*.56));
@@ -786,8 +802,19 @@ function duoFit(){
   for(let k=0;k<60&&dc>40&&!fits();k++){dc-=2;set(dc)}
   DUO.fitKey=duoFitKey();
 }
+// PC (like 4-player chess): every hand as long as the board's side, the corners at least 200px wide
+function duoFitPC(el,ui){
+  const W=innerWidth/ui-20,H=innerHeight/ui;
+  const fixed=$('#scr-duo .hud').offsetHeight+$('#duoTbar').offsetHeight+$('#duoRules').offsetHeight+$('#duoNet').offsetHeight+34;
+  // height: two hand rows (1.2 card heights, the cards .8 of a square) + the board (4.8 squares + 26) + gaps;
+  // width: the board (4 squares + 26) + two side hands (.78) + two corners
+  let dc=Math.min((H-fixed-26-16-8)/(4.8+2*1.2*.8),(W-2*200-26-40)/(4+2*.78),150);
+  dc=Math.max(40,Math.floor(dc));
+  const hand=Math.floor((4*dc+26-4*5)/5);
+  el.style.setProperty('--dc',dc+'px');el.style.setProperty('--ds',Math.floor(dc*.78)+'px');el.style.setProperty('--dt',hand+'px');el.style.setProperty('--dh',hand+'px');
+}
 // refit when the window changes, or when the hands first appear (they take room)
-const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}`;
+const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}:${document.body.classList.contains('pc')}`;
 addEventListener('resize',()=>{if(duoOn('duo'))duoFit()});
 
 /* ---------- buttons ---------- */
