@@ -1,0 +1,18 @@
+/* the Review after a game (review.js): the tutorial's coach says what each move did, these buttons step through them */
+body.rev #handTop,body.rev #handBot{visibility:hidden}
+body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev #tagBot{display:none}
+.rv-bar{position:fixed;zoom:var(--ui);z-index:calc(var(--z-banner) - 2);translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:16px;background:var(--surf2);border:1px solid var(--line2);box-shadow:0 14px 36px rgba(var(--sh),calc(.7*var(--shk)))}
+.rv-bar[hidden]{display:none}
+.rv-nav{display:flex;align-items:center;gap:6px}
+.rv-nav .iconbtn:disabled{opacity:.35;cursor:default}
+.rv-nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rv-pos{min-width:58px;text-align:center;font:700 15px var(--body);font-variant-numeric:tabular-nums;color:var(--muted)}
+/* the matches of a series, like the result popup's M1 5–5 chips */
+.rv-tabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.rv-tabs button{font:600 12px/26px var(--body);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:7px;padding:0 9px;
+  background:none;color:var(--muted);cursor:pointer}
+.rv-tabs button.on{color:var(--on-accent);background:var(--accent);border-color:transparent}
+/* the square the move was played on */
+.cell.rv-last{outline:3px solid var(--hot);outline-offset:3px;box-shadow:0 0 18px var(--accent-glow)}
+.rv-end{display:block;margin-top:4px;color:var(--text);font-weight:700}

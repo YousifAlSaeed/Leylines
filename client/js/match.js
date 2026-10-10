@@ -4,7 +4,8 @@
    ===================================================================== */
 let G=null;
 /* G = {mode, rules, trade, diff, bo, ser, me, bottom, names[], decks[[],[]], seed, rng, st, first, sd, sel, busy, over, inbox[]}
-   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[]} */
+   bo = matches in the series (1, 3 or 5); ser = {n: match number, first: who went first in match 1, wins[2], log[], rev[]}
+   ser.rev: each match's moves, for the Review after the game (review.js): [{rounds: [{h: [hand, hand], first, el, moves: [[hand index, square]]}], end: final board}] */
 function baseMatch(mode,extra){
   return{mode,rules:{...SAVE.rules},trade:'none',diff:SAVE.diff,bo:boOf(SAVE.bo),ser:null,me:0,bottom:0,names:['You','CPU'],decks:[null,null],
     seed:rand32(),sd:0,sel:null,busy:false,over:false,inbox:[],...extra};
@@ -55,6 +56,9 @@ async function newRound(h0,h1,first){
   const g=G;
   G.first=first;G.sel=null;G.busy=true;
   G.st=newState(h0,h1,first,genElements(G.rules,G.rng));
+  // a new round of this match (Sudden Death adds one) starts a new list of moves for the Review
+  if(G.ser){const rv=G.ser.rev=G.ser.rev||[],m=rv[G.ser.n-1]=rv[G.ser.n-1]||{rounds:[]};
+    m.rounds.push({h:[h0.slice(),h1.slice()],first,el:G.st.el.slice(),moves:[]})}
   // who placed the card on each square, and which card of their deck it is ([player, deck index]), for Diff:
   // h follows each hand as cards leave it, c holds the board
   G.trk={h:[h0.map((_,i)=>i),h1.map((_,i)=>i)],c:Array(9).fill(null)};
@@ -117,6 +121,7 @@ async function execMove(hi,cell){
   if(p===G.me)G.moved=true;
   const sc=[score(st,0),score(st,1)];
   if(G.trk)G.trk.c[cell]=[p,G.trk.h[p].splice(hi,1)[0]];
+  const rm=G.ser&&G.ser.rev&&G.ser.rev[G.ser.n-1];if(rm)rm.rounds[rm.rounds.length-1].moves.push([hi,cell]);
   const ev=[];play(st,G.rules,hi,cell,ev);
   if(G.mode!=='local'&&p===G.me&&!G.tut)profFlips(ev);
   renderHands();renderHud();$$('.cell').forEach(c=>c.classList.remove('hot','over'));
@@ -193,6 +198,7 @@ function finish(s0,s1){
   G.over=true;G.busy=true;
   const m=G.bottom===0?[s0,s1]:[s1,s0],mw=s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});
+  const rm=ser.rev&&ser.rev[ser.n-1];if(rm)rm.end={b:G.st.b.slice(),o:G.st.o.slice()};
   if(G.sd>0)ser.sd=1;
   if(mw>=0)ser.wins[mw]++;
   renderHud();
@@ -302,11 +308,14 @@ function checkNext(){
 function resultModal(html,extra){
   // the match is fully settled (trade included); online, a dropped player can no longer come back to it
   G.done=true;
+  // kept so the Review can bring this popup back
+  G.res=[html,extra];
   // a Daily challenge says what comes next (try again, next opponent), or nothing
   const again=G.daily?G.daily.again:{label:G.mode==='online'?'Rematch':'Play again',fn:playAgain};
   modal(html,[
     ...(extra?[extra]:[]),
     ...(again?[{label:again.label,cls:extra?'':'primary',fn:again.fn}]:[]),
+    ...(revAvail()?[{label:'Review',fn:revOpen}]:[]),
     {label:'Menu',cls:again||extra?'':'primary',fn:leaveMatch}
   ]);
 }

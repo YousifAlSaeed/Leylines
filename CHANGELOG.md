@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.19.10 (2026-10-10)
+- **Review a game.** After a game, the result popup has a Review button. Step through every move on the board: who played what, and why cards flipped, with tags like "3 + 5 = 8" on the edges that did it (Same, Plus, Combo, and plain captures). In a Best of 3 or 5, pick the match at the top. Back to results takes you back to the popup
+
 ## 0.19.9 (2026-10-10)
 - Important popups give you 3 seconds to read before the main button works: leaving a match, signing out, deleting a loadout, removing a friend or player, buying in the Night Market, taking or sparing cards, and the news when you lost cards. The button counts down 3, 2, 1. Cancel, Stay and Escape still work right away
 
