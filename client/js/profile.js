@@ -13,7 +13,7 @@ const RINGS=['#8B6CFF','#FF5FA8','#2F5FD0','#5EE6B0','#f0c35c','#C8344F'];
 const PROF={fresh:[],view:null};
 
 /* ---------- badges ---------- */
-// [id, icon, name, how to earn, tier, test] — badges with a test are worked out from the save;
+// groups: [name, icon, badges]. A badge: [id, icon, name, how to earn, tier, test] — badges with a test are worked out from the save;
 // the rest are earned by something that happens (earn() is called there).
 // Each tier pays shards once, when you tap the badge on your profile (SAVE.bclaim holds the ones claimed)
 const BADGE_SHARDS={b:20,s:50,g:120,p:300};
@@ -21,30 +21,30 @@ const BADGE_TIER={b:'Bronze',s:'Silver',g:'Gold',p:'Prism'};
 const totals=s=>{const t=s.stats;return{w:t.w+t.ow,l:t.l+t.ol,d:t.d+t.od,n:t.w+t.l+t.d+t.ow+t.ol+t.od}};
 const seenRar=(s,r)=>s.seen.some(i=>CARDS[i].rar===r);
 const BADGE_GROUPS=[
-  ['Getting started',[
+  ['Getting started','🧭',[
     ['first','🏆','First win','Win a match','b',s=>totals(s).w>=1],
     ['tut','🎓','Lesson learned','Finish the tutorial','b',s=>s.tut===2],
     ['pack1','🎁','First pack','Open a pack','b',s=>s.opened>=1],
     ['friend','🤝','Making friends','Add a friend','b'],
     ['emote','😄','Say hi','Send an emote in a match','b']]],
-  ['Winning',[
+  ['Winning','🏆',[
     ['streak3','🔥','On fire','Win 3 matches in a row','b',s=>s.best>=3],
     ['streak5','☄️','Unstoppable','Win 5 matches in a row','s',s=>s.best>=5],
     ['streak10','🌋','Legendary run','Win 10 matches in a row','g',s=>s.best>=10],
     ['hard','🧠','Outsmarted','Beat the CPU on Hard','s',s=>s.beat>=2],
     ['series','🎖️','Series champ','Win a Best of 3 or Best of 5','s'],
     ['comeback','🔄','Comeback','Win a series after losing its first match','g']]],
-  ['Playing',[
+  ['Playing','🎴',[
     ['played10','🎴','Regular','Play 10 matches','b',s=>totals(s).n>=10],
     ['played50','🗡️','Veteran','Play 50 matches','s',s=>totals(s).n>=50],
     ['played100','🛡️','Centurion','Play 100 matches','g',s=>totals(s).n>=100],
     ['played500','🏛️','Ley legend','Play 500 matches','p',s=>totals(s).n>=500]]],
-  ['Online',[
+  ['Online','🌐',[
     ['online','🌐','Hello, world','Win an online match','b',s=>s.stats.ow>=1],
     ['online10','🛰️','Far reach','Win 10 online matches','s',s=>s.stats.ow>=10],
     ['online50','⚔️','Conqueror','Win 50 online matches','g',s=>s.stats.ow>=50],
     ['ostreak5','📡','Hot streak','Win 5 online matches in a row','g',s=>s.obest>=5]]],
-  ['Big moves',[
+  ['Big moves','💥',[
     ['same','⚖️','Same!','Flip a card with Same','b'],
     ['plus','➕','Plus!','Flip a card with Plus','b'],
     ['combo','⛓️','Chain reaction','Flip a card with a Combo','s'],
@@ -55,21 +55,21 @@ const BADGE_GROUPS=[
     ['reverse','🙃','Upside down','Win with the Reverse rule on','b'],
     ['chaos','🎲','Chaos tamer','Win with the Chaos rule on','b'],
     ['random','🃏','Lucky draw','Win with the Random rule on','b']]],
-  ['Trades',[
+  ['Trades','💰',[
     ['spoils','💰','Spoils of war','Win a card in a trade','b'],
     ['tradeall','🎰','High roller','Win a match with Trade: All','s'],
     ['winback','↩️','Got it back','Win back a card from the CPU','s'],
     ['laststand','🏹','Last stand','Win a Last chance','g']]],
-  ['Kindness',[
+  ['Kindness','💛',[
     ['spare1','💛','Kind heart','Spare a player instead of taking their cards','b',s=>s.spares>=1],
     ['spare10','🕊️','Peacemaker','Spare 10 players','s',s=>s.spares>=10],
     ['spare50','😇','Guardian','Spare 50 players','g',s=>s.spares>=50]]],
-  ['Daily',[
+  ['Daily','📅',[
     ['duel','🤺','Duelist','Win a Daily Duel','b'],
     ['puzzle','🧩','Puzzler','Solve a Daily Puzzle','b'],
     ['gauntlet','👹','Gauntlet master','Beat the Gauntlet boss','g'],
     ['fullday','📅','Full day','Win the Duel, solve the Puzzle and clear the Gauntlet in one day','s']]],
-  ['Collection',[
+  ['Collection','📚',[
     ['found25','📗','Collector','Find 25 different cards','b',s=>s.seen.length>=25],
     ['found40','📘','Curator','Find 40 different cards','s',s=>s.seen.length>=40],
     ['foundall','📚','Complete set',`Find all ${CARDS.length} cards`,'p',s=>s.seen.length>=CARDS.length],
@@ -77,13 +77,13 @@ const BADGE_GROUPS=[
     ['elements','🌈','All elements','Find a card of every element','s',s=>ELEM_KEYS.every(e=>s.seen.some(i=>CARDS[i].e===e))],
     ['shop','🛒','Shopper','Buy something in the Store','b'],
     ['packs25','📦','Pack rat','Open 25 packs','s',s=>s.opened>=25]]],
-  ['Levels',[
+  ['Levels','⭐',[
     ['lv5','🌱','Card adept','Reach level 5','b',s=>levelOf(s.xp)>=5],
     ['lv10','⭐','Seasoned','Reach level 10','s',s=>levelOf(s.xp)>=10],
     ['lv16','🔱','Archmage','Reach level 16','g',s=>levelOf(s.xp)>=16],
     ['lv20','🌌','Ley sovereign','Reach level 20','p',s=>levelOf(s.xp)>=20]]],
 ];
-const BADGES=BADGE_GROUPS.flatMap(g=>g[1]);
+const BADGES=BADGE_GROUPS.flatMap(g=>g[2]);
 // how close you are to a badge that counts something: [have, need] (shown when you tap it)
 const BADGE_PROG={streak3:s=>[s.best,3],streak5:s=>[s.best,5],streak10:s=>[s.best,10],
   played10:s=>[totals(s).n,10],played50:s=>[totals(s).n,50],played100:s=>[totals(s).n,100],played500:s=>[totals(s).n,500],
@@ -108,18 +108,41 @@ function claimBadge(id){
   return n;
 }
 // the line over your badges: how many have shards waiting
+const waitShards=w=>w.reduce((a,b)=>a+BADGE_SHARDS[b[4]],0);
 function bwaitHTML(){const w=toClaim();if(!w.length)return '';
-  return `${shd()}<b>${fmtSh(w.reduce((a,b)=>a+BADGE_SHARDS[b[4]],0))} shards</b> waiting in ${plural(w.length,'badge')}. Tap the glowing ones to claim them.`}
-// a glowing badge tapped on your profile: the shards fly off it into your wallet
-function badgeClaimed(el,b){
-  const n=claimBadge(b[0]);if(!n)return;
+  return `${shd()}<b>${fmtSh(waitShards(w))} shards</b> waiting in ${plural(w.length,'badge')}. Open a group with a dot to claim them.`}
+// the profile's Badges card: a card for each group, with a dot where shards wait and a gold frame once it's complete
+function bgroupsHTML(s,mine){
+  return BADGE_GROUPS.map(([n,e,bs],i)=>{const k=bs.filter(b=>hasBadge(s,b)).length,done=k===bs.length,dot=mine&&bs.some(b=>hasBadge(s,b)&&!SAVE.bclaim[b[0]]);
+    return `<button class="bg-card${done?' done':''}" data-g="${i}" aria-label="${n}: ${k} of ${bs.length}${dot?', shards to claim':''}">${dot?'<i class="bg-dot" aria-hidden="true"></i>':''}`+
+      `<span class="bg-emb" aria-hidden="true">${e}</span><b>${n}</b><span class="bg-bar"><i style="width:${(k/bs.length*100).toFixed(0)}%"></i></span><small>${done?'Complete':k+' / '+bs.length}</small></button>`}).join('');
+}
+// one badge in a group's popup: its medal (tier colour), what it takes, and Claim / Claimed / how close you are
+function bRowHTML(b,s,mine){
+  const on=hasBadge(s,b),cl=mine&&on&&!SAVE.bclaim[b[0]],n=BADGE_SHARDS[b[4]],pr=mine&&!on&&BADGE_PROG[b[0]]?BADGE_PROG[b[0]](s):null;
+  const right=cl?`<button class="btn small bg-claim" data-claim="${b[0]}">Claim ${shd()}${n}</button>`
+    :on?`<span class="bg-st done">✓ ${mine?'Claimed':'Earned'}</span>`:`<span class="bg-st">${pr?`${Math.min(pr[0],pr[1])} / ${pr[1]}`:'Locked'}</span>`;
+  return `<div class="bg-row${on?'':' off'}"><span class="bg-medal t-${b[4]}" aria-hidden="true">${b[1]}</span>`+
+    `<span class="bg-tx"><b>${esc(b[2])}</b><small>${esc(b[3])}${on?'':` · ${BADGE_TIER[b[4]]}, ${n} shards`}</small>`+
+    `${pr?`<span class="bg-pbar"><i style="width:${(Math.min(1,pr[0]/pr[1])*100).toFixed(0)}%"></i></span>`:''}</span>${right}</div>`;
+}
+// a group tapped on the profile: its badges, with a Claim button on each one whose shards wait
+function badgeGroup(s,mine,g){
+  const[n,e,bs]=BADGE_GROUPS[g];
+  const box=modal(`<div class="kick">Badges</div><h2 class="nm2">${e} ${n}</h2><p>${bs.filter(b=>hasBadge(s,b)).length} of ${bs.length}</p>`+
+    `<div class="bg-rows">${bs.map(b=>bRowHTML(b,s,mine)).join('')}</div>`+(mine?`<p class="bg-foot" id="bgFoot">${bfootHTML()}</p>`:''),[{label:'Close',cls:'primary',esc:true}]);
+  box.classList.add('bg-box');
+  box.querySelectorAll('[data-claim]').forEach(btn=>btn.onclick=()=>badgeClaimed(btn));
+}
+const bfootHTML=()=>{const w=toClaim();return `<span>${w.length?`${shd()}<b>${fmtSh(waitShards(w))}</b> shards waiting`:'All badge shards claimed'}</span><span>Wallet <b>${shd()}${fmtSh(SAVE.shards)}</b></span>`};
+// Claim tapped: the shards fly off the button into your wallet, and the profile behind catches up
+function badgeClaimed(btn){
+  const b=BADGE[btn.dataset.claim],n=b&&claimBadge(b[0]);if(!n)return;
   sfx('flip');
-  el.classList.remove('claim');const c=el.querySelector('.pf-bsh');if(c)c.remove();
-  el.setAttribute('aria-label',`${b[2]}: ${b[3]}, earned`);
-  el.insertAdjacentHTML('beforeend',`<em class="pf-bfly" aria-hidden="true">+${n}</em>`);
-  setTimeout(()=>{const f=el.querySelector('.pf-bfly');if(f)f.remove()},1000);
-  const w=$('#pfBwait');if(w)w.innerHTML=bwaitHTML();
-  renderProfile();toast(`${b[1]} ${b[2]}: +${shardsTxt(n)}`,1800);
+  const st=document.createElement('span');st.className='bg-st done';st.innerHTML=`✓ Claimed<em class="pf-bfly" aria-hidden="true">+${n}</em>`;
+  btn.replaceWith(st);setTimeout(()=>{const f=st.querySelector('.pf-bfly');if(f)f.remove()},1000);
+  const f=$('#bgFoot');if(f)f.innerHTML=bfootHTML();
+  renderProfilePage();renderProfile();toast(`${b[1]} ${b[2]}: +${shardsTxt(n)}`,1800);
 }
 // out of a match (a pack, the Store, a friend): new badges show as a toast
 function earnNow(id){earn(id);if(PROF.fresh.length){save();freshToast()}}
@@ -386,13 +409,10 @@ function renderProfilePage(force){
     </div>`:`<p class="pf-empty">No online matches yet.${mine?' Play a friend online to start your record and get on the leaderboard.':''}</p>`}
     ${cpu}${s.spares||mine?`<div class="pf-cpu"><span aria-hidden="true">💛</span><span>Spares <b>${s.spares}</b></span>${mine?`<span>${SPARE_PACK-s.spares%SPARE_PACK} more for a free pack</span>`:''}</div>`:''}</section>`;
 
-  // badges, in their groups. Yours glow while their shards wait: tap one to claim them
+  // badges: a card for each group; tap one for its badges (badgeGroup)
   const got=BADGES.filter(b=>hasBadge(s,b)).length;
-  const bdg=b=>{const on=hasBadge(s,b),cl=mine&&on&&!SAVE.bclaim[b[0]],n=BADGE_SHARDS[b[4]];
-    return `<button class="pf-bdg t-${b[4]}${on?'':' off'}${cl?' claim':''}" data-b="${b[0]}" aria-label="${esc(b[2])}: ${esc(b[3])}${cl?`, tap to claim ${n} shards`:on?', earned':', not earned yet'}">`+
-      `<span>${b[1]}</span>${esc(b[2])}${cl?`<em class="pf-bsh">${shd()}${n}</em>`:''}</button>`};
   const badges=`<section class="pf-card"><h3>Badges <em>${got} of ${BADGES.length}</em></h3>`+(mine?`<p class="pf-bwait" id="pfBwait">${bwaitHTML()}</p>`:'')+
-    BADGE_GROUPS.map(([g,bs])=>`<h4 class="pf-bgrp">${g}<span>${bs.filter(b=>hasBadge(s,b)).length} / ${bs.length}</span></h4><div class="pf-badges">${bs.map(bdg).join('')}</div>`).join('')+`</section>`;
+    `<div class="bg-groups">${bgroupsHTML(s,mine)}</div></section>`;
 
   // collection
   const seen=s.seen,owned=mine?Object.values(SAVE.coll).reduce((x,y)=>x+(+y||0),0):null;
@@ -411,7 +431,7 @@ function renderProfilePage(force){
     <div class="pf-show">${slots}</div>${mine&&!sc.length?'<p class="pf-hint">Pin up to 3 cards to show off.</p>':''}</section>`:'';
 
   // account (only your own)
-  let acct='';
+  let acct='',dev='';
   if(mine){
     const ic=p=>`<span class="pf-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${p}</svg></span>`;
     const row=(icon,b,small,btn,id,cls='')=>`<div class="pf-row">${ic(icon)}<span class="rt"><b>${b}</b><small${id==='pfOut'?' id="pfSync"':''}>${small}</small></span><button class="btn small ${cls}" id="${id}">${btn}</button></div>`;
@@ -428,7 +448,7 @@ function renderProfilePage(force){
       ?`<p class="pf-hint left">Make an account to keep your cards, stats and badges on every device, and to share your profile.</p><div class="pf-two"><button class="btn primary" id="pfUp">Create account</button><button class="btn" id="pfIn">Sign in</button></div>`
       :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+resetRow+`</section>`;
     // developer tools: only for accounts in the server's DEV_USERS list, or on a local copy of the game
-    if(isDev())acct+=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
+    if(isDev())dev=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
       <div class="pf-row"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection.</small></span>
         <div class="seg" id="pfUnlock" role="group" aria-label="Unlock all cards">${[[false,'Off'],[true,'On']].map(([k,l])=>
           `<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
@@ -444,13 +464,13 @@ function renderProfilePage(force){
 
   // match history: yours, or theirs from the server (null when they hid it)
   const hist=()=>mine?SAVE.history:s.history===undefined?[]:s.history;
-  $('#pfBody').innerHTML=hero+`<div class="pf-grid"><div class="pf-col">${record}${histCardHTML(hist(),mine,name)}${badges}</div><div class="pf-col">${coll}${show}${acct}</div></div>`;
+  // two columns on a computer; one on a phone, in its own order (--o, profile.css): showcase, record, history, collection, badges, account, developer
+  const o=(h,n)=>h.replace('<section ',`<section style="--o:${n}" `);
+  $('#pfBody').innerHTML=hero+`<div class="pf-grid"><div class="pf-col">${o(record,2)}${o(histCardHTML(hist(),mine,name),3)}${o(acct,6)}${o(dev,7)}</div>`+
+    `<div class="pf-col">${o(coll,4)}${o(show,1)}${o(badges,5)}</div></div>`;
   histWire(hist,mine,name);
   const on=(sel,fn)=>$$('#pfBody '+sel).forEach(b=>b.onclick=()=>{sfx('click');fn(b)});
-  on('.pf-bdg',b=>{const x=BADGE[b.dataset.b],d=s.badges[x[0]],n=BADGE_SHARDS[x[4]];
-    if(mine&&b.classList.contains('claim')){badgeClaimed(b,x);return}
-    const pr=mine&&!hasBadge(s,x)&&BADGE_PROG[x[0]]?BADGE_PROG[x[0]](s):null;
-    toast(`${x[1]} ${x[2]}: ${x[3]}`+(pr?` (${Math.min(pr[0],pr[1])}/${pr[1]})`:'')+(d?` · earned ${new Date(d).toLocaleDateString()}`:` · ${BADGE_TIER[x[4]]}, ${n} shards`),2800)});
+  on('.bg-card',c=>badgeGroup(s,mine,+c.dataset.g));
   on('[data-gift]',b=>{const t=b.dataset.gift;b.disabled=true;
     api('/gifts',{method:'POST',body:{to:u.username,pack:t}}).then(()=>toast(`Sent ${aPack(t)} to ${u.displayName}.`)).catch(e=>toast(e.message,3000)).finally(()=>b.disabled=false)});
   if(!mine)return;

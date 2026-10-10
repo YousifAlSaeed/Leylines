@@ -33,6 +33,8 @@
 /* two columns on wide screens */
 .pf-grid{display:grid;gap:14px}
 .pf-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+/* a phone has one column, in its own order (each card's --o, profile.js) */
+@media (max-width:859.98px){.pf-grid{display:flex;flex-direction:column}.pf-col{display:contents}.pf-col>*{order:var(--o,9)}}
 @media (min-width:860px){.pf-grid{grid-template-columns:1.25fr 1fr;align-items:start}}
 .pf-card{border-radius:18px;padding:16px;background:var(--surf);border:1px solid var(--line)}
 .pf-card h3{display:flex;justify-content:space-between;align-items:center;margin:0 0 12px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
@@ -72,34 +74,54 @@
 .pf-cpu b{color:var(--text);font-weight:600}
 .pf-empty{margin:14px 0 0;color:var(--muted);font-size:13px}
 
-/* badges */
-.pf-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
-.pf-bdg{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:14px;background:var(--well);border:1px solid var(--line);
-  color:var(--text);font:500 11.5px/1.25 var(--body);text-align:center;cursor:pointer;transition:transform .2s var(--spring),border-color .18s}
-.pf-bdg span{font-size:24px;line-height:1}
-.pf-bdg:hover{transform:translateY(-2px);border-color:var(--line2)}
-.pf-bdg.off{opacity:.38}
-.pf-bdg.off span{filter:grayscale(1)}
-/* the tier shows in the border, in the rarity colours (cards.css): bronze, silver, gold, prism */
-.pf-bdg{position:relative}
-.pf-bdg.t-b{border-color:color-mix(in srgb,var(--r1) 55%,transparent)}
-.pf-bdg.t-s{border-color:color-mix(in srgb,var(--r2) 50%,transparent)}
-.pf-bdg.t-g{border-color:color-mix(in srgb,var(--r3) 60%,transparent)}
-.pf-bdg.t-p{border-color:transparent;background:linear-gradient(var(--surf),var(--surf)) padding-box,var(--prism-ring) border-box}
-/* shards waiting: the badge glows, with its shards in the corner */
-.pf-bdg.claim{animation:pf-glow 1.8s ease-in-out infinite}
-@keyframes pf-glow{50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--shard) 30%,transparent),0 0 18px color-mix(in srgb,var(--shard) 40%,transparent)}}
-.pf-bsh{position:absolute;top:-8px;right:-6px;display:flex;align-items:center;padding:1px 6px;border-radius:99px;font:800 10.5px/1.4 var(--display);font-style:normal;
-  color:#05232b;background:var(--shard)}
-.pf-bsh .shd{background:#05232b;margin-right:.2em}
-.pf-bfly{position:absolute;left:50%;top:0;font:800 15px var(--display);font-style:normal;color:var(--shard-ink);pointer-events:none;animation:pf-fly .9s var(--ease) forwards}
-@keyframes pf-fly{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-38px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.pf-bdg.claim{animation:none;box-shadow:0 0 0 2px var(--shard)}.pf-bfly{animation:none;opacity:0}}
-.pf-bgrp{display:flex;justify-content:space-between;margin:16px 0 8px;font:700 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.pf-bgrp:first-of-type{margin-top:4px}
-.pf-bgrp span{letter-spacing:0;font-weight:500}
-.pf-bwait{margin:-4px 0 4px;font-size:13px;color:var(--shard-ink)}
+/* badges: a card for each group on the profile; tapping one opens its badges as rows (profile.js) */
+.pf-bwait{margin:-4px 0 10px;font-size:13px;color:var(--shard-ink)}
 .pf-bwait:empty{display:none}
+.bg-groups{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.bg-card{position:relative;display:grid;justify-items:center;align-content:end;row-gap:5px;aspect-ratio:3/3.9;padding:8px 6px 9px;border-radius:14px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--r3) 32%,transparent);background:radial-gradient(120% 70% at 50% 18%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%),var(--well);
+  color:var(--text);font:inherit;text-align:center;transition:transform .2s var(--spring),border-color .18s}
+.bg-card::before{content:"";position:absolute;inset:4px;border-radius:10px;border:1px solid color-mix(in srgb,var(--r3) 14%,transparent);pointer-events:none}
+.bg-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--r3) 60%,transparent)}
+.bg-emb{align-self:center;margin-bottom:auto;padding-top:10px;font-size:30px;line-height:1}
+.bg-card b{font:700 12px/1.15 var(--display);min-height:2.3em;display:flex;align-items:center}
+.bg-bar{width:80%;height:4px;border-radius:9px;background:rgba(var(--tint),.1);overflow:hidden}
+.bg-bar i{display:block;height:100%;border-radius:inherit;background:var(--r3t)}
+.bg-card small{font:600 10.5px var(--display);color:var(--muted)}
+.bg-card.done{border-color:var(--r3);box-shadow:0 0 0 1px color-mix(in srgb,var(--r3) 35%,transparent),0 0 18px color-mix(in srgb,var(--r3) 22%,transparent)}
+.bg-card.done small{color:var(--r3t)}
+.bg-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--surf)}
+/* phones: 2 columns of wide cards */
+@media (max-width:599.98px){
+  .bg-groups{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bg-card{aspect-ratio:auto;grid-template-columns:34px 1fr;justify-items:start;align-items:center;column-gap:8px;row-gap:3px;padding:9px 16px 9px 9px;text-align:left}
+  .bg-emb{grid-row:1/4;padding:0;margin:0;font-size:26px}
+  .bg-card b{min-height:0;font-size:12.5px}
+  .bg-bar{width:100%}
+}
+/* a group's popup: one row per badge */
+.mbox.bg-box{max-width:520px}
+.bg-rows{display:flex;flex-direction:column;gap:6px;margin-top:12px;text-align:left}
+.bg-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:var(--well);border:1px solid var(--line)}
+.bg-medal{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--surf);border:2px solid var(--line2)}
+.bg-medal.t-b{border-color:var(--r1)}.bg-medal.t-s{border-color:var(--r2)}.bg-medal.t-g{border-color:var(--r3)}
+.bg-medal.t-p{border-color:transparent;background:linear-gradient(var(--surf),var(--surf)) padding-box,var(--prism-ring) border-box}
+.bg-row.off .bg-medal{filter:grayscale(1);opacity:.55}
+.bg-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.bg-tx b{font:600 14px/1.25 var(--body);color:var(--text)}
+.bg-tx small{font-size:12px;color:var(--muted)}
+.bg-pbar{height:5px;border-radius:9px;background:rgba(var(--tint),.1);overflow:hidden;margin-top:5px}
+.bg-pbar i{display:block;height:100%;border-radius:inherit;background:var(--accent)}
+.bg-claim{flex:none;min-height:34px;padding:4px 12px;border:0;color:#05232b;background:var(--shard);font-family:var(--display);font-weight:800}
+.bg-claim .shd{background:#05232b;margin:0 .2em 0 .35em}
+.bg-st{position:relative;flex:none;padding:5px 10px;border-radius:10px;font:600 12.5px var(--body);color:var(--muted);border:1px dashed var(--line2);white-space:nowrap}
+.bg-st.done{border-color:transparent}
+.pf-bfly{position:absolute;left:50%;top:0;font:800 15px var(--display);font-style:normal;color:var(--shard-ink);pointer-events:none;animation:pf-fly .9s var(--ease) forwards}
+@keyframes pf-fly{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-34px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pf-bfly{animation:none;opacity:0}}
+.bg-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:none!important;margin:14px 0 0!important;padding-top:12px;border-top:1px solid var(--line);font-size:13px;text-align:left}
+.bg-foot b{color:var(--shard-ink);font-family:var(--display)}
+.bg-foot span{white-space:nowrap}
 
 /* collection */
 .pf-found{display:flex;justify-content:space-between;align-items:baseline;gap:8px}

@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.21.1 (2026-10-10)
+- Badges on your profile are now a card for each group, with a dot where shards wait and a gold frame once a group is complete. Tap a group to see its badges: what each one takes, how close you are, and a Claim button for the ones whose shards wait
+- Profile order: on a computer, Badges sits on the right and Account on the left. On a phone: Showcase, Record, History, Collection, Badges, Account
+
 ## 0.21.0 (2026-10-10)
 - Badges reworked: 51 badges in 10 groups (25 new ones for the tutorial, packs, friends, emotes, series, the Reverse, Chaos and Random rules, Trade: All, Win them back, the dailies, the Store and higher levels)
 - Every badge now pays shards: Bronze 20, Silver 50, Gold 120, Prism 300. Earned badges glow on your profile: tap one to claim its shards. Badges you already had can be claimed too
