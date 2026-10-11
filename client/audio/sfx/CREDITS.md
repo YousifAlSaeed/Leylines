@@ -21,4 +21,6 @@ CC0 (public domain): credit is not required but given. The other effects are mad
 | same_plus, combo, combo2 | Bubble pops: "Pop!" by oldedgar ([97978](https://freesound.org/people/oldedgar/sounds/97978)), "Bubble Pop" by Reza5oO ([796298](https://freesound.org/people/Reza5oO/sounds/796298)), "The Best Bubble Pop Sound For Game and UI" by el_boss ([669918](https://freesound.org/people/el_boss/sounds/669918)) |
 | win | "Bell Tree Tinkle Up" by avajoliec ([693698](https://freesound.org/people/avajoliec/sounds/693698)) |
 | coll_page_01–04 | Page turns: "Page Turn 02" by MATRIXXX_ ([397549](https://freesound.org/people/MATRIXXX_/sounds/397549)), "page turn sound effect" by stumpbutt ([431871](https://freesound.org/people/stumpbutt/sounds/431871)), "turnPage" by partheeban ([457767](https://freesound.org/people/partheeban/sounds/457767)), "Page Turn 1" by gfrog ([144110](https://freesound.org/people/gfrog/sounds/144110)) |
+| tick | Xylophone by juancamiloorjuela ([204647](https://freesound.org/people/juancamiloorjuela/sounds/204647)) |
+| coll_set_done | Bubble pop by el_boss ([669918](https://freesound.org/people/el_boss/sounds/669918)), glockenspiel, crystal bell and bell tree (see above) |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |

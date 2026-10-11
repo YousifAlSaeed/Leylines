@@ -19,11 +19,22 @@ const SR = 44100;
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
 const TARGET = { badge_claim: -12, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
+// instruments and layers shared by the recipes below
+const st = (n, c = 0) => +Math.pow(2, (n - c) / 12).toFixed(4);
+const G = (at, n, o = {}) => L('fs-373364.mp3', { at, rate: st(n, .1), to: .5, fout: .3, ...o });   // glockenspiel, n semitones from C6
+const K = (at, n, o = {}) => L('fs-441137.mp3', { at, rate: st(n, .15), to: 1.2, fout: .6, ...o }); // kalimba, n from E5
+const X = (at, n, o = {}) => L('fs-204647.mp3', { at, rate: st(n, .06), ...o });                    // xylophone, n from A6
+const CR = (at, n, o = {}) => L('fs-614832.mp3', { at, rate: st(n, -.15), db: -12, ...o });          // crystal bell, n from D#7
+const HARP = (o = {}) => L('fs-486952.mp3', { rate: st(7, -.02), to: 1.6, fout: .7, ...o });         // harp flourish, D4 -> A4
+const TB = (o = {}) => L('fs-374272.mp3', { rate: .9439, to: 2.5, fout: 1.2, ...o });                // tubular bell -> E
+const THUD = (o = {}) => L('bookPlace1.ogg', { db: -6, lp: 1800, ...o });
+const SWEEP = (o = {}) => L('fs-693698.mp3', { from: .45, to: 2.4, fout: 1.0, th: .01, db: -6, pan: [-.5, .5], ...o });
+const runOf = (f, t0, step, ns, o = {}) => ns.map((n, i) => f(+(t0 + i * step).toFixed(3), n, { pan: +(-.4 + .8 * i / Math.max(1, ns.length - 1)).toFixed(2), ...o }));
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
-  tick:             [L('kit:tick/fs-199066-clock-tick-tock-1.wav')],
-  place:            [L('card-place-1.ogg'), L('bookPlace1.ogg', { db: -4, lp: 2500 })],
-  flip:             [L('card-shove-4.ogg', { to: .45 })],
+  tick:             [X(0, 0)],
+  place:            [L('card-place-1.ogg'), L('bookPlace2.ogg', { db: -2, lp: 1500 })],
+  flip:             [L('card-shove-1.ogg', { to: .45 }), THUD({ db: -6 })],
   hand_pick:        [L('card-slide-1.ogg')],
   pack_whoosh:      [L('fs-449988.mp3', { to: 1.2, pan: [-.4, .4] })],
   pack_tick_01:     [L('card-fan-2.ogg', { pick: 0 })],
@@ -37,7 +48,7 @@ export const RECIPES = {
   coll_card_out:    [L('cards-pack-take-out-1.ogg')],
   coll_card_in:     [L('card-shove-1.ogg', { to: .45 })],
   coll_hand_add:    [L('card-place-4.ogg'), L('bookPlace1.ogg', { db: -6, lp: 2500 })],
-  coll_hand_remove: [L('cards-pack-take-out-2.ogg', { pan: [0, .35] })],
+  coll_hand_remove: [L('cards-pack-take-out-1.ogg', { to: .5 })],
   coll_deny:        [L('fs-369710.mp3', { to: .12 }), L('fs-369710.mp3', { to: .12, at: .11, rate: .85, db: -2 })],
   coll_riffle:      [L('card-fan-1.ogg', { pan: [.35, -.35] })],
   coll_bump:        [L('kit:tap/kenney-impact-impact-wood-light-000.wav')],
@@ -67,6 +78,8 @@ export const RECIPES = {
   coll_page_02:     [L('fs-431871.mp3', { to: .75, pan: [.3, -.3] })],
   coll_page_03:     [L('fs-457767.mp3', { pan: [.3, -.3] })],
   coll_page_04:     [L('fs-144110.mp3', { to: 1.0, pan: [.3, -.3] })],
+  coll_lift:        [L('card-slide-8.ogg', { th: .3, to: .3 })],
+  coll_set_done:    [L('kit:pop/fs-669918-the-best-bubble-pop-sound-fo-1.wav', { db: -6 }), ...runOf(G, .02, .06, [-3, 1, 4, 9, 13]), CR(.26, 13, { db: -10 }), SWEEP({ at: .2, db: -8 })],
   coll_return:      [L('card-slide-7.ogg', { th: .3 }), L('bookPlace3.ogg', { db: -8, lp: 2500 })],
 };
 
