@@ -62,6 +62,11 @@ export const RECIPES = {
                      L('fs-693698.mp3', { from: .45, to: 3.0, at: .1, db: -4, th: .01, fout: 1.2, pan: [-.5, .5] }),
                      L('fs-420489.mp3', { at: .45, rate: 2, to: 1.6, pan: .4 }), L('fs-420487.mp3', { at: .45, to: 2.8, pan: -.25 }), L('fs-420491.mp3', { at: .45, to: 2.8, pan: .25 }),
                      L('fs-373364.mp3', { at: .45, rate: 1.0533, to: 2.6, db: -5 }), L('fs-614832.mp3', { at: .5, rate: 1.0687, db: -9, pan: .3 })],
+  // page turns: four real recordings, picked at random (fs-397549, 431871, 457767, 144110)
+  coll_page_01:     [L('fs-397549.mp3', { pan: [.3, -.3] })],
+  coll_page_02:     [L('fs-431871.mp3', { to: .75, pan: [.3, -.3] })],
+  coll_page_03:     [L('fs-457767.mp3', { pan: [.3, -.3] })],
+  coll_page_04:     [L('fs-144110.mp3', { to: 1.0, pan: [.3, -.3] })],
   coll_return:      [L('card-slide-7.ogg', { th: .3 }), L('bookPlace3.ogg', { db: -8, lp: 2500 })],
 };
 

@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.23.3 (2026-10-11)
+- Turning a page in your binder sounds like real paper now, with four different page turns
+
 ## 0.23.2 (2026-10-11)
 - The collection binder comes alive: the cover swings open, and every sound now has a move to match
 - Grab a page and drag it to turn it; flick it, or let go early and it falls back
