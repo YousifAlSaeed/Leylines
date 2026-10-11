@@ -9,6 +9,7 @@ shaped noise, and big moments get a soft chord. Everything is stereo with a litt
 
 Needs FFmpeg with libmp3lame (on PATH, or set FFMPEG to the ffmpeg executable).
 MP3 because every browser, iPhones included, can decode it in Web Audio.
+Sounds in RECORDED are real recordings (tools/sfx-recordings.mjs) and are skipped here.
 """
 import math
 import os
@@ -27,6 +28,11 @@ FFMPEG = os.environ.get('FFMPEG') or shutil.which('ffmpeg')
 if not FFMPEG:
     raise SystemExit('Install FFmpeg or set the FFMPEG environment variable to its executable path.')
 ONLY = set(sys.argv[1:])
+# These are real recordings now, built by tools/sfx-recordings.mjs. Skipped unless named on the command line.
+RECORDED = {'click', 'tick', 'place', 'flip', 'hand_pick', 'pack_whoosh', 'pack_snapback', 'pack_rip', 'pack_fling',
+            'pack_tick_01', 'pack_tick_02', 'pack_tick_03', 'pack_tick_04', 'pack_tick_05',
+            'coll_card_out', 'coll_card_in', 'coll_hand_add', 'coll_hand_remove', 'coll_deny', 'coll_riffle',
+            'coll_bump', 'coll_tab', 'coll_close', 'coll_locked', 'coll_return'}
 
 
 def note(name):
@@ -279,7 +285,7 @@ class Mix:
 
 def render(name, sec, build, room=(.5, .4, .12), peak=.78):
     """Run `build(mix)`, add room echo, then soft-limit, trim the silent tail and encode to MP3."""
-    if ONLY and name not in ONLY:
+    if (ONLY and name not in ONLY) or (not ONLY and name in RECORDED):
         return
     random.seed(name)  # the same sound every run
     m = Mix(sec)
