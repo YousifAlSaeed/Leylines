@@ -18,7 +18,7 @@ const SR = 44100;
 // layer: {f: file, from, to (s, cut of the source), at (s, place), db, hp, lp, pan (-1..1), rate (pitch), peakAt (align source peak to `at`)}
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
-const TARGET = { badge_claim: -12, same_plus: 'banner', combo: 'banner' }; // a number (dBFS) or an old sound to match
+const TARGET = { badge_claim: -12, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
   tick:             [L('kit:tick/fs-199066-clock-tick-tock-1.wav')],
@@ -46,12 +46,18 @@ export const RECIPES = {
   coll_locked:      [L('impactWood_medium_000.ogg')],
   // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
   badge_claim:      [L('handleCoins2.ogg'), L('kit:chime/fs-571513-soft-notifications-bell-ding-2.wav', { at: .07, db: -5, pan: .15 })],
-  // tunes from real instruments, all in A major: celesta A4 C#5 E5 (fs-420489/420487/420491), glockenspiel C6 tuned up to C#6
+  // Same / Plus, Combo, second Combo: a real bubble pop and rising glockenspiel notes (A major), crystal sparkle, bell tree
+  same_plus:        [L('kit:pop/fs-97978-pop-aif-1.wav', { db: -2 }), L('fs-373364.mp3', { at: .03, rate: 0.8361, to: .45, fout: .25, pan: -.2 }),
+                     L('fs-373364.mp3', { at: .09, rate: 1.0534, to: .45, fout: .25, pan: .2 }), L('fs-614832.mp3', { at: .09, rate: 1.0687, db: -12, pan: .3 })],
+  combo:            [L('kit:pop/fs-796298-bubble-pop-1.wav', { db: -2 }), L('fs-373364.mp3', { at: .03, rate: 1.0534, to: .45, fout: .25, pan: -.25 }),
+                     L('fs-373364.mp3', { at: .08, rate: 1.2527, to: .45, fout: .25 }), L('fs-373364.mp3', { at: .13, rate: 1.6721, to: .45, fout: .25, pan: .25 }),
+                     L('fs-614832.mp3', { at: .13, rate: 1.4265, db: -11, pan: .35 })],
+  combo2:           [L('kit:pop/fs-669918-the-best-bubble-pop-sound-fo-1.wav', { db: -1 }), L('fs-373364.mp3', { at: .03, rate: 1.2527, to: .45, fout: .25, pan: -.3 }),
+                     L('fs-373364.mp3', { at: .075, rate: 1.6721, to: .45, fout: .25, pan: -.1 }), L('fs-373364.mp3', { at: .12, rate: 2.1067, to: .45, fout: .25, pan: .1 }),
+                     L('fs-373364.mp3', { at: .165, rate: 2.5053, to: .45, fout: .25, pan: .3 }), L('fs-614832.mp3', { at: .165, rate: 2.1374, db: -10, pan: .4 }),
+                     L('fs-375596.mp3', { at: .1, to: .45, fout: .25, db: -9, pan: [-.4, .4] })],
+  // win: real instruments, all in A major: celesta A4 C#5 E5 (fs-420489/420487/420491), glockenspiel C6 tuned up to C#6
   // (fs-373364), crystal bell D#7 tuned up to E7 (fs-614832), bell tree (fs-693698 sweep up, fs-375596 scrape)
-  same_plus:        [L('fs-420487.mp3', { to: 1.2, pan: -.15 }), L('fs-420491.mp3', { at: .08, to: 1.2, pan: .15 }),
-                     L('fs-614832.mp3', { at: .08, rate: 1.0687, db: -12, pan: .3 })],
-  combo:            [L('fs-420489.mp3', { to: 1.4, pan: -.3 }), L('fs-420487.mp3', { at: .07, to: 1.4 }), L('fs-420491.mp3', { at: .14, to: 1.4, pan: .3 }),
-                     L('fs-375596.mp3', { at: .1, to: 1.2, db: -6, pan: [-.4, .4] }), L('fs-614832.mp3', { at: .14, rate: 1.0687, db: -10, pan: .35 })],
   win:              [L('fs-420489.mp3', { to: .5, pan: -.4 }), L('fs-420487.mp3', { at: .11, to: .45, pan: -.15 }), L('fs-420491.mp3', { at: .22, to: .35, pan: .15 }),
                      L('fs-693698.mp3', { from: .45, to: 3.0, at: .1, db: -4, th: .01, fout: 1.2, pan: [-.5, .5] }),
                      L('fs-420489.mp3', { at: .45, rate: 2, to: 1.6, pan: .4 }), L('fs-420487.mp3', { at: .45, to: 2.8, pan: -.25 }), L('fs-420491.mp3', { at: .45, to: 2.8, pan: .25 }),

@@ -157,11 +157,12 @@ async function execMove(hi,cell){
   CELLS[cell].innerHTML=cardHTML(id,colorOf(p),{mod:st.m[cell],cls:'drop'});
   sfx('place');
   await wait(300);
+  let nc=0;
   for(const e of ev){
     if(G!==g)return;
     // the tutorial shows which numbers touched before each flip
     if(G.tut){tutWave(e,cell);if(e.t==='basic')await wait(450)}
-    if(e.t!=='basic')await banner({same:'Same!',plus:'Plus!',combo:'Combo!'}[e.t],'',e.t==='combo'?'combo':'same_plus');
+    if(e.t!=='basic')await ruleBanner(e.t,e.t==='combo'?++nc:0);
     if(G!==g)return;
     flipCells(e.cells,p,cell);
     sc[p]+=e.cells.length;sc[q]-=e.cells.length;

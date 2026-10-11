@@ -15,6 +15,9 @@ CC0 (public domain): credit is not required but given. The other effects are mad
 | pack_fling | "FX - Swoosh - Light" by bolkmar, [Freesound 475132](https://freesound.org/people/bolkmar/sounds/475132) |
 | pack_rip | "SFX_STICKERRIPPER_foilBooms_01" by MrFossy, [Freesound 590360](https://freesound.org/people/MrFossy/sounds/590360) |
 | badge_claim | Kenney, [RPG Audio](https://kenney.nl/assets/rpg-audio) (coins), and "Soft-Notifications - Bell - Ding-Dong" by LegitCheese, [Freesound 571513](https://freesound.org/people/LegitCheese/sounds/571513) |
-| win, same_plus, combo | Celesta A, C#, E by Macsat-Rd ([420489](https://freesound.org/people/Macsat-Rd/sounds/420489), [420487](https://freesound.org/people/Macsat-Rd/sounds/420487), [420491](https://freesound.org/people/Macsat-Rd/sounds/420491)); crystal bell by arseniiv ([614832](https://freesound.org/people/arseniiv/sounds/614832)); bell tree scrape by Samulis ([375596](https://freesound.org/people/Samulis/sounds/375596)) |
-| win | Glockenspiel C5 by sgossner ([373364](https://freesound.org/people/sgossner/sounds/373364)); "Bell Tree Tinkle Up" by avajoliec ([693698](https://freesound.org/people/avajoliec/sounds/693698)) |
+| win | Celesta A, C#, E by Macsat-Rd ([420489](https://freesound.org/people/Macsat-Rd/sounds/420489), [420487](https://freesound.org/people/Macsat-Rd/sounds/420487), [420491](https://freesound.org/people/Macsat-Rd/sounds/420491)) |
+| win, same_plus, combo, combo2 | Glockenspiel C5 by sgossner ([373364](https://freesound.org/people/sgossner/sounds/373364)); crystal bell by arseniiv ([614832](https://freesound.org/people/arseniiv/sounds/614832)) |
+| combo2 | Bell tree scrape by Samulis ([375596](https://freesound.org/people/Samulis/sounds/375596)) |
+| same_plus, combo, combo2 | Bubble pops: "Pop!" by oldedgar ([97978](https://freesound.org/people/oldedgar/sounds/97978)), "Bubble Pop" by Reza5oO ([796298](https://freesound.org/people/Reza5oO/sounds/796298)), "The Best Bubble Pop Sound For Game and UI" by el_boss ([669918](https://freesound.org/people/el_boss/sounds/669918)) |
+| win | "Bell Tree Tinkle Up" by avajoliec ([693698](https://freesound.org/people/avajoliec/sounds/693698)) |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |
