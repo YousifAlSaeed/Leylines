@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.23.1 (2026-10-11)
+- 5 seconds after inviting a friend you can invite them again, and the invite pops up for them again
+
 ## 0.23.0 (2026-10-11)
 - Crossroads now has every 1v1 rule: Three open, Sudden death and Chaos join the others, with Ley lines in Sweep's spot
 - The Crossroads room looks like the 1v1 waiting room: the same rule cards, and everything on the left fits without scrolling

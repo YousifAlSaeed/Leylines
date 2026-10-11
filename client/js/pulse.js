@@ -106,7 +106,9 @@ function pulseReset(){lineClose();PULSE.user=null;PULSE.online=[];PULSE.away=[];
 
 /* ---------- inviting a friend ---------- */
 // sent: the friends you invited to the room you're hosting, username key → 'wait' | 'sent' | 'no'
-const INV={sent:new Map(),code:'',done:new Set(),cur:null,t:0};
+// at: when each invite went out (it can be sent again after INV_AGAIN ms)
+const INV_AGAIN=5000;
+const INV={sent:new Map(),at:new Map(),code:'',done:new Set(),cur:null,t:0};
 function inviteFriend(name){
   if(!ACCT.token||!name)return;
   // not hosting yet: open a room first. Its code is picked straight away (NET.want), so the invite goes out now.
@@ -123,6 +125,7 @@ function invFlush(again){
     if(st!=='wait'&&!(again&&st==='sent'))continue;
     // shown as sent at once; taken back if the server says no
     INV.sent.set(k,'sent');INV.code=code;
+    if(!again){INV.at.set(k,Date.now());setTimeout(invRoomRender,INV_AGAIN+50)}
     if(!again)toast(`Invite sent to ${frName(k)}`);
     api('/pulse/invite',{method:'POST',body:{to:k,code}})
       .catch(e=>{if(INV.code===code){INV.sent.delete(k);toast(e.message,3000);invRoomRender()}});
@@ -159,12 +162,13 @@ function invPending(){for(const [k,st] of INV.sent)if(st==='sent'||st==='wait')r
 // the invite list in the room you're hosting, while the seat is empty (setup.js, duo.js)
 function roomInvHTML(){
   if(!ACCT.token||!FR.friends.length)return '';
-  const tag={sent:'<span class="fr-tag ok">Invited</span>'};
+  // Invited for 5 seconds, then they can be invited again
+  const tag={sent:'<span class="fr-tag ok">Invited</span>'},soon=k=>Date.now()-(INV.at.get(k)||0)<INV_AGAIN;
   const list=FR.friends.filter(u=>frReach(u.username)||INV.sent.has(frKey(u.username)));
   // after a no, they can be asked again while they're online
   const rows=list.map(u=>{const st=INV.sent.get(frKey(u.username)),no=st==='no',on=frFree(u.username),al=!on&&frAlerted(u.username);
     return `<div class="fr-row">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${no?'Can\'t play right now':on?frOnTag(u.username):al?'Offline · gets an alert':'Offline or playing'}</small></span>`+
-      (tag[st]||(on||al?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no?' again':''}">${no?'Ask again':'Invite'}</button>`:''))+'</div>'}).join('');
+      (st==='sent'&&soon(frKey(u.username))?tag.sent:st==='sent'&&!on&&!al?tag.sent:(on||al?`<button class="btn small primary" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)}${no||st?' again':''}">${no?'Ask again':st?'Invite again':'Invite'}</button>`:''))+'</div>'}).join('');
   return `<h4>Invite a friend</h4>`+(rows?`<div class="fr-list">${rows}</div>`:'<p class="note">None of your friends are online right now. When one is, or has alerts on, they show up here.</p>');
 }
 document.addEventListener('click',e=>{
@@ -173,7 +177,8 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- an invite comes in ---------- */
-const invKey=i=>frKey(i.from)+'|'+i.code;
+// (at: an invite sent again is a new one, so it shows again even if you closed the first)
+const invKey=i=>frKey(i.from)+'|'+i.code+'|'+(i.at||'');
 function invIn(list){
   list=list.filter(i=>i&&typeof i.from==='string'&&/^[A-Z]{5}$/.test(i.code));
   // taken down by the sender, or it ran out
