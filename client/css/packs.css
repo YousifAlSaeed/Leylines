@@ -9,7 +9,7 @@
 .pk-mini{--w:56px;display:block;flex:none;width:var(--w);height:calc(var(--w)*1.43);border-radius:calc(var(--w)*.16);position:relative;overflow:hidden;
   background:linear-gradient(160deg,var(--p1),var(--p2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 6px 14px rgba(var(--sh),calc(.5*var(--shk)))}
 .pk-mini::before{content:"";position:absolute;left:0;right:0;top:0;height:16%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,transparent 2px 5px);border-bottom:1px dashed rgba(255,255,255,.4)}
-.pk-mini::after{content:"";position:absolute;left:50%;top:56%;width:28%;aspect-ratio:1;transform:translate(-50%,-50%) rotate(45deg);border:2px solid var(--p3);border-radius:3px}
+.pk-mini::after{content:"";position:absolute;left:50%;top:54%;width:52%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--p3);-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
 .t-mythic.pk-mini{background:linear-gradient(160deg,#2a1450,#06030f),conic-gradient(#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);background-blend-mode:screen}
 .pk-mini.big{--w:92px}
 .pk-mini.tiny{--w:12px;border-radius:3px;box-shadow:none;display:inline-block;vertical-align:-3px;margin-right:6px}
@@ -100,7 +100,7 @@
 :root[data-theme="light"] .pk-dim{background:#2a1a5e}
 :root[data-theme="light"] .pk-stage.focus .pk-dim{opacity:.3}
 :root[data-theme="light"] .pk-sum h3{background-image:linear-gradient(180deg,var(--text) 25%,var(--ley-violet-700))}
-:root[data-theme="light"] .pk-pack:focus-visible .pk-body{outline-color:var(--ley-violet-700)}
+:root[data-theme="light"] .pk-pack:focus-visible{outline-color:var(--ley-violet-700)}
 .pk-stage.on{display:block}
 .pk-stage:focus{outline:none}
 .pk-dim{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .5s;pointer-events:none}
@@ -125,29 +125,53 @@
 .pk-pack{--W:min(36vh,62vw);--cap:calc(var(--W)*.17);position:relative;width:var(--W);height:calc(var(--W)*1.45);transform-style:preserve-3d;
   transition:transform .5s var(--ease);cursor:grab;touch-action:none;outline:none}
 .pk-pack.drag{transition:none;cursor:grabbing}
-.pk-pack:focus-visible .pk-body{outline:2px solid #B894FF;outline-offset:4px}
-.pk-body{position:absolute;left:0;right:0;bottom:0;top:var(--cap);border-radius:0 0 18px 18px;overflow:hidden;
-  background:linear-gradient(160deg,var(--p1),var(--p2) 75%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25),0 30px 60px rgba(0,0,0,.6)}
+.pk-pack:focus-visible{outline:2px solid #B894FF;outline-offset:6px;border-radius:6px}
+/* its shadow (the body's own is cut off by its crimped and torn edges) */
+.pk-pack::before{content:"";position:absolute;left:3%;right:3%;bottom:2%;top:var(--cap);z-index:-1;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+/* the body: crimped along the bottom; packs.js cuts its top to the ragged tear line */
+.pk-body{position:absolute;left:0;right:0;bottom:0;top:calc(var(--cap) - 4px);overflow:hidden;
+  background:linear-gradient(160deg,var(--p1),var(--p2) 75%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%}
+.pk-body::after{content:"";position:absolute;left:8px;right:8px;bottom:7px;height:calc(var(--cap)*.32);background:repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 2px,transparent 2px 6px);border-radius:3px}
 .pk-foil{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.7;
   background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.55) 42%,var(--p3) 50%,transparent 62%) var(--fx,50%) 0/260% 100%}
 .t-mythic .pk-foil{mix-blend-mode:color-dodge;opacity:.6;background:linear-gradient(115deg,transparent 20%,#ff8fd0 35%,#ffd76a 45%,#7fe0ff 55%,#b98cff 65%,transparent 80%) var(--fx,50%) 0/260% 100%}
-.pk-grid{position:absolute;inset:14% 16% auto;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);gap:7%;transform:rotate(45deg) scale(.72)}
-.pk-grid i{border-radius:12%;background:rgba(255,255,255,.08);border:1.5px solid color-mix(in srgb,var(--p3) 70%,transparent)}
-.pk-grid i:nth-child(5){background:var(--p3);box-shadow:0 0 22px var(--p3)}
-.pk-grid i:nth-child(1),.pk-grid i:nth-child(9){background:color-mix(in srgb,var(--p3) 35%,transparent)}
+/* the Leylines emblem, kept simple: see-through squares, a small diamond in six, two left empty, the bright one in the middle */
+.pk-grid{position:absolute;inset:16% 24% auto;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8%}
+.pk-grid i{position:relative;border-radius:14%;background:rgba(255,255,255,.07);border:1.5px solid color-mix(in srgb,var(--p3) 65%,transparent)}
+.pk-grid i::after{content:"";position:absolute;left:50%;top:50%;width:25%;aspect-ratio:1;transform:translate(-50%,-50%) rotate(45deg);border-radius:8%;background:color-mix(in srgb,var(--p3) 85%,transparent)}
+.pk-grid i:nth-child(3),.pk-grid i:nth-child(7){background:none;border-color:color-mix(in srgb,var(--p3) 28%,transparent)}
+.pk-grid i:nth-child(3)::after,.pk-grid i:nth-child(7)::after{display:none}
+.pk-grid i:nth-child(5){background:var(--p3);border-color:#fff;box-shadow:0 0 22px var(--p3)}
+.pk-grid i:nth-child(5)::after{width:40%;background:var(--p2)}
 .pk-label{position:absolute;left:0;right:0;bottom:12%;text-align:center}
 .pk-label b{display:block;font:900 calc(var(--W)*.12)/1 var(--display);font-style:italic;font-stretch:115%;letter-spacing:.02em;text-transform:uppercase;
   background:linear-gradient(180deg,#fff 20%,var(--p3));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .pk-label small{display:block;margin-top:6px;font:700 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75)}
 .pk-brand{position:absolute;top:6%;left:0;right:0;text-align:center;font:800 11px/1 var(--display);letter-spacing:.35em;color:rgba(255,255,255,.7)}
-/* the strip you tear: the part coming off and the part still attached */
-.pk-cap{position:absolute;left:0;right:0;top:0;height:calc(var(--cap) + 2px);border-radius:18px 18px 0 0;overflow:hidden;
-  background:linear-gradient(160deg,var(--p1),var(--p2) 400%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25)}
-.pk-cap::before{content:"";position:absolute;inset:6px 10px auto;height:45%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 2px,transparent 2px 6px);border-radius:3px}
-.pk-capA{z-index:3}
-.pk-capB{z-index:2}
-.pk-seam{position:absolute;left:0;right:0;top:var(--cap);height:2px;z-index:4;border-top:2px dashed rgba(255,255,255,.45)}
-.pk-seam i{position:absolute;top:-4px;height:6px;background:#fff;border-radius:3px;box-shadow:0 0 12px 4px var(--leak,#fff),0 0 34px 10px var(--leak,#fff);opacity:0}
+/* the strip you tear, in thin slices (packs.js) so it can curl toward you as it comes off */
+.pk-strip{position:absolute;left:0;top:0;width:100%;height:calc(var(--cap) + 12px);z-index:3;transform-style:preserve-3d;pointer-events:none}
+.pk-sg{position:absolute;top:0;height:100%;overflow:hidden;visibility:hidden}
+.pk-sg.off{visibility:visible}
+/* the part not torn yet is one whole piece, so no hairlines show between the slices */
+.pk-whole,.pk-whole>div{position:absolute;inset:0}
+.pk-strip b{position:absolute;top:0;height:100%;background:linear-gradient(160deg,var(--p1),var(--p2) 400%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);
+  -webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%}
+.pk-strip b::before{content:"";position:absolute;left:8px;right:8px;top:7px;height:calc(var(--cap)*.42);background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 2px,transparent 2px 6px);border-radius:3px}
+.pk-strip b::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;opacity:.7;
+  background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.55) 42%,var(--p3) 50%,transparent 62%) var(--fx,50%) 0/260% 100%}
+.t-mythic .pk-strip b::after{mix-blend-mode:color-dodge;opacity:.6;background:linear-gradient(115deg,transparent 20%,#ff8fd0 35%,#ffd76a 45%,#7fe0ff 55%,#b98cff 65%,transparent 80%) var(--fx,50%) 0/260% 100%}
+/* the inside of the foil, seen once a slice has turned past side-on */
+.pk-sg i{position:absolute;inset:0;display:none;background:linear-gradient(180deg,#eef0f6,#a9afbf 55%,#d9dce6)}
+.pk-sg.bk i{display:block}
+/* the torn white edge, and the shade a slice gets as it turns away from the light */
+.pk-sg u{position:absolute;inset:0;background:#f4f1ff;opacity:0}
+.pk-sg.off u{opacity:1}
+.pk-sg::after{content:"";position:absolute;inset:0;background:#000;opacity:var(--k,0);pointer-events:none}
+/* the torn white edge on the pack: hidden until it tears */
+.pk-lipw{position:absolute;inset:0;z-index:2;pointer-events:none;clip-path:inset(0 100% 0 0)}
+.pk-lip{position:absolute;inset:0;background:linear-gradient(90deg,#fff,#e6dfff 50%,#fff)}
+.pk-seam{position:absolute;left:var(--notch,3px);right:var(--notch,3px);top:var(--cap);height:0;z-index:4;border-top:1px dashed rgba(255,255,255,.35);pointer-events:none}
 .pk-leak{position:absolute;left:5%;right:5%;top:calc(var(--cap) - 30px);height:60px;border-radius:50%;background:var(--leak,#fff);filter:blur(24px);opacity:0}
 /* a 5★ inside: the light from the tear is the prism */
 .pk-stage.best5 .pk-leak{background:var(--prism)}
@@ -163,7 +187,7 @@
 .pk-front{transform:rotateY(180deg)}
 .pk-back{overflow:hidden;background:radial-gradient(circle at 50% 45%,#3a2a8a,#140C33 70%);box-shadow:inset 0 0 0 .06em rgba(184,148,255,.5),0 .3em .8em rgba(0,0,0,.6)}
 .pk-back::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(184,148,255,.07) 0 .2em,transparent .2em .4em)}
-.pk-back::after{content:"";position:absolute;left:50%;top:50%;width:1.3em;height:1.3em;margin:-.65em;transform:rotate(45deg);border:.1em solid #B894FF;border-radius:.2em;box-shadow:0 0 .5em #8B6CFF}
+.pk-back::after{content:"";position:absolute;left:50%;top:50%;width:2.6em;height:2.6em;margin:-1.3em;background:#B894FF;-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
 /* the build-up: the back glows in the card's rarity colour, then it flips */
 .pk-flip.tease .pk-back{animation:pkTease var(--td,.6s) ease-in both}
 .pk-flip.tease{animation:pkWobble var(--td,.6s) ease-in both}

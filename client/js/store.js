@@ -92,7 +92,7 @@ function buyCard(i){
       const s2=shopDay();
       if(s2.at!==s.at||s2.got[i]!=null||SAVE.shards<it.price){renderStore();return}
       const fresh=!SAVE.seen.includes(it.id);
-      SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();
+      SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();earnNow('shop');
       sfx('win');renderStore();renderStoreTile();
       toast(`${c.name} added to your collection${fresh?' (new!)':''}.`);freshToast();
     }},{label:'Cancel',esc:true}]);
@@ -112,7 +112,7 @@ function buyPack(t,deal){
       if(SAVE.shards<price)return;
       if(s){const s2=shopDay();if(s2.at!==s.at||deal&&s2.got.deal||myth&&s2.myth>=MYTHIC_WEEK){renderStore();return}
         if(deal)s2.got.deal=1;if(myth)s2.myth++}
-      SAVE.shards-=price;SAVE.packs.push({t,src:'shop'});save();
+      SAVE.shards-=price;SAVE.packs.push({t,src:'shop'});save();earnNow('shop');
       renderStore();renderStoreTile();openPack(SAVE.packs.length-1);
     }},{label:'Cancel',esc:true}]);
 }

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 196 196" width="196" height="196">
+<!-- the Leylines emblem in one colour, used as a mask (card backs, small packs): the shapes' opacity is all that counts -->
+<g fill="#fff" fill-opacity="0.14" stroke="#fff" stroke-opacity="0.8" stroke-width="4">
+<rect x="26" y="26" width="56" height="56" rx="8"/>
+<rect x="92" y="26" width="56" height="56" rx="8"/>
+<rect x="26" y="92" width="56" height="56" rx="8"/>
+<rect x="158" y="92" width="56" height="56" rx="8"/>
+<rect x="92" y="158" width="56" height="56" rx="8"/>
+<rect x="158" y="158" width="56" height="56" rx="8"/>
+</g>
+<g fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="4">
+<rect x="158" y="26" width="56" height="56" rx="8"/>
+<rect x="26" y="158" width="56" height="56" rx="8"/>
+</g>
+<g fill="#fff" fill-opacity="0.9">
+<polygon points="54,44 64,54 54,64 44,54"/>
+<polygon points="120,44 130,54 120,64 110,54"/>
+<polygon points="54,110 64,120 54,130 44,120"/>
+<polygon points="186,110 196,120 186,130 176,120"/>
+<polygon points="120,176 130,186 120,196 110,186"/>
+<polygon points="186,176 196,186 186,196 176,186"/>
+</g>
+<path fill="#fff" fill-rule="evenodd" d="M100 92H140A8 8 0 0 1 148 100V140A8 8 0 0 1 140 148H100A8 8 0 0 1 92 140V100A8 8 0 0 1 100 92ZM120 104L136 120L120 136L104 120Z"/>
+</svg>

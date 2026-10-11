@@ -17,6 +17,8 @@ const DUO={role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),sea
   snap:null,snapAt:0,tok:'',hostLast:0,hostAway:false,hostAwayAt:0,retryT:0,joinT:0,
   // both: the picked hand card, a move sent and not answered yet, the last move animated, the result shown, picking a deck
   sel:null,pending:false,shownN:-1,resultV:-1,picking:false,
+  // the host's list of the match's moves, [card, square], sent with the result for the Review; the Review on screen (review.js)
+  moves:[],rv:null,
   // the move animations (duoPump): snapshots waiting to play, the board on screen, the last queued move, a playing flag, a stop counter
   animQ:[],boardSt:null,qN:-1,animating:false,gen:0};
 const DUO_HOST_KEY='leylines-duo-host',DUO_RJ_KEY='leylines-duo-rejoin',DUO_RULES_KEY='leylines-duo-rules';
@@ -194,14 +196,14 @@ function duoStart(){
 function duoBegin(){
   const rng=mulberry32(DUO.seed);
   DUO.st=duoNew(DUO.decks,Math.floor(rng()*4),duoElements(DUO.rules,rng));
-  DUO.phase='play';DUO.last=null;DUO.turnN=-1;
+  DUO.phase='play';DUO.last=null;DUO.turnN=-1;DUO.moves=[];
   duoChanged();
 }
 const duoLegal=(hi,cell)=>Number.isInteger(hi)&&Number.isInteger(cell)&&hi>=0&&hi<DUO.st.h[DUO.st.turn].length&&cell>=0&&cell<16&&DUO.st.b[cell]<0;
 function duoApply(hi,cell){
   const st=DUO.st,p=st.turn,id=st.h[p][hi],ev=[];
   duoPlay(st,DUO.rules,hi,cell,ev);
-  DUO.last={n:st.n,p,cell,id,ev};
+  DUO.last={n:st.n,p,cell,id,ev};DUO.moves.push([id,cell]);
   if(duoFull(st))DUO.phase='over';
   duoChanged();
 }
@@ -255,7 +257,9 @@ function duoSnap(i){
       left:s.away&&!s.bot?Math.max(0,Math.ceil((s.awayAt+DUO_GRACE*1000-now)/1000)):0,deck:!!DUO.decks[k],host:k===DUO.me})),
     // the turn timer only runs for a player who's here (a dropped player's minute is the countdown above)
     timeLeft:DUO.phase==='play'&&DUO.rules.timer&&DUO.turnN===(DUO.st&&DUO.st.n)&&!DUO.seats[DUO.st.turn].away?Math.max(0,DUO.turnEnd-now):0,
-    online:!!(DUO.peer&&DUO.peer.open)};
+    online:!!(DUO.peer&&DUO.peer.open),
+    // the whole match, once it's over, for the Review
+    rev:DUO.phase==='over'?DUO.moves:null};
 }
 function duoBroadcast(){
   if(DUO.role!=='host')return;
@@ -378,7 +382,7 @@ function duoQuit(){
   const shut=()=>{conns.forEach(c=>{try{c.close()}catch(e){}});try{conn&&conn.close()}catch(e){}try{peer&&peer.destroy()}catch(e){}};
   if(told)setTimeout(shut,400);else shut();
   Object.assign(DUO,{role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),seats:[],st:null,last:null,phase:'room',snap:null,hostAway:false,
-    sel:null,pending:false,shownN:-1,resultV:-1,picking:false,deckSent:false,turnN:-1,animQ:[],boardSt:null,qN:-1,animating:false});
+    sel:null,pending:false,shownN:-1,resultV:-1,picking:false,deckSent:false,turnN:-1,animQ:[],boardSt:null,qN:-1,animating:false,moves:[]});
   DUO.gen++;if(INV.code&&!NET.role)invCancel(); // a hosted room's invites go down with it (pulse.js)
   $('#duoNet')&&$('#duoNet').classList.add('hidden');
 }
@@ -454,7 +458,7 @@ async function duoPump(){
   if(S&&S.phase==='over'&&DUO.resultV<0){DUO.resultV=S.v;setTimeout(duoResult,700)}
 }
 async function duoAnimMove(S,prev){
-  const L=S.last,p=L.p,gen=DUO.gen,col=duoCol(S,p),st=duoClone(prev);
+  const L=S.last,p=L.p,gen=DUO.gen,st=duoClone(prev);
   st.h[p]=st.h[p].slice(0,-1); // the card leaves its hand (only the count matters for the score)
   st.b[L.cell]=L.id;st.o[L.cell]=p;st.m[L.cell]=S.st.m[L.cell];
   duoDrawBoard(S,st,{drop:L.cell});duoScoreRow(S,st);sfx('place');
@@ -463,21 +467,27 @@ async function duoAnimMove(S,prev){
     if(DUO.gen!==gen||!duoOn('duo'))return;
     if(e.t==='seal'){e.cells.forEach(c=>st.k[c]=1);duoDrawBoard(S,st,{seal:e.cells});await banner('Ley line!');continue}
     if(e.t!=='basic'){await banner({same:'Same!',plus:'Plus!',combo:'Combo!'}[e.t]);if(DUO.gen!==gen)return}
-    sfx('flip');
-    for(const c of e.cells){
-      st.o[c]=p;
-      const card=DUO_CELLS[c].querySelector('.card');if(!card)continue;
-      card.classList.remove('fx','fy','drop');void card.offsetWidth;
-      card.classList.add((c>>2)===(L.cell>>2)?'fy':'fx');
-      // the colour turns halfway through the flip
-      setTimeout(()=>{card.classList.remove(...DUO_COLS);card.classList.add(col)},230);
-    }
-    setTimeout(()=>{if(DUO.gen===gen)duoScoreRow(S,st)},230);
+    duoFlip(S,st,e.cells,p,L.cell,()=>DUO.gen===gen);
     await wait(560);
   }
 }
+// seat p's card on square `from` flips these squares: each card turns over and takes p's colour, then the scores follow.
+// ok: still the same move on screen (the Review uses this too, review.js)
+function duoFlip(S,st,cells,p,from,ok){
+  const col=duoCol(S,p);
+  sfx('flip');
+  for(const c of cells){
+    st.o[c]=p;
+    const card=DUO_CELLS[c].querySelector('.card');if(!card)continue;
+    card.classList.remove('fx','fy','drop');void card.offsetWidth;
+    card.classList.add((c>>2)===(from>>2)?'fy':'fx');
+    // the colour turns halfway through the flip
+    setTimeout(()=>{card.classList.remove(...DUO_COLS);card.classList.add(col)},230);
+  }
+  setTimeout(()=>{if(ok())duoScoreRow(S,st)},230);
+}
 // the 16 squares for board state st. A square is only rebuilt when it changed, so nothing interrupts a card
-// that is still turning; o.drop: the square whose card drops in; o.seal: squares that just sealed
+// that is still turning; o.drop: the square whose card drops in; o.seal: squares that just sealed; o.last: the Review's move
 function duoDrawBoard(S,st,o={}){
   const me=S.you,can=duoMyTurn();
   for(let i=0;i<16;i++){
@@ -487,7 +497,7 @@ function duoDrawBoard(S,st,o={}){
     const html=st.b[i]>=0?el+cardHTML(st.b[i],duoCol(S,st.o[i]),{mod:st.m[i],cls:i===o.drop?'drop':'',name:false}):el;
     if(c.dataset.h!==html){c.innerHTML=html;c.dataset.h=html}
     const hot=can&&DUO.sel!=null&&st.b[i]<0;
-    c.className='cell'+(hot?' hot':'')+(st.k[i]?' sealed':'')+(o.seal&&o.seal.includes(i)?' seal-new':'');
+    c.className='cell'+(hot?' hot':'')+(st.k[i]?' sealed':'')+(o.seal&&o.seal.includes(i)?' seal-new':'')+(i===o.last?' rv-last':'');
     c.setAttribute('aria-label',`Row ${(i>>2)+1}, column ${i%4+1}: `+(st.b[i]>=0?`${CARDS[st.b[i]].name}, ${S.rules.ffa?(st.o[i]===me?'yours':duoSeatName(S.seats[st.o[i]])+"'s"):duoTeam(st.o[i])===duoTeam(me)?'your team':'other team'}${st.k[i]?', sealed':''}`:'empty'));
   }
 }
@@ -667,7 +677,7 @@ window.addEventListener('pointercancel',e=>duoDragEnd(e,true));
 function duoAv(s){return s.kind==='cpu'?'🤖':s.av!=null?CARDS[s.av].art:esc((s.name||'?')[0].toUpperCase())}
 // k: the player's corner on PC (body.pc, like 4-player chess): tl top player, tr right, bl left, br you
 function duoPname(S,i,where,k){
-  const s=S.seats[i],st=S.st,turn=st&&S.phase==='play'&&st.turn===i,shown=DUO.boardSt||st;
+  const s=S.seats[i],st=S.st,turn=st&&S.phase==='play'&&st.turn===i,shown=DUO.rv?DUO.rv.st:DUO.boardSt||st;
   const status=s.kind==='cpu'?'':s.bot?'CPU is playing':s.away?`Away · ${fmtLeft(s.left)}`:
     S.phase==='decks'&&!s.deck?'Choosing cards…':i===S.you?'You':!S.rules.ffa&&duoTeam(i)===duoTeam(S.you)?'Partner':'';
   return `<div class="dname dn-${where} dk-${k} dc-${duoCol(S,i)}${turn?' dactive':''}${s.away&&!s.bot?' daway':''}" data-q="${i}">`+
@@ -698,7 +708,10 @@ function duoRender(){
   $('#duoRight').innerHTML=duoPname(S,Rr,'side','tr')+duoHandHTML(S,Rr,'side');
   $('#duoMe').innerHTML=duoPname(S,me,'me','br');
   // the board: while a move plays, duoAnimMove draws it; otherwise the board on screen (or the latest)
-  if(!DUO.animating)duoDrawBoard(S,DUO.boardSt||st);
+  // (a Review keeps its own position on the board, review.js)
+  const rv=DUO.rv;
+  if(rv)duoDrawBoard(S,rv.st,{last:rv.cell});
+  else if(!DUO.animating)duoDrawBoard(S,DUO.boardSt||st);
   // your hand
   const can=duoMyTurn();
   if(DUO.sel!=null&&(!can||DUO.sel>=st.h[me].length))DUO.sel=null;
@@ -706,10 +719,11 @@ function duoRender(){
     attrs:`data-i="${i}"`+(can?` role="button" aria-pressed="${DUO.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join(''):'';
   $$('#duoHand .card.play').forEach(c=>c.addEventListener('pointerdown',duoHandDown));
   // scores (from the board on screen, so they follow the animation) and whose turn
-  if(!DUO.animating)duoScoreRow(S,DUO.boardSt||st);
+  if(rv)duoScoreRow(S,rv.st);
+  else if(!DUO.animating)duoScoreRow(S,DUO.boardSt||st);
   let msg;
   if(S.phase==='decks'){const w=S.seats.filter(s=>!s.deck).map(s=>s.name||'CPU');msg=w.length?`Waiting for ${w.join(', ')} to choose cards…`:'Starting…'}
-  else if(S.phase==='over')msg='Match over';
+  else if(S.phase==='over')msg=rv?'Review':'Match over';
   else if(st.turn===me)msg=DUO.pending?'Sending…':'Your turn';
   else{const s=S.seats[st.turn];msg=s.kind==='cpu'||s.bot?`${s.kind==='cpu'?'CPU':esc(s.name)+"'s CPU"} is thinking…`:s.away?`Waiting for ${esc(s.name)}…`:`${esc(s.name)}'s turn`}
   $('#duoTurn').textContent=msg;
@@ -717,6 +731,7 @@ function duoRender(){
   $('#duoRules').innerHTML=[`<span>${duoMode(R)}</span>`,...DUO_RULES.filter(([k])=>R[k]).map(r=>`<span>${r[1]}</span>`),R.timer?`<span>⏱ ${R.timer}s</span>`:'','<span>No trades</span>'].join('');
   duoNetBar();duoTimerBar();
   if(DUO.fitKey!==duoFitKey())duoFit();
+  if(rv)duoRevPlace();
 }
 // the turn timer bar, counted down from the host's last word
 let duoTbT=0;
@@ -748,19 +763,20 @@ function duoNetBar(){
   }
   el.innerHTML=t;el.classList.toggle('hidden',!t);
 }
-function duoResult(){
+// quiet: coming back from the Review, so no win or lose sound again
+function duoResult(quiet){
   const S=DUO.snap;if(!S||S.phase!=='over')return;
   const st=S.st,me=S.you,R=S.rules;
   // Back to room takes the whole table back (the host's device runs the room), for a rematch or new rules
   const back=()=>{if(DUO.role==='host'){duoBackToRoom();return}
     duoSend({t:'back'});const b=$('#modal .mbtns .btn.primary');if(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Going back…'}};
-  const btns=[{label:'Back to room',cls:'primary',keep:DUO.role!=='host',fn:back},{label:'Leave',fn:duoLeave}];
+  const btns=[{label:'Back to room',cls:'primary',keep:DUO.role!=='host',fn:back},...(duoRevOk(S)?[{label:'Review',fn:duoRevOpen}]:[]),{label:'Leave',fn:duoLeave}];
   const foot=`<p class="note">Crossroads is being tested: no cards change hands${DUO_REWARDS?'':', and it pays no XP or shards yet'}.</p>`;
   if(R.ffa){
     // places 1st to 4th; tied players share one
     const pts=[0,1,2,3].map(q=>duoPts(st,R,q)),pl=duoPlaces(pts),mine=pl[me],shared=pl.filter(x=>x===mine).length>1;
     const ord=['1st','2nd','3rd','4th'];
-    sfx(mine===1?'win':'lose');
+    if(quiet!==true)sfx(mine===1?'win':'lose');
     modal(`<div class="kick">Crossroads · Free-for-all</div><h2>${shared?'Shared ':'You finish '}${ord[mine-1]}</h2>`+
       `<ol class="dplaces">${[0,1,2,3].sort((x,y)=>pl[x]-pl[y]||(x-me+4)%4-(y-me+4)%4).map(q=>
         `<li class="dc-${duoCol(S,q)}${q===me?' dme':''}"><b>${ord[pl[q]-1]}</b><span>${q===me?'You':esc(duoSeatName(S.seats[q]))}</span><em>${pts[q]}</em></li>`).join('')}</ol>`+foot,btns);
@@ -768,7 +784,7 @@ function duoResult(){
   }
   const a=duoScore(st,duoTeam(me)),b=duoScore(st,1-duoTeam(me));
   const partner=S.seats[(me+2)%4],opp=[S.seats[(me+1)%4],S.seats[(me+3)%4]];
-  sfx(a>b?'win':a<b?'lose':'draw');
+  if(quiet!==true)sfx(a>b?'win':a<b?'lose':'draw');
   modal(`<div class="kick">Crossroads · 2v2</div><h2>${a>b?'Your team wins':a<b?'Your team loses':'Draw'}</h2>`+
     `<div class="bigscore"><span class="b">${a}</span> – <span class="r">${b}</span></div>`+
     `<p>You and <b>${esc(duoSeatName(partner))}</b> vs ${opp.map(s=>`<b>${esc(duoSeatName(s))}</b>`).join(' and ')}</p>`+foot,btns);
@@ -823,7 +839,7 @@ function duoFitPC(el,ui){
 }
 // refit when the window changes, or when the hands first appear (they take room)
 const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}:${document.body.classList.contains('pc')}`;
-addEventListener('resize',()=>{if(duoOn('duo'))duoFit()});
+addEventListener('resize',()=>{if(duoOn('duo')){duoFit();if(DUO.rv)requestAnimationFrame(duoRevPlace)}});
 
 /* ---------- buttons ---------- */
 $('#duoRoomBack').onclick=()=>{sfx('click');duoLeave()};

@@ -274,13 +274,15 @@ function acctStatus(){
 function renderProfile(){
   const el=$('#pcard');if(!el)return;
   const u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up,lv=levelOf(SAVE.xp),name=u?u.displayName:profName();
-  el.innerHTML=avatar(u)+
+  // a dot in the corner, like the Daily tab's: badges with shards waiting on your profile
+  const wait=toClaim().length;
+  el.innerHTML=(wait?'<span class="pc-dot" aria-hidden="true"></span>':'')+avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
     // your shards in the corner, and for a guest who could sign up, a button under them
     `<span class="pc-side"><span class="pc-sh" id="pcShards">${shd()}${fmtSh(SAVE.shards)}</span>`+
     (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'')+'</span>';
-  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}. ${acctStatus()}. Open profile.`);
+  el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}.${wait?` ${plural(wait,'badge')} to claim.`:''} ${acctStatus()}. Open profile.`);
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
   renderGuestNote();

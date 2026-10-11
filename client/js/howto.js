@@ -131,7 +131,7 @@ const HOW=[
   list:['<b>Elemental</b>Some squares have an element. A card of that element gets +1 on every side. Any other card gets −1.',
     '<b>Same wall</b>With Same on, the board edge counts as X. An X facing the edge plus 1 match is enough.']},
  {tab:'Match',tag:'Other rules',title:'The match',more:true,
-  list:['<b>Turn timer</b>Run out of time and a random card is played for you.',
+  list:['<b>Timer</b>Per turn, or a bank for the whole match (+2s a card). Run out: a random card, or you lose.',
     '<b>Series</b>Best of 3 or 5 with the same cards. Who goes first swaps each match. A draw counts for nobody.']},
  {tab:'Trade',tag:'Other rules',title:'Win cards, lose cards',more:true,
   list:['<b>None</b>A friendly match. No cards change hands.','<b>One</b>The winner takes 1 card they pick.',

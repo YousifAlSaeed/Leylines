@@ -39,6 +39,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .rc.on .em{background:rgba(255,255,255,.25);border-color:rgba(0,0,0,.22)}
 .rc.on::after{content:"✓";position:absolute;top:6px;right:9px;font:900 12px var(--display)}
 .rc.dim{opacity:.42}
+/* what the rule does, inside its card: only on wide screens (phones have the box under the cards) */
+.rc .rd{display:none}
 /* Sweep with no trade rule: can't be turned on (setup.js sweepBlock) */
 .rc.off{opacity:.42;cursor:default;border-style:dashed}
 .rc.off:hover,.rc.off:active{transform:none}
@@ -51,12 +53,41 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .tc{border-radius:12px;padding:8px 4px;border:1px solid var(--line);background:var(--surf);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:border-color .18s,box-shadow .18s}
 .tc .n{font:900 20px/1 var(--display);color:var(--accent-ink)} .tc small{font-size:11.5px;color:var(--muted)}
 .sgrid{grid-template-columns:repeat(3,1fr)}
+/* the match settings: one row each, showing what's picked; tap a row to open its choices (one at a time) */
+.s-left{display:flex;flex-direction:column;gap:16px}
+.s-opts{display:flex;flex-direction:column;gap:8px}
+.s-opts h3{margin-bottom:0}
+#tradeWarn{margin:2px 4px 0}
+.srow{border:1px solid var(--line);border-radius:16px;background:var(--surf);transition:border-color .2s,box-shadow .2s}
+.srow.open{border-color:var(--line2);box-shadow:0 12px 30px -18px var(--accent-glow)}
+.srh{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:54px;border:0;background:none;border-radius:16px;cursor:pointer;text-align:left}
+.srh svg{width:20px;height:20px;flex:none;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.srh b{font:700 15.5px var(--display)}
+.srh .val{margin-left:auto;font:700 14px var(--display);color:var(--accent-ink);text-align:right}
+.srh .val.off{color:var(--muted)}
+.srh .chev{width:12px;text-align:center;font-size:17px;line-height:1;color:var(--muted);transition:transform .25s var(--ease)}
+.srow.open .chev{transform:rotate(90deg)}
+.srb{display:none;padding:0 14px 14px}
+.srow.open .srb{display:block}
+.srb .dc,.srb .tc{background:var(--surf2)}
+.srb .note{margin:10px 2px 0}
+.srb .trow{border:0;background:none;padding:6px 2px 0;margin-top:4px}
+.srb .trow[hidden],.flagrow[hidden]{display:none}
+.kgrid{grid-template-columns:repeat(2,1fr)} .k3{grid-template-columns:repeat(3,1fr)}
+.tc .k{font:800 15px/1.2 var(--display);color:var(--accent-ink)}
+.flagrow{margin-top:10px} .flagrow>b{display:block;font:600 12px var(--body);color:var(--muted);margin:0 0 6px 2px}
 @media (min-width:920px) and (min-height:560px){
   #scr-setup{justify-content:center}
   #scr-setup .topbar{max-width:1100px}
-  .setup{max-width:1100px;display:grid;grid-template-columns:1fr 1.3fr;grid-template-areas:"diff rules" "room rules" "series rules" "trade rules" "note rules" "foot foot";grid-template-rows:auto auto auto auto 1fr auto;column-gap:44px;row-gap:0;align-items:start}
-  .setup .s-diff{grid-area:diff} .setup .s-rules{grid-area:rules} .setup .s-room{grid-area:room} .setup .s-series{grid-area:series} .setup .s-trade{grid-area:trade} .setup #setupNote{grid-area:note} .setup .setup-foot{grid-area:foot}
-  .setup .s-diff,.setup .s-room,.setup .s-series,.setup .s-trade{margin-bottom:20px}
+  .setup{max-width:1100px;display:grid;grid-template-columns:1fr 1.3fr;grid-template-areas:"left rules" "left foot" "left note";grid-template-rows:auto auto 1fr;column-gap:44px;row-gap:0;align-items:start}
+  .setup .s-left{grid-area:left;gap:20px} .setup .s-rules{grid-area:rules} .setup #setupNote{grid-area:note} .setup .setup-foot{grid-area:foot}
+  /* the rows keep their size and open downwards; the rule cards keep theirs, whatever the left side does.
+     The rows take no height in the layout, so opening one never moves the rules or the button (it just hangs lower) */
+  .setup .s-left{height:0}
+  .setup .rc{aspect-ratio:auto;height:146px;padding:12px 10px;gap:8px}
+  .setup .rc .rd{display:block;font:500 12px/1.35 var(--body);opacity:.85;max-width:15em;text-wrap:balance}
+  .setup .rinfo{display:none}
+  .setup #setupNote{margin:14px 0 0}
   .setup .setup-foot{margin-top:20px}
   .setup .rc b{font-size:14px}
   .setup .rgrid{grid-template-columns:repeat(4,minmax(0,1fr))}

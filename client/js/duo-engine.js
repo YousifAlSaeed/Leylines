@@ -110,6 +110,21 @@ function duoPlay(s,R,hi,cell,ev){
   s.n++;s.turn=duoTurnAt(s,R,s.n);
 }
 
+/* ---------- the Review after a match (review.js) ---------- */
+// moves: every [card, square] of a finished match, in the order played. The board after the first k of them, and what
+// the last of those did. Each hand is rebuilt from the cards its seat played, plus the one it kept (-1: only its count matters)
+function duoRevAt(first,el,moves,R,k){
+  const st=duoNew([0,1,2,3].map(q=>moves.filter((_,i)=>(first+i)%4===q).map(m=>m[0]).concat(-1)),first,el);
+  let last=null;
+  for(let i=0;i<k;i++){
+    const[id,cell]=moves[i];
+    if(i<k-1){duoPlay(st,R,0,cell);continue}
+    const pre=duoClone(st),p=st.turn,ev=[];
+    duoPlay(st,R,0,cell,ev);last={pre,p,id,cell,ev};
+  }
+  return{st,last};
+}
+
 /* ---------- CPU ---------- */
 // what a seat may know: its own hand (and its partner's in 2v2); everyone else's only with Open (else average stand-ins)
 function duoView(s,R,p){

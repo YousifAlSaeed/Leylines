@@ -4,6 +4,7 @@
    ===================================================================== */
 function show(id){
   if(id!=='game'){tutClear();revClear()} // leaving ends a tutorial lesson or a Review
+  if(id!=='duo')duoRevClear(); // and a Crossroads Review
   // the main menu always ends any match in progress, so its timer and the CPU can't keep playing behind it
   if(id==='menu'&&G){if(G.mode==='online'){clearRejoin();netClose(true)}G=null;stopTurnTimer()}
   if(id==='menu'&&DUO.role)duoQuit(); // and a 2v2 room (duo.js)

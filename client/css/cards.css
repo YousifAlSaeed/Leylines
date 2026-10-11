@@ -43,7 +43,8 @@
 .card.nn .rchip{bottom:.6em}
 .card.back .rf,.card.back .rchip{display:none}
 .card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
-.card.back::after{content:"";position:absolute;inset:28% 30%;border:.1em solid var(--accent);transform:rotate(45deg);border-radius:.15em;opacity:.75}
+/* the back: the Leylines emblem */
+.card.back::after{content:"";position:absolute;left:50%;top:50%;width:54%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--accent);-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
 .card.back i{display:none}
 .card.unknown{background:var(--surf);box-shadow:inset 0 0 0 .05em var(--line2)}
 .card.unknown i{position:absolute;inset:0;display:grid;place-items:center;font:900 2em var(--display);color:var(--muted);opacity:.45;font-style:normal}

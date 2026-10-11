@@ -21,6 +21,7 @@ body.land .ttag.on{display:none}
 .timer .trk{stroke:rgba(var(--tint),.12)}
 .timer .prog{stroke:var(--tc);stroke-linecap:round;stroke-dasharray:106.8;stroke-dashoffset:0;transition:stroke .3s}
 .timer span{position:absolute;inset:0;display:grid;place-items:center;font:800 12px/1 var(--display);color:var(--text)}
+.timer.bank span{font-size:9.5px;letter-spacing:-.02em}
 .timer.warn{--tc:var(--warn)}
 .timer.crit{--tc:var(--crit);animation:tpulse 1s ease-in-out infinite}
 .timer.crit span{color:var(--crit)}

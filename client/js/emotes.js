@@ -42,7 +42,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#emoteTray').cl
 
 function sendEmote(i){
   if(!emoteOn()||Date.now()<EMO.cool)return;
-  closeEmotes();showEmote('me',i);
+  closeEmotes();showEmote('me',i);earnNow('emote');
   if(G.mode==='online')netSend({t:'emote',i});
   else cpuReply(i);
   const now=Date.now();

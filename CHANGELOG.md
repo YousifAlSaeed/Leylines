@@ -6,10 +6,46 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
-## 0.19.19 (2026-10-10)
+## 0.22.5 (2026-10-11)
 - New sound effects everywhere: wooden taps, paper, harp notes and soft chimes instead of beeps
 - Opening packs and browsing your Collection now have their own sounds, and rarer cards get a bigger reveal
 - Picking up a card from your hand in a match makes a sound
+
+## 0.22.4 (2026-10-11)
+- Opening a pack feels real now: the strip tears along a ragged line and curls up toward you as you pull. Let go halfway and the tear stays, so you can carry on. Packs have crimped edges and a little notch on each side to start the tear, like real foil packs
+- Packs and card backs now show the new Leylines logo
+
+## 0.22.3 (2026-10-10)
+- Review: a move with a Combo takes two steps now. The move shows its Same or Plus numbers, then a half step (6.5) shows the Combo's flips, in 1v1 and Crossroads
+- Review: the number tags of the step on screen all stay bright
+
+## 0.22.2 (2026-10-10)
+- Review tags read the way the cards sit: when the other card is on the left, its number comes first (4 ‹ 6, 2 + 1 = 3), in 1v1 and Crossroads
+
+## 0.22.1 (2026-10-10)
+- Crossroads has the Review now: after a 2v2 or Free-for-all match, tap Review on the result to step through all 16 moves on the board, with who played what and why cards flipped
+
+## 0.22.0 (2026-10-10)
+- New Bank timer, like a chess clock: each player gets 1 to 5 minutes for the whole match, and every card you play adds 2 seconds back. Choose what running out does: a random card is played for you, or you lose the match
+- The per-turn timer has the same choice now: a random card, or you lose the match
+- Match setup is simpler: Difficulty, Timer, Match length and Trade are now short rows that show what is picked. Tap a row to change it. The timer can be Off, Per turn or Bank
+- On a computer, the rule cards in Match setup are bigger and line up with the boxes on the left, and each card says what its rule does
+
+## 0.21.1 (2026-10-10)
+- Badges on your profile are now a card for each group, with a dot where shards wait and a gold frame once a group is complete. Tap a group to see its badges: what each one takes, how close you are, and a Claim button for the ones whose shards wait
+- Profile order: on a computer, Badges sits on the right and Account on the left. On a phone: Showcase, Record, History, Collection, Badges, Account
+
+## 0.21.0 (2026-10-10)
+- Badges reworked: 51 badges in 10 groups (25 new ones for the tutorial, packs, friends, emotes, series, the Reverse, Chaos and Random rules, Trade: All, Win them back, the dailies, the Store and higher levels)
+- Every badge now pays shards: Bronze 20, Silver 50, Gold 120, Prism 300. Earned badges glow on your profile: tap one to claim its shards. Badges you already had can be claimed too
+- A dot on your profile box shows when badges have shards waiting
+- Tap a badge you don't have yet to see how close you are (like 11/50)
+
+## 0.20.0 (2026-10-10)
+- New: **Win them back**. When the CPU takes your cards in Solo, you can play it again right away. It swaps its weakest cards for the ones it took, so you can win them back. Win and the trade rule says how many of them you take back (only your own cards). Lose and it takes more
+- With Trade One or Diff, a second loss gives you a **Last chance**: the CPU holds every card it took. Win and they all come back. Lose and it takes that many more. With Diff there's no Last chance if that's more than 5 cards
+- With Trade All you get one try: win and all 5 come back, lose and it takes 5 more
+- A draw on a try lets you play it again for the same cards
 
 ## 0.19.18 (2026-10-10)
 - Fixed: on a phone, the Daily Puzzle's goal and the Review's notes could cover the numbers on the board's top row. They now always end just above the board

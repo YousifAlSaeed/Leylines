@@ -19,7 +19,7 @@ function frLoad(){
   // asked again while a check is out: that answer may be from before the change, so check once more after it
   if(FR.loading){FR.again=true;return FR.loading}
   FR.loading=api('/friends')
-    .then(r=>{Object.assign(FR,{friends:r.friends,incoming:r.incoming,outgoing:r.outgoing,loaded:true});frChanged()})
+    .then(r=>{Object.assign(FR,{friends:r.friends,incoming:r.incoming,outgoing:r.outgoing,loaded:true});frChanged();if(FR.friends.length)earnNow('friend')})
     .catch(e=>{if(e.status===401)acctSignedOut('Your session ended. Sign in again.');else if(!FR.loaded)renderFriends()})
     .finally(()=>{FR.loading=null;if(FR.again){FR.again=false;frLoad()}});
   return FR.loading;

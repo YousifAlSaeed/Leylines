@@ -442,7 +442,7 @@ function beginOnline(cfg){
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
 function validDeck(ids){return Array.isArray(ids)&&ids.length===5&&ids.every(i=>Number.isInteger(i)&&i>=0&&i<CARDS.length)}
 // rules from the host, with anything missing or odd replaced by a safe value
-function netRules(m){const r={...defSave().rules,...(m.rules&&typeof m.rules==='object'?m.rules:{})};r.timer=timerSec(r.timer);return r}
+function netRules(m){const r={...defSave().rules,...(m.rules&&typeof m.rules==='object'?m.rules:{})};return normTimer(r)}
 // the host's trade rule; none with a guest in, whatever the host sent
 const netTrade=t=>TRADES.some(x=>x[0]===t)&&!guestIn()?t:'none';
 function onNet(m){
@@ -521,6 +521,9 @@ function pump(){
   if(!G||G.mode!=='online'||G.busy||G.over||!G.st)return;
   if(G.st.turn===G.me||!G.inbox.length)return;
   const m=G.inbox.shift(),st=G.st;
+  // their time ran out with "You lose" on (match.js outOfTime)
+  if(m.flag){if(G.rules.flag==='lose')outOfTime(st.turn);return}
   if(!Number.isInteger(m.hi)||!Number.isInteger(m.cell)||m.hi<0||m.hi>=st.h[st.turn].length||m.cell<0||m.cell>8||st.b[m.cell]>=0||(G.forced!=null&&m.hi!==G.forced))return pump();
+  if(G.bank&&Number.isFinite(m.bk))G.netBk=Math.max(0,m.bk);
   execMove(m.hi,m.cell);
 }
