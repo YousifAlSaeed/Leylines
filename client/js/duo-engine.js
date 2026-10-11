@@ -18,24 +18,48 @@ const duoTurnAt=(s,R,n)=>(s.first+n)%4;
 const DNB=[...Array(16)].map((_,i)=>[i>=4?i-4:-1,i%4<3?i+1:-1,i<12?i+4:-1,i%4>0?i-1:-1]);
 // the rows and columns: a Ley line is one of them filled by one team
 const DUO_LINES=[0,1,2,3].flatMap(k=>[[0,1,2,3].map(c=>k*4+c),[0,1,2,3].map(r=>r*4+k)]);
-// the rules a 2v2 room can turn on (no trades, series, sudden death, Chaos or Three open for now)
+// the rules a Crossroads room can turn on: the same cards as 1v1 (data.js RULES) in the same order, with Ley lines
+// where 1v1 has Sweep (no cards change hands here)
 const DUO_RULES=[
-  ['leyLines','Ley lines','Fill a whole row or column with your cards (your team\'s, in 2v2) and it seals: those 4 cards can\'t be flipped again.'],
   ['open','Open','Every hand is played face up. In 2v2 your partner\'s hand is always face up for you.'],
-  ['random','Random','Your 5 cards are dealt at random from your collection.'],
+  ['threeOpen','Three open','3 random cards in each hand are face up for everyone. The other 2 stay hidden.'],
   ['same','Same','Two or more sides equal to the cards they touch flip those enemy cards.'],
   ['sameWall','Same wall','The board edge counts as an X (10) for Same.'],
   ['plus','Plus','Two or more touching pairs with the same total flip those enemy cards.'],
   ['combo','Combo','Cards flipped by Same or Plus flip their weaker enemy neighbours, and it can chain.'],
   ['elemental','Elemental','2 to 6 squares get an element: +1 for a card of that element, −1 for any other.'],
-  ['reverse','Reverse','Lower numbers win. A 1 beats a 2, and X is the weakest.']];
+  ['reverse','Reverse','Lower numbers win. A 1 beats a 2, and X is the weakest.'],
+  ['suddenDeath','Sudden death','A draw replays the match (up to 5 extra rounds). In 2v2 each team keeps the cards it owned at the end; in Free-for-all a tie for 1st replays with the same hands.'],
+  ['random','Random','Your 5 cards are dealt at random from your collection.'],
+  ['chaos','Chaos','Each turn the game picks a random card from your hand, and you must play it. You only choose the square.'],
+  ['leyLines','Ley lines','Fill a whole row or column with your cards (your team\'s, in 2v2) and it seals: those 4 cards can\'t be flipped again.']];
 const DUO_TIMERS=[0,20,30,45,60];
-const duoDefRules=()=>({ffa:false,leyLines:false,open:false,random:false,same:false,sameWall:false,plus:false,combo:false,elemental:false,reverse:false,timer:30});
+const duoDefRules=()=>({ffa:false,leyLines:false,open:false,threeOpen:false,suddenDeath:false,chaos:false,random:false,same:false,sameWall:false,plus:false,combo:false,elemental:false,reverse:false,timer:30});
 
 // b: card ids, o: the seat that owns each square, m: elemental +1/−1, k: sealed by a Ley line, n: moves made
 // first: the seat that opened the match (Free-for-all's turn order counts from it)
-function duoNew(hands,first,el){return{b:Array(16).fill(-1),o:Array(16).fill(-1),m:Array(16).fill(0),k:Array(16).fill(0),h:hands.map(h=>h.slice()),turn:first,first,el,n:0}}
-function duoClone(s){return{b:s.b.slice(),o:s.o.slice(),m:s.m.slice(),k:s.k.slice(),h:s.h.map(h=>h.slice()),turn:s.turn,first:s.first,el:s.el,n:s.n}}
+// u: Three open, which hand cards are face up for everyone (true/false, alongside h), or null
+// f: Chaos, the hand card the seat to move must play (-1: any). sd: the Sudden death rounds played before this one
+function duoNew(hands,first,el,u){return{b:Array(16).fill(-1),o:Array(16).fill(-1),m:Array(16).fill(0),k:Array(16).fill(0),h:hands.map(h=>h.slice()),turn:first,first,el,n:0,u:u||null,f:-1,sd:0}}
+function duoClone(s){return{b:s.b.slice(),o:s.o.slice(),m:s.m.slice(),k:s.k.slice(),h:s.h.map(h=>h.slice()),turn:s.turn,first:s.first,el:s.el,n:s.n,u:s.u?s.u.map(u=>u.slice()):null,f:s.f??-1,sd:s.sd||0}}
+// Three open: 3 random cards of each hand are face up
+const duoThree=(hands,rng)=>hands.map(h=>{const up=shuffle([...h.keys()],rng).slice(0,3);return h.map((_,k)=>up.includes(k))});
+// Chaos: which hand card the seat to move must play
+const duoChaos=(s,rng)=>Math.floor(rng()*s.h[s.turn].length);
+// a draw: the teams level in 2v2, or two or more players sharing 1st in Free-for-all
+function duoDraw(s,R){
+  if(!R.ffa)return duoScore(s,0)===duoScore(s,1);
+  const pts=[0,1,2,3].map(q=>duoPts(s,R,q));return pts.filter(v=>v===Math.max(...pts)).length>1;
+}
+// Sudden death after a draw: the next round's hands. 2v2: each team keeps the 10 cards it owned at the end, each player
+// taking the ones they own and any over 5 going to their partner. Free-for-all: everyone gets the same 5 back
+function duoSdHands(s,R,decks){
+  if(R.ffa)return decks.map(d=>d.slice());
+  const own=[0,1,2,3].map(q=>s.h[q].slice());
+  for(let i=0;i<16;i++)own[s.o[i]].push(s.b[i]);
+  for(let q=0;q<4;q++)while(own[q].length>5)own[(q+2)%4].push(own[q].pop());
+  return own;
+}
 const duoFull=s=>s.n>=16;
 // a team's score: the squares its two seats own plus the cards still in their hands
 function duoScore(s,t){let n=s.h[t].length+s.h[t+2].length;for(let i=0;i<16;i++)if(s.o[i]>=0&&duoTeam(s.o[i])===t)n++;return n}
@@ -57,6 +81,8 @@ function duoElements(R,rng){
    If `ev` is an array, pushes events for the animation: same / plus / basic / combo / seal. */
 function duoPlay(s,R,hi,cell,ev){
   const p=s.turn,t=duoSide(R,p),id=s.h[p].splice(hi,1)[0],S=CARDS[id].s,nb=DNB[cell];
+  if(s.u)s.u[p].splice(hi,1);
+  s.f=-1; // Chaos picks the next player's card afterwards (duo.js)
   // a card that can be flipped by this move: an enemy's, not sealed
   const foe=n=>s.b[n]>=0&&duoSide(R,s.o[n])!==t&&!s.k[n];
   s.b[cell]=id;s.o[cell]=p;
@@ -129,13 +155,14 @@ function duoRevAt(first,el,moves,R,k){
 // what a seat may know: its own hand (and its partner's in 2v2); everyone else's only with Open (else average stand-ins)
 function duoView(s,R,p){
   const v=duoClone(s);
-  if(!R.open)for(let q=0;q<4;q++)if(duoSide(R,q)!==duoSide(R,p))v.h[q]=v.h[q].map(()=>STAND_IN);
+  if(!R.open)for(let q=0;q<4;q++)if(duoSide(R,q)!==duoSide(R,p))v.h[q]=v.h[q].map((id,k)=>v.u&&v.u[q][k]?id:STAND_IN);
   return v;
 }
 function duoMoves(s){
   const empty=[],seen=new Set(),res=[];
   for(let i=0;i<16;i++)if(s.b[i]<0)empty.push(i);
-  s.h[s.turn].forEach((id,hi)=>{if(seen.has(id))return;seen.add(id);for(const c of empty)res.push([hi,c])});
+  // Chaos: only the card the game picked
+  s.h[s.turn].forEach((id,hi)=>{if(seen.has(id)||s.f>=0&&hi!==s.f)return;seen.add(id);for(const c of empty)res.push([hi,c])});
   return res;
 }
 // how good the board is for side t: the score gap, plus strong open sides (weak ones are liabilities).
@@ -170,7 +197,7 @@ function duoLook2(s,R,t,moves){
 }
 // not thinking: grab a random card and put it somewhere, taking a flip if one is right there (most of the time)
 function duoCareless(s,R,p,moves,rnd){
-  const hi=Math.floor(rnd()*s.h[p].length),mine=moves.filter(m=>s.h[p][m[0]]===s.h[p][hi]);
+  const hi=s.f>=0?s.f:Math.floor(rnd()*s.h[p].length),mine=moves.filter(m=>s.h[p][m[0]]===s.h[p][hi]);
   const flips=mine.map(m=>{const c=duoAfter(s,R,m);let n=0;for(let i=0;i<16;i++)if(s.o[i]>=0&&c.o[i]!==s.o[i])n++;return{m,n}});
   const best=Math.max(...flips.map(f=>f.n));
   const pool=best>0&&rnd()<.6?flips.filter(f=>f.n===best):flips;

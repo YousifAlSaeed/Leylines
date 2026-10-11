@@ -124,7 +124,6 @@
       <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="hostCode">·····</div></div>
         <div class="room-share" id="roomShare"><div class="row"><button class="btn small" id="btnCopy">Copy link</button><button class="btn small" id="btnShare">Share</button></div><input class="linkin" id="hostLink" readonly aria-label="Invite link"></div></div>
       <ul class="room-pl" id="roomPlayers" aria-label="Players"></ul>
-      <div class="room-inv" id="roomInv"></div>
     </div>
     <div class="s-opts" id="setupOpts"><h3>Match</h3>
       <div class="srow" id="diffBox" data-row="diff"><button class="srh" data-row="diff" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><b>Difficulty</b><span class="val" id="val-diff"></span><span class="chev" aria-hidden="true">›</span></button><div class="srb"><div class="dgrid" id="diffSeg" role="group" aria-label="Difficulty"></div></div></div>
@@ -167,24 +166,23 @@
 <!-- CROSSROADS ROOM (duo.js): the 4-player mode, 2v2 or Free-for-all, four seats, the host's rules -->
 <section id="scr-duoroom" class="screen">
   <div class="topbar"><button class="iconbtn" id="duoRoomBack" aria-label="Leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2><span id="duoRoomTitle">Crossroads</span> <em class="dbeta">Testing</em></h2></div>
-  <div class="wrap duo-room">
-    <!-- two columns on wide screens (duo.css): the room and its players left, the rules right -->
-    <div class="droom-l">
-    <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="duoCode">·····</div></div>
-      <div class="room-share"><div class="row"><button class="btn small" id="duoCopy">Copy link</button><button class="btn small" id="duoShare">Share</button></div><input class="linkin" id="duoLink" readonly aria-label="Invite link"></div></div>
-    <p class="note">Friends join with this code from <b>Online → Join</b>.</p>
-    <div><h3>Mode</h3><div class="seg" id="duoMode" role="group" aria-label="Mode"></div><p class="note" id="duoModeNote"></p></div>
-    <div id="duoTeams" class="dteams"></div>
-    <div class="room-inv" id="duoInv"></div>
-    <p class="note">Empty seats can be CPUs. <b>CPU Easy</b> plays like a casual player: some turns it thinks a move ahead, some turns it doesn't. <b>CPU Normal</b> thinks a move ahead, some turns two, and about 1 turn in 10 it slips.</p>
-    <button class="btn" id="duoFill">Fill empty seats with CPU Normal</button>
+  <div class="wrap setup duo-room">
+    <!-- laid out like the 1v1 waiting room (setup.js): the room, players and match rows left; the rule cards right -->
+    <div class="s-left">
+    <div class="s-room">
+      <h3>Room</h3>
+      <div class="room-code"><div><span class="or">Game code</span><div class="codebox" id="duoCode">·····</div></div>
+        <div class="room-share"><div class="row"><button class="btn small" id="duoCopy">Copy link</button><button class="btn small" id="duoShare">Share</button></div><input class="linkin" id="duoLink" readonly aria-label="Invite link"></div></div>
+      <div id="duoTeams" class="dteams"></div>
     </div>
-    <div class="droom-r">
-    <div><h3>Rules</h3><div class="drules" id="duoRuleList" role="group" aria-label="Rules"></div></div>
-    <div><div class="trow" id="duoTimerRow"></div><p class="note" id="duoTimerDesc"></p></div>
-    <p class="note">Crossroads is being tested: no cards change hands, and it pays no XP or shards yet.</p>
+    <div class="s-opts" id="duoOpts"><h3>Match</h3>
+      <div class="srow" data-row="mode"><button class="srh" data-row="mode" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><circle cx="16" cy="8" r="3"/><circle cx="8" cy="16" r="3"/></svg><b>Mode</b><span class="val" id="dval-mode"></span><span class="chev" aria-hidden="true">›</span></button><div class="srb"><div class="seg" id="duoMode" role="group" aria-label="Mode"></div><p class="note" id="duoModeNote"></p></div></div>
+      <div class="srow" data-row="timer"><button class="srh" data-row="timer" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/></svg><b>Timer</b><span class="val" id="dval-timer"></span><span class="chev" aria-hidden="true">›</span></button><div class="srb"><div class="trow" id="duoTimerRow"></div><p class="note" id="duoTimerDesc"></p></div></div>
+      <div class="srow" data-row="col" id="duoColRow"><button class="srh" data-row="col" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><b>Your colour</b><span class="val" id="dval-col"></span><span class="chev" aria-hidden="true">›</span></button><div class="srb"><div class="dsw" id="duoCols" role="group" aria-label="Your colour"></div></div></div>
+    </div>
+    </div>
+    <div class="s-rules"><h3>Rules<em id="duoRuleCount"></em></h3><div class="rgrid" id="duoRuleList" role="group" aria-label="Rules"></div><div class="rinfo" id="duoRuleInfo" aria-live="polite"></div></div>
     <p class="note" id="duoNote" aria-live="polite"></p>
-    </div>
     <div class="setup-foot"><button class="btn primary" id="duoGo">Start</button></div>
   </div>
 </section>

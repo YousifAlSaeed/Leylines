@@ -36,6 +36,7 @@ const RULE_ICON={
   threeOpen:'<rect x="2.5" y="6" width="5.5" height="12" rx="1.2"/><rect x="9.25" y="6" width="5.5" height="12" rx="1.2"/><rect x="16" y="6" width="5.5" height="12" rx="1.2"/><circle cx="5.25" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="18.75" cy="12" r="1" fill="currentColor"/>',
   reverse:'<path d="M7 20V5M3.5 8.5L7 5l3.5 3.5"/><path d="M17 4v15M13.5 15.5L17 19l3.5-3.5"/>',
   sweep:'<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17M14.8 3.5v17"/>',
+  leyLines:'<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 12h17" stroke-width="3.2"/><path d="M12 3.5v17"/>',
   timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'};
 const ruleSvg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${RULE_ICON[k]}</svg>`;
@@ -158,10 +159,11 @@ function renderRoom(){
   const ready=host?NET.oppReady:NET.meReady;
   const hostRow=row('h',host?myAv():NET.oppAv,host?myName():NET.oppName||'Host',host,true,host||NET.oppIn?'':'Still on results',false);
   const guestRow=on?row('g',host?NET.oppAv:myAv(),host?NET.oppName:myName(),!host,false,ready?'✓ Ready':host&&!NET.oppIn?'Still on results':'Not ready',ready)
-    :'<li class="empty"><span class="av">?</span><b>Waiting for a friend…</b><span class="spin"></span></li>';
+    :`<li class="empty"><span class="av">?</span><b>Waiting for a friend…${host&&invPending()?` <small class="rinv">Invited ${esc(invPending())}</small>`:''}</b><span class="spin"></span>`+
+      // while the seat is empty, the host can invite friends who are on the main menu (pulse.js)
+      (host?'<button class="btn small primary" id="roomInvBtn">Invite</button>':'')+'</li>';
   $('#roomPlayers').innerHTML=hostRow+guestRow;
-  // while the seat is empty, the host can invite friends who are on the main menu (pulse.js)
-  $('#roomInv').innerHTML=host&&!on?roomInvHTML():'';
+  const ib=$('#roomInvBtn');if(ib)ib.onclick=()=>{sfx('click');invPop()};
   const go=$('#setupGo');
   if(host){
     go.textContent='Start match';go.disabled=!(on&&NET.oppReady);

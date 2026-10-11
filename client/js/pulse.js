@@ -140,7 +140,22 @@ function invDeclined(name){
   invRoomRender();
 }
 // redraw whichever room is hosting: 1v1 (setup.js) or Crossroads (duo.js)
-function invRoomRender(){roomOpen()&&renderRoom();DUO.role==='host'&&duoOn('duoroom')&&duoRoomRender()}
+function invRoomRender(){roomOpen()&&renderRoom();DUO.role==='host'&&duoOn('duoroom')&&duoRoomRender();invPopRefresh()}
+// the Invite button on an empty seat (setup.js, duo.js): a popup of friends to invite. onInv(name) runs before the invite goes out
+function invPopHTML(){
+  if(!ACCT.token)return '<p class="note">Sign in to invite friends. You can still send the code or the link.</p>';
+  if(!FR.friends.length)return '<p class="note">Add friends on the Friends screen to invite them here. You can still send the code or the link.</p>';
+  return roomInvHTML().replace(/^<h4>.*?<\/h4>/,'');
+}
+function invPop(note,onInv){
+  const box=modal(`<h2>Invite a friend</h2>${note?`<p class="note">${note}</p>`:''}<div class="room-inv invpop" id="invPopList">${invPopHTML()}</div>`,[{label:'Done',cls:'primary',esc:true}]);
+  // (this runs before the document's click handler below sends the invite)
+  if(onInv)box.querySelector('#invPopList').addEventListener('click',e=>{const b=e.target.closest('[data-inv]');if(b)onInv(b.dataset.inv)});
+}
+// the popup, while it's open, keeps up with who's online and who's been invited
+function invPopRefresh(){const l=$('#invPopList');if(l)l.innerHTML=invPopHTML()}
+// the friend invited and still to answer, for the empty seat's row
+function invPending(){for(const [k,st] of INV.sent)if(st==='sent'||st==='wait')return frName(k);return ''}
 // the invite list in the room you're hosting, while the seat is empty (setup.js, duo.js)
 function roomInvHTML(){
   if(!ACCT.token||!FR.friends.length)return '';
