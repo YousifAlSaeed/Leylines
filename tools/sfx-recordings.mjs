@@ -18,7 +18,7 @@ const SR = 44100;
 // layer: {f: file, from, to (s, cut of the source), at (s, place), db, hp, lp, pan (-1..1), rate (pitch), peakAt (align source peak to `at`)}
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
-const TARGET = { badge_claim: -12 };
+const TARGET = { badge_claim: -12, same_plus: 'banner', combo: 'banner' }; // a number (dBFS) or an old sound to match
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
   tick:             [L('kit:tick/fs-199066-clock-tick-tock-1.wav')],
@@ -46,6 +46,16 @@ export const RECIPES = {
   coll_locked:      [L('impactWood_medium_000.ogg')],
   // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
   badge_claim:      [L('handleCoins2.ogg'), L('kit:chime/fs-571513-soft-notifications-bell-ding-2.wav', { at: .07, db: -5, pan: .15 })],
+  // tunes from real instruments, all in A major: celesta A4 C#5 E5 (fs-420489/420487/420491), glockenspiel C6 tuned up to C#6
+  // (fs-373364), crystal bell D#7 tuned up to E7 (fs-614832), bell tree (fs-693698 sweep up, fs-375596 scrape)
+  same_plus:        [L('fs-420487.mp3', { to: 1.2, pan: -.15 }), L('fs-420491.mp3', { at: .08, to: 1.2, pan: .15 }),
+                     L('fs-614832.mp3', { at: .08, rate: 1.0687, db: -12, pan: .3 })],
+  combo:            [L('fs-420489.mp3', { to: 1.4, pan: -.3 }), L('fs-420487.mp3', { at: .07, to: 1.4 }), L('fs-420491.mp3', { at: .14, to: 1.4, pan: .3 }),
+                     L('fs-375596.mp3', { at: .1, to: 1.2, db: -6, pan: [-.4, .4] }), L('fs-614832.mp3', { at: .14, rate: 1.0687, db: -10, pan: .35 })],
+  win:              [L('fs-420489.mp3', { to: .5, pan: -.4 }), L('fs-420487.mp3', { at: .11, to: .45, pan: -.15 }), L('fs-420491.mp3', { at: .22, to: .35, pan: .15 }),
+                     L('fs-693698.mp3', { from: .45, to: 3.0, at: .1, db: -4, th: .01, fout: 1.2, pan: [-.5, .5] }),
+                     L('fs-420489.mp3', { at: .45, rate: 2, to: 1.6, pan: .4 }), L('fs-420487.mp3', { at: .45, to: 2.8, pan: -.25 }), L('fs-420491.mp3', { at: .45, to: 2.8, pan: .25 }),
+                     L('fs-373364.mp3', { at: .45, rate: 1.0533, to: 2.6, db: -5 }), L('fs-614832.mp3', { at: .5, rate: 1.0687, db: -9, pan: .3 })],
   coll_return:      [L('card-slide-7.ogg', { th: .3 }), L('bookPlace3.ogg', { db: -8, lp: 2500 })],
 };
 
@@ -127,7 +137,7 @@ function build(name) {
     if (l.lp) flt.push(`lowpass=f=${l.lp}`);
     let x = decode(srcPath(l.f), flt);
     x = l.pick != null ? clicks(x, l.pick) : trim(x, l.th);
-    return { x: fades(x), at: l.at || 0, g: 10 ** ((l.db || 0) / 20), pan: l.pan ?? 0 };
+    return { x: fades(x, .002, l.fout), at: l.at || 0, g: 10 ** ((l.db || 0) / 20), pan: l.pan ?? 0 };
   });
   const n = Math.max(...layers.map(l => Math.round(l.at * SR) + l.x.length));
   const Lc = new Float32Array(n), Rc = new Float32Array(n);
@@ -141,7 +151,8 @@ function build(name) {
   }
   // match the old sound's loudness, but keep the peak at or under -1 dBFS
   const oldFile = path.join(OLD, name + '.mp3');
-  const old = name in TARGET ? { rms: TARGET[name], onset: 0, dur: 0, centroid: 0 } : stats(decodeStereo(oldFile));
+  const t = TARGET[name];
+  const old = typeof t === 'number' ? { rms: t, onset: 0, dur: 0, centroid: 0 } : stats(decodeStereo(t ? path.join(OLD, t + '.mp3') : oldFile));
   const cur = stats([Lc, Rc]);
   // the limiter takes the sharp tops off loud transients (at most MAXLIM dB) so they can be as loud as the old sounds
   const out = path.join(OUT, name + '.mp3'), MAXLIM = 9;

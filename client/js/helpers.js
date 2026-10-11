@@ -90,8 +90,8 @@ function closeModal(){
   if(OWES.news.length)setTimeout(oweNews,300);
 }
 
-function banner(text,cls=''){
-  sfx(cls==='small'?'click':'banner');
+function banner(text,cls='',snd){
+  sfx(snd||(cls==='small'?'click':'banner'));
   const d=document.createElement('div');d.className='banner '+cls;d.innerHTML=`<span>${text}</span>`;
   $('#banners').append(d);setTimeout(()=>d.remove(),1150);
   return wait(cls==='small'?850:780);
@@ -107,7 +107,7 @@ const SFX_NAMES=['click','place','flip','banner','win','lose','draw','tick','tim
   'pack_reveal_1','pack_reveal_2','pack_reveal_3','pack_reveal_4','pack_reveal_5','pack_fling',
   'coll_page_01','coll_page_02','coll_page_03','coll_page_04','coll_card_out','coll_card_in',
   'coll_hand_add','coll_deny','coll_hand_full','coll_set_done','coll_riffle','coll_bump','coll_tab',
-  'coll_open','coll_close','coll_locked','coll_lost','coll_shimmer','coll_lift','coll_return','coll_hand_remove','hand_pick','badge_claim'];
+  'coll_open','coll_close','coll_locked','coll_lost','coll_shimmer','coll_lift','coll_return','coll_hand_remove','hand_pick','badge_claim','same_plus','combo'];
 const SFX_BUFFERS={},SFX_QUEUED={};let SFX_LOADING=null;
 function sfxLoad(){
   if(SFX_LOADING)return SFX_LOADING;

@@ -32,7 +32,7 @@ ONLY = set(sys.argv[1:])
 RECORDED = {'click', 'tick', 'place', 'flip', 'hand_pick', 'pack_whoosh', 'pack_snapback', 'pack_rip', 'pack_fling',
             'pack_tick_01', 'pack_tick_02', 'pack_tick_03', 'pack_tick_04', 'pack_tick_05',
             'coll_card_out', 'coll_card_in', 'coll_hand_add', 'coll_hand_remove', 'coll_deny', 'coll_riffle',
-            'coll_bump', 'coll_tab', 'coll_close', 'coll_locked', 'coll_return'}
+            'coll_bump', 'coll_tab', 'coll_close', 'coll_locked', 'coll_return', 'win'}
 
 
 def note(name):
