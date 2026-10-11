@@ -46,6 +46,35 @@ function cardHTML(id,color,o={}){
 // keep: the copy of the drag that's running now.
 const otherPointer=(e,d)=>!!e&&e.pointerId!=null&&d.pid!=null&&e.pointerId!==d.pid;
 function ghostSweep(keep){$$('body > .ghost').forEach(g=>{if(g!==keep)g.remove()})}
+
+/* ---------- flying cards (collection and hand) ----------
+   A copy of the card on <body> (outside the zoomed screens) flies from one card to another in an arc,
+   turning and resizing to match. The cards themselves stay put; hide them while the copy is in the air. */
+const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+// a card's font size in window pixels (cards are sized in em; screens and popups are zoomed by --ui)
+const cardPx=el=>parseFloat(getComputedStyle(el).fontSize)*(el.closest('.screen,#modal')?UI:1);
+// o: ms, ease, arc (px up at the middle), r0/r1 (deg at start/end), s0 (start scale), pop (scale at the middle),
+//    lift (card heights to rise first, as out of a sleeve), liftAt, liftScale, shadow, done
+function fly(src,dst,o={}){
+  if(!src||!dst){o.done&&o.done();return}
+  const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect(),fa=cardPx(src),fb=cardPx(dst);
+  if(noMotion()||!a.width||!b.width){o.done&&o.done();return}
+  const g=src.cloneNode(true);g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer');if(o.shadow)g.classList.add('lifted');
+  const ax=a.left+a.width/2,ay=a.top+a.height/2,dx=b.left+b.width/2-ax,dy=b.top+b.height/2-ay;
+  Object.assign(g.style,{fontSize:fa+'px',left:(ax-2.5*fa)+'px',top:(ay-3*fa)+'px',transform:'',visibility:''});
+  document.body.append(g);
+  const s0=o.s0||1,s=fb/fa,r0=o.r0||0,r1=o.r1||0,tf=(x,y,r,k)=>`translate(${x}px,${y}px) rotate(${r}deg) scale(${k})`;
+  const kf=[{transform:tf(0,0,r0,s0)}];
+  if(o.lift)kf.push({transform:tf(0,-o.lift*6*fa*s0,r0*.5,s0*(o.liftScale||1)),offset:o.liftAt||.25});
+  kf.push({transform:tf(dx/2,dy/2-(o.arc||0),(r0+r1)/2,(s0+s)/2*(o.pop||1.06)),offset:o.lift?.62:.5});
+  kf.push({transform:tf(dx,dy,r1,s)});
+  const an=g.animate(kf,{duration:o.ms||360,easing:o.ease||'cubic-bezier(.3,.55,.3,1)',fill:'forwards'});
+  an.onfinish=an.oncancel=()=>{g.remove();o.done&&o.done()};
+}
+// a card that just landed gives a small bounce
+const settle=el=>{if(el&&!noMotion())el.animate([{transform:'translateY(-.35em) scale(1.04)'},{transform:'none'}],{duration:180,easing:'cubic-bezier(.2,1.4,.4,1)'})};
+// a quick side-to-side "no"
+const shakeNo=(el,px=6)=>{if(el&&!noMotion())el.animate([{transform:'none'},{transform:`translateX(${-px}px)`},{transform:`translateX(${px*.8}px)`},{transform:`translateX(${-px/2}px)`},{transform:`translateX(${px/3}px)`},{transform:'none'}],{duration:260,easing:'ease-out'})};
 addEventListener('blur',()=>ghostSweep());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)ghostSweep()});
 
@@ -80,8 +109,9 @@ function modal(html,btns=[]){
   return box;
 }
 function closeModal(){
-  const m=$('#modal'),collectionCard=!!m.querySelector('.cd-box');m.classList.remove('on');m.innerHTML='';
-  if(collectionCard)sfx('coll_card_in');
+  const m=$('#modal'),collectionCard=!!m.querySelector('.cd-box');
+  if(collectionCard)collCardBack(m); // the card flies back into its sleeve (collection.js); needs the popup still on screen
+  m.classList.remove('on');m.innerHTML='';
   // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
   const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
@@ -120,8 +150,9 @@ function sfxLoad(){
   })).catch(()=>{SFX_LOADING=null});
   return SFX_LOADING;
 }
-function sfx(k){
-  const v=SAVE.sfxVol/100;
+// vol: 0–1 of the normal loudness (a softer version of the same sound)
+function sfx(k,vol=1){
+  const v=SAVE.sfxVol/100*vol;
   if(!SAVE.sound||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
@@ -132,7 +163,7 @@ function sfx(k){
     }
     if(!SFX[k]&&SFX_LOADING&&!k.startsWith('pack_tick_')&&!SFX_QUEUED[k]){
       const at=performance.now(),loading=SFX_LOADING;SFX_QUEUED[k]=true;
-      loading.then(()=>{delete SFX_QUEUED[k];if(SFX_BUFFERS[k]&&performance.now()-at<800)sfx(k)});return;
+      loading.then(()=>{delete SFX_QUEUED[k];if(SFX_BUFFERS[k]&&performance.now()-at<800)sfx(k,vol)});return;
     }
     let t=AC.currentTime+.01;
     for(const[f,d,type] of SFX[k]||[]){
