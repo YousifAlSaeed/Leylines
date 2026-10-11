@@ -11,6 +11,7 @@ Versions before 0.6.0 were worked out afterwards from the commit history.
 - Opening packs and browsing your Collection now have their own sounds, and rarer cards get a bigger reveal
 - Picking up a card from your hand in a match makes a sound
 - Cards, clicks and packs now use real recordings: cards really slide and land on the table, the timer ticks like a clock, the pack tears like foil, and the binder closes like a book
+- Claiming a badge's shards has its own sound: coins dropping into your pouch and a little bell
 
 ## 0.22.4 (2026-10-11)
 - Opening a pack feels real now: the strip tears along a ragged line and curls up toward you as you pull. Let go halfway and the tear stays, so you can carry on. Packs have crimped edges and a little notch on each side to start the tear, like real foil packs

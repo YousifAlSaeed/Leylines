@@ -14,4 +14,5 @@ CC0 (public domain): credit is not required but given. The other effects are mad
 | pack_whoosh | "whoosh_med_high" by DJT4NN3R, [Freesound 449988](https://freesound.org/people/DJT4NN3R/sounds/449988) |
 | pack_fling | "FX - Swoosh - Light" by bolkmar, [Freesound 475132](https://freesound.org/people/bolkmar/sounds/475132) |
 | pack_rip | "SFX_STICKERRIPPER_foilBooms_01" by MrFossy, [Freesound 590360](https://freesound.org/people/MrFossy/sounds/590360) |
+| badge_claim | Kenney, [RPG Audio](https://kenney.nl/assets/rpg-audio) (coins), and "Soft-Notifications - Bell - Ding-Dong" by LegitCheese, [Freesound 571513](https://freesound.org/people/LegitCheese/sounds/571513) |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |

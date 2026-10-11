@@ -18,6 +18,7 @@ const SR = 44100;
 // layer: {f: file, from, to (s, cut of the source), at (s, place), db, hp, lp, pan (-1..1), rate (pitch), peakAt (align source peak to `at`)}
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
+const TARGET = { badge_claim: -12 };
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
   tick:             [L('kit:tick/fs-199066-clock-tick-tock-1.wav')],
@@ -43,6 +44,8 @@ export const RECIPES = {
   coll_tab:         [L('kit:click/kenney-ui-audio-switch21.wav')],
   coll_close:       [L('bookClose.ogg'), L('bookPlace3.ogg', { db: -4, lp: 2500 })],
   coll_locked:      [L('impactWood_medium_000.ogg')],
+  // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
+  badge_claim:      [L('handleCoins2.ogg'), L('kit:chime/fs-571513-soft-notifications-bell-ding-2.wav', { at: .07, db: -5, pan: .15 })],
   coll_return:      [L('card-slide-7.ogg', { th: .3 }), L('bookPlace3.ogg', { db: -8, lp: 2500 })],
 };
 
@@ -137,7 +140,8 @@ function build(name) {
     }
   }
   // match the old sound's loudness, but keep the peak at or under -1 dBFS
-  const old = stats(decodeStereo(path.join(OLD, name + '.mp3')));
+  const oldFile = path.join(OLD, name + '.mp3');
+  const old = name in TARGET ? { rms: TARGET[name], onset: 0, dur: 0, centroid: 0 } : stats(decodeStereo(oldFile));
   const cur = stats([Lc, Rc]);
   // the limiter takes the sharp tops off loud transients (at most MAXLIM dB) so they can be as loud as the old sounds
   const out = path.join(OUT, name + '.mp3'), MAXLIM = 9;
