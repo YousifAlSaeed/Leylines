@@ -18,7 +18,7 @@ const SR = 44100;
 // layer: {f: file, from, to (s, cut of the source), at (s, place), db, hp, lp, pan (-1..1), rate (pitch), peakAt (align source peak to `at`)}
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
-const TARGET = { badge_claim: -12, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
+const TARGET = { badge_claim: -12.7, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
 // instruments and layers shared by the recipes below
 const st = (n, c = 0) => +Math.pow(2, (n - c) / 12).toFixed(4);
 const G = (at, n, o = {}) => L('fs-373364.mp3', { at, rate: st(n, .1), to: .5, fout: .3, ...o });   // glockenspiel, n semitones from C6
@@ -30,21 +30,24 @@ const TB = (o = {}) => L('fs-374272.mp3', { rate: .9439, to: 2.5, fout: 1.2, ...
 const THUD = (o = {}) => L('bookPlace1.ogg', { db: -6, lp: 1800, ...o });
 const SWEEP = (o = {}) => L('fs-693698.mp3', { from: .45, to: 2.4, fout: 1.0, th: .01, db: -6, pan: [-.5, .5], ...o });
 const runOf = (f, t0, step, ns, o = {}) => ns.map((n, i) => f(+(t0 + i * step).toFixed(3), n, { pan: +(-.4 + .8 * i / Math.max(1, ns.length - 1)).toFixed(2), ...o }));
+const P = (at, n, o = {}) => L('fs-521332.mp3', { at, rate: st(n), to: .7, fout: .4, ...o });         // bottle pling, n from A6
+const CHOIR = (o = {}) => L('fs-211494.mp3', { ...o, to: 1.05, fout: .45 });  // first phrase only: a second one follows a pause                             // choir "aah" on A
+const SNAP = (o = {}) => L('card-slide-6.ogg', { db: -4, ...o });
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
   tick:             [X(0, 0)],
   place:            [L('card-place-1.ogg'), L('bookPlace2.ogg', { db: -2, lp: 1500 })],
   flip:             [L('card-shove-1.ogg', { to: .45 }), THUD({ db: -6 })],
   hand_pick:        [L('card-slide-1.ogg')],
-  pack_whoosh:      [L('fs-449988.mp3', { to: 1.2, pan: [-.4, .4] })],
+  pack_whoosh:      [L('fs-485250.mp3', { lp: 9000, pan: [-.4, .4] }), L('card-place-1.ogg', { at: .3, db: -4, lp: 6000 })],
   pack_tick_01:     [L('card-fan-2.ogg', { pick: 0 })],
   pack_tick_02:     [L('card-fan-2.ogg', { pick: 1 })],
   pack_tick_03:     [L('card-fan-2.ogg', { pick: 2 })],
   pack_tick_04:     [L('card-fan-2.ogg', { pick: 3 })],
   pack_tick_05:     [L('card-fan-2.ogg', { pick: 4 })],
   pack_snapback:    [L('card-shove-3.ogg', { to: .4 }), L('bookPlace2.ogg', { db: -6, lp: 2500 })],
-  pack_rip:         [L('fs-590360.mp3', { to: 1.0, hp: 400 })],
-  pack_fling:       [L('fs-475132.mp3', { th: .25, pan: [-.2, .5] })],
+  pack_rip:         [L('fs-245198.mp3'), ...runOf(CR, .2, .05, [1, 6, 13], { db: -14 })],
+  pack_fling:       [L('kit:swish/fs-395369-swish-4-1.wav', { pan: [-.2, .5] })],
   coll_card_out:    [L('cards-pack-take-out-1.ogg')],
   coll_card_in:     [L('card-shove-1.ogg', { to: .45 })],
   coll_hand_add:    [L('card-place-4.ogg'), L('bookPlace1.ogg', { db: -6, lp: 2500 })],
@@ -53,10 +56,10 @@ export const RECIPES = {
   coll_riffle:      [L('card-fan-1.ogg', { pan: [.35, -.35] })],
   coll_bump:        [L('kit:tap/kenney-impact-impact-wood-light-000.wav')],
   coll_tab:         [L('kit:click/kenney-ui-audio-switch21.wav')],
-  coll_close:       [L('bookClose.ogg'), L('bookPlace3.ogg', { db: -4, lp: 2500 })],
+  coll_close:       [L('fs-617410.mp3')],
   coll_locked:      [L('impactWood_medium_000.ogg')],
   // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
-  badge_claim:      [L('handleCoins2.ogg'), L('kit:chime/fs-571513-soft-notifications-bell-ding-2.wav', { at: .07, db: -5, pan: .15 })],
+  badge_claim:      [L('fs-169146.mp3', { to: .7, fout: .3 }), P(.08, 0, { db: -4 })],
   // Same / Plus, Combo, second Combo: a real bubble pop and rising glockenspiel notes (A major), crystal sparkle, bell tree
   same_plus:        [L('kit:pop/fs-97978-pop-aif-1.wav', { db: -2 }), L('fs-373364.mp3', { at: .03, rate: 0.8361, to: .45, fout: .25, pan: -.2 }),
                      L('fs-373364.mp3', { at: .09, rate: 1.0534, to: .45, fout: .25, pan: .2 }), L('fs-614832.mp3', { at: .09, rate: 1.0687, db: -12, pan: .3 })],
@@ -80,7 +83,14 @@ export const RECIPES = {
   coll_page_04:     [L('fs-144110.mp3', { to: 1.0, pan: [.3, -.3] })],
   coll_lift:        [L('card-slide-8.ogg', { th: .3, to: .3 })],
   coll_set_done:    [L('kit:pop/fs-669918-the-best-bubble-pop-sound-fo-1.wav', { db: -6 }), ...runOf(G, .02, .06, [-3, 1, 4, 9, 13]), CR(.26, 13, { db: -10 }), SWEEP({ at: .2, db: -8 })],
-  coll_return:      [L('card-slide-7.ogg', { th: .3 }), L('bookPlace3.ogg', { db: -8, lp: 2500 })],
+  banner:           [CHOIR({ to: 1.0, fout: .5 }), SWEEP({ to: 1.2, fout: .6, db: -10 })],
+  coll_hand_full:   [...runOf(P, 0, .06, [-12, -8, -5, 0, 4])],
+  pack_reveal_1:    [SNAP(), P(.02, 0)],
+  pack_reveal_2:    [SNAP(), ...runOf(P, .02, .07, [0, 4])],
+  pack_reveal_3:    [SNAP(), ...runOf(P, .02, .06, [0, 4, 7]), CR(.14, 6)],
+  pack_reveal_4:    [THUD(), ...runOf(P, .02, .05, [0, 4, 7, 12]), CR(.17, 6, { db: -10 }), SWEEP({ db: -8 })],
+  pack_reveal_5:    [THUD({ db: -2 }), ...runOf(P, .02, .045, [-5, 0, 4, 7, 12], { to: 1.4, fout: .8 }), CR(.2, 13, { db: -8 }), SWEEP({ to: 3.0, fout: 1.2, db: -5 }), L('kit:shimmer/fs-462095-sparkling-star-01-wav-2.wav', { at: .25, db: -10 })],
+  coll_return:      [L('card-shove-2.ogg', { to: .3 }), L('bookPlace3.ogg', { db: -6, lp: 2500 })],
 };
 
 function decode(file, filters = []) {

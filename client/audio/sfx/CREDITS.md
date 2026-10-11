@@ -23,4 +23,11 @@ CC0 (public domain): credit is not required but given. The other effects are mad
 | coll_page_01–04 | Page turns: "Page Turn 02" by MATRIXXX_ ([397549](https://freesound.org/people/MATRIXXX_/sounds/397549)), "page turn sound effect" by stumpbutt ([431871](https://freesound.org/people/stumpbutt/sounds/431871)), "turnPage" by partheeban ([457767](https://freesound.org/people/partheeban/sounds/457767)), "Page Turn 1" by gfrog ([144110](https://freesound.org/people/gfrog/sounds/144110)) |
 | tick | Xylophone by juancamiloorjuela ([204647](https://freesound.org/people/juancamiloorjuela/sounds/204647)) |
 | coll_set_done | Bubble pop by el_boss ([669918](https://freesound.org/people/el_boss/sounds/669918)), glockenspiel, crystal bell and bell tree (see above) |
+| banner | Choir "aah" by Diboz ([211494](https://freesound.org/people/Diboz/sounds/211494)) and the bell tree sweep (see above) |
+| pack_whoosh | "Swing 1_5" by Joao_Janz ([485250](https://freesound.org/people/Joao_Janz/sounds/485250)) and a Kenney card place |
+| pack_rip | "duct tape tear rip" by AlaskaRobotics ([245198](https://freesound.org/people/AlaskaRobotics/sounds/245198)) and the crystal bell |
+| pack_fling | "Swish 4" by ihitokage ([395369](https://freesound.org/people/ihitokage/sounds/395369)) |
+| pack_reveal_1–5, coll_hand_full, badge_claim | "Mein bottle pling" by skylarjulian ([521332](https://freesound.org/people/skylarjulian/sounds/521332)), with the crystal bell, bell tree, sparkling star and a Kenney card snap and book thud |
+| coll_close | "Book Close" by xavierrrangel ([617410](https://freesound.org/people/xavierrrangel/sounds/617410)) |
+| badge_claim | "coins_03" by Butilko ([169146](https://freesound.org/people/Butilko/sounds/169146)) |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |

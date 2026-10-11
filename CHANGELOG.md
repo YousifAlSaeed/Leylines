@@ -9,6 +9,7 @@ Versions before 0.6.0 were worked out afterwards from the commit history.
 ## 0.23.3 (2026-10-11)
 - Turning a page in your binder sounds like real paper now, with four different page turns
 - New sounds picked by ear: a fuller card place, a softer card flip, a wooden xylophone timer tick, a lighter card lift and hand remove in the binder, and a bright chime run when you complete a set
+- More sounds picked by ear: a choir for the Match and Ley line banners, crystal chimes that climb with each card's rarity, a tape rip when you open a pack, a book closing for the binder, five rising plings when your hand is full, and a coin jingle when you claim a badge
 
 ## 0.23.2 (2026-10-11)
 - The collection binder comes alive: the cover swings open, and every sound now has a move to match
