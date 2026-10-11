@@ -463,10 +463,11 @@ async function duoAnimMove(S,prev){
   st.b[L.cell]=L.id;st.o[L.cell]=p;st.m[L.cell]=S.st.m[L.cell];
   duoDrawBoard(S,st,{drop:L.cell});duoScoreRow(S,st);sfx('place');
   await wait(320);
+  let nc=0;
   for(const e of L.ev){
     if(DUO.gen!==gen||!duoOn('duo'))return;
     if(e.t==='seal'){e.cells.forEach(c=>st.k[c]=1);duoDrawBoard(S,st,{seal:e.cells});await banner('Ley line!');continue}
-    if(e.t!=='basic'){await banner({same:'Same!',plus:'Plus!',combo:'Combo!'}[e.t]);if(DUO.gen!==gen)return}
+    if(e.t!=='basic'){await ruleBanner(e.t,e.t==='combo'?++nc:0);if(DUO.gen!==gen)return}
     duoFlip(S,st,e.cells,p,L.cell,()=>DUO.gen===gen);
     await wait(560);
   }
