@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.23.7 (2026-10-13)
+- The tagline under the title on the menu is gone
+
 ## 0.23.6 (2026-10-13)
 - The market's second stop is now The Forge. It's closed for now: coming soon
 - The discounted pack moved to the Pack counter: the pack on offer is marked on its own row with the old price struck through

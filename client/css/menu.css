@@ -160,7 +160,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .title{margin:0;line-height:0;color:var(--text)}
 .title .logo-word{display:block;height:25px;width:auto}
 .sr,.title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.subtitle{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35;text-wrap:pretty}
 .hero{position:relative;border-radius:22px;padding:18px;background:linear-gradient(160deg,var(--surf2),var(--surf));border:1px solid var(--line);overflow:hidden;
   box-shadow:0 20px 50px -20px rgba(var(--sh),calc(.8*var(--shk)))}
 .hero::before{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(var(--accent-glow),transparent 70%);pointer-events:none}
@@ -230,9 +229,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   border:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
 .alpha-bar b{color:var(--warn);font:700 11px/1.5 var(--body);letter-spacing:.08em;margin-right:6px}
 .alpha-bar svg{width:18px;height:18px;flex:none;color:var(--warn);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-/* short phones (an iPhone SE): the tagline goes and the emblem shrinks, so the tiles still fit */
+/* short phones (an iPhone SE): the emblem shrinks, so the tiles still fit */
 @media (max-height:800px){.tile.ptile small{display:block;white-space:nowrap}}
-@media (max-height:760px){.subtitle{display:none}.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
+@media (max-height:760px){.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
 /* very short phones (iPhone SE): a little less room between and inside everything */
 @media (max-height:700px){#scr-menu{padding-bottom:max(12px,env(safe-area-inset-bottom))}.menu,.m-right{gap:10px}.brand .emblem{height:52px;width:52px}.hero{padding:12px}#scr-menu .seg button{min-height:32px;padding:4px 8px}.hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.pcard{padding:6px 10px}.tiles{grid-auto-rows:minmax(50px,1fr);min-height:166px;gap:8px}.tile{padding-top:7px;padding-bottom:7px}}
 /* narrow phones: smaller icons and names, so "Leaderboard" and "Night Market" fit whole */
@@ -243,7 +242,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .brand{grid-column:1/-1;gap:26px;margin:0}
   .brand .emblem{height:132px;width:132px}
   .title .logo-word{height:38px}
-  .subtitle{font-size:17px;margin:12px 0 0}
   .hero{padding:24px;display:flex;flex-direction:column}
   .hero-body{flex:1}
   .hero-row{padding-top:18px}
