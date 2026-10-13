@@ -226,14 +226,17 @@
   background:radial-gradient(circle at 34% 52%,rgba(120,100,190,.25) 0 9%,transparent 10%),radial-gradient(circle at 62% 28%,rgba(120,100,190,.25) 0 6%,transparent 7%),
     radial-gradient(circle at 38% 35%,#fbf7ff,#d9ccff 55%,#a796e0);
   box-shadow:0 0 26px rgba(217,204,255,.6),0 0 64px rgba(139,108,255,.5)}
-/* a phone: the arc is the map, with the four stars on it and the moon passing behind them */
+/* a phone: the moon moves onto the map and passes behind the four stops. At night the map stays the constellation and
+   the moon goes along its zigzag (--zx, --zy). The Day Market's map is the arc, dial on or off (a zigzag of clouds is
+   no constellation), and its sun joins the arc once the dial is on */
 @media (max-width:759px){
-  .st-dial .st-orbit,.st-dial .st-zig{display:none}
-  .st-dial .st-arcp{display:inline}
-  .st-dial .st-lines{stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
-  .st-dial .st-moon.st-mm{display:block;width:44px;height:44px}
+  .st-dial .st-orbit,.st-day .st-zig{display:none}
+  .st-day .st-arcp{display:inline}
+  .st-day .st-lines{stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
+  .st-dial .st-moon.st-mm{display:block;left:var(--zx,50%);top:var(--zy,50%);width:44px;height:44px}
+  .st-day.st-dial .st-moon.st-mm{left:var(--mx,50%);top:var(--my,14%)}
   .st-dial .st-star{z-index:1}
-  .st-dial .st-star.s-merchant{left:15%;top:55.8%}.st-dial .st-star.s-deal{left:38%;top:19.5%}.st-dial .st-star.s-packs{left:62%;top:19.5%}.st-dial .st-star.s-well{left:85%;top:55.8%}
+  .st-day .st-star.s-merchant{left:15%;top:55.8%}.st-day .st-star.s-deal{left:38%;top:19.5%}.st-day .st-star.s-packs{left:62%;top:19.5%}.st-day .st-star.s-well{left:85%;top:55.8%}
 }
 
 /* ---------- the Day Market (.st-day): the light theme's sky, a sun for the moon ---------- */

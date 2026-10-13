@@ -135,6 +135,16 @@ const ST_SKY={
 // where the arc is t of the way through the day, as [x, y] in % of the box it's drawn in
 const stArc=t=>[4+92*t,14+(1-Math.sin(Math.PI*t))*66];
 const ST_ARC='M'+Array.from({length:41},(_,i)=>stArc(i/40).map(v=>v.toFixed(1)).join(' ')).join('L');
+// the constellation a phone's map draws through the four stars (store.css places the stars on its corners). At night
+// the dial's moon goes along it, not the arc
+const ST_ZIG=[[16,40],[40,72],[63,30],[85,66]];
+function stZig(t){
+  const len=ST_ZIG.slice(1).map((p,i)=>Math.hypot(p[0]-ST_ZIG[i][0],p[1]-ST_ZIG[i][1]));
+  let d=t*len.reduce((a,b)=>a+b),i=0;
+  while(i<len.length-1&&d>len[i])d-=len[i++];
+  const a=ST_ZIG[i],b=ST_ZIG[i+1],u=d/len[i];
+  return [a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u];
+}
 const ST_ICON={night:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   day:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'};
 // The sky's classes and colours. applyTheme (settings.js) calls it, so it runs on every change of screen or theme.
@@ -145,22 +155,26 @@ function stSky(){
   if(stDial&&on){
     // without the server's time the dial waits at its middle
     const t=clockOk()?dayFrac():.5,K=ST_SKY[day?'day':'night'],a=K[t<.5?0:1],b=K[t<.5?1:2],u=t<.5?t*2:t*2-1;
-    const col=a.map((c,i)=>`rgb(${c.map((v,j)=>Math.round(v+(b[i][j]-v)*u)).join(',')})`),[x,y]=stArc(t);
+    const col=a.map((c,i)=>`rgb(${c.map((v,j)=>Math.round(v+(b[i][j]-v)*u)).join(',')})`),[x,y]=stArc(t),[zx,zy]=stZig(t);
     col.forEach((c,i)=>sc.style.setProperty('--s'+(i+1),c));
     sc.style.setProperty('--sa',(.3+.65*Math.sin(Math.PI*t)).toFixed(2)); // the stars are brightest when the sky is darkest
     sc.style.setProperty('--mx',x.toFixed(2)+'%');sc.style.setProperty('--my',y.toFixed(2)+'%');
+    sc.style.setProperty('--zx',zx.toFixed(2)+'%');sc.style.setProperty('--zy',zy.toFixed(2)+'%');
     // the page's own colour follows the sky, for an iPhone's strips (store.css)
     root.style.setProperty('--bar',col[0]);root.style.setProperty('--bg0',col[2]);
   }else{
-    ['--s1','--s2','--s3','--sa','--mx','--my'].forEach(p=>sc.style.removeProperty(p));
+    ['--s1','--s2','--s3','--sa','--mx','--my','--zx','--zy'].forEach(p=>sc.style.removeProperty(p));
     root.style.removeProperty('--bar');root.style.removeProperty('--bg0');
   }
   // the theme changed: the market's name and words change with it
   if(day!==stWasDay){const first=stWasDay==null;stWasDay=day;if(!first){renderStoreTile();if(on)renderStore()}}
 }
+const stMoonLabel=()=>`The ${stDay()?'sun':'moon'}. ${stDial?'It crosses the sky as the day runs out. Tap to stop it':'Tap to let it cross the sky as the day runs out'}`;
 function stDialFlip(){
   stDial=!stDial;try{localStorage.setItem(ST_DIAL_KEY,stDial?'1':'0')}catch(e){}
-  sfx('click');applyTheme();renderStore();
+  // only the sky changes (stSky), so the market isn't drawn again
+  sfx('click');applyTheme();
+  $$('#stBody .st-moon').forEach(b=>{b.setAttribute('aria-pressed',stDial);b.setAttribute('aria-label',stMoonLabel())});
   toast(stDial?`The ${stDay()?'sun':'moon'} now crosses the sky as the day runs out. Tap it again to stop it.`:'The sky stands still again.',3200);
 }
 const ST_STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l2.2 8.8L23 12l-8.8 2.2L12 23l-2.2-8.8L1 12l8.8-2.2z"/></svg>';
@@ -182,16 +196,16 @@ function renderStore(){
   const price=p=>`<span class="st-price${SAVE.shards<p?' short':''}">${shd()}${fmtSh(p)}<span class="sr"> shards</span></span>`;
   const ok=clockOk(),s=ok?shopDay():null,st=ok?merchStock():null,wait='<p class="st-note">Checking the time with the server…</p>';
 
-  const day=stDay(),orb=day?'sun':'moon',mark=day?ST_CLOUD:ST_STAR;
+  const day=stDay(),mark=day?ST_CLOUD:ST_STAR;
   $('#scr-store .topbar h2').textContent=day?'Day Market':'Night Market';
   // the moon is the dial's switch. There are two: beside the countdown, and on a phone's map once the dial is on
-  const moon=cls=>`<button class="st-moon${cls}" aria-pressed="${stDial}" aria-label="The ${orb}. ${stDial?'It crosses the sky as the day runs out. Tap to stop it':'Tap to let it cross the sky as the day runs out'}"></button>`;
+  const moon=cls=>`<button class="st-moon${cls}" aria-pressed="${stDial}" aria-label="${stMoonLabel()}"></button>`;
   const hero=`<section class="st-hero"><div><div class="st-lab">${day?'Today':'Tonight'}'s sky</div><div class="st-count" id="stWait">${untilMidnight()}</div>
     <div class="st-now" aria-hidden="true"><div class="st-lab" id="stDate"></div><div class="st-count" id="stClock"></div></div>
     <p>${!ok?'Checking the time with the server…':day?'until the stalls pack up. Every player sees the same four stops today, and at midnight they all change.':'until the market moves on. Every player sees the same four stops tonight, and at midnight they all change.'}</p></div>
     <span class="st-orbit"><svg class="st-arc" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon('')}${
       (day?['Dawn','Noon','Dusk']:['Moonrise','High moon','Moonset']).map(l=>`<small aria-hidden="true">${l}</small>`).join('')}</span></section>`;
-  const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="st-zig" d="M16 40L40 72L63 30L85 66" vector-effect="non-scaling-stroke"/><path class="st-arcp" d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon(' st-mm')}${
+  const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="st-zig" d="M${ST_ZIG.map(p=>p.join(' ')).join('L')}" vector-effect="non-scaling-stroke"/><path class="st-arcp" d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon(' st-mm')}${
     ST_STOPS.map(([k,,,short])=>`<button class="st-star s-${k}${k===stStop?' on':''}" data-stop="${k}" aria-pressed="${k===stStop}">${mark}<span>${short}${k==='deal'&&s&&!s.got.deal?` −${DEAL_OFF*100}%`:''}</span></button>`).join('')}</nav>`;
 
   const merch=!ok?wait:`<div class="st-cards">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id];
@@ -240,6 +254,7 @@ function renderStore(){
     if(stDown){stGo(i,false);stSheet(false)}else stGo(i);
   });
   $$('#stBody .st-moon').forEach(b=>b.onclick=stDialFlip);
+  stClock(); // the sky's clock is drawn again with the rest, so it doesn't wait empty for its next second
   stSwipe();
   if(!stDown)stGo(stIdx(),false);
   $$('#stBody .st-buy').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
