@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.23.6 (2026-10-13)
+- The market's second stop is now The Forge. It's closed for now: coming soon
+- The discounted pack moved to the Pack counter: the pack on offer is marked on its own row with the old price struck through
+
 ## 0.23.5 (2026-10-13)
 - On a phone the Day Market's clouds sit on an arc from the start, not a zigzag. Tap the sun and it joins the arc
 - On a phone the Night Market keeps its constellation when you tap the moon: the moon travels along the zigzag from star to star

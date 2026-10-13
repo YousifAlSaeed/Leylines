@@ -16,7 +16,7 @@
    the page scrolls. The screen sets its own colours: night in the dark theme, and the Day Market's (.st-day, further
    down) in the light theme. */
 #scr-store{--text:#F1ECFF;--muted:#B9AEDD;--line:rgba(237,230,255,.1);--line2:rgba(237,230,255,.22);--tint:255,255,255;--well:rgba(0,0,0,.3);
-  --surf:#140C33;--surf2:#1E1450;--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a;--st-gold:#FFC45C;color:var(--text);
+  --surf:#140C33;--surf2:#1E1450;--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a;--st-gold:#FFC45C;--st-deal:#FF86C4;--st-deal-on:#2a0b1e;color:var(--text);
   background:
     radial-gradient(circle at 23px 41px,rgba(237,230,255,.85) 0 1px,transparent 1.6px) 0 0/173px 157px,
     radial-gradient(circle at 97px 12px,rgba(237,230,255,.5) 0 .8px,transparent 1.4px) 0 0/211px 193px,
@@ -68,7 +68,7 @@
 .st-stops{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 24px;align-items:stretch;padding-bottom:12px}
 @media (max-width:1099px){.st-stops{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .st-stop{display:flex;flex-direction:column;min-width:0}
-.s-merchant{--sc:#B894FF}.s-deal{--sc:#FF86C4}.s-packs{--sc:#8ef0fa}.s-well{--sc:#5EE6B0}
+.s-merchant{--sc:#B894FF}.s-forge{--sc:#FF86C4}.s-packs{--sc:#8ef0fa}.s-well{--sc:#5EE6B0}
 .st-sh{display:flex;align-items:center;gap:12px;margin:0 0 10px;font:700 12px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--text)}
 .st-sh svg{width:24px;height:24px;flex:none;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc))}
 .st-sh i{flex:1;border-top:1px dashed rgba(237,230,255,.3)}
@@ -93,17 +93,14 @@
 .st-slot.sold::after{content:"SOLD";position:absolute;top:2.4em;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font:800 14px/1 var(--display);letter-spacing:.14em;
   color:#FF86C4;border:2px solid currentColor;border-radius:5px;padding:3px 7px;background:#140C33;pointer-events:none}
 
-/* II · the deal of the night */
-.s-deal .st-glass{border-color:rgba(255,134,196,.25);background:radial-gradient(90% 60% at 50% 20%,rgba(255,95,168,.18),transparent 70%),rgba(255,255,255,.02)}
-.st-dealbox{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center}
-.st-dealbox .pk-mini{--w:96px;margin:10px 0 22px;transform:rotate(-5deg);box-shadow:0 0 60px rgba(255,134,196,.45),0 22px 36px -12px rgba(0,0,0,.85)}
-.st-dealbox.sold .pk-mini{box-shadow:none}
-.st-dn{font:800 22px/1 var(--display)}
-.st-dealbox small{margin-top:6px;color:var(--muted);font-size:12.5px}
-.st-off{margin:12px 0 16px;color:#FF86C4;font-size:13px}
-.st-off s{color:var(--muted)}
-.st-dealbox.sold .st-off{color:var(--muted)}
-.st-dealbuy{width:100%;margin-top:auto;border-radius:999px}
+/* II · the Forge: closed for now */
+.s-forge .st-glass{border-style:dashed;border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
+.st-forge{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.st-forge svg{width:72px;height:72px;fill:var(--sc);opacity:.55}
+.st-forge b{font:800 22px/1 var(--display)}
+.st-soon{padding:7px 14px;border-radius:999px;font:700 12px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--sc);
+  border:1px solid color-mix(in srgb,var(--sc) 45%,transparent);background:color-mix(in srgb,var(--sc) 10%,transparent)}
+.st-forge small{color:var(--muted);font-size:12.5px}
 
 /* III · the Pack Counter */
 .st-tiers{flex:1;display:flex;flex-direction:column;justify-content:center}
@@ -116,6 +113,12 @@
 .st-dt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .st-dt b{font:700 15px/1.15 var(--display)}
 .st-dt small{color:var(--muted);font-size:11.5px}
+/* the pack on offer today: its own row, marked, with the old price struck through. It sells once */
+.st-pk.deal{width:calc(100% + 20px);margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:12px;border-bottom-color:transparent;
+  background:color-mix(in srgb,var(--st-deal) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--st-deal) 40%,transparent)}
+.st-tag{align-self:flex-start;padding:3px 7px;border-radius:999px;font:700 10.5px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--st-deal-on);background:var(--st-deal)}
+.st-was{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:11.5px}
+.st-was s{color:var(--muted)}
 
 /* IV · the Shard well */
 .st-rings{display:flex;justify-content:space-around;gap:12px}
@@ -160,7 +163,7 @@
   .st-star.on svg{transform:scale(1.2);opacity:1}
   .st-star.on::before{opacity:.65;transform:none}
   .st-star.on span{opacity:1;font-weight:700}
-  .st-star.s-merchant{left:16%;top:40%}.st-star.s-deal{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
+  .st-star.s-merchant{left:16%;top:40%}.st-star.s-forge{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
   /* in the sky every star shines alike, with no names and no ring */
   .st-down .st-star svg{opacity:1;transform:none}
   .st-down .st-star::before,.st-down .st-star span{opacity:0}
@@ -189,9 +192,9 @@
     background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid rgba(237,230,255,.12);
     opacity:.45;transform:scale(.94);transition:opacity .35s,transform .45s var(--ease)}
   .st-stop.on{opacity:1;transform:none}
-  .st-stop.s-deal{border-color:rgba(255,134,196,.3);background:radial-gradient(90% 55% at 50% 22%,rgba(255,95,168,.2),transparent 70%),rgba(255,255,255,.02)}
+  .st-stop.s-forge{border-style:dashed;border-color:color-mix(in srgb,var(--sc) 40%,transparent)}
   .st-sub{min-height:0}
-  .st-glass,.s-deal .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .st-glass,.s-forge .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .st-slot .card{font-size:max(12px,min(16px,4vw,calc((100cqh - 268px) / 12)))}
   .st-cards{row-gap:12px}
   .st-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
@@ -236,12 +239,12 @@
   .st-dial .st-moon.st-mm{display:block;left:var(--zx,50%);top:var(--zy,50%);width:44px;height:44px}
   .st-day.st-dial .st-moon.st-mm{left:var(--mx,50%);top:var(--my,14%)}
   .st-dial .st-star{z-index:1}
-  .st-day .st-star.s-merchant{left:15%;top:55.8%}.st-day .st-star.s-deal{left:38%;top:19.5%}.st-day .st-star.s-packs{left:62%;top:19.5%}.st-day .st-star.s-well{left:85%;top:55.8%}
+  .st-day .st-star.s-merchant{left:15%;top:55.8%}.st-day .st-star.s-forge{left:38%;top:19.5%}.st-day .st-star.s-packs{left:62%;top:19.5%}.st-day .st-star.s-well{left:85%;top:55.8%}
 }
 
 /* ---------- the Day Market (.st-day): the light theme's sky, a sun for the moon ---------- */
 #scr-store.st-day{--text:#2b1a3f;--muted:#5d4a6e;--line:rgba(43,26,63,.12);--line2:rgba(43,26,63,.22);--tint:0,0,0;--well:rgba(0,0,0,.05);--surf:#fff;--surf2:#f0ebff;
-  --shard:#22a6b8;--shard-ink:#0f7684;--shard-deep:#0d5563;--st-gold:#f0a92e;--s1:#7fc8f8;--s2:#c4e6fb;--s3:#fff3cf;
+  --shard:#22a6b8;--shard-ink:#0f7684;--shard-deep:#0d5563;--st-gold:#f0a92e;--st-deal:#c2255c;--st-deal-on:#fff;--s1:#7fc8f8;--s2:#c4e6fb;--s3:#fff3cf;
   background:linear-gradient(180deg,var(--s1),var(--s2) 55%,var(--s3))}
 .st-day .st-lab{color:#8a3b12}
 .st-day .st-now .st-lab{color:var(--muted)}
@@ -249,19 +252,16 @@
 .st-day .st-moon{background:radial-gradient(circle,#fffbd6,#ffd43b 58%,#ff9f43);box-shadow:0 0 0 12px rgba(255,236,160,.4),0 0 0 28px rgba(255,236,160,.18),0 0 70px rgba(255,160,60,.6)}
 .st-day.st-dial .st-moon{box-shadow:0 0 0 6px rgba(255,236,160,.45),0 0 34px rgba(255,150,60,.8)}
 .st-day .st-arc{stroke:rgba(43,26,63,.4)}
-.st-day .s-merchant{--sc:#6a2bae}.st-day .s-deal{--sc:#c2255c}.st-day .s-packs{--sc:#0b7285}.st-day .s-well{--sc:#2b8a3e}
+.st-day .s-merchant{--sc:#6a2bae}.st-day .s-forge{--sc:#c2255c}.st-day .s-packs{--sc:#0b7285}.st-day .s-well{--sc:#2b8a3e}
 .st-day .st-sh svg{filter:none}.st-day .st-sh i{border-top-color:rgba(43,26,63,.3)}
 .st-day .st-glass{border-color:rgba(43,26,63,.12);background:rgba(255,255,255,.55)}
-.st-day .s-deal .st-glass{border-color:rgba(194,37,92,.28);background:radial-gradient(90% 60% at 50% 20%,rgba(214,51,108,.14),transparent 70%),rgba(255,255,255,.55)}
+.st-day .s-forge .st-glass{border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
 .st-day .st-slot.mine .card{box-shadow:0 0 0 2px #c2255c,0 0 24px rgba(194,37,92,.4)}
 .st-day .st-cn small{color:#8a4b00}
-.st-day .mine .st-cn small,.st-day .st-off{color:#c2255c}
-.st-day .st-dealbox.sold .st-off{color:var(--muted)}
+.st-day .mine .st-cn small{color:#c2255c}
 .st-day .st-buy{border-color:color-mix(in srgb,var(--shard) 45%,transparent);background:color-mix(in srgb,var(--shard) 9%,transparent)}
 .st-day .st-buy:disabled{border-color:var(--line);background:none}
 .st-day .st-slot.sold::after{color:#c2255c;background:#fff}
-.st-day .st-dealbox .pk-mini{box-shadow:0 0 50px rgba(214,51,108,.3),0 22px 36px -14px rgba(43,26,63,.5)}
-.st-day .st-dealbox.sold .pk-mini{box-shadow:none}
 .st-day .st-pk,.st-day .st-rates div{border-bottom-color:rgba(43,26,63,.1)}
 .st-day .st-ring{background:conic-gradient(var(--rc) calc(var(--p)*1%),rgba(43,26,63,.1) 0)}
 .st-day .st-ring span{background:#fff6ee}
@@ -272,8 +272,8 @@
   .st-day .st-star svg{filter:none}
   .st-day .st-star::before{box-shadow:none}
   .st-day .st-stop{background:rgba(255,255,255,.55);border-color:rgba(43,26,63,.12)}
-  .st-day .st-stop.s-deal{border-color:rgba(194,37,92,.3);background:radial-gradient(90% 55% at 50% 22%,rgba(214,51,108,.14),transparent 70%),rgba(255,255,255,.55)}
-  .st-day .st-glass,.st-day .s-deal .st-glass{border:0;background:none}
+  .st-day .st-stop.s-forge{border-color:color-mix(in srgb,var(--sc) 40%,transparent)}
+  .st-day .st-glass,.st-day .s-forge .st-glass{border:0;background:none}
   .st-day .st-dots i{background:rgba(43,26,63,.25)}
   .st-day .st-dots i.on{background:var(--sc)}
   .st-day .st-hint{color:var(--muted)}
