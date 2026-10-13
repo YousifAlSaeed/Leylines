@@ -13,9 +13,10 @@
 
 /* ---------- the Store screen: the Night Market (store.js) ---------- */
 /* The sky is the screen's own background, so it fills the whole window however tall the page is, and stays put while
-   the page scrolls. It's night in the light theme too, so the screen sets its own dark colours. */
+   the page scrolls. The screen sets its own colours: night in the dark theme, and the Day Market's (.st-day, further
+   down) in the light theme. */
 #scr-store{--text:#F1ECFF;--muted:#B9AEDD;--line:rgba(237,230,255,.1);--line2:rgba(237,230,255,.22);--tint:255,255,255;--well:rgba(0,0,0,.3);
-  --surf:#140C33;--surf2:#1E1450;--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a;color:var(--text);
+  --surf:#140C33;--surf2:#1E1450;--shard:#6fe3f0;--shard-ink:#8ef0fa;--shard-deep:#1f6f8a;--st-gold:#FFC45C;color:var(--text);
   background:
     radial-gradient(circle at 23px 41px,rgba(237,230,255,.85) 0 1px,transparent 1.6px) 0 0/173px 157px,
     radial-gradient(circle at 97px 12px,rgba(237,230,255,.5) 0 .8px,transparent 1.4px) 0 0/211px 193px,
@@ -30,9 +31,11 @@
     radial-gradient(55% 40% at 12% 0,rgba(139,108,255,.3),transparent 70%),
     linear-gradient(180deg,#0c0a2a,#06051a 55%,#0b0824)}
 #scr-store .iconbtn{color:var(--text)}
-/* while the market is open (show() sets .night) the page's own colour is the sky's, light theme too: an iPhone paints
-   its bottom strip and the blur under the clock with it (base.css), so they stay night instead of a pale band */
+/* while the market is open (show() sets .night) the page's own colour is the sky's: an iPhone paints its bottom strip
+   and the blur under the clock with it (base.css), so they match the sky instead of showing as a band. With the dial
+   on, stSky (store.js) sets both as the sky changes */
 :root.night,:root[data-theme].night{--bg0:#0b0824;--bar:#0c0a2a} /* --bar: the top of the sky, for the strip behind the clock */
+:root[data-theme="light"].night{--bg0:#fff3cf;--bar:#7fc8f8}
 .st-top,.st-wrap{max-width:1200px}
 .st-wrap{flex:1 0 auto;gap:0}
 .st-bal{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;font:700 16px/1 var(--display);font-variant-numeric:tabular-nums;
@@ -53,7 +56,10 @@
 .st-count{margin-top:10px;font:800 64px/.95 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums;
   background:linear-gradient(180deg,#fff 20%,#B894FF);-webkit-background-clip:text;background-clip:text;color:transparent}
 .st-hero p{margin:12px 0 0;max-width:470px;color:var(--muted);font-size:14.5px}
-.st-moon{width:132px;height:132px;flex:none;border-radius:50%;
+/* the moon is a button: it turns the dial on and off (further down). Its wrapper only matters to the dial */
+.st-orbit{flex:none;display:flex}
+.st-arc,.st-arcp,.st-orbit small,.st-moon.st-mm{display:none}
+.st-moon{width:132px;height:132px;flex:none;border-radius:50%;border:0;padding:0;cursor:pointer;
   background:radial-gradient(circle at 34% 52%,rgba(120,100,190,.25) 0 11px,transparent 12px),radial-gradient(circle at 62% 28%,rgba(120,100,190,.25) 0 7px,transparent 8px),
     radial-gradient(circle at 60% 66%,rgba(120,100,190,.22) 0 5px,transparent 6px),radial-gradient(circle at 38% 35%,#fbf7ff,#d9ccff 55%,#a796e0);
   box-shadow:0 0 60px rgba(217,204,255,.45),0 0 140px rgba(139,108,255,.35)}
@@ -193,6 +199,81 @@
   .st-dots i.on{width:22px;background:var(--sc)}
   .st-hint{display:block;margin:10px 0 max(16px,env(safe-area-inset-bottom));text-align:center;font-size:12px;color:#8E82B8}
   .ios-short .st-hint{margin-bottom:24px} /* the home bar sits in iOS's own strip below the page (base.css) */
+}
+
+/* ---------- the dial (.st-dial): tap the moon and it crosses an arc as the game day runs out ---------- */
+/* stSky (store.js) sets the sky's three colours (--s1 to --s3), how bright the stars are (--sa) and where on the arc
+   the moon is (--mx, --my) */
+#scr-store.st-dial{--s1:#05041a;--s2:#090724;--s3:#140d3a;--sa:.95;
+  background:
+    radial-gradient(circle at 23px 41px,rgba(237,230,255,calc(.85*var(--sa))) 0 1px,transparent 1.6px) 0 0/173px 157px,
+    radial-gradient(circle at 97px 12px,rgba(237,230,255,calc(.5*var(--sa))) 0 .8px,transparent 1.4px) 0 0/211px 193px,
+    radial-gradient(circle at 140px 120px,rgba(237,230,255,calc(.9*var(--sa))) 0 1.2px,transparent 2px) 0 0/263px 241px,
+    radial-gradient(circle at 60px 170px,rgba(184,148,255,calc(.75*var(--sa))) 0 1px,transparent 1.6px) 0 0/307px 229px,
+    radial-gradient(circle at 200px 60px,rgba(142,240,250,calc(.6*var(--sa))) 0 1px,transparent 1.6px) 0 0/337px 283px,
+    radial-gradient(circle at 31px 88px,rgba(237,230,255,calc(.6*var(--sa))) 0 .9px,transparent 1.5px) 0 0/389px 347px,
+    radial-gradient(circle at 250px 300px,rgba(255,196,92,calc(.55*var(--sa))) 0 1px,transparent 1.6px) 0 0/431px 409px,
+    radial-gradient(circle at 120px 20px,rgba(237,230,255,calc(.75*var(--sa))) 0 1.1px,transparent 1.8px) 0 0/487px 457px,
+    linear-gradient(180deg,var(--s1),var(--s2) 55%,var(--s3))}
+/* a wide screen: the arc takes the moon's place beside the countdown */
+.st-dial .st-orbit{flex:1 1 320px;display:block;position:relative;height:150px;min-width:0}
+.st-dial .st-arc{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:rgba(237,230,255,.4);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
+.st-dial .st-orbit small{display:block;position:absolute;top:100%;margin-top:-14px;font:700 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.st-dial .st-orbit small:first-of-type{left:4%}
+.st-dial .st-orbit small:nth-of-type(2){left:50%;transform:translateX(-50%)}
+.st-dial .st-orbit small:last-of-type{right:4%}
+.st-dial .st-moon{position:absolute;left:var(--mx,50%);top:var(--my,14%);width:56px;height:56px;transform:translate(-50%,-50%);
+  background:radial-gradient(circle at 34% 52%,rgba(120,100,190,.25) 0 9%,transparent 10%),radial-gradient(circle at 62% 28%,rgba(120,100,190,.25) 0 6%,transparent 7%),
+    radial-gradient(circle at 38% 35%,#fbf7ff,#d9ccff 55%,#a796e0);
+  box-shadow:0 0 26px rgba(217,204,255,.6),0 0 64px rgba(139,108,255,.5)}
+/* a phone: the arc is the map, with the four stars on it and the moon passing behind them */
+@media (max-width:759px){
+  .st-dial .st-orbit,.st-dial .st-zig{display:none}
+  .st-dial .st-arcp{display:inline}
+  .st-dial .st-lines{stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
+  .st-dial .st-moon.st-mm{display:block;width:44px;height:44px}
+  .st-dial .st-star{z-index:1}
+  .st-dial .st-star.s-merchant{left:15%;top:55.8%}.st-dial .st-star.s-deal{left:38%;top:19.5%}.st-dial .st-star.s-packs{left:62%;top:19.5%}.st-dial .st-star.s-well{left:85%;top:55.8%}
+}
+
+/* ---------- the Day Market (.st-day): the light theme's sky, a sun for the moon ---------- */
+#scr-store.st-day{--text:#2b1a3f;--muted:#5d4a6e;--line:rgba(43,26,63,.12);--line2:rgba(43,26,63,.22);--tint:0,0,0;--well:rgba(0,0,0,.05);--surf:#fff;--surf2:#f0ebff;
+  --shard:#22a6b8;--shard-ink:#0f7684;--shard-deep:#0d5563;--st-gold:#f0a92e;--s1:#7fc8f8;--s2:#c4e6fb;--s3:#fff3cf;
+  background:linear-gradient(180deg,var(--s1),var(--s2) 55%,var(--s3))}
+.st-day .st-lab{color:#8a3b12}
+.st-day .st-now .st-lab{color:var(--muted)}
+.st-day .st-count{background-image:linear-gradient(180deg,#2b1a3f,#b5477a)}
+.st-day .st-moon{background:radial-gradient(circle,#fffbd6,#ffd43b 58%,#ff9f43);box-shadow:0 0 0 12px rgba(255,236,160,.4),0 0 0 28px rgba(255,236,160,.18),0 0 70px rgba(255,160,60,.6)}
+.st-day.st-dial .st-moon{box-shadow:0 0 0 6px rgba(255,236,160,.45),0 0 34px rgba(255,150,60,.8)}
+.st-day .st-arc{stroke:rgba(43,26,63,.4)}
+.st-day .s-merchant{--sc:#6a2bae}.st-day .s-deal{--sc:#c2255c}.st-day .s-packs{--sc:#0b7285}.st-day .s-well{--sc:#2b8a3e}
+.st-day .st-sh svg{filter:none}.st-day .st-sh i{border-top-color:rgba(43,26,63,.3)}
+.st-day .st-glass{border-color:rgba(43,26,63,.12);background:rgba(255,255,255,.55)}
+.st-day .s-deal .st-glass{border-color:rgba(194,37,92,.28);background:radial-gradient(90% 60% at 50% 20%,rgba(214,51,108,.14),transparent 70%),rgba(255,255,255,.55)}
+.st-day .st-slot.mine .card{box-shadow:0 0 0 2px #c2255c,0 0 24px rgba(194,37,92,.4)}
+.st-day .st-cn small{color:#8a4b00}
+.st-day .mine .st-cn small,.st-day .st-off{color:#c2255c}
+.st-day .st-dealbox.sold .st-off{color:var(--muted)}
+.st-day .st-buy{border-color:color-mix(in srgb,var(--shard) 45%,transparent);background:color-mix(in srgb,var(--shard) 9%,transparent)}
+.st-day .st-buy:disabled{border-color:var(--line);background:none}
+.st-day .st-slot.sold::after{color:#c2255c;background:#fff}
+.st-day .st-dealbox .pk-mini{box-shadow:0 0 50px rgba(214,51,108,.3),0 22px 36px -14px rgba(43,26,63,.5)}
+.st-day .st-dealbox.sold .pk-mini{box-shadow:none}
+.st-day .st-pk,.st-day .st-rates div{border-bottom-color:rgba(43,26,63,.1)}
+.st-day .st-ring{background:conic-gradient(var(--rc) calc(var(--p)*1%),rgba(43,26,63,.1) 0)}
+.st-day .st-ring span{background:#fff6ee}
+@media (max-width:759px){
+  .st-day .st-moon{box-shadow:0 0 0 7px rgba(255,236,160,.4),0 0 0 16px rgba(255,236,160,.18),0 0 40px rgba(255,160,60,.6)}
+  .st-day.st-dial .st-moon{box-shadow:0 0 0 5px rgba(255,236,160,.45),0 0 28px rgba(255,150,60,.8)}
+  .st-day .st-lines{stroke:rgba(43,26,63,.4)}
+  .st-day .st-star svg{filter:none}
+  .st-day .st-star::before{box-shadow:none}
+  .st-day .st-stop{background:rgba(255,255,255,.55);border-color:rgba(43,26,63,.12)}
+  .st-day .st-stop.s-deal{border-color:rgba(194,37,92,.3);background:radial-gradient(90% 55% at 50% 22%,rgba(214,51,108,.14),transparent 70%),rgba(255,255,255,.55)}
+  .st-day .st-glass,.st-day .s-deal .st-glass{border:0;background:none}
+  .st-day .st-dots i{background:rgba(43,26,63,.25)}
+  .st-day .st-dots i.on{background:var(--sc)}
+  .st-day .st-hint{color:var(--muted)}
 }
 
 /* the confirm box */

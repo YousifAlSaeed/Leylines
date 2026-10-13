@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.23.4 (2026-10-13)
+- The light theme gets a Day Market: the same four stops under a sun and a daytime sky, with little clouds marking the stops and a sun on the menu tile
+- Tap the moon (or the sun) in the market and it crosses the sky as the day runs out, with the sky's colours changing as it goes. Tap it again to stop it. Each device remembers its own choice
+
 ## 0.23.3 (2026-10-11)
 - Turning a page in your binder sounds like real paper now, with four different page turns
 - New sounds picked by ear: a fuller card place, a softer card flip, a wooden xylophone timer tick, a lighter card lift and hand remove in the binder, and a bright chime run when you complete a set
