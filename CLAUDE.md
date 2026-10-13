@@ -35,3 +35,19 @@ Two people push to this repo, so always pull `dev` (`git pull origin dev`):
 2. Right before every push, even if you pulled earlier.
 
 If the pull brings conflicts, fix them, run `npm test`, then push.
+
+## Sound effects
+
+Most effects are real CC0 recordings, built by `tools/sfx-recordings.mjs` (the rest by
+`tools/generate-sfx.py`, which skips the recorded ones). Every source is credited in
+`client/audio/sfx/CREDITS.md`.
+
+To make or change one, you need the source recordings, which are not in the repo.
+Remind whoever asks to set up the sound kit first (needs ffmpeg and uv):
+
+```bash
+git clone https://github.com/Bodila51/opus-sound-layer sound-layer
+uv run sound-layer/scripts/sfx.py kit
+```
+
+Keep it outside the repo (about 230 MB). Tunes (win, Same/Plus, Combo) are in A major.

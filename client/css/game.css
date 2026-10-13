@@ -80,6 +80,10 @@ body.nobn .board .nm{display:none}
 .cell.hot{border-color:color-mix(in srgb,var(--hot) 55%,transparent);box-shadow:inset 0 0 16px color-mix(in srgb,var(--hot) 22%,transparent);cursor:pointer}
 .cell.over{border-color:var(--hot);box-shadow:inset 0 0 24px color-mix(in srgb,var(--hot) 40%,transparent)}
 .ghost{position:fixed;z-index:var(--z-ghost);pointer-events:none;transform:translate(-50%,-55%) scale(1.06) rotate(-4deg);box-shadow:0 1.2em 2.4em rgba(var(--sh),calc(.8*var(--shk)+.2))!important}
+/* a card flying between places (helpers.js fly): above popups, so a card can fly out of one */
+.flyer{position:fixed;z-index:calc(var(--z-modal) + 1);margin:0;pointer-events:none;will-change:transform;transform-origin:50% 50%}
+.flyer.lifted{box-shadow:0 1.2em 2em -.6em rgba(0,0,0,.7)}
+.card.hold{visibility:hidden}
 
 body.land .arena{flex-direction:row;justify-content:center;gap:max(16px,calc(3.2vw / var(--ui)))}
 /* each column is as tall as the board (3 cells, the gaps, padding and border): the name row stays pinned

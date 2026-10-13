@@ -20,7 +20,9 @@ const DUO={role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),sea
   // the host's list of the match's moves, [card, square], sent with the result for the Review; the Review on screen (review.js)
   moves:[],rv:null,
   // the move animations (duoPump): snapshots waiting to play, the board on screen, the last queued move, a playing flag, a stop counter
-  animQ:[],boardSt:null,qN:-1,animating:false,gen:0};
+  animQ:[],boardSt:null,qN:-1,animating:false,gen:0,
+  // the host's invites by seat: friend's username key → the seat they were invited to (duoInvPop)
+  invSeat:{}};
 const DUO_HOST_KEY='leylines-duo-host',DUO_RJ_KEY='leylines-duo-rejoin',DUO_RULES_KEY='leylines-duo-rules';
 // The host's device runs the match, and when the host leaves (in any way) the match ends for everyone: nothing is kept
 // to resume it. A match saved by an older version is cleared.
@@ -54,7 +56,7 @@ const duoSeatName=s=>s.kind==='cpu'?`CPU ${s.diff==='easy'?'Easy':'Normal'}`:s.k
 async function duoHost(){
   netClose(true);duoQuit();
   DUO.role='host';DUO.closing=false;DUO.me=0;
-  DUO.code=newCode();DUO.rules=duoLoadRules();DUO.phase='room';DUO.st=null;DUO.last=null;DUO.decks=[null,null,null,null];
+  DUO.code=newCode();DUO.rules=duoLoadRules();DUO.invSeat={};DUO.phase='room';DUO.st=null;DUO.last=null;DUO.decks=[null,null,null,null];
   DUO.seats=[{kind:'human',name:duoName(),user:myUser(),av:myAv(),tok:'host',ready:true,col:'blue'},duoOpen(),duoOpen(),duoOpen()];
   duoBroadcast();
   try{await loadPeerJS()}catch(e){toast(e.message,4000);duoQuit();show('menu');return}
@@ -95,7 +97,9 @@ function duoGuestIn(c){
     if(DUO.st&&DUO.st.turn===i)DUO.turnN=-1; // a fresh turn timer for a player back on their turn
   }else{
     if(DUO.phase!=='room'){refuse({t:'full',busy:true});return}
-    i=[1,2,3].find(k=>DUO.seats[k].kind==='open');
+    // a friend invited to a seat sits there if it's still free; anyone else takes the first open seat
+    const want=DUO.invSeat[frKey(netUser(meta.user)||'')];
+    i=want>0&&DUO.seats[want].kind!=='human'?want:[1,2,3].find(k=>DUO.seats[k].kind==='open');
     if(i==null)i=[1,2,3].find(k=>DUO.seats[k].kind==='cpu'); // a player takes a CPU's seat
     if(i==null){refuse({t:'full'});return}
     const col=DUO.seats[i].kind==='cpu'&&DUO.seats[i].col||duoFreeCol(); // taking a CPU's seat takes its colour too
@@ -194,17 +198,32 @@ function duoStart(){
   duoChanged();
 }
 function duoBegin(){
-  const rng=mulberry32(DUO.seed);
-  DUO.st=duoNew(DUO.decks,Math.floor(rng()*4),duoElements(DUO.rules,rng));
+  DUO.rng=mulberry32(DUO.seed);
+  duoRound(DUO.decks,Math.floor(DUO.rng()*4),0);
+}
+// a round: Three open's face-up cards, the elements, Chaos's first pick
+function duoRound(hands,first,sd){
+  const R=DUO.rules,rng=DUO.rng;
+  DUO.st=duoNew(hands,first,duoElements(R,rng),R.threeOpen&&!R.open?duoThree(hands,rng):null);
+  DUO.st.sd=sd;duoChaosPick();
   DUO.phase='play';DUO.last=null;DUO.turnN=-1;DUO.moves=[];
   duoChanged();
 }
-const duoLegal=(hi,cell)=>Number.isInteger(hi)&&Number.isInteger(cell)&&hi>=0&&hi<DUO.st.h[DUO.st.turn].length&&cell>=0&&cell<16&&DUO.st.b[cell]<0;
+const duoChaosPick=()=>{if(DUO.rules.chaos&&!duoFull(DUO.st))DUO.st.f=duoChaos(DUO.st,DUO.rng)};
+const duoLegal=(hi,cell)=>Number.isInteger(hi)&&Number.isInteger(cell)&&hi>=0&&hi<DUO.st.h[DUO.st.turn].length&&cell>=0&&cell<16&&DUO.st.b[cell]<0&&
+  (DUO.st.f<0||hi===DUO.st.f);
 function duoApply(hi,cell){
   const st=DUO.st,p=st.turn,id=st.h[p][hi],ev=[];
   duoPlay(st,DUO.rules,hi,cell,ev);
   DUO.last={n:st.n,p,cell,id,ev};DUO.moves.push([id,cell]);
-  if(duoFull(st))DUO.phase='over';
+  duoChaosPick();
+  if(duoFull(st)){
+    // Sudden death: a draw plays again (after the last move's animation and a moment to see the board)
+    if(DUO.rules.suddenDeath&&st.sd<5&&duoDraw(st,DUO.rules)){
+      DUO.phase='sd';
+      setTimeout(()=>{if(DUO.role==='host'&&DUO.phase==='sd'&&DUO.st===st)duoRound(duoSdHands(st,DUO.rules,DUO.decks),(st.first+1)%4,st.sd+1)},duoAnimMs(DUO.last)+1800);
+    }else DUO.phase='over';
+  }
   duoChanged();
 }
 // the host's clock: CPUs move, dropped players' time runs out, the turn timer plays for a player who ran out
@@ -238,7 +257,7 @@ function duoTick(){
       next=Math.min(next,DUO.turnEnd-now);
       if(now>=DUO.turnEnd){
         // out of time: a random card on a random square, like 1v1
-        const hi=Math.floor(Math.random()*st.h[st.turn].length),free=st.b.flatMap((x,c)=>x<0?[c]:[]);
+        const hi=st.f>=0?st.f:Math.floor(Math.random()*st.h[st.turn].length),free=st.b.flatMap((x,c)=>x<0?[c]:[]);
         duoApply(hi,free[Math.floor(Math.random()*free.length)]);return;
       }
     }
@@ -251,7 +270,8 @@ function duoChanged(){duoBroadcast();duoTick()}
 function duoSnap(i){
   const R=DUO.rules,now=Date.now();
   let st=null;
-  if(DUO.st){st=duoClone(DUO.st);if(!R.open)st.h=st.h.map((h,q)=>duoSide(R,q)===duoSide(R,i)?h:h.map(()=>-1))}
+  // (Three open: the face-up cards show for everyone)
+  if(DUO.st){st=duoClone(DUO.st);if(!R.open)st.h=st.h.map((h,q)=>duoSide(R,q)===duoSide(R,i)?h:h.map((id,k)=>st.u&&st.u[q][k]?id:-1))}
   return{t:'snap',v:++DUO.v,code:DUO.code,you:i,phase:DUO.phase,rules:R,st,last:DUO.last,
     seats:DUO.seats.map((s,k)=>({kind:s.kind,name:s.name||'',col:s.col||'',av:s.av==null?null:s.av,diff:s.diff||'',ready:!!s.ready,away:!!s.away,bot:!!s.bot,
       left:s.away&&!s.bot?Math.max(0,Math.ceil((s.awayAt+DUO_GRACE*1000-now)/1000)):0,deck:!!DUO.decks[k],host:k===DUO.me})),
@@ -431,6 +451,8 @@ function duoGot(snap){
   }
   // play / over: each new move plays as an animation (duoPump), then the result shows
   if(!duoOn('duo')){DUO.picking=false;duoShowGame()}
+  // a draw with Sudden death: a new round starts, from a fresh board
+  if(prev&&prev.st&&snap.st&&snap.st.sd>(prev.st.sd||0)){banner('Sudden Death!','sd');DUO.animQ=[];DUO.boardSt=null;DUO.qN=-1;DUO.animating=false;DUO.gen++;DUO.sel=null}
   duoQueue(snap);
   duoRender();
 }
@@ -463,10 +485,11 @@ async function duoAnimMove(S,prev){
   st.b[L.cell]=L.id;st.o[L.cell]=p;st.m[L.cell]=S.st.m[L.cell];
   duoDrawBoard(S,st,{drop:L.cell});duoScoreRow(S,st);sfx('place');
   await wait(320);
+  let nc=0;
   for(const e of L.ev){
     if(DUO.gen!==gen||!duoOn('duo'))return;
     if(e.t==='seal'){e.cells.forEach(c=>st.k[c]=1);duoDrawBoard(S,st,{seal:e.cells});await banner('Ley line!');continue}
-    if(e.t!=='basic'){await banner({same:'Same!',plus:'Plus!',combo:'Combo!'}[e.t]);if(DUO.gen!==gen)return}
+    if(e.t!=='basic'){await ruleBanner(e.t,e.t==='combo'?++nc:0);if(DUO.gen!==gen)return}
     duoFlip(S,st,e.cells,p,L.cell,()=>DUO.gen===gen);
     await wait(560);
   }
@@ -532,66 +555,94 @@ function duoPickDeck(){
 }
 
 /* ---------- the room ---------- */
+// the room, laid out like 1v1's (setup.js): the seats and match rows on the left, the rule cards on the right
+let duoRowOpen=null,duoLast=null; // the match row that's open, and the rule card tapped last (explained under the cards on phones)
+const DUO_SHORT={...RULE_SHORT,suddenDeath:'A draw replays the match',leyLines:'A full row or column seals'};
+const DUO_SEATK=[['open','Open seat'],['easy','CPU Easy'],['normal','CPU Normal']];
 function duoRoomRender(){
   const S=DUO.snap;if(!S)return;
-  const me=S.you,host=DUO.role==='host',ffa=!!S.rules.ffa;
-  $('#duoRoomTitle').textContent=`Crossroads · ${duoMode(S.rules)}`;
-  $('#duoMode').innerHTML=[[0,'2v2'],[1,'Free-for-all']].map(([f,l])=>`<button data-f="${f}" class="${+ffa===f?'on':''}" aria-pressed="${+ffa===f}" ${host?'':'disabled'}>${l}</button>`).join('');
-  $('#duoModeNote').innerHTML=ffa?'Everyone plays for themselves, each in their own colour. Turns go round the table from a random first player.'
-    :'Partners sit across from each other and see each other\'s hands. Turns switch team every move.';
+  const me=S.you,host=DUO.role==='host',ffa=!!S.rules.ffa,R=S.rules;
+  $('#duoRoomTitle').textContent=`Crossroads · ${duoMode(R)}`;
   $('#duoCode').textContent=S.code&&S.online!==false?S.code:'·····';
   $('#duoLink').value=S.code?inviteLink(S.code):'';
+  // the friend invited to an open seat, while the invite is out
+  const invAt=i=>{for(const [k,st] of INV.sent)if(st==='sent'&&DUO.invSeat[k]===i)return frName(k);return ''};
   const seat=i=>{
-    const s=S.seats[i],mine=i===me;
+    const s=S.seats[i],mine=i===me,open=s.kind==='open';
     const av=s.kind==='human'?(s.av!=null?`<span class="av art">${CARDS[s.av].art}</span>`:`<span class="av">${esc((s.name||'?')[0].toUpperCase())}</span>`)
       :s.kind==='cpu'?'<span class="av">🤖</span>':'<span class="av">+</span>';
     const tags=[mine?'You':'',s.host?'Host':'',s.kind==='human'&&!s.host?(s.ready?'Ready':'Not ready'):''].filter(Boolean).map(t=>`<em class="dtag${t==='Ready'?' ok':''}">${t}</em>`).join('');
+    const inv=host&&open?invAt(i):'';
+    // the host picks what an empty seat is, right where its name would be
+    const name=s.kind!=='human'&&host
+      ?`<select class="dsel" data-seat="${i}" aria-label="Seat ${i+1}" title="CPU Easy sometimes thinks a move ahead. CPU Normal thinks a move or two ahead, and slips now and then.">${DUO_SEATK.map(([k,l])=>
+        `<option value="${k}"${(open?'open':s.diff)===k?' selected':''}>${l}</option>`).join('')}</select>${inv?`<small class="dinv">Invited ${esc(inv)}</small>`:''}`
+      :`<b>${esc(duoSeatName(s))}</b>`;
     let ctl='';
-    if(s.kind!=='human'&&host)ctl=`<div class="seg dseat" role="group" aria-label="Seat ${i+1}">${[['open','Open'],['easy','CPU Easy'],['normal','CPU Normal']].map(([k,l])=>
-      `<button data-seat="${i}" data-k="${k}" class="${(s.kind==='open'?'open':s.diff)===k?'on':''}" aria-pressed="${(s.kind==='open'?'open':s.diff)===k}">${l}</button>`).join('')}</div>`;
-    if(s.kind!=='human')ctl+=`<button class="btn small" data-sit="${i}">Sit here</button>`;
+    if(s.kind!=='human')ctl=`<button class="btn small" data-sit="${i}">Sit here</button>`+(host?`<button class="btn small primary" data-invseat="${i}">Invite</button>`:'');
     // the host can move anyone to the other team, and remove other players
     else if(host)ctl=(ffa?'':`<button class="btn small" data-swap="${i}">Switch team</button>`)+(mine?'':`<button class="btn small danger" data-kick="${i}">Remove</button>`);
-    return `<li class="${s.kind==='open'?'empty':''} dc-${duoCol(S,i)}">${av}<b>${esc(duoSeatName(s,i))}</b>${tags}<span class="dctl">${ctl}</span></li>`;
+    return `<li class="${open?'empty':''} dc-${duoCol(S,i)}">${av}<span class="dnm">${name}</span>${tags}${ctl?`<span class="dctl">${ctl}</span>`:''}</li>`;
   };
   // 2v2: your team first (you and the seat across from you). Free-for-all: everyone, clockwise from you
-  // Free-for-all: your colour, picked from the ones nobody else has
-  const taken=c=>S.seats.find((s,k)=>k!==me&&s.kind!=='open'&&duoCol(S,k)===c),myCol=duoCol(S,me);
-  const swatches=`<div class="dcolors"><h3>Your colour</h3><div class="dsw" role="group" aria-label="Your colour">${DUO_COLS.map(c=>{const t=taken(c);
-    return `<button class="dc-${c}${c===myCol?' on':''}" data-col="${c}" aria-pressed="${c===myCol}" ${t?'disabled':''} title="${DUO_COL_NAME[c]}${t?' · '+esc(duoSeatName(t)):''}" aria-label="${DUO_COL_NAME[c]}${t?', taken by '+esc(duoSeatName(t)):''}">${c===myCol?'✓':''}</button>`}).join('')}</div></div>`;
-  $('#duoTeams').innerHTML=ffa?`<div class="dteam"><h3>Players</h3><ul class="room-pl">${[0,1,2,3].map(k=>seat((me+k)%4)).join('')}</ul></div>`+swatches
-    :[[me,(me+2)%4,'Your team'],[(me+1)%4,(me+3)%4,'Other team']].map(([a,b,l])=>
-    `<div class="dteam"><h3>${l}</h3><ul class="room-pl">${seat(a)}${seat(b)}</ul></div>`).join('');
-  $$('#duoTeams [data-col]').forEach(b=>b.onclick=()=>{sfx('click');if(host)duoSetCol(DUO.me,b.dataset.col);else duoSend({t:'color',c:b.dataset.col})});
+  const fill=host&&S.seats.some(s=>s.kind==='open')?'<button class="dfill" id="duoFill">Fill with CPUs</button>':'';
+  $('#duoTeams').innerHTML=ffa?`<div class="dteam"><h4>Players${fill}</h4><ul class="room-pl">${[0,1,2,3].map(k=>seat((me+k)%4)).join('')}</ul></div>`
+    :[[me,(me+2)%4,'Your team'],[(me+1)%4,(me+3)%4,'Other team']].map(([a,b,l],k)=>
+    `<div class="dteam"><h4>${l}${k?'':fill}</h4><ul class="room-pl">${seat(a)}${seat(b)}</ul></div>`).join('');
   $$('#duoTeams [data-swap]').forEach(b=>b.onclick=()=>{sfx('click');const i=+b.dataset.swap;duoSwap(i,(i+1)%4)});
   $$('#duoTeams [data-kick]').forEach(b=>b.onclick=()=>{sfx('click');const i=+b.dataset.kick;
     modal(`<h2>Remove ${esc(DUO.seats[i].name)}?</h2><p>They leave the room and can't join it again.</p>`,[{label:'Remove',cls:'danger',wait:true,fn:()=>duoKick(i)},{label:'Cancel',cls:'primary',esc:true}])});
-  $$('#duoTeams [data-seat]').forEach(b=>b.onclick=()=>{sfx('click');duoSetSeat(+b.dataset.seat,b.dataset.k)});
+  $$('#duoTeams [data-seat]').forEach(b=>b.onchange=()=>{sfx('click');duoSetSeat(+b.dataset.seat,b.value)});
   $$('#duoTeams [data-sit]').forEach(b=>b.onclick=()=>{sfx('click');const to=+b.dataset.sit;if(host)duoSit(DUO.me,to);else duoSend({t:'sit',i:to})});
-  // the rules: the host changes them, everyone sees them
-  const R=S.rules;
-  // friends to invite, while a seat is open or a CPU's (pulse.js)
-  $('#duoInv').innerHTML=host&&S.seats.some(s=>s.kind!=='human')?roomInvHTML():'';
-  $('#duoRuleList').innerHTML=DUO_RULES.map(([k,l,d])=>`<button class="drule${R[k]?' on':''}" data-k="${k}" aria-pressed="${!!R[k]}" ${host?'':'disabled'} title="${esc(d)}"><b>${l}</b><span>${esc(d)}</span></button>`).join('');
+  $$('#duoTeams [data-invseat]').forEach(b=>b.onclick=()=>{sfx('click');duoInvPop(+b.dataset.invseat)});
+  const fb=$('#duoFill');if(fb)fb.onclick=()=>{sfx('click');duoFill()};
+  // the match rows: mode, turn timer and (Free-for-all) your colour
+  $('#dval-mode').textContent=duoMode(R);
+  $('#duoMode').innerHTML=[[0,'2v2'],[1,'Free-for-all']].map(([f,l])=>`<button data-f="${f}" class="${+ffa===f?'on':''}" aria-pressed="${+ffa===f}" ${host?'':'disabled'}>${l}</button>`).join('');
+  $('#duoModeNote').innerHTML=ffa?'Everyone plays for themselves, each in their own colour. Turns go round the table from a random first player.'
+    :'Partners sit across from each other and see each other\'s hands. Turns switch team every move.';
+  if(host)$$('#duoMode button').forEach(b=>b.onclick=()=>{sfx('click');DUO.rules={...DUO.rules,ffa:b.dataset.f==='1'};duoResetReady();duoChanged()});
+  const dv=$('#dval-timer');dv.textContent=R.timer?R.timer+'s a turn':'Off';dv.classList.toggle('off',!R.timer);
   duoTimerRow(R.timer,host);
-  if(host){
-    $$('#duoMode button').forEach(b=>b.onclick=()=>{sfx('click');DUO.rules={...DUO.rules,ffa:b.dataset.f==='1'};duoResetReady();duoChanged()});
-    $$('#duoRuleList .drule').forEach(b=>b.onclick=()=>{sfx('click');DUO.rules={...DUO.rules,[b.dataset.k]:!DUO.rules[b.dataset.k]};duoResetReady();duoChanged()});
-  }
+  const taken=c=>S.seats.find((s,k)=>k!==me&&s.kind!=='open'&&duoCol(S,k)===c),myCol=duoCol(S,me);
+  $('#duoColRow').hidden=!ffa;if(!ffa&&duoRowOpen==='col')duoRowOpen=null;
+  $('#dval-col').innerHTML=`<i class="dcdot dc-${myCol}"></i>${DUO_COL_NAME[myCol]}`;
+  $('#duoCols').innerHTML=DUO_COLS.map(c=>{const t=taken(c);
+    return `<button class="dc-${c}${c===myCol?' on':''}" data-col="${c}" aria-pressed="${c===myCol}" ${t?'disabled':''} title="${DUO_COL_NAME[c]}${t?' · '+esc(duoSeatName(t)):''}" aria-label="${DUO_COL_NAME[c]}${t?', taken by '+esc(duoSeatName(t)):''}">${c===myCol?'✓':''}</button>`}).join('');
+  $$('#duoCols [data-col]').forEach(b=>b.onclick=()=>{sfx('click');if(host)duoSetCol(DUO.me,b.dataset.col);else duoSend({t:'color',c:b.dataset.col})});
+  duoRows();
+  // the rules: the same cards as 1v1's, with Ley lines (Crossroads' own rule) where 1v1 has Sweep
+  $('#duoRuleCount').textContent=`${DUO_RULES.filter(([k])=>R[k]&&(k!=='threeOpen'||!R.open)).length} on`;
+  $('#duoRuleList').innerHTML=DUO_RULES.map(([k,l])=>{
+    const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus);
+    return `<button class="rc${R[k]?' on':''}${dim?' dim':''}" data-k="${k}" role="switch" aria-checked="${!!R[k]}"${host?'':' aria-readonly="true"'} aria-label="${l}: ${esc(DUO_SHORT[k])}"><span class="em">${ruleSvg(k)}</span><b>${l}</b><small class="rd" aria-hidden="true">${esc(DUO_SHORT[k])}</small></button>`}).join('');
+  $$('#duoRuleList .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;duoLast=k;
+    if(!host){sfx('click');duoRoomRender();return}
+    const r={...DUO.rules,[k]:!DUO.rules[k]};if(k==='sameWall'&&r.sameWall)r.same=true;
+    // Open shows the whole hand and Three open just 3 cards: only one of them at a time
+    if(k==='open'&&r.open)r.threeOpen=false;if(k==='threeOpen'&&r.threeOpen)r.open=false;
+    DUO.rules=r;sfx('flip');duoResetReady();duoChanged();const n=$(`#duoRuleList [data-k="${k}"]`);n&&n.focus()});
+  const lr=DUO_RULES.find(r=>r[0]===duoLast);
+  $('#duoRuleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${R[lr[0]]?'on':'off'}</b><span>${esc(lr[2])}</span></div>`
+    :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${host?'Violet cards are on. Tap one to turn it on or off and see what it does.':'Violet cards are on. Only the host can change them. Tap one to see what it does.'}</span></div>`;
   const block=host?duoStartBlock():'',meReady=S.seats[me].ready;
-  $('#duoNote').textContent=host?(block||'Everyone is ready.'):meReady?'Waiting for the host to start…':'Tap Ready when the rules look good.';
+  $('#duoNote').innerHTML=esc(host?(block||'Everyone is ready.'):meReady?'Waiting for the host to start…':'Tap Ready when the rules look good.')+
+    `<br><span class="dsub">Friends join with the code from <b>Online → Join</b>. Crossroads is being tested: no cards change hands${DUO_REWARDS?'':', and it pays no XP or shards yet'}.</span>`;
   const go=$('#duoGo');
   go.textContent=host?'Start':meReady?'Not ready':'Ready';
   go.disabled=host&&!!block;
   go.onclick=()=>{sfx('click');if(host)duoStart();else duoSend({t:'ready',on:!meReady})};
-  const fill=$('#duoFill');fill.classList.toggle('hidden',!host||!S.seats.some(s=>s.kind==='open'));
-  fill.onclick=()=>{sfx('click');duoFill()};
+  invPopRefresh();
 }
+function duoRows(){$$('#duoOpts .srow').forEach(r=>{const on=r.dataset.row===duoRowOpen;r.classList.toggle('open',on);r.querySelector('.srh').setAttribute('aria-expanded',on)})}
+$$('#duoOpts .srh').forEach(b=>b.onclick=()=>{const k=b.dataset.row;duoRowOpen=duoRowOpen===k?null:k;sfx('click');duoRows()});
+// Invite on a seat: the friends popup (pulse.js). The friend who says yes sits in that seat (duoGuestIn)
+const duoInvPop=i=>invPop('They join the room in this seat.',name=>{DUO.invSeat[frKey(name)]=i});
 // the turn timer: the same slider as 1v1's room (setup.js), off or 10 to 90 seconds; only the host moves it
 function duoTimerRow(t,host){
   const row=$('#duoTimerRow');
   if(!row.firstChild){
-    row.innerHTML=`${ruleSvg('timer')}<b id="duoTimerName">Turn timer</b><output id="duoTimerOut" for="duoTimerSl"></output>`+
+    row.innerHTML=`<b id="duoTimerName">Time per turn</b><span></span><output id="duoTimerOut" for="duoTimerSl"></output>`+
       `<input type="range" class="rng" id="duoTimerSl" min="0" max="${TIMER_MAX/5-1}" step="1" aria-labelledby="duoTimerName">`+
       `<div class="ticks" aria-hidden="true">${[0,30,50,70,90].map(n=>`<span style="--p:${(n?n/5-1:0)/(TIMER_MAX/5-1)}">${n||'Off'}</span>`).join('')}</div>`;
     const sl=$('#duoTimerSl');
@@ -694,9 +745,11 @@ function duoClock(S,i){
   if(!S.rules.timer||S.seats[i].kind==='cpu')return `<span class="ptm idle none">${DUO_CLOCK}<b></b></span>`;
   return `<span class="ptm idle" data-q="${i}">${DUO_CLOCK}<b>${fmtLeft(S.rules.timer)}</b></span>`;
 }
+// Three open: which of a player's hand cards are face up for everyone
+const duoUp=(S,i)=>S.st&&S.st.u&&!S.rules.open?S.st.u[i]:[];
 function duoHandHTML(S,i,cls){
-  const h=S.st?S.st.h[i]:[],col=duoCol(S,i);
-  return `<div class="dhand dh-${cls}">${h.map(id=>id<0?cardHTML(0,null,{back:true}):cardHTML(id,col,{name:false})).join('')}</div>`;
+  const h=S.st?S.st.h[i]:[],col=duoCol(S,i),up=duoUp(S,i);
+  return `<div class="dhand dh-${cls}">${h.map((id,k)=>id<0?cardHTML(0,null,{back:true}):cardHTML(id,col,{name:false,cls:up[k]?'shown':''})).join('')}</div>`;
 }
 function duoRender(){
   const S=DUO.snap;if(!S||!duoOn('duo'))return;
@@ -713,10 +766,15 @@ function duoRender(){
   if(rv)duoDrawBoard(S,rv.st,{last:rv.cell});
   else if(!DUO.animating)duoDrawBoard(S,DUO.boardSt||st);
   // your hand
-  const can=duoMyTurn();
+  const can=duoMyTurn(),up=duoUp(S,me);
+  // Chaos: the game picked your card, so it's picked for you and the others can't be played
+  const forced=can&&st.f>=0?st.f:-1;
+  if(forced>=0)DUO.sel=forced;
   if(DUO.sel!=null&&(!can||DUO.sel>=st.h[me].length))DUO.sel=null;
-  $('#duoHand').innerHTML=st?st.h[me].map((id,i)=>cardHTML(id,duoCol(S,me),{cls:(can?'play ':'')+(DUO.sel===i?'sel':''),
-    attrs:`data-i="${i}"`+(can?` role="button" aria-pressed="${DUO.sel===i}" aria-label="${esc(cardLabel(id))}"`:'')})).join(''):'';
+  $('#duoHand').classList.toggle('chaos',forced>=0);
+  $('#duoHand').innerHTML=st?st.h[me].map((id,i)=>{const ok=can&&(forced<0||i===forced);
+    return cardHTML(id,duoCol(S,me),{cls:(ok?'play ':'')+(DUO.sel===i?'sel ':'')+(i===forced?'forced ':'')+(up[i]?'shown':''),
+    attrs:`data-i="${i}"`+(ok?` role="button" aria-pressed="${DUO.sel===i}" aria-label="${esc(cardLabel(id))}${i===forced?', picked by Chaos':''}"`:'')})}).join(''):'';
   $$('#duoHand .card.play').forEach(c=>c.addEventListener('pointerdown',duoHandDown));
   // scores (from the board on screen, so they follow the animation) and whose turn
   if(rv)duoScoreRow(S,rv.st);
@@ -724,11 +782,12 @@ function duoRender(){
   let msg;
   if(S.phase==='decks'){const w=S.seats.filter(s=>!s.deck).map(s=>s.name||'CPU');msg=w.length?`Waiting for ${w.join(', ')} to choose cards…`:'Starting…'}
   else if(S.phase==='over')msg=rv?'Review':'Match over';
+  else if(S.phase==='sd')msg='A draw! Sudden death…';
   else if(st.turn===me)msg=DUO.pending?'Sending…':'Your turn';
   else{const s=S.seats[st.turn];msg=s.kind==='cpu'||s.bot?`${s.kind==='cpu'?'CPU':esc(s.name)+"'s CPU"} is thinking…`:s.away?`Waiting for ${esc(s.name)}…`:`${esc(s.name)}'s turn`}
   $('#duoTurn').textContent=msg;
   const R=S.rules;
-  $('#duoRules').innerHTML=[`<span>${duoMode(R)}</span>`,...DUO_RULES.filter(([k])=>R[k]).map(r=>`<span>${r[1]}</span>`),R.timer?`<span>⏱ ${R.timer}s</span>`:'','<span>No trades</span>'].join('');
+  $('#duoRules').innerHTML=[`<span>${duoMode(R)}</span>`,...DUO_RULES.filter(([k])=>R[k]&&(k!=='threeOpen'||!R.open)).map(r=>`<span>${r[1]}</span>`),st&&st.sd?`<span>Round ${st.sd+1}</span>`:'',R.timer?`<span>⏱ ${R.timer}s</span>`:'','<span>No trades</span>'].join('');
   duoNetBar();duoTimerBar();
   if(DUO.fitKey!==duoFitKey())duoFit();
   if(rv)duoRevPlace();

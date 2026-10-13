@@ -6,6 +6,56 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.24.0 (2026-10-13)
+- The menu moves, on phones and PCs alike: the logo's squares turn over like a tiny match, the cards on the Play card float and open out, and Play has a slow heartbeat
+- Card drift: the cards you've found slide slowly past behind the menu, and now and then one turns over. Settings has a switch for it (Menu background)
+- A tile shakes and glints only when it has news: packs to open, new stock at the market, a friend request, new cards in your collection (the tile counts them until you look), or the tutorial's free pack still waiting
+
+## 0.23.7 (2026-10-13)
+- The tagline under the title on the menu is gone
+
+## 0.23.6 (2026-10-13)
+- The market's second stop is now The Forge. It's closed for now: coming soon
+- The discounted pack moved to the Pack counter: the pack on offer is marked on its own row with the old price struck through
+
+## 0.23.5 (2026-10-13)
+- On a phone the Day Market's clouds sit on an arc from the start, not a zigzag. Tap the sun and it joins the arc
+- On a phone the Night Market keeps its constellation when you tap the moon: the moon travels along the zigzag from star to star
+- Fixed: tapping the moon or the sun made the market stutter and left the clock empty for a second
+
+## 0.23.4 (2026-10-13)
+- The light theme gets a Day Market: the same four stops under a sun and a daytime sky, with little clouds marking the stops and a sun on the menu tile
+- Tap the moon (or the sun) in the market and it crosses the sky as the day runs out, with the sky's colours changing as it goes. Tap it again to stop it. Each device remembers its own choice
+
+## 0.23.3 (2026-10-11)
+- Turning a page in your binder sounds like real paper now, with four different page turns
+- New sounds picked by ear: a fuller card place, a softer card flip, a wooden xylophone timer tick, a lighter card lift and hand remove in the binder, and a bright chime run when you complete a set
+- More sounds picked by ear: a choir for the Match and Ley line banners, crystal chimes that climb with each card's rarity, a tape rip when you open a pack, a book closing for the binder, five rising plings when your hand is full, and a coin jingle when you claim a badge
+
+## 0.23.2 (2026-10-11)
+- The collection binder comes alive: the cover swings open, and every sound now has a move to match
+- Grab a page and drag it to turn it; flick it, or let go early and it falls back
+- Cards fly into your hand, back to their sleeve, and out of the binder when you open them
+- Epic and Legendary get their own pages with bigger cards, so each tab opens just its rarity
+- Tabs show their rarity colour; on phones only the open tab shows its name, so they all fit
+
+## 0.23.1 (2026-10-11)
+- 5 seconds after inviting a friend you can invite them again, and the invite pops up for them again
+
+## 0.23.0 (2026-10-11)
+- Crossroads now has every 1v1 rule: Three open, Sudden death and Chaos join the others, with Ley lines in Sweep's spot
+- The Crossroads room looks like the 1v1 waiting room: the same rule cards, and everything on the left fits without scrolling
+- Empty seats in the 1v1 and Crossroads rooms have their own Invite button: pick a friend from the list (in Crossroads they join in that seat)
+
+## 0.22.5 (2026-10-11)
+- New sound effects everywhere: wooden taps, paper, harp notes and soft chimes instead of beeps
+- Opening packs and browsing your Collection now have their own sounds, and rarer cards get a bigger reveal
+- Picking up a card from your hand in a match makes a sound
+- Cards, clicks and packs now use real recordings: cards really slide and land on the table, the timer ticks like a clock, the pack tears like foil, and the binder closes like a book
+- Claiming a badge's shards has its own sound: coins dropping into your pouch and a little bell
+- New win sound played on real celesta, glockenspiel and bell tree
+- Same and Plus have their own bright pop now, Combo climbs higher, and a second Combo in the same move climbs higher still
+
 ## 0.22.4 (2026-10-11)
 - Opening a pack feels real now: the strip tears along a ragged line and curls up toward you as you pull. Let go halfway and the tear stays, so you can carry on. Packs have crimped edges and a little notch on each side to start the tear, like real foil packs
 - Packs and card backs now show the new Leylines logo

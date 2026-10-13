@@ -62,6 +62,9 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 .room-inv h4{margin:0 0 8px;font:600 13px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .room-inv .note{margin:0}
 .room-inv .btn{min-height:30px;padding:4px 12px;font-size:12.5px;border-radius:10px}
+.invpop{margin-top:6px;max-height:min(50vh,360px);overflow:auto;text-align:left}
+.room-pl #roomInvBtn{min-height:30px;padding:4px 12px;font-size:12.5px;border-radius:10px;flex:none}
+.room-pl b small.rinv{color:var(--accent-ink)}
 /* an invite slides down from the top, so it never covers a friend request at the bottom */
 .fr-pop.inv-pop{top:calc(16px + env(safe-area-inset-top));bottom:auto;transform:translate(-50%,calc(-100% - 40px))}
 .fr-pop.inv-pop.on{transform:translate(-50%,0)}

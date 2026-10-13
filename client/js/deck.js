@@ -27,11 +27,47 @@ function renderDeck(){
    {pfx, sel:[ids], pool:[{id,count}], color, loadouts, saving, note, deal, render()}
    ===================================================================== */
 function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
-function handAdd(h,id){
-  if(h.sel.length>=5||handRemaining(h,id)<=0)return;
+// from: a card on screen to fly in from (a binder sleeve, the card popup, a dragged card); returns whether it was added
+function handAdd(h,id,from){
+  const tray=$(`#${h.pfx}Slots`).closest('.dk-tray');
+  if(h.sel.length>=5||handRemaining(h,id)<=0){sfx('coll_deny');shakeNo(tray);return false}
   const why=rarBlock(h.sel,id);
-  if(why){h.note=`<span class="bad">${why}</span>`;sfx('click');h.render();return}
-  h.sel.push(id);h.deal=h.sel.length-1;h.note='';sfx('place');h.render();
+  if(why){h.note=`<span class="bad">${why}</span>`;sfx('coll_deny');shakeNo(tray);h.render();return false}
+  h.sel.push(id);const k=h.sel.length-1,full=k===4;h.note='';sfx('coll_hand_add');
+  if(from&&!noMotion()){
+    // the card flies in an arc from where it was and lands in its slot
+    h.hold=k;h.render();h.hold=-1;
+    const dst=$(`#${h.pfx}Slots .dk-fs[data-i="${k}"] .card`);
+    fly(from,dst,{ms:360,arc:60,r1:(k-2)*4,shadow:true,ease:'cubic-bezier(.35,.4,.25,1)',done:()=>{if(dst){dst.classList.remove('hold');settle(dst)}if(full)handFull(h)}});
+  }else{h.deal=k;h.render();if(full)handFull(h)}
+  return true;
+}
+// the 5th card: the hand does a wave and the tray glows, with the "hand full" tune
+function handFull(h){
+  setTimeout(()=>{
+    sfx('coll_hand_full');if(noMotion())return;
+    $$(`#${h.pfx}Slots .card`).forEach((c,i)=>c.animate([{transform:'none'},{transform:'translateY(-.7em) scale(1.05)',offset:.4},{transform:'none'}],{duration:440,delay:i*95,easing:'ease-in-out'}));
+    const t=$(`#${h.pfx}Slots`).closest('.dk-tray'),glow=getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim();
+    if(t)t.animate([{boxShadow:`0 0 0 0 transparent`},{boxShadow:`0 0 0 4px ${glow},0 0 40px ${glow}`,offset:.35},{boxShadow:`0 0 0 0 transparent`}],{duration:1500,easing:'ease-out'});
+  },120);
+}
+// tap a hand card: it pops up and flies back to its sleeve (or floats off if its page isn't open); the rest slide over
+function handRemove(h,i){
+  const P=h.pfx,id=h.sel[i],card=$(`#${P}Slots .dk-fs[data-i="${i}"] .card`);
+  sfx('coll_hand_remove');
+  const old=$$(`#${P}Slots .dk-fs`).map(s=>{const c=s.querySelector('.card');return c&&c.getBoundingClientRect()});
+  if(card&&!noMotion()){
+    const home=bdPocketCard(id);
+    if(home){home.style.visibility='hidden';fly(card,home,{ms:560,lift:.25,liftAt:.24,liftScale:1.08,r0:(i-2)*4,arc:30,shadow:true,ease:'cubic-bezier(.4,.1,.25,1)',done:()=>{home.style.visibility='';bdPocketLand(home)}})}
+    else{const g=card.cloneNode(true),a=card.getBoundingClientRect(),fs=cardPx(card);g.classList.add('flyer','lifted');
+      Object.assign(g.style,{fontSize:fs+'px',left:(a.left+a.width/2-2.5*fs)+'px',top:(a.top+a.height/2-3*fs)+'px'});document.body.append(g);
+      g.animate([{transform:`rotate(${(i-2)*4}deg)`},{transform:'translateY(-1.4em) scale(1.08)',offset:.3},{transform:'translateY(-4em) scale(.9)',opacity:0}],{duration:560,easing:'cubic-bezier(.4,.1,.25,1)',fill:'forwards'}).onfinish=()=>g.remove()}
+  }
+  h.sel.splice(i,1);h.note='';h.render();
+  if(!noMotion())$$(`#${P}Slots .dk-fs`).forEach((s,j)=>{
+    const c=s.querySelector('.card'),o=old[j+1];if(j<i||!c||!o)return;const n=c.getBoundingClientRect();
+    c.animate([{transform:`translate(${(o.left-n.left)/UI}px,${(o.top-n.top)/UI}px) rotate(4deg)`},{transform:'none'}],{duration:420,easing:'cubic-bezier(.34,1.4,.64,1)'});
+  });
 }
 function renderHand(h){
   const P=h.pfx,col=h.color||'blue',n=h.sel.length;
@@ -40,10 +76,10 @@ function renderHand(h){
     const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
     const st=`style="--t:${t};transform:${t};z-index:${i}"`;
     return id!=null
-      ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':''})}</div>`
+      ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':i===h.hold?'hold':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   h.deal=-1;
-  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{h.sel.splice(+s.dataset.i,1);h.note='';sfx('click');h.render()});
+  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>handRemove(h,+s.dataset.i));
   // stats: total power and the best number on each side
   $(`#${P}Power`).textContent=h.sel.reduce((a,id)=>a+CARDS[id].sum,0);
   $(`#${P}Sides`).innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...h.sel.map(id=>CARDS[id].s[i])):0;

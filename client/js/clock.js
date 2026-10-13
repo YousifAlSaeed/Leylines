@@ -18,6 +18,8 @@ const today=()=>gameDay();
 const yesterday=()=>gameDay(-1);
 // whole game days since 1970; the Daily tab numbers its challenges by this
 const gameDayNo=()=>Math.floor((clockNow()+DAY_TZ)/864e5);
+// how far through the game day it is, 0 to 1 (only once the server has answered)
+const dayFrac=()=>(clockNow()+DAY_TZ)%864e5/864e5;
 function untilMidnight(){
   if(!CLK.ok)return '…';
   const s=Math.max(0,Math.round((864e5-(clockNow()+DAY_TZ)%864e5)/1000)),h=Math.floor(s/3600),min=Math.floor(s%3600/60);

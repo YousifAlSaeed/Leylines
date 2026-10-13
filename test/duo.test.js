@@ -226,3 +226,50 @@ describe('the Review', () => {
     assert.equal(st.turn, first);
   });
 });
+
+describe('the same rules as 1v1', () => {
+  test('the rule cards are 1v1\'s, in the same order, with Ley lines where Sweep is', () => {
+    assert.deepEqual(g.DUO_RULES.map(r => r[0]), g.RULES.map(r => r[0] === 'sweep' ? 'leyLines' : r[0]));
+  });
+  test('Three open: 3 of each hand are face up, and other players see them (the CPU too)', () => {
+    const hands = [0, 1, 2, 3].map(() => [1, 2, 3, 4, 5]);
+    const u = g.duoThree(hands, g.mulberry32(7));
+    assert.deepEqual(u.map(x => x.filter(Boolean).length), [3, 3, 3, 3]);
+    const s = g.duoNew(hands, 0, noEl(), u);
+    const v = g.duoView(s, NONE, 0);
+    assert.deepEqual(v.h[1].map(id => id !== g.STAND_IN), u[1]);
+    // playing a card takes its face-up mark with it
+    const was = u[0].slice(1);
+    g.duoPlay(s, NONE, 0, 0, null);
+    assert.deepEqual([...s.u[0]], was);
+  });
+  test('Chaos: the CPU only plays the card the game picked', () => {
+    const s = g.duoNew([[1, 2, 3, 4, 5], [], [], []], 0, noEl());
+    s.f = 3;
+    assert.ok(g.duoMoves(s).every(m => m[0] === 3));
+    for (const level of ['easy', 'normal']) for (let k = 0; k < 20; k++) assert.equal(g.duoChoose(s, NONE, level)[0], 3);
+    g.duoPlay(s, NONE, 3, 0, null);
+    assert.equal(s.f, -1);
+  });
+  test('Sudden death: a draw is level teams in 2v2, or a shared 1st in Free-for-all', () => {
+    const s = g.duoNew([[1], [2], [3], [4]], 0, noEl());
+    assert.equal(g.duoDraw(s, NONE), true);
+    assert.equal(g.duoDraw(s, { ffa: true }), true);
+    s.h[0].push(9);
+    assert.equal(g.duoDraw(s, NONE), false);
+    assert.equal(g.duoDraw(s, { ffa: true }), false);
+  });
+  test('Sudden death in 2v2: each team keeps the cards it owned, 5 a player', () => {
+    const s = g.duoNew([[100], [101], [102], [103]], 0, noEl());
+    // seat 0 owns 8 squares and seat 2 none; seats 1 and 3 own 4 each: 10 cards a team
+    for (let i = 0; i < 16; i++) { s.b[i] = i; s.o[i] = i < 8 ? 0 : i < 12 ? 1 : 3; }
+    const h = g.duoSdHands(s, NONE, null), sort = (x) => [...x].sort((a, b) => a - b);
+    assert.deepEqual([...h].map((x) => x.length), [5, 5, 5, 5]);
+    assert.deepEqual(sort([...h[0], ...h[2]]), [0, 1, 2, 3, 4, 5, 6, 7, 100, 102]);
+    assert.deepEqual(sort(h[1]), [8, 9, 10, 11, 101]);
+  });
+  test('Sudden death in Free-for-all: everyone gets the same hand back', () => {
+    const decks = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]];
+    assert.deepEqual([...g.duoSdHands(g.duoNew(decks, 0, noEl()), { ffa: true }, decks)].map((x) => [...x]), decks);
+  });
+});

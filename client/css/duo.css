@@ -7,10 +7,36 @@
 .hostpick .hp span{font-size:13px;color:var(--muted);line-height:1.4}
 .dbeta{font:700 10px/1 var(--body);font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);border:1px solid var(--line2);border-radius:5px;padding:3px 6px;vertical-align:4px;margin-left:6px}
 
-/* the room */
-.duo-room h3{margin:0 0 8px;font:700 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.dteams{display:grid;gap:14px}
-.dteam .room-pl li{flex-wrap:wrap}
+/* the room: the 1v1 waiting room's layout and rule cards (.setup in menu.css), with four seats */
+.dteams{display:grid;gap:10px}
+.dteam h4{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font:600 12px var(--body);color:var(--muted);letter-spacing:.02em}
+.dfill{border:0;background:none;padding:0;font:600 12.5px var(--body);color:var(--accent-ink);cursor:pointer}
+.dfill:hover{text-decoration:underline}
+.dteam .room-pl{gap:6px}
+.dteam .room-pl li{min-height:48px;padding:6px 10px;gap:8px}
+.dnm{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.dnm b{flex:none}
+.dinv{font-size:11.5px;color:var(--accent-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* an empty seat's Open / CPU Easy / CPU Normal, where its name would be */
+.dsel{appearance:none;-webkit-appearance:none;max-width:100%;align-self:flex-start;font:700 15px var(--display);color:var(--text);cursor:pointer;
+  background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23a99bd6' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 4px center/12px;
+  border:1px solid transparent;border-radius:8px;padding:3px 22px 3px 6px;margin-left:-6px;transition:border-color .2s,background-color .2s}
+.dsel:hover,.dsel:focus-visible{border-color:var(--line2);background-color:var(--surf2)}
+.dsel option{background:var(--bg1);color:var(--text)}
+.dctl{display:flex;gap:6px;align-items:center;flex:none}
+.dctl .btn{min-height:32px;padding:4px 10px;font-size:12.5px;border-radius:10px}
+.dcdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:0;background:linear-gradient(160deg,var(--dc1),var(--dc2))}
+#duoColRow[hidden]{display:none}
+.duo-room .srb .seg{margin-top:2px}
+.dsub{font-size:12px;opacity:.8}
+.dmyhand.chaos .card:not(.forced){opacity:.45;filter:saturate(.5)}
+#scr-duoroom .rc[aria-readonly]{cursor:default}
+@media (min-width:920px) and (min-height:560px){
+  #scr-duoroom{justify-content:center}
+  #scr-duoroom .topbar{max-width:1100px}
+  .duo-room #duoNote{grid-area:note;margin:14px 0 0}
+  .duo-room .s-left{gap:16px}
+}
 /* seat colours, from where you sit (duoCol): blue and red in 2v2; blue, red, gold, green in Free-for-all */
 .dc-blue{--dc1:var(--blue1);--dc2:var(--blue2);--dink:var(--blue-ink)}
 .dc-red{--dc1:var(--red1);--dc2:var(--red2);--dink:var(--red-ink)}
@@ -23,7 +49,6 @@
 .card.gold{--c1:#c98a1e;--c2:#5a3208} .card.green{--c1:#1f9e70;--c2:#0b4a35}
 .card.purple{--c1:#8a52e8;--c2:#2e1470} .card.teal{--c1:#1aa3b8;--c2:#07414c}
 /* Free-for-all: picking your colour in the room */
-.dcolors{margin-top:12px}
 .dsw{display:flex;gap:10px;flex-wrap:wrap}
 .dsw button{width:42px;height:42px;border-radius:12px;border:2px solid transparent;background:linear-gradient(160deg,var(--dc1),var(--dc2));color:#fff;font:800 18px var(--display);cursor:pointer;transition:transform .15s,box-shadow .2s}
 .dsw button:hover:not(:disabled){transform:translateY(-2px)}
@@ -35,18 +60,6 @@
 .room-pl .av.art{font:400 19px/1 var(--body)}
 .dtag{font:700 10px/1 var(--body);font-style:normal;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:4px 6px;flex:none}
 .dtag.ok{color:var(--ley-success);border-color:color-mix(in srgb,var(--ley-success) 45%,transparent)}
-.dctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto}
-.dctl:has(.dseat){flex:1 1 100%;margin-left:0}
-.dseat{flex:1}
-.dseat button{font-size:12.5px;padding:4px 8px;min-height:34px;white-space:nowrap}
-.drules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-@media (max-width:480px){.drules{grid-template-columns:minmax(0,1fr)}}
-.drule{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line2);background:var(--surf);color:var(--muted);cursor:pointer;font:inherit}
-.drule b{font:700 14px var(--display);color:var(--text)}
-.drule span{font-size:12px;line-height:1.4}
-.drule.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surf));box-shadow:inset 0 0 0 1px var(--accent)}
-.drule:disabled{cursor:default}
-.drule:not(.on):disabled{opacity:.6}
 #duoTimer button:disabled{cursor:default}
 
 /* the match: sizes set by duoFit (--dc square, --ds side cards, --dt partner's cards, --dh your hand) */
@@ -116,20 +129,6 @@
 .dmyhand .card.sel{transform:translateY(-14%);box-shadow:inset 0 0 0 .05em rgba(255,255,255,.35),0 0 0 .1em var(--hot),0 .5em 1.2em -.3em var(--hot-glow)}
 @media (hover:hover){.dmyhand .card.play:not(.sel):hover{transform:translateY(-6%)}}
 .dmyhand:not(:has(.play)) .card{opacity:.85}
-
-/* the room's two halves stack on phones, and sit side by side on wide screens (like the match setup screen) */
-.droom-l,.droom-r{display:flex;flex-direction:column;gap:16px;min-width:0}
-@media (min-width:920px) and (min-height:560px){
-  #scr-duoroom .topbar{max-width:1100px}
-  /* the players on the left; the rules on the right with Start / Ready under them. On a short screen the button
-     stays pinned to the bottom, floating on its own: no strip behind it (its dark background showed as a box) */
-  .duo-room{max-width:1100px;display:grid;grid-template-columns:1fr 1.15fr;grid-template-areas:"l r" "l f";grid-template-rows:auto 1fr;column-gap:44px;row-gap:20px;align-items:start}
-  .droom-l{grid-area:l} .droom-r{grid-area:r}
-  .duo-room .setup-foot{grid-area:f;position:sticky;bottom:16px;align-self:start;background:none;padding:0;margin:0;display:flex;justify-content:flex-end;pointer-events:none}
-  .duo-room .setup-foot .btn{pointer-events:auto}
-  .duo-room .setup-foot::after{display:none}
-  .duo-room .setup-foot .btn{width:280px}
-}
 
 /* wide screens: big side players (phones keep the small columns above) */
 #scr-duo:not(.narrow) .duo-side{width:calc(var(--ds) + 44px);gap:10px}

@@ -148,7 +148,7 @@ function renderFriendTile(){
   const on=ACCT.token?FR.friends.filter(u=>frFree(u.username)).length:0;
   $('#friendSub').textContent=!ACCT.token?'Sign in to add friends':!FR.loaded?'Your friend list'
     :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:on?` · ${on} online`:'');
-  dot.hidden=!(ACCT.token&&k);dot.textContent=k;
+  dot.hidden=!(ACCT.token&&k);dot.textContent=k;t.classList.toggle('hot',!!(ACCT.token&&k));
   t.setAttribute('aria-label','Friends'+(ACCT.token&&k?`, ${plural(k,'new request')}`:''));
 }
 

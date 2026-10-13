@@ -29,7 +29,7 @@ export function pulseRouter(db, hub) {
   const tellFriends = async (id) => { for (const f of await friendsOf(id)) hub.notify(f.id, { k: 'on' }); };
   const findFriend = async (me, name) => (await friendsOf(me)).find((f) => f.username.toLowerCase() === String(name ?? '').toLowerCase());
 
-  // { menu, away } → { boot, fr, fo, online: [usernames], away: [the online ones who minimised the game], alerts: [usernames of friends not online who get alerts], invites: [{ from, name, code, left }], declined: [names] }
+  // { menu, away } → { boot, fr, fo, online: [usernames], away: [the online ones who minimised the game], alerts: [usernames of friends not online who get alerts], invites: [{ from, name, code, at (when it was sent: a new one each time it's sent again), left }], declined: [names] }
   r.post('/', async (req, res) => {
     const me = req.user.id;
     if (hub.checkIn(me, req.body?.menu === true, req.body?.away === true)) await tellFriends(me);
@@ -41,7 +41,7 @@ export function pulseRouter(db, hub) {
     res.set('Cache-Control', 'no-store');
     res.json({
       boot: hub.boot, ...hub.ver(me), online, away, alerts,
-      invites: hub.invitesFor(me).map((i) => ({ from: i.from, name: i.name, code: i.code, left: Math.max(0, Math.round((i.at + INVITE_MS - now) / 1000)) })),
+      invites: hub.invitesFor(me).map((i) => ({ from: i.from, name: i.name, code: i.code, at: i.at, left: Math.max(0, Math.round((i.at + INVITE_MS - now) / 1000)) })),
       declined: hub.takeDeclined(me),
     });
   });

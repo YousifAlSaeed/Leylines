@@ -138,7 +138,7 @@ const bfootHTML=()=>{const w=toClaim();return `<span>${w.length?`${shd()}<b>${fm
 // Claim tapped: the shards fly off the button into your wallet, and the profile behind catches up
 function badgeClaimed(btn){
   const b=BADGE[btn.dataset.claim],n=b&&claimBadge(b[0]);if(!n)return;
-  sfx('flip');
+  sfx('badge_claim');
   const st=document.createElement('span');st.className='bg-st done';st.innerHTML=`✓ Claimed<em class="pf-bfly" aria-hidden="true">+${n}</em>`;
   btn.replaceWith(st);setTimeout(()=>{const f=st.querySelector('.pf-bfly');if(f)f.remove()},1000);
   const f=$('#bgFoot');if(f)f.innerHTML=bfootHTML();

@@ -10,6 +10,7 @@ function show(id){
   if(id==='menu'&&DUO.role)duoQuit(); // and a 2v2 room (duo.js)
   keepAwake(id==='game');closeEmotes();ghostSweep(); // no dragged card follows you to another screen (helpers.js)
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
+  if(id!=='menu')emReset(); // the small logo in a match is the same drawing, so it goes back to the real logo
   if(id==='game')layout();if(id==='menu')renderMenu();
   document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
@@ -22,12 +23,29 @@ function lastDeckReady(){
   for(const id of d){need[id]=(need[id]||0)+1;if(owned(id)<need[id])return null}
   return d;
 }
+// Tiles with news. Collection: cards found since you last opened it. The count you last saw is kept per device
+// (localStorage, like the other device-only things); a device that has never opened it starts with no news.
+const COLL_KEY='leylines.collSeen';
+function collNew(){
+  if(unlocked())return 0;
+  try{const v=localStorage.getItem(COLL_KEY);if(v==null){collNewSeen();return 0}return Math.max(0,SAVE.seen.length-(+v||0))}catch(e){return 0}
+}
+function collNewSeen(){try{localStorage.setItem(COLL_KEY,String(SAVE.seen.length))}catch(e){}}
+function renderNewsTiles(){
+  const nw=collNew(),ct=$('.tile[data-go="coll"]'),ht=$('.tile[data-go="howto"]');
+  $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`+(nw?` · ${nw} new`:'');
+  ct.classList.toggle('hot',nw>0);
+  // How to play: until the tutorial is finished, its free pack is waiting (tutorial.js)
+  const tut=SAVE.tut<2;
+  ht.querySelector('small').textContent=tut?'Tutorial: free pack':'Rules in 2 minutes';
+  ht.classList.toggle('hot',tut);
+}
 function renderMenu(){
   if(SAVE.wipe&&!ACCT.token)acctWipe(); // signed out during a match (account.js)
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
-  $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`;
+  renderNewsTiles();
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
+  driftSync();renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
   // a CPU match the app closed on, or news about an online match you left (spare.js)
   if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
   alertsTipMaybe(); // a tip about alerts, once a player has a few matches in (alerts.js)
@@ -132,10 +150,9 @@ function heroJoin(){
   if(playerName())joinGame(code);else askName('Enter your name, then tap <b>Join</b>.');
 }
 $$('[data-go]').forEach(b=>b.onclick=()=>{
-  sfx('click');const g=b.dataset.go;
+  const g=b.dataset.go;if(g==='coll'){openCollection();return}sfx('click');
   if(g==='ai'||g==='local')openSetup(g);
   else if(g==='online')openOnline();
-  else if(g==='coll')openCollection();
   else if(g==='packs')openPacks();
   else if(g==='store')openStore();
   else if(g==='howto')openHow(0);
@@ -144,3 +161,91 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
 });
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
 $('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP, shards and collection could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};
+
+/* ---------- the logo plays ----------
+   On the menu, the emblem's eight outer squares turn over and take their neighbours, like a match that never ends;
+   every few moves they settle back into the real logo. The squares are the SVG's own (index.html), recoloured here.
+   The small logo in a match draws the same squares (<use>), so they're put back whenever the menu is left. */
+const EM_COL={v:['#6A2BAE','#B894FF'],p:['#C2469A','#FF86C4'],e:['#140C33','#3A2C6E']};
+const EM_LOGO=['v','p','e','p','','v','e','v','p'],EM_OUT=[0,1,2,3,5,6,7,8];
+let emSt=EM_LOGO.slice(),emCells=null,emN=0;
+function emInit(){
+  const g=$('#lyEmblem'),sq=g.children[0],dg=g.children[1];emCells=[];
+  [...sq.children].forEach(r=>{
+    const x=+r.getAttribute('x'),y=+r.getAttribute('y'),i=Math.round((y-26)/66)*3+Math.round((x-26)/66);
+    if(i===4){ // the centre: a soft halo behind it that swells and fades (menu.css)
+      const h=r.cloneNode();h.setAttribute('class','em-core');sq.insertBefore(h,r);return}
+    // each square's diamond; the two dark squares get one too, hidden until the square is taken
+    const cx=x+28,cy=y+28,pts=`${cx},${cy-10} ${cx+10},${cy} ${cx},${cy+10} ${cx-10},${cy}`;
+    let d=[...dg.children].find(p=>p.getAttribute('points')===pts);
+    if(!d){d=document.createElementNS('http://www.w3.org/2000/svg','polygon');d.setAttribute('points',pts);d.setAttribute('opacity','0');dg.appendChild(d)}
+    emCells[i]=[r,d];
+  });
+}
+function emSet(i,s){const [r,d]=emCells[i];emSt[i]=s;r.setAttribute('fill',EM_COL[s][0]);r.setAttribute('stroke',EM_COL[s][1]);d.setAttribute('opacity',s==='e'?'0':'1')}
+const emOn=()=>$('#scr-menu').classList.contains('on');
+function emReset(){if(emCells)EM_OUT.forEach(i=>{emCells[i].forEach(n=>n.classList.remove('em-turn'));if(emSt[i]!==EM_LOGO[i])emSet(i,EM_LOGO[i])})}
+// one square turns over: it's edge-on halfway through, and that's when its colour changes
+function emTurn(i,s){
+  emCells[i].forEach(n=>{n.classList.remove('em-turn');void n.getBoundingClientRect();n.classList.add('em-turn')});
+  setTimeout(()=>{if(emOn())emSet(i,s)},230);
+}
+function emTick(){
+  if(!emCells)emInit();
+  if(!emOn()||noMotion()){emReset();return}
+  if(document.hidden)return;
+  // every seventh move, back to the logo, so it's still the logo most times you look
+  if(++emN%7===0){EM_OUT.filter(i=>emSt[i]!==EM_LOGO[i]).forEach((i,k)=>setTimeout(()=>{if(emOn())emTurn(i,EM_LOGO[i])},k*130));return}
+  const i=EM_OUT[Math.floor(Math.random()*8)],r=Math.floor(i/3),c=i%3;
+  const nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([y,x])=>y>=0&&y<3&&x>=0&&x<3&&y*3+x!==4).map(([y,x])=>y*3+x);
+  // a square is taken by a neighbour of the other colour; with none, it changes sides (or, now and then, empties)
+  const rivals=nb.map(j=>emSt[j]).filter(s=>s!=='e'&&s!==emSt[i]);
+  const to=emSt[i]!=='e'&&Math.random()<.16?'e':rivals.length?rivals[Math.floor(Math.random()*rivals.length)]:emSt[i]==='v'?'p':'v';
+  emTurn(i,to);
+  // and sometimes takes the square next to it along
+  const j=nb[Math.floor(Math.random()*nb.length)];
+  if(to!=='e'&&emSt[j]!==to&&Math.random()<.45)setTimeout(()=>{if(emOn())emTurn(j,to)},260);
+}
+setInterval(emTick,1600);
+
+/* ---------- card drift ----------
+   Behind the menu, tilted columns of the cards you've found slide slowly past, every other column the other way,
+   and now and then one turns over. Each column holds its cards twice and moves by half its height, so the loop
+   has no seam; only transforms move, so nothing is laid out again. Off with reduced motion or the switch in
+   Settings, which is kept per device (localStorage, like the other device-only things). */
+const DRIFT_KEY='leylines.drift';
+const driftWanted=()=>{try{return localStorage.getItem(DRIFT_KEY)!=='off'}catch(e){return true}};
+function driftSet(on){try{on?localStorage.removeItem(DRIFT_KEY):localStorage.setItem(DRIFT_KEY,'off')}catch(e){}driftSync()}
+let driftDim='';
+// a lighter card than cardHTML's: the picture, the numbers and the rarity frame
+function driftCard(pool){
+  const c=CARDS[pool[Math.floor(Math.random()*pool.length)]];
+  return `<div class="card ${Math.random()<.6?'blue':'red'} rar${c.rar}${Math.random()<.3?' back':''}"><div class="art">${c.art}</div>`+
+    `<div class="nums">${c.s.map((v,k)=>`<b class="n${k}">${fmt(v)}</b>`).join('')}</div><i class="rf"></i></div>`;
+}
+function driftSync(){
+  const scr=$('#scr-menu'),el=$('#drift'),on=driftWanted()&&!noMotion();
+  scr.classList.toggle('drift-on',on);
+  if(!on){el.innerHTML='';driftDim='';return}
+  if(!scr.classList.contains('on'))return;
+  // enough columns and rows to cover the tilted screen (a card is 5 x 6 em, with 1.1 em between cards)
+  const em=parseFloat(getComputedStyle(el).fontSize),w=innerWidth/UI,h=innerHeight/UI;
+  const cols=Math.ceil((w*.97+h*.25)/(6.1*em))+1,n=Math.ceil((h*.97+w*.25)/(7.1*em))+1,dim=cols+'x'+n+'x'+em;
+  if(dim===driftDim)return;driftDim=dim;
+  const pool=CARDS.map(c=>c.id).filter(isSeen);
+  let out='';
+  for(let c=0;c<cols;c++){
+    const half=Array.from({length:n},()=>driftCard(pool)).join('');
+    // about 12 px a second, each column a little faster or slower
+    out+=`<div class="drift-col" style="--d:${Math.round(n*7.1*em/12*(.75+Math.random()*.5))}s">${half}${half}</div>`;
+  }
+  el.innerHTML=`<div class="drift-sheet" style="--h:${(n*7.1).toFixed(1)}em">${out}</div>`;
+}
+// one card turns over: edge-on halfway through, and that's when it changes face (.fy, cards.css)
+setInterval(()=>{
+  if(!emOn()||document.hidden)return;
+  const all=$$('#drift .card');if(!all.length)return;
+  const c=all[Math.floor(Math.random()*all.length)];
+  c.classList.add('fy');setTimeout(()=>c.classList.toggle('back'),230);setTimeout(()=>c.classList.remove('fy'),480);
+},1300);
+{let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(driftSync,250)})}

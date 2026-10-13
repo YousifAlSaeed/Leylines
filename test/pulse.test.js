@@ -81,6 +81,15 @@ describe('pulse', () => {
     assert.ok(inv[0].left > 50);
   });
 
+  test('inviting again replaces the invite with a new one', async () => {
+    const was = (await pulse('bob')).invites[0].at;
+    await new Promise((r) => setTimeout(r, 5));
+    assert.equal((await invite('ana', 'bob')).status, 204);
+    const inv = (await pulse('bob')).invites;
+    assert.equal(inv.length, 1);
+    assert.ok(inv[0].at > was);
+  });
+
   test('saying no takes the invite down and tells the sender once', async () => {
     await api('/pulse/invite/answer', { method: 'POST', token: T.bob, body: { from: 'ana', code: 'ABCDE', no: true } });
     assert.deepEqual((await pulse('bob')).invites, []);
