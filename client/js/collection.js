@@ -22,7 +22,7 @@ function collMode(h,title,meta){
 $('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 function openCollection(){
-  sfx('coll_open');
+  sfx('coll_open');collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of

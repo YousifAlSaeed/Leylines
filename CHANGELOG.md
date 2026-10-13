@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.24.0 (2026-10-13)
+- The menu moves, on phones and PCs alike: the logo's squares turn over like a tiny match, the cards on the Play card float and open out, and Play has a slow heartbeat
+- Card drift: the cards you've found slide slowly past behind the menu, and now and then one turns over. Settings has a switch for it (Menu background)
+- A tile shakes and glints only when it has news: packs to open, new stock at the market, a friend request, new cards in your collection (the tile counts them until you look), or the tutorial's free pack still waiting
+
 ## 0.23.7 (2026-10-13)
 - The tagline under the title on the menu is gone
 

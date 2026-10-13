@@ -16,6 +16,8 @@ function openSettings(){
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
     <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
+    <div class="setrow"><span class="rt"><b>Menu background</b><small>Cards drifting behind the menu</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${driftWanted()==!!k?'on':''}" aria-pressed="${driftWanted()==!!k}">${l}</button>`).join('')}</div></div>
     ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
       `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+
       `<input type="range" class="rng" min="0" max="100" step="5" aria-labelledby="${k}L"><span class="vpct"></span></div>`).join('')}
@@ -24,6 +26,10 @@ function openSettings(){
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+  });
+  box.querySelectorAll('#setDrift button').forEach(b=>b.onclick=()=>{
+    driftSet(b.dataset.k==='1');sfx('click'); // menu.js
+    box.querySelectorAll('#setDrift button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
   box.querySelectorAll('[data-vol]').forEach(row=>{
     const k=row.dataset.vol,sl=row.querySelector('input'),pct=row.querySelector('.vpct');
