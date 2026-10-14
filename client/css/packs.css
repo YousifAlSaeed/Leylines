@@ -19,7 +19,6 @@
 
 /* menu tile (menu.css lays the tiles out) */
 .tile.ptile.hot{border-color:var(--cta);box-shadow:0 0 0 1px var(--cta) inset,0 10px 30px -14px var(--cta-glow)}
-.tile.ptile.hot .pk-ico{animation:pkBob 1.8s ease-in-out infinite}
 .ptdot{flex:none;min-width:26px;height:26px;padding:0 8px;border-radius:99px;display:grid;place-items:center;background:var(--cta);color:var(--on-cta);font:800 13px/1 var(--display)}
 .ptdot[hidden]{display:none}
 @keyframes pkBob{50%{transform:translateY(-3px) rotate(-3deg)}}
@@ -221,7 +220,7 @@
 .pf-reward .pf-pack{background:linear-gradient(160deg,#7a3cd6,#240c5c);color:#fff}
 
 @media (prefers-reduced-motion:reduce){
-  .pk-rays,.pk-daily::before,.pk-arr,.tile.ptile.hot .pk-ico,.pk-node.ready .pk-mini{animation:none}
+  .pk-rays,.pk-daily::before,.pk-arr,.pk-node.ready .pk-mini{animation:none}
   .pk-pack.shake,.pk-flip.tease{animation:none}
 }
 /* the 5★ guarantee bar (also under the Store's Pack Counter) */

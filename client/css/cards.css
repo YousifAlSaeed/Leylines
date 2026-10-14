@@ -5,6 +5,10 @@
   --c1:#777;--c2:#333}
 .card.blue{--c1:var(--blue1);--c2:var(--blue2)}
 .card.red{--c1:var(--red1);--c2:var(--red2)}
+.card.grey{--c1:var(--grey1);--c2:var(--grey2)} /* a card in the collection, nobody's yet */
+/* registered so a flying card can fade from one colour to another */
+@property --c1{syntax:'<color>';inherits:true;initial-value:#777}
+@property --c2{syntax:'<color>';inherits:true;initial-value:#333}
 .card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 72% 68%,rgba(255,255,255,.2),transparent 55%);pointer-events:none}
 .card .art{position:absolute;right:.12em;bottom:.72em;font-size:2.5em;line-height:1;filter:drop-shadow(0 .04em .08em rgba(0,0,0,.55))}
 .card .nums{position:absolute;left:.12em;top:.12em;width:2.5em;height:2.5em}

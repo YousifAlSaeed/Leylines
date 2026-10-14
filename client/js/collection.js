@@ -22,7 +22,7 @@ function collMode(h,title,meta){
 $('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 function openCollection(){
-  sfx('coll_open');
+  sfx('coll_open');collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
@@ -51,7 +51,7 @@ function collDetail(id,pocket){
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id),src=pocket&&pocket.querySelector('.card');
   const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
-    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
+    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'grey',{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
     <h2 class="nm2 cd-name">${esc(c.name)}</h2>
     <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
     <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
@@ -145,7 +145,7 @@ function bdPage(k){
     const c=cs[i];
     if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
-    const face=n?cardHTML(c.id,BH.color||'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const face=n?cardHTML(c.id,'grey',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
     pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;

@@ -160,7 +160,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .title{margin:0;line-height:0;color:var(--text)}
 .title .logo-word{display:block;height:25px;width:auto}
 .sr,.title .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.subtitle{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35;text-wrap:pretty}
 .hero{position:relative;border-radius:22px;padding:18px;background:linear-gradient(160deg,var(--surf2),var(--surf));border:1px solid var(--line);overflow:hidden;
   box-shadow:0 20px 50px -20px rgba(var(--sh),calc(.8*var(--shk)))}
 .hero::before{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(var(--accent-glow),transparent 70%);pointer-events:none}
@@ -230,9 +229,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   border:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
 .alpha-bar b{color:var(--warn);font:700 11px/1.5 var(--body);letter-spacing:.08em;margin-right:6px}
 .alpha-bar svg{width:18px;height:18px;flex:none;color:var(--warn);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-/* short phones (an iPhone SE): the tagline goes and the emblem shrinks, so the tiles still fit */
+/* short phones (an iPhone SE): the emblem shrinks, so the tiles still fit */
 @media (max-height:800px){.tile.ptile small{display:block;white-space:nowrap}}
-@media (max-height:760px){.subtitle{display:none}.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
+@media (max-height:760px){.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
 /* very short phones (iPhone SE): a little less room between and inside everything */
 @media (max-height:700px){#scr-menu{padding-bottom:max(12px,env(safe-area-inset-bottom))}.menu,.m-right{gap:10px}.brand .emblem{height:52px;width:52px}.hero{padding:12px}#scr-menu .seg button{min-height:32px;padding:4px 8px}.hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.pcard{padding:6px 10px}.tiles{grid-auto-rows:minmax(50px,1fr);min-height:166px;gap:8px}.tile{padding-top:7px;padding-bottom:7px}}
 /* narrow phones: smaller icons and names, so "Leaderboard" and "Night Market" fit whole */
@@ -243,7 +242,6 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .brand{grid-column:1/-1;gap:26px;margin:0}
   .brand .emblem{height:132px;width:132px}
   .title .logo-word{height:38px}
-  .subtitle{font-size:17px;margin:12px 0 0}
   .hero{padding:24px;display:flex;flex-direction:column}
   .hero-body{flex:1}
   .hero-row{padding-top:18px}
@@ -260,6 +258,74 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }
 .note.warn b{color:var(--warn)}
+/* ---------- a menu that moves ----------
+   Three small things, the same on a phone and a PC. All of it is transforms and opacity, so nothing is laid out again. */
+/* the logo plays (menu.js): a square turns over, and the centre's halo swells and fades. Only while the menu is up,
+   because the small logo in a match draws these same squares */
+.em-turn,.em-core{transform-box:fill-box;transform-origin:center}
+.em-turn{animation:emTurn .46s ease-in-out}
+@keyframes emTurn{50%{transform:scale(0,1.12)}}
+.em-core{opacity:0}
+#scr-menu.on .em-core{animation:emCore 2.6s ease-in-out infinite}
+@keyframes emCore{50%{opacity:.85;transform:scale(1.35)}}
+/* card drift (menu.js): a dim sheet of cards behind the menu, tilted about the middle of the screen. --h is half a
+   column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered */
+.drift{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;font-size:16px;opacity:.2}
+:root[data-theme="light"] .drift{opacity:.3}
+.drift-on .drift{display:block}
+.drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);translate:-50% 0;transform-origin:50% calc(var(--h)/2);rotate:-14deg;display:flex;gap:1.1em}
+.drift-col{display:flex;flex-direction:column;gap:1.1em;padding-bottom:1.1em;will-change:transform;animation:driftUp var(--d,90s) linear infinite}
+.drift-col:nth-child(even){animation-direction:reverse}
+@keyframes driftUp{to{transform:translateY(-50%)}}
+.drift .card.back>*{display:none}
+/* the menu covers a phone's whole screen, so its panels let a little of the drift through */
+.drift-on .hero{background:linear-gradient(160deg,color-mix(in srgb,var(--surf2) 84%,transparent),color-mix(in srgb,var(--surf) 84%,transparent))}
+.drift-on .tile{background:color-mix(in srgb,var(--surf) 82%,transparent)}
+/* the player card and the settings button are see-through on a plain page; over the drift they're filled like the tiles */
+#scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:color-mix(in srgb,var(--surf) 82%,transparent)}
+#scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .mstats .iconbtn:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}
+@media (min-width:920px) and (min-height:560px){.drift{font-size:22px}}
+/* the hand breathes: the cards on the Play card float, one after the other, and a glint crosses each */
+.fan .card:nth-child(2){--i:1}.fan .card:nth-child(3){--i:2}.fan .card:nth-child(4){--i:3}.fan .card:nth-child(5){--i:4}
+.hero-pane:not(.hero-ghost) .fan .card{left:0;transition:left .35s var(--spring);animation:handBob 4.2s ease-in-out infinite;animation-delay:calc(var(--i,0)*-.7s)}
+@keyframes handBob{50%{translate:0 -.4em}}
+.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after{content:"";position:absolute;z-index:4;top:0;bottom:0;left:0;width:55%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent);transform:translateX(-110%);
+  animation:handGlint 5.6s ease-in-out infinite;animation-delay:calc(var(--i,0)*.12s)}
+@keyframes handGlint{0%,72%{transform:translateX(-110%)}100%{transform:translateX(200%)}}
+/* your deck's five cards open out: under the pointer on a PC, by themselves every few seconds on a phone */
+@media (hover:hover){.hero:hover .hero-pane:not(.hero-ghost) .hero-top>.fan .card{left:calc((var(--i,0) - 2)*.4em)}}
+@media (hover:none){
+  .hero-pane:not(.hero-ghost) .hero-top>.fan .card{--sx:calc((var(--i,0) - 2)*.4em);animation:handOpen 8.4s ease-in-out infinite;animation-delay:calc(var(--i,0)*-.15s)}
+}
+@keyframes handOpen{0%,44%,100%{translate:0 0}22%{translate:0 -.4em}58%,80%{translate:var(--sx) -.3em}}
+/* the main button has a slow heartbeat */
+.hero-pane:not(.hero-ghost) .btn.primary:not(:disabled){position:relative}
+.hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--cta) 22%,transparent),0 10px 30px -4px var(--cta-glow);animation:playBeat 2.6s ease-in-out infinite}
+@keyframes playBeat{50%{opacity:1}}
+/* a tile moves only when it has news (.hot: packs to open, new stock at the market, a friend request, new cards in
+   the collection, the tutorial's free pack still waiting):
+   its icon shakes, a glint crosses it and its count pulses. The other tiles keep still */
+.tile.hot{overflow:hidden}
+.tile.hot::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(var(--tint),.1),transparent);transform:translateX(-110%);animation:tileGlint 6s ease-in-out infinite}
+@keyframes tileGlint{0%,70%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+.tile.hot>svg{transform-origin:50% 90%;animation:tileWig 2.6s ease-in-out infinite}
+@keyframes tileWig{0%,60%,100%{transform:none}68%{transform:rotate(-11deg)}76%{transform:rotate(9deg)}84%{transform:rotate(-6deg)}92%{transform:rotate(3deg)}}
+/* the market's moon (or sun) rocks instead, and glows */
+.tile.stile.hot>svg{transform-origin:center;animation:tileRock 5s ease-in-out infinite;filter:drop-shadow(0 0 6px var(--accent-glow))}
+@keyframes tileRock{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(12deg)}}
+.tile.hot .ptdot{animation:tilePing 1.8s ease-out infinite}
+/* the collection's bar: a light runs along the part that's filled */
+.tile.hot .bar i{position:relative;overflow:hidden}
+.tile.hot .bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-110%);animation:barRun 2.2s ease-in-out infinite}
+@keyframes barRun{0%,30%{transform:translateX(-110%)}100%{transform:translateX(110%)}}
+@keyframes tilePing{from{box-shadow:0 0 0 0 var(--cta-glow)}to{box-shadow:0 0 0 9px transparent}}
+@media (prefers-reduced-motion:reduce){
+  .em-turn,#scr-menu.on .em-core,.hero-pane:not(.hero-ghost) .fan .card,.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after,
+  .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before,.tile.hot::after,.tile.hot>svg,.tile.hot .ptdot,.tile.hot .bar i::after{animation:none}
+}
 /* add to home screen (a2hs.js): a card at the bottom of the menu, iPhone Safari only */
 .a2hs{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:5;width:min(420px,calc(100% - 24px));
   transform:translate(-50%,24px);opacity:0;transition:transform .35s var(--spring),opacity .25s;

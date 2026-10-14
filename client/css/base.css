@@ -16,7 +16,7 @@
   --text:var(--ley-text); --muted:var(--ley-text-muted);
   --accent:var(--ley-violet-500); --accent-hi:var(--ley-violet-300); --on-accent:var(--ley-surface); --accent-ink:var(--ley-violet-300); --accent-glow:rgba(139,108,255,.4);
   --cta:var(--ley-pink-500); --cta-hi:var(--ley-pink-300); --on-cta:#1e0b2a; --cta-glow:rgba(255,95,168,.4);
-  --blue1:var(--ley-blue-700); --blue2:#142a6e; --red1:var(--ley-red-700); --red2:#5c1224; --blue-ink:var(--ley-blue-300); --red-ink:var(--ley-red-300);
+  --blue1:var(--ley-blue-700); --blue2:#142a6e; --red1:var(--ley-red-700); --red2:#5c1224; --grey1:#5d6273; --grey2:#2b2e39; --blue-ink:var(--ley-blue-300); --red-ink:var(--ley-red-300);
   --glow-a:rgba(106,43,174,.32); --glow-b:rgba(194,70,154,.12);
   --board:#110a29;
   --hot:var(--ley-violet-100); --hot-glow:rgba(237,230,255,.35);
@@ -36,7 +36,7 @@
   --text:#1a1238; --muted:#54497a;
   --accent:var(--ley-violet-700); --accent-hi:var(--ley-violet-500); --on-accent:#fff; --accent-ink:var(--ley-violet-700); --accent-glow:rgba(106,43,174,.3);
   --cta:var(--ley-pink-700); --cta-hi:#dc5aad; --on-cta:#fff; --cta-glow:rgba(194,70,154,.35);
-  --blue1:#3a6bdb; --blue2:#1e3f99; --red1:#d24560; --red2:#8e1f36; --blue-ink:#2553c0; --red-ink:#b3304a;
+  --blue1:#3a6bdb; --blue2:#1e3f99; --red1:#d24560; --red2:#8e1f36; --grey1:#8c92a3; --grey2:#565c6c; --blue-ink:#2553c0; --red-ink:#b3304a;
   --glow-a:rgba(139,108,255,.16); --glow-b:rgba(255,95,168,.12);
   --board:#e4ddf7;
   --hot:var(--ley-violet-700); --hot-glow:rgba(106,43,174,.3);

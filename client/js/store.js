@@ -15,7 +15,7 @@ const ONLINE_LOSS=10;
 const CARD_PRICE=[30,80,200,600,1800];   // the Merchant, by rarity
 const PACK_PRICE={spark:120,arcane:300,ley:700,mythic:1600};
 const MYTHIC_WEEK=1;   // Mythic packs a week from the Pack Counter
-const DEAL_OFF=.25;    // the Merchant's pack of the day
+const DEAL_OFF=.25;    // the Pack Counter's pack of the day
 // the Merchant's shared slots, as [lowest, highest] rarity, then a 4★. The Merchant never sells a 5★
 const MERCH_RAR=[[1,2],[3,3]];
 
@@ -97,7 +97,7 @@ function buyCard(i){
       toast(`${c.name} added to your collection${fresh?' (new!)':''}.`);freshToast();
     }},{label:'Cancel',esc:true}]);
 }
-// deal: the Merchant's pack of the day
+// deal: the Pack Counter's pack of the day, at its lower price
 function buyPack(t,deal){
   const T=PACKS[t],myth=t==='mythic';
   if((myth||deal)&&!clockOk()){toast('Checking the time with the server. Try again in a moment.');return}
@@ -105,7 +105,7 @@ function buyPack(t,deal){
   if(deal&&s.got.deal)return;
   if(myth&&s.myth>=MYTHIC_WEEK){toast('One Mythic pack a week. The next one comes on Monday.');return}
   if(short(price))return;
-  modal(`<div class="kick">${deal?'Wandering Merchant':'Pack Counter'}</div><h2>Buy ${aPack(t)}?</h2>
+  modal(`<div class="kick">Pack Counter</div><h2>Buy ${aPack(t)}?</h2>
     <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${pitySure(t)?', the last one a sure 5★ (guarantee)':T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
     <p class="st-cost">${shd()}<b>${fmtSh(price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
     [{label:'Buy and open',cls:'primary',wait:true,fn:()=>{
@@ -118,11 +118,69 @@ function buyPack(t,deal){
 }
 
 /* ---------- the Store screen: the Night Market (and the menu tile) ---------- */
-// Four stops under a starry sky: the Merchant, the deal of the night, the Pack Counter and the Shard well.
+// Four stops under a starry sky: the Merchant, the Forge (closed for now), the Pack Counter and the Shard well.
 // A wide screen shows them side by side. A phone opens on just the sky; tapping a star brings up a carousel of the four
 // stops to swipe through, and swiping past either end goes back to the sky.
-const ST_STOPS=[['merchant','I','Merchant','Merchant'],['deal','II','Deal of the night','Deal'],['packs','III','Pack counter','Packs'],['well','IV','Shard well','Well']];
+// The light theme gets the Day Market: the same four stops under a sun and a daytime sky.
+// Tapping the moon (or the sun) turns on the dial: it crosses an arc as the game day runs out, and the sky's colours go
+// with it. The dial is off to begin with and is kept on this device only, outside the save (which follows the account).
+const ST_STOPS=[['merchant','I','Merchant','Merchant'],['forge','II','The Forge','Forge'],['packs','III','Pack counter','Packs'],['well','IV','Shard well','Well']];
+const ST_ANVIL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6h14v2.2c-2.6.3-4.4 1.7-5 4.3h-5.2C10.300 9.800 7.600 8.400 3 8.200V7h4z"/><path d="M9.500 13.800h7l1.500 4.200h1v2H7v-2h1z"/></svg>';
+const ST_DIAL_KEY='ninefold.dial';
+let stDial=(()=>{try{return localStorage.getItem(ST_DIAL_KEY)==='1'}catch(e){return false}})();
+const stDay=()=>document.documentElement.dataset.theme==='light';
+// the dial's sky: its top, middle and bottom colours at the start, the middle and the end of the game day
+const ST_SKY={
+  day:[[[247,181,200],[255,217,192],[227,214,255]],[[127,200,248],[196,230,251],[255,243,207]],[[183,155,232],[255,179,138],[255,213,154]]],
+  night:[[[58,26,94],[96,36,104],[150,58,104]],[[5,4,22],[9,7,36],[20,13,58]],[[10,16,56],[22,38,92],[40,104,120]]]};
+// where the arc is t of the way through the day, as [x, y] in % of the box it's drawn in
+const stArc=t=>[4+92*t,14+(1-Math.sin(Math.PI*t))*66];
+const ST_ARC='M'+Array.from({length:41},(_,i)=>stArc(i/40).map(v=>v.toFixed(1)).join(' ')).join('L');
+// the constellation a phone's map draws through the four stars (store.css places the stars on its corners). At night
+// the dial's moon goes along it, not the arc
+const ST_ZIG=[[16,40],[40,72],[63,30],[85,66]];
+function stZig(t){
+  const len=ST_ZIG.slice(1).map((p,i)=>Math.hypot(p[0]-ST_ZIG[i][0],p[1]-ST_ZIG[i][1]));
+  let d=t*len.reduce((a,b)=>a+b),i=0;
+  while(i<len.length-1&&d>len[i])d-=len[i++];
+  const a=ST_ZIG[i],b=ST_ZIG[i+1],u=d/len[i];
+  return [a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u];
+}
+const ST_ICON={night:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  day:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'};
+// The sky's classes and colours. applyTheme (settings.js) calls it, so it runs on every change of screen or theme.
+let stWasDay=null;
+function stSky(){
+  const sc=$('#scr-store'),root=document.documentElement,day=stDay(),on=sc.classList.contains('on');
+  sc.classList.toggle('st-day',day);sc.classList.toggle('st-dial',stDial);
+  if(stDial&&on){
+    // without the server's time the dial waits at its middle
+    const t=clockOk()?dayFrac():.5,K=ST_SKY[day?'day':'night'],a=K[t<.5?0:1],b=K[t<.5?1:2],u=t<.5?t*2:t*2-1;
+    const col=a.map((c,i)=>`rgb(${c.map((v,j)=>Math.round(v+(b[i][j]-v)*u)).join(',')})`),[x,y]=stArc(t),[zx,zy]=stZig(t);
+    col.forEach((c,i)=>sc.style.setProperty('--s'+(i+1),c));
+    sc.style.setProperty('--sa',(.3+.65*Math.sin(Math.PI*t)).toFixed(2)); // the stars are brightest when the sky is darkest
+    sc.style.setProperty('--mx',x.toFixed(2)+'%');sc.style.setProperty('--my',y.toFixed(2)+'%');
+    sc.style.setProperty('--zx',zx.toFixed(2)+'%');sc.style.setProperty('--zy',zy.toFixed(2)+'%');
+    // the page's own colour follows the sky, for an iPhone's strips (store.css)
+    root.style.setProperty('--bar',col[0]);root.style.setProperty('--bg0',col[2]);
+  }else{
+    ['--s1','--s2','--s3','--sa','--mx','--my','--zx','--zy'].forEach(p=>sc.style.removeProperty(p));
+    root.style.removeProperty('--bar');root.style.removeProperty('--bg0');
+  }
+  // the theme changed: the market's name and words change with it
+  if(day!==stWasDay){const first=stWasDay==null;stWasDay=day;if(!first){renderStoreTile();if(on)renderStore()}}
+}
+const stMoonLabel=()=>`The ${stDay()?'sun':'moon'}. ${stDial?'It crosses the sky as the day runs out. Tap to stop it':'Tap to let it cross the sky as the day runs out'}`;
+function stDialFlip(){
+  stDial=!stDial;try{localStorage.setItem(ST_DIAL_KEY,stDial?'1':'0')}catch(e){}
+  // only the sky changes (stSky), so the market isn't drawn again
+  sfx('click');applyTheme();
+  $$('#stBody .st-moon').forEach(b=>{b.setAttribute('aria-pressed',stDial);b.setAttribute('aria-label',stMoonLabel())});
+  toast(stDial?`The ${stDay()?'sun':'moon'} now crosses the sky as the day runs out. Tap it again to stop it.`:'The sky stands still again.',3200);
+}
 const ST_STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1l2.2 8.8L23 12l-8.8 2.2L12 23l-2.2-8.8L1 12l8.8-2.2z"/></svg>';
+// the Day Market marks its stops with little clouds: there are no stars by day
+const ST_CLOUD='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 19.5a4.5 4.5 0 01-.7-8.95A6 6 0 0117.9 9.6 5 5 0 0117.5 19.5z"/></svg>';
 let stStop='merchant'; // the stop the phone's carousel shows
 const stIdx=()=>Math.max(0,ST_STOPS.findIndex(x=>x[0]===stStop));
 const stPhone=()=>matchMedia('(max-width:759px)').matches;
@@ -139,35 +197,36 @@ function renderStore(){
   const price=p=>`<span class="st-price${SAVE.shards<p?' short':''}">${shd()}${fmtSh(p)}<span class="sr"> shards</span></span>`;
   const ok=clockOk(),s=ok?shopDay():null,st=ok?merchStock():null,wait='<p class="st-note">Checking the time with the server…</p>';
 
-  const hero=`<section class="st-hero"><div><div class="st-lab">Tonight's sky</div><div class="st-count" id="stWait">${untilMidnight()}</div>
+  const day=stDay(),mark=day?ST_CLOUD:ST_STAR;
+  $('#scr-store .topbar h2').textContent=day?'Day Market':'Night Market';
+  // the moon is the dial's switch. There are two: beside the countdown, and on a phone's map once the dial is on
+  const moon=cls=>`<button class="st-moon${cls}" aria-pressed="${stDial}" aria-label="${stMoonLabel()}"></button>`;
+  const hero=`<section class="st-hero"><div><div class="st-lab">${day?'Today':'Tonight'}'s sky</div><div class="st-count" id="stWait">${untilMidnight()}</div>
     <div class="st-now" aria-hidden="true"><div class="st-lab" id="stDate"></div><div class="st-count" id="stClock"></div></div>
-    <p>${ok?'until the market moves on. Every player sees the same four stops tonight, and at midnight they all change.':'Checking the time with the server…'}</p></div><span class="st-moon" aria-hidden="true"></span></section>`;
-  const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M16 40L40 72L63 30L85 66" vector-effect="non-scaling-stroke"/></svg>${
-    ST_STOPS.map(([k,,,short])=>`<button class="st-star s-${k}${k===stStop?' on':''}" data-stop="${k}" aria-pressed="${k===stStop}">${ST_STAR}<span>${short}${k==='deal'&&s&&!s.got.deal?` −${DEAL_OFF*100}%`:''}</span></button>`).join('')}</nav>`;
+    <p>${!ok?'Checking the time with the server…':day?'until the stalls pack up. Every player sees the same four stops today, and at midnight they all change.':'until the market moves on. Every player sees the same four stops tonight, and at midnight they all change.'}</p></div>
+    <span class="st-orbit"><svg class="st-arc" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon('')}${
+      (day?['Dawn','Noon','Dusk']:['Moonrise','High moon','Moonset']).map(l=>`<small aria-hidden="true">${l}</small>`).join('')}</span></section>`;
+  const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="st-zig" d="M${ST_ZIG.map(p=>p.join(' ')).join('L')}" vector-effect="non-scaling-stroke"/><path class="st-arcp" d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon(' st-mm')}${
+    ST_STOPS.map(([k,,,short])=>`<button class="st-star s-${k}${k===stStop?' on':''}" data-stop="${k}" aria-pressed="${k===stStop}">${mark}<span>${short}${k==='packs'&&s&&!s.got.deal?` −${DEAL_OFF*100}%`:''}</span></button>`).join('')}</nav>`;
 
   const merch=!ok?wait:`<div class="st-cards">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id];
     return `<div class="st-slot${sold?' sold':''}${it.mine?' mine':''}">${cardHTML(it.id,'blue')}<span class="st-cn">${esc(c.name)}<small>${it.mine?'For you':'★'.repeat(c.rar)}</small></span>
       <button class="st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>`;
 
-  let deal=wait;
-  if(ok){
-    const d=st.deal,T=PACKS[d.t],sold=!!s.got.deal;
-    deal=`<div class="st-dealbox${sold?' sold':''}">${miniPack(d.t,sold?'spent':'ready')}<b class="st-dn">${T.name} pack</b>
-      <small>${T.n} cards${T.min>1?` · the last one ${T.min}★ or better`:''}</small>${sold
-        ?'<p class="st-off">Sold. A new deal comes at midnight.</p>'
-        :`<p class="st-off">${DEAL_OFF*100}% off tonight · <s>${fmtSh(PACK_PRICE[d.t])}</s></p><button class="btn primary st-dealbuy" id="stDeal">${shd()}${fmtSh(d.price)} · Buy and open</button>`}</div>`;
-  }
+  const forge=`<div class="st-forge">${ST_ANVIL}<b>The Forge</b><span class="st-soon">Coming soon</span><small>The fires are not lit yet.</small></div>`;
 
-  const mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null;
+  // the pack on offer today is marked on its own row until it's bought
+  const mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null,dl=ok&&!s.got.deal?st.deal:null;
   const packs=`<div class="st-tiers">${Object.entries(PACKS).map(([t,T])=>{
-      const out=t==='mythic'&&mythLeft===0;
-      return `<button class="st-pk t-${t}${out?' sold':''}" data-p="${t}" ${out?'disabled':''}>${miniPack(t,out?'spent':'ready')}
-        <span class="st-dt"><b>${T.name}</b><small>${T.n} cards${T.min>1?` · ${T.min}★+ last`:''}${t==='mythic'?` · ${out?'next on Monday':'1 a week'}`:''}</small></span>${out?'':price(PACK_PRICE[t])}</button>`}).join('')}</div>
+      const out=t==='mythic'&&mythLeft===0,deal=dl&&dl.t===t;
+      return `<button class="st-pk t-${t}${out?' sold':''}${deal?' deal':''}" data-p="${t}" ${out?'disabled':''}>${miniPack(t,out?'spent':'ready')}
+        <span class="st-dt">${deal?`<span class="st-tag">−${DEAL_OFF*100}% ${day?'today':'tonight'}</span>`:''}<b>${T.name}</b><small>${T.n} cards${T.min>1?` · ${T.min}★+ last`:''}${t==='mythic'?` · ${out?'next on Monday':'1 a week'}`:''}</small></span>${
+        out?'':deal?`<span class="st-was"><s><span class="sr">was </span>${fmtSh(PACK_PRICE[t])}</s>${price(dl.price)}</span>`:price(PACK_PRICE[t])}</button>`}).join('')}</div>
     <p class="st-note">Odds are on the Packs screen.</p>`;
 
   const d=shardDay(),pity=Math.min(PITY,SAVE.pity);
   const ring=(n,max,col,label)=>`<div class="st-ring-w"><div class="st-ring" style="--p:${(Math.min(n,max)/max*100).toFixed(1)};--rc:${col}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${n}"><span><b>${fmtSh(n)}</b><small>of ${max}</small></span></div><div class="st-rl">${label}</div></div>`;
-  const well=`<div class="st-rings">${ring(d.n,SHARD_CAP,'#6fe3f0','Shards from matches today')}${ring(pity,PITY,'#FFC45C','5★ guarantee')}</div>
+  const well=`<div class="st-rings">${ring(d.n,SHARD_CAP,'var(--shard)','Shards from matches today')}${ring(pity,PITY,'var(--st-gold)','5★ guarantee')}</div>
     <dl class="st-rates">
       <div><dt>Solo win</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
@@ -175,11 +234,11 @@ function renderStore(){
     </dl>
     <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily tab pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
 
-  const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',deal:'One pack at a discount. It sells once.',
+  const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',forge:'Closed for now.',
     packs:'Opens the moment you buy.',well:'What you\'ve drawn from the ley today.'};
-  const body={merchant:merch,deal,packs,well};
+  const body={merchant:merch,forge,packs,well};
   $('#stBody').innerHTML=hero+map+`<div class="st-swipe"><div class="st-view"><div class="st-stops">${ST_STOPS.map(([k,n,name])=>
-    `<section class="st-stop s-${k}${k===stStop?' on':''}" data-stop="${k}"><h3 class="st-sh">${ST_STAR}<span>${n} · ${name}</span><i></i></h3><p class="st-sub">${sub[k]}</p><div class="st-glass">${body[k]}</div></section>`).join('')}</div></div>
+    `<section class="st-stop s-${k}${k===stStop?' on':''}" data-stop="${k}"><h3 class="st-sh">${mark}<span>${n} · ${name}</span><i></i></h3><p class="st-sub">${sub[k]}</p><div class="st-glass">${body[k]}</div></section>`).join('')}</div></div>
     <div class="st-dots" aria-hidden="true">${ST_STOPS.map(([k])=>`<i class="s-${k}${k===stStop?' on':''}" data-stop="${k}"></i>`).join('')}</div>
     <p class="st-hint">Swipe past either end to see the sky</p></div>`;
 
@@ -190,11 +249,12 @@ function renderStore(){
     sfx('click');
     if(stDown){stGo(i,false);stSheet(false)}else stGo(i);
   });
+  $$('#stBody .st-moon').forEach(b=>b.onclick=stDialFlip);
+  stClock(); // the sky's clock is drawn again with the rest, so it doesn't wait empty for its next second
   stSwipe();
   if(!stDown)stGo(stIdx(),false);
   $$('#stBody .st-buy').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
-  $$('#stBody .st-pk').forEach(b=>b.onclick=()=>{sfx('click');buyPack(b.dataset.p,false)});
-  const dl=$('#stDeal');if(dl)dl.onclick=()=>{sfx('click');buyPack(merchStock().deal.t,true)};
+  $$('#stBody .st-pk').forEach(b=>b.onclick=()=>{sfx('click');buyPack(b.dataset.p,b.classList.contains('deal'))});
 }
 // A phone shows either just the sky (stDown: the constellation over the whole screen, the stars without their names,
 // the phone's own time in place of the countdown, the top bar faded; good for a screenshot) or the market's carousel.
@@ -233,7 +293,7 @@ function stSheet(down){
 // in the sky, a tap anywhere but a star brings back the top bar (or hides it again)
 document.addEventListener('click',e=>{
   const sc=e.target.closest('#scr-store');
-  if(!sc||!stDown||!stPhone()||e.target.closest('.st-star,.st-top'))return;
+  if(!sc||!stDown||!stPhone()||e.target.closest('.st-star,.st-top,.st-moon'))return;
   sc.classList.toggle('st-bar');
 });
 // the phone's own date and time, shown in the sky in place of the countdown, like a lock screen
@@ -309,11 +369,12 @@ function stSwipe(){
 addEventListener('resize',()=>{if($('#scr-store').classList.contains('on')&&!stDown)stGo(stIdx(),false)});
 // the menu's Night Market tile, and the shards on the player card (account.js)
 function renderStoreTile(){
-  const fresh=clockOk()&&(!SAVE.shop||SAVE.shop.at!==today());
-  const sub=!clockOk()?"Tonight's stock":fresh?'New stock tonight':`New stock in ${untilMidnight()}`;
+  const fresh=clockOk()&&(!SAVE.shop||SAVE.shop.at!==today()),day=stDay(),name=day?'Day Market':'Night Market';
+  const sub=!clockOk()?(day?"Today's stock":"Tonight's stock"):fresh?`New stock ${day?'today':'tonight'}`:`New stock in ${untilMidnight()}`;
+  $('#storeTile b').textContent=name;$('#storeTile svg').innerHTML=ST_ICON[day?'day':'night'];
   $('#storeSub').textContent=sub;
   $('#storeTile').classList.toggle('hot',fresh);
-  $('#storeTile').setAttribute('aria-label',`Night Market. ${sub}`);
+  $('#storeTile').setAttribute('aria-label',`${name}. ${sub}`);
   const p=$('#pcShards');if(p)p.innerHTML=`${shd()}${fmtSh(SAVE.shards)}`;
 }
 // the countdown, and new stock at midnight
@@ -322,4 +383,5 @@ setInterval(()=>{
   if(!$('#scr-store').classList.contains('on'))return;
   if(SAVE.shop&&clockOk()&&SAVE.shop.at!==today()){renderStore();return}
   const w=$('#stWait');if(w)w.textContent=untilMidnight();
+  if(stDial)applyTheme(); // moves the dial on (stSky)
 },30000);
