@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.25.0 (2026-10-15)
+- Crossroads: when the host leaves, closes the game or loses their connection, another player takes over hosting and the match goes on. The old host can rejoin from the menu and gets their seat back
+- The player who'd take over keeps a locked copy of the match, and the other players hold the key: they only hand it over once they've lost the host too, so nobody can peek at hidden hands
+- Taking over takes a moment, not a minute: everyone keeps a line open to the next host. The turn timer keeps the time it had, and the wait doesn't count
+- The room's code, its invite link and invites still lead to the match after the host changes, and a seat kept for an invited friend stays kept
+
 ## 0.24.3 (2026-10-14)
 - Every card in the book sits in its own clear plastic sleeve, open at the top, with a soft shine that moves when you point at it
 - A card leaving your hand goes back to its spot in the book; if that page isn't open, the book turns to it first. You can also drag a hand card onto the book
