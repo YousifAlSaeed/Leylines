@@ -69,72 +69,87 @@
 
 .meta{color:var(--muted);font-size:13px;text-align:center}
 
-/* ---------- collection binder ---------- */
-/* binder pages by rarity; two pages side by side on wide screens, one on phones */
+/* ---------- collection book ---------- */
+/* a book on the table, kept flat and modern: the game's own colours, no textures. Pages by rarity, two side by side
+   on wide screens, one on phones. --book is the cover and boards, --page the paper, --edge the stack of pages. */
 #scr-coll .wrap,#scr-coll .topbar{max-width:1120px}
-:root{--leather:#241452;--leather2:#120a2c} :root[data-theme="light"]{--leather:#3a2470;--leather2:#22124a}
-.bd-tabs{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 4px;align-self:flex-end}
-.bd-tabs::-webkit-scrollbar{display:none}
-.bd-tab{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line2);border-bottom:0;background:var(--surf2);color:var(--muted);
-  border-radius:10px 10px 0 0;padding:7px 13px 8px;font:700 12.5px var(--display);cursor:pointer;transition:background .18s,color .18s}
-.bd-tab:hover{color:var(--text)}
-.bd-tab i{font-style:normal;font-size:11px}
-/* each tab has a strip in its rarity colour; the open one rises and takes the page colour */
-.bd-tabs{padding-top:6px}
-.bd-tab{position:relative;transform:translateY(5px);padding-bottom:12px;margin-bottom:-5px;transition:transform .32s var(--spring),background .2s,color .2s,box-shadow .2s}
-.bd-tab::before{content:"";position:absolute;left:9px;right:9px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--rc);opacity:.7}
-.bd-tab.rar5::before{background:var(--prism)}
-.bd-tab.on{transform:none;background:var(--surf);color:var(--text);border-color:color-mix(in srgb,var(--rc) 55%,transparent);box-shadow:0 -8px 18px -10px var(--rc)}
-.bd-tab.on::before{opacity:1;left:0;right:0;border-radius:10px 10px 0 0}
-/* one page (phones): only the open tab shows its name, so all five fit */
-.coll-book.single .bd-tab:not(.on) .tn,.coll-book.single .bd-tab:not(.on) i{display:none}
-.coll-book.single .bd-tab{padding-inline:11px}
-.coll-book.single .bd-tabs{justify-content:center}
-.bd-h b em{font-style:normal;font-weight:600;font-size:12px;color:var(--muted);margin-left:4px}
-.binder{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:24px;padding:14px;border-radius:16px;perspective:2400px;touch-action:pan-y;
-  background:linear-gradient(160deg,var(--leather),var(--leather2));box-shadow:inset 0 0 0 1px rgba(184,148,255,.2),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
-.binder.single{grid-template-columns:1fr;padding-left:38px;overflow:hidden}
-.binder.single .bd-page.l{display:none}
-.bd-rings{position:absolute;left:50%;top:22px;bottom:22px;width:20px;margin-left:-10px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:6;pointer-events:none}
-.binder.single .bd-rings{left:19px}
-.bd-rings i{width:20px;height:11px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#3d1a78);box-shadow:0 2px 3px rgba(0,0,0,.6)}
-.bd-page{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0;padding:10px 12px 8px;border-radius:8px;background:var(--surf);container:bdpage/size;overflow:hidden}
-.bd-page.l{box-shadow:inset -18px 0 22px -16px rgba(0,0,0,.6)}
-.bd-page.r{box-shadow:inset 18px 0 22px -16px rgba(0,0,0,.6)}
-.bd-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.bd-h b{font:800 16px var(--display)}
-.bd-h span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.bd-h span.done{color:var(--accent-ink);font-weight:600}
-.bd-bar{height:4px;border-radius:2px;background:rgba(var(--tint),.08);overflow:hidden}
-.bd-bar i{display:block;height:100%;border-radius:2px;background:var(--accent)}
-.bd-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);align-content:center;gap:8px;justify-items:center;padding-top:2px;
-  /* 3 sleeves of 5.4em across, 3 rows of 6.4em down, leaving room for the page header */
-  font-size:min(28px,calc((100cqw - 16px) / 16.6),calc((100cqh - 76px) / 19.2))}
-/* a short, wide page (phones, short windows) fits more card on screen as 4 sleeves by 2 rows */
-@container bdpage (min-aspect-ratio: 1/1){
-  .bd-grid{grid-template-columns:repeat(4,1fr);gap:6px;font-size:min(28px,calc((100cqw - 18px) / 21.9),calc((100cqh - 66px) / 12.8))}
-  .bd-grid .pk-cell.p9{display:none}
-}
-/* a tall, narrow page (big windows with the side column) fills its height as 2 sleeves by 4 rows */
-@container bdpage (max-aspect-ratio: 1/2){
-  .bd-grid{grid-template-columns:repeat(2,1fr);font-size:min(28px,calc((100cqw - 8px) / 11.4),calc((100cqh - 100px) / 26))}
-  .bd-grid .pk-cell.p9{display:none}
-}
-/* Epic and Legendary: trophy pages, 4 cards in bigger sleeves (2×2; 4 across on a short, wide page) */
-.bd-grid.big{grid-template-columns:repeat(2,1fr);gap:.6em;font-size:min(44px,calc((100cqw - 16px) / 11.8),calc((100cqh - 76px) / 13.8))}
-@container bdpage (min-aspect-ratio: 1/1){.bd-grid.big{grid-template-columns:repeat(4,1fr);gap:.5em;font-size:min(44px,calc((100cqw - 18px) / 23.6),calc((100cqh - 66px) / 6.8))}}
-@container bdpage (max-aspect-ratio: 1/2){.bd-grid.big{grid-template-columns:repeat(2,1fr);gap:.6em;font-size:min(44px,calc((100cqw - 8px) / 11.8),calc((100cqh - 100px) / 13.8))}}
-.bd-grid.big .pocket{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 45%,transparent),0 0 1.1em -.45em var(--rc)}
-.bd-grid.big .pk-add{font-size:.6em}
-@container bdpage (max-height:300px){.bd-num{display:none}}
-.bd-num{align-self:center;font:600 11px var(--body);color:var(--muted);opacity:.7;font-variant-numeric:tabular-nums}
-.pocket{position:relative;width:5.4em;height:6.4em;border-radius:.6em;display:grid;place-items:center;border:0;padding:0;cursor:pointer;
-  background:var(--well);box-shadow:inset 0 0 0 1px var(--line2);transition:transform .2s var(--spring)}
-.pocket::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.08) 48%,transparent 60%)}
-.pocket .card{font-size:1em}
-@media (hover:hover){.pocket:not(.blank):hover{transform:translateY(-3px)}}
-.pocket.blank{cursor:default;background:none;box-shadow:inset 0 0 0 1px var(--line)}
-.pocket.blank::after{display:none}
+:root{--leather:#241452;--leather2:#120a2c;--book:#1a1240;--page:#171036;--edge:#2c2160;--cover1:#5a33b8;--cover2:#2a1868}
+:root[data-theme="light"]{--leather:#3a2470;--leather2:#22124a;--book:#ddd3f5;--page:#ffffff;--edge:#d4caf0;--cover1:#7b4fe0;--cover2:#4a2aa0}
+/* the background: the game's own, with a soft glow behind the book */
+#scr-coll{background:radial-gradient(60% 50% at 50% 38%,var(--glow-a),transparent 70%),radial-gradient(40% 35% at 85% 90%,var(--glow-b),transparent 70%)}
+.bd-gap{flex:1;pointer-events:none!important}
+.binder{position:relative;z-index:1;flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:4px;padding:12px 14px 16px;border-radius:14px;perspective:2400px;touch-action:pan-y;
+  --ear:0px;--earl:0px;
+  background:var(--book);box-shadow:inset 0 0 0 1px var(--line2),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
+/* the spine: a soft crease between the pages */
+.binder::before{content:"";position:absolute;left:50%;top:10px;bottom:12px;width:18px;margin-left:-9px;z-index:7;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(var(--sh),calc(.35*var(--shk))) 50%,transparent)}
+/* one page: the spine sits at the left, with the edge of the pages already turned beside it */
+.binder.single{grid-template-columns:1fr;padding-left:26px;overflow:hidden}
+.binder.single::before{left:18px;width:12px;margin-left:0;background:linear-gradient(90deg,rgba(var(--sh),calc(.4*var(--shk))),transparent)}
+.binder.single::after{content:"";position:absolute;left:8px;top:16px;bottom:20px;width:11px;border-radius:3px 0 0 3px;pointer-events:none;
+  background:repeating-linear-gradient(90deg,var(--edge) 0 2px,var(--book) 2px 3.5px)}
+.binder.single .bd-page.l,.binder.single .bd-sheet.l,.binder.single #bdPrevEar{display:none}
+#bdL,.bd-sheet.l{grid-column:1;grid-row:1}
+#bdR,.bd-sheet.r{grid-column:2;grid-row:1}
+.binder.single #bdR,.binder.single .bd-sheet.r{grid-column:1}
+/* the pages under the open ones (seen under a folded corner), with a few thin page edges showing */
+.bd-sheet{position:relative;z-index:0;border-radius:6px;background:color-mix(in srgb,var(--page) 88%,var(--edge))}
+.bd-sheet.l{box-shadow:-2px 2px 0 var(--edge),-4px 4px 0 var(--book),-5px 5px 0 var(--edge)}
+.bd-sheet.r{box-shadow:2px 2px 0 var(--edge),4px 4px 0 var(--book),5px 5px 0 var(--edge)}
+/* pages: plain paper with a soft shadow into the spine */
+.bd-page{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;min-height:0;padding:12px 14px 8px;border-radius:6px;container:bdpage/size;overflow:hidden;
+  background:var(--curve,none),var(--page)}
+.bd-page.l{--curve:linear-gradient(270deg,rgba(var(--sh),calc(.28*var(--shk))),transparent 7%);padding-right:20px;border-radius:6px 2px 2px 6px}
+.bd-page.r{--curve:linear-gradient(90deg,rgba(var(--sh),calc(.28*var(--shk))),transparent 7%);padding-left:20px;border-radius:2px 6px 6px 2px}
+/* a folded corner cuts the open page; the ear (below) is the flap folded back over it */
+#bdR{clip-path:polygon(0 0,100% 0,100% calc(100% - var(--ear)),calc(100% - var(--ear)) 100%,var(--earl1,0px) 100%,0 calc(100% - var(--earl1,0px)));transition:clip-path .3s var(--spring)}
+#bdL{clip-path:polygon(0 0,100% 0,100% 100%,var(--earl) 100%,0 calc(100% - var(--earl)));transition:clip-path .3s var(--spring)}
+.binder.has-next{--ear:22px}
+.binder:not(.single).has-prev{--earl:22px}
+.binder.single.has-prev{--earl1:22px}
+.binder.has-next:has(#bdNextEar:hover,#bdNextEar:focus-visible){--ear:34px}
+.binder:not(.single).has-prev:has(#bdPrevEar:hover,#bdPrevEar:focus-visible){--earl:34px}
+.binder.single.has-prev:has(#bdPrevEar:hover,#bdPrevEar:focus-visible){--earl1:34px}
+.bd-ear{position:relative;z-index:8;grid-row:1;align-self:end;width:var(--ear);height:var(--ear);border:0;padding:0;background:none;cursor:pointer;
+  filter:drop-shadow(-1px -1px 2px rgba(var(--sh),calc(.4*var(--shk))));transition:width .3s var(--spring),height .3s var(--spring)}
+.bd-ear i{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,0 100%);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--page) 80%,var(--edge)),color-mix(in srgb,var(--page) 70%,var(--edge)))}
+.bd-ear.r{grid-column:2;justify-self:end}
+.binder.single .bd-ear.r{grid-column:1}
+.bd-ear.l{grid-column:1;justify-self:start;width:var(--earl);height:var(--earl)}
+.bd-ear.l i{clip-path:polygon(0 0,100% 0,100% 100%);background:linear-gradient(225deg,color-mix(in srgb,var(--page) 80%,var(--edge)),color-mix(in srgb,var(--page) 70%,var(--edge)))}
+.binder.single #bdPrevEar{display:block;width:var(--earl1,0px);height:var(--earl1,0px)}
+.bd-ear:focus-visible{outline:none}
+.bd-ear:focus-visible i{filter:brightness(1.4)}
+/* the arrows give way to the folded corners; the row only keeps room for the bookmarks */
+.bd-top{height:40px;margin:0;pointer-events:none}
+.bd-top>*{display:none}
+/* a quiet chapter line at the top of each page */
+.bd-chap{flex:none;display:flex;align-items:center;gap:.8em;font:500 11px/1 var(--display);letter-spacing:.3em;text-transform:uppercase;color:color-mix(in srgb,var(--text) 55%,transparent);padding-left:.3em;white-space:nowrap}
+.bd-chap::before,.bd-chap::after{content:"";width:2.2em;height:1px;background:var(--line2)}
+.bd-chap em{font-style:normal;letter-spacing:0;margin-right:.5em}
+.bd-chap .done{color:var(--accent-ink)}
+/* 2×2 cards, as big as the page allows */
+.bd-grid{flex:1;min-height:0;align-self:stretch;display:grid;grid-template-columns:repeat(2,auto);grid-template-rows:repeat(2,auto);align-content:center;justify-content:center;gap:.8em 1.3em;padding-top:4px;
+  font-size:min(44px,calc((100cqw - 34px) / 12.4),calc((100cqh - 46px) / 14.2))}
+.bd-grid.big .pocket::before{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),0 0 1.1em -.4em var(--rc)}
+.bd-num{flex:none;font:500 10.5px var(--body);color:var(--muted);opacity:.6;font-variant-numeric:tabular-nums}
+@container bdpage (max-height:260px){.bd-num{display:none}}
+/* each card sits in a shallow spot pressed into the page; a card not found yet leaves the spot empty */
+.pocket{position:relative;width:5em;height:6em;border-radius:.6em;display:grid;place-items:center;border:0;padding:0;cursor:pointer;background:none;transition:transform .25s var(--spring)}
+.pocket::before{content:"";position:absolute;inset:-.22em;border-radius:.78em;pointer-events:none;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.pocket .card{font-size:1em;box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .15em .35em rgba(var(--sh),calc(.5*var(--shk)));transition:box-shadow .25s}
+.pocket .card .cnt{display:none}
+.pocket .card.unknown{background:none;box-shadow:none}
+.pocket .card.unknown i{opacity:.2}
+@media (hover:hover){.pocket:not(.blank):hover{transform:translateY(-.18em) rotate(-1deg)}.pocket:not(.blank):hover .card:not(.unknown){box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .5em .8em -.1em rgba(0,0,0,.7)}}
+.pocket.blank{cursor:default}
+.pocket.blank::before{display:none}
+.pocket:focus-visible{outline:2px solid var(--accent-hi);outline-offset:.3em}
+/* a wax seal shows how many copies you have */
+.seal{position:absolute;right:-.42em;top:-.42em;z-index:3;width:1.4em;height:1.4em;border-radius:50%;display:grid;place-items:center;pointer-events:none;
+  font:800 .5em/1 var(--display);color:var(--on-cta);background:var(--cta);box-shadow:0 0 0 .14em var(--page)}
 /* the turning page: a sheet cut into 8 strips, each bent a little more than the last, so the paper curls (collection.js) */
 .bd-leaf{position:absolute;transform-style:preserve-3d;pointer-events:none;will-change:transform}
 .bd-strip{position:absolute;top:0;transform-style:preserve-3d}
@@ -142,48 +157,80 @@
 .bd-face.back{transform:rotateY(180deg)}
 .bd-face>.bd-page{position:absolute;top:0}
 .bd-dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4}
-/* one page: the sheet swings inside a box the size of the page, seen from the rings */
-.bd-clip{position:absolute;z-index:20;overflow:hidden;border-radius:8px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
-/* the shadow on the page under a lifting sheet */
-.bd-under{position:absolute;inset:0;border-radius:8px;pointer-events:none;z-index:5;opacity:0}
-.bd-under.to-r{background:linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12) 60%,transparent)}
-.bd-under.to-l{background:linear-gradient(270deg,rgba(0,0,0,.55),rgba(0,0,0,.12) 60%,transparent)}
+/* one page: the sheet swings inside a box the size of the page, seen from the spine */
+.bd-clip{position:absolute;z-index:20;overflow:hidden;border-radius:4px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
+/* the shadow on the page under a lifting sheet (or the cover as it opens) */
+.bd-under{position:absolute;inset:0;border-radius:4px;pointer-events:none;z-index:5;opacity:0}
+.bd-under.to-r{background:linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.14) 55%,transparent)}
+.bd-under.to-l{background:linear-gradient(270deg,rgba(0,0,0,.6),rgba(0,0,0,.14) 55%,transparent)}
 /* the blank page that keeps each rarity on its own spread */
-.bd-blank{flex:1;margin:-10px -12px -8px;background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(var(--tint),.035) 27px 28px)}
-/* empty paper can be grabbed to turn the page; a folded corner shows on a page that can turn */
+.bd-blank{flex:1}
+/* empty paper can be grabbed to turn the page */
 #bdL,#bdR{cursor:grab}
 .binder.grabbing,.binder.grabbing *{cursor:grabbing!important}
-#bdR::after,#bdL::after{content:"";position:absolute;bottom:0;width:0;height:0;pointer-events:none;z-index:6;transition:width .3s var(--spring),height .3s var(--spring);filter:drop-shadow(-2px -2px 3px rgba(0,0,0,.35))}
-#bdR::after{right:0;border-top-left-radius:5px;background:linear-gradient(to top left,var(--leather2) 50%,var(--surf2) 50%,color-mix(in srgb,var(--surf2) 70%,#000))}
-#bdL::after{left:0;border-top-right-radius:5px;background:linear-gradient(to top right,var(--leather2) 50%,var(--surf2) 50%,color-mix(in srgb,var(--surf2) 70%,#000))}
-.binder.has-next #bdR::after,.binder:not(.single).has-prev #bdL::after{width:18px;height:18px}
-@media (hover:hover){.binder.has-next #bdR:hover::after,.binder:not(.single).has-prev #bdL:hover::after{width:30px;height:30px}}
-/* the front cover: swings open on the rings when the collection opens, shuts when you leave */
+
+/* bookmarks: one ribbon per rarity, tucked into the book behind the pages. The open rarity's ribbon is pulled all
+   the way out; the ones still ahead peek out on the right; the ones you've passed lie on the left, and flip over the
+   spine with the page (in time with the turn). One page: the passed ones stack by the spine instead. */
 .bd-wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;perspective:2400px}
 .coll-book{overflow-x:clip}
+.bd-ribs{position:absolute;left:0;right:0;top:-40px;height:74px;z-index:0;perspective:2000px;perspective-origin:50% 100%;pointer-events:none;transition:opacity .35s}
+.bd-ribs.hide{opacity:0;transition:none}
+.bd-rib{--w:clamp(34px,5.4cqw,54px);--x:calc(18px + (var(--r) - 1) * (var(--w) + 6px));position:absolute;top:0;left:calc(50% + var(--x));width:var(--w);height:100%;
+  border:0;padding:0;background:none;cursor:pointer;pointer-events:auto;transform-style:preserve-3d;transform-origin:calc(-1 * var(--x)) 50%;translate:0 17px;--dim:brightness(.78) saturate(.85);
+  transition:transform .7s cubic-bezier(.45,.05,.2,1),translate .4s var(--spring),left .6s cubic-bezier(.45,.05,.2,1)}
+.bd-rib.rar1{--r:1} .bd-rib.rar2{--r:2} .bd-rib.rar3{--r:3} .bd-rib.rar4{--r:4} .bd-rib.rar5{--r:5}
+.bd-rib.left{transform:rotateY(-180deg)}
+.bd-rib.on{translate:0 0;--dim:none}
+.bd-rib:not(.on):hover{translate:0 10px;--dim:brightness(.92)}
+.bd-rib i{position:absolute;inset:0;display:flex;justify-content:center;gap:2px;padding-top:10px;font:600 13px/1 var(--display);font-style:normal;color:#1b0d22;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;filter:var(--dim);transition:filter .3s;clip-path:polygon(0 0,50% 13%,100% 0,100% 100%,0 100%);
+  background:linear-gradient(transparent 55%,rgba(0,0,0,.18)),var(--rc)}
+.bd-rib.rar5 i{background:linear-gradient(transparent 55%,rgba(0,0,0,.15)),var(--prism)}
+.bd-rib i.b{transform:rotateY(180deg)}
+.bd-rib i em{font-style:normal;font-size:9px}
+.bd-rib:focus-visible{outline:none}
+.bd-rib:focus-visible i{outline:2px solid var(--text);outline-offset:-2px}
+.coll-book.single .bd-rib{left:calc(36px + var(--x) - 18px)}
+.coll-book.single .bd-rib.left{transform:none;left:calc(4px + var(--d) * 9px);z-index:calc(10 - var(--d));translate:0 calc(12px + var(--d) * 3px)}
+
+/* the front cover: smooth violet, the Leylines sigil in light lines, an elastic band round it. Opening the collection:
+   the band snaps off, the sigil lights, then the cover swings open on the spine and lands as the left half while the
+   book slides to the middle. One page: it swings off to the left and fades. Leaving plays it backwards, quickly.
+   Not when picking. */
 .bd-cover{position:absolute;z-index:30;transform-style:preserve-3d;transform-origin:0 50%;pointer-events:none;container-type:inline-size}
 .bd-cover .cf{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.bd-cover .cf.front{border-radius:6px 16px 16px 6px;background:linear-gradient(160deg,color-mix(in srgb,var(--leather) 80%,#5a3ab0),var(--leather2));
-  box-shadow:inset 0 0 0 1px rgba(184,148,255,.25),inset 12px 0 18px -10px rgba(0,0,0,.7),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)));display:grid;place-items:center}
-.bd-cover .cf.front::before{content:"";position:absolute;inset:12px 12px 12px 18px;border:1.5px dashed rgba(184,148,255,.28);border-radius:4px 10px 10px 4px}
-.bd-cover .emb{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-.bd-cover .emb-ic{width:clamp(34px,14cqw,64px);aspect-ratio:1;background:#B894FF;opacity:.9;-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
-.bd-cover .emb b{font:900 clamp(18px,8cqw,36px)/1 var(--display);letter-spacing:.14em;text-transform:uppercase;background:linear-gradient(180deg,#fff,#B894FF);-webkit-background-clip:text;background-clip:text;color:transparent}
-.bd-cover .emb span{font:600 clamp(10px,3cqw,13px) var(--body);letter-spacing:.3em;text-transform:uppercase;color:#B9AEDD}
-.bd-cover .strap{position:absolute;right:-6px;top:50%;width:44px;height:56px;margin-top:-28px;border-radius:8px 4px 4px 8px;background:linear-gradient(180deg,#3a2470,#1c0f44);box-shadow:inset 0 0 0 1px rgba(184,148,255,.25),-3px 4px 10px rgba(0,0,0,.45)}
-.bd-cover .strap::after{content:"";position:absolute;left:10px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:linear-gradient(180deg,var(--accent-hi),#3d1a78);box-shadow:0 1px 2px rgba(0,0,0,.6)}
-.bd-cover .cf.back{transform:rotateY(180deg);border-radius:16px 6px 6px 16px;background:linear-gradient(200deg,var(--leather),var(--leather2));box-shadow:inset 0 0 0 1px rgba(184,148,255,.2)}
+.bd-cover .cf.front{border-radius:6px 16px 16px 6px;background:linear-gradient(150deg,var(--cover1),var(--cover2));
+  box-shadow:inset 10px 0 10px -8px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.12),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
+.bd-cover .cv-spine{position:absolute;left:12px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.14)}
+.bd-cover .cv-sigil{position:absolute;left:50%;top:45%;width:clamp(110px,44cqw,240px);transform:translate(-50%,-50%);overflow:visible}
+.cv-sigil .eng{fill:none;stroke:#fff;stroke-opacity:.45;stroke-width:2.4}
+.cv-sigil .eng.f{fill:rgba(255,255,255,.05)}
+.cv-sigil .ln{fill:none;stroke:#ff86c4;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #ff5fa8)}
+.cv-sigil .gem{fill:rgba(255,255,255,.12);stroke:#fff;stroke-opacity:.6;stroke-width:2;transition:fill .3s}
+.cv-sigil.lit .gem{fill:#ffd2ea;filter:drop-shadow(0 0 7px #ff5fa8)}
+.cv-sigil .pulse{fill:none;stroke:#ff86c4;stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 0 6px #ff5fa8)}
+.bd-cover .cv-title{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);padding-left:.4em;font:500 clamp(10px,3.4cqw,15px)/1 var(--display);letter-spacing:.4em;text-transform:uppercase;color:rgba(255,255,255,.75);white-space:nowrap}
+/* the elastic band: top to bottom near the edge */
+.bd-cover .cv-band{position:absolute;top:-2px;bottom:-2px;right:9%;width:clamp(9px,3cqw,15px);border-radius:3px;transform-origin:50% 50%;
+  background:linear-gradient(90deg,rgba(0,0,0,.25),transparent 35%,rgba(255,255,255,.18) 50%,transparent 65%,rgba(0,0,0,.25)),var(--cta);box-shadow:-2px 0 4px rgba(0,0,0,.35)}
+.bd-cover .cf.back{transform:rotateY(180deg);border-radius:16px 6px 6px 16px;background:var(--book);box-shadow:inset 0 0 0 1px var(--line2)}
 .bd-cover .cf.back .bd-page{position:absolute}
+/* light and shadow as the cover swings: the front darkens as it turns away, the inside lightens as it lands */
+.bd-cover .cv-shd{position:absolute;inset:0;border-radius:inherit;background:#05020f;opacity:0;pointer-events:none;z-index:5}
 
 
-/* + on an owned card's sleeve adds it to the hand below */
+/* + adds a card to the hand: shows on hover (always on touch screens), so the page stays quiet */
 .pk-cell{position:relative}
-.pk-add{position:absolute;right:-.25em;bottom:-.25em;z-index:2;width:1.4em;height:1.4em;min-width:22px;min-height:22px;border-radius:50%;padding:0;cursor:pointer;
-  display:grid;place-items:center;font:800 .95em/1 var(--display);color:var(--on-accent);border:2px solid var(--surf);
+.pk-add{position:absolute;right:-.35em;bottom:-.35em;z-index:2;width:1.3em;height:1.3em;min-width:22px;min-height:22px;border-radius:50%;padding:0;cursor:pointer;opacity:0;
+  display:grid;place-items:center;font:800 .85em/1 var(--display);color:var(--on-accent);border:2px solid var(--page);
   background:linear-gradient(180deg,var(--accent-hi),var(--accent));box-shadow:0 3px 8px rgba(var(--sh),calc(.5*var(--shk)));transition:transform .2s var(--spring),opacity .18s}
 .pk-add:hover:not(.off){transform:scale(1.12)}
 .pk-add:active:not(.off){transform:scale(.92)}
-.pk-add.off{opacity:.3;cursor:default;filter:grayscale(.6)}
+.pk-cell:hover .pk-add,.pk-add:focus-visible{opacity:1}
+.pk-cell:hover .pk-add.off{opacity:.3}
+.pk-add.off{cursor:default;filter:grayscale(.6)}
+@media (hover:none){.pk-add{opacity:.9}.pk-add.off{opacity:.3}}
 @media (pointer:coarse){.pk-add{min-width:26px;min-height:26px}}
 /* dragging a card from the binder onto the hand */
 .pocket.dragging{opacity:.3}
@@ -191,11 +238,9 @@
 .coll-tray.over{border-color:var(--accent-ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent),0 -20px 40px -20px rgba(var(--sh),calc(.8*var(--shk)))}
 
 
-/* card detail popup: a single binder page, the card lifted out of its sleeve */
-.mbox.cd-box{position:relative;max-width:420px;padding:12px 12px 12px 38px;background:linear-gradient(160deg,var(--leather),var(--leather2));border-color:rgba(184,148,255,.25)}
-.cd-rings{position:absolute;left:10px;top:28px;bottom:28px;width:18px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;z-index:2;pointer-events:none}
-.cd-rings i{width:18px;height:10px;border-radius:6px;background:linear-gradient(180deg,var(--accent-hi),#3d1a78);box-shadow:0 2px 3px rgba(0,0,0,.6)}
-.cd-sheet{border-radius:10px;background:var(--surf);box-shadow:inset 16px 0 20px -16px rgba(0,0,0,.6);padding:14px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+/* card detail popup: a single page of the book, the card lifted out of its sleeve */
+.mbox.cd-box{position:relative;max-width:420px;padding:10px;background:var(--book);border-color:var(--line2)}
+.cd-sheet{border-radius:8px;background:var(--page);box-shadow:2px 2px 0 var(--edge),4px 4px 0 var(--book),5px 5px 0 var(--edge);padding:14px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .cd-top{align-self:stretch;display:flex;justify-content:space-between;font:600 12px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
 .cd-top b{color:var(--accent-ink);font-weight:600}
 .cd-pulled{font-size:30px}
@@ -219,41 +264,63 @@
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 /* ---------- collection fits one screen ----------
-   phones / narrow: binder on top (fills the height left), loadouts + hand below
-   wide screens: binder on the left, loadouts + hand in a column on the right */
-#scr-coll .topbar.coll-top{margin:2px 0 10px}
+   The book takes whatever height is left. Under it, things on the table: the loadouts as deck boxes, the hand as a
+   mat, and a panel with power, side strength and the buttons. Wide screens: those side by side under the book.
+   Phones: the deck boxes in a row, the mat, then the panel. */
+#scr-coll .topbar.coll-top{margin:2px 0 2px}
 .coll-title{flex:1;min-width:0;display:flex;flex-direction:column}
 .coll-title h2{margin:0}
 .coll-title .meta{text-align:left;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px}
-.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0;container-type:inline-size}
-/* two pages side by side: never taller than the 3×3 sleeves need at this width, so tall windows get no empty strip */
-.binder:not(.single){max-height:calc(126px + 19.2 * min(28px,(50cqw - 66px) / 16.6))}
-.bd-top{display:flex;align-items:flex-end;gap:6px;margin-bottom:-2px;position:relative;z-index:1}
-.bd-arrow{width:36px;height:36px;border-radius:10px;margin-bottom:6px}
-.bd-arrow:disabled{opacity:.35;cursor:default}
+#scr-coll .wrap.coll-wrap{flex:1 1 auto;min-height:420px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:16px}
+.coll-book{display:flex;flex-direction:column;min-height:0;min-width:0;width:100%;max-width:1000px;justify-self:center;container-type:inline-size}
+.bd-top{position:relative;z-index:1}
 .coll-side{display:flex;flex-direction:column;gap:10px;min-width:0}
-#scr-coll .dk-tray{position:relative;bottom:auto;padding:10px 14px 12px}
+/* loadouts: deck boxes shaped to hold the cards on the mat (taller than wide), a lid, the name on the front.
+   The one in your hand is outlined; the star and the pencil sit on the lid. */
+#scr-coll .dk-lo{gap:6px}
+#scr-coll .dk-lohead{min-height:20px}
+#scr-coll .dk-lonote:empty{display:none}
+#scr-coll .dk-lorow{grid-template-columns:repeat(3,auto);justify-content:start;gap:10px}
+#scr-coll .dk-loslot{width:82px;aspect-ratio:82/104;min-height:0;padding:22px 6px 7px;justify-content:flex-end;gap:2px;border:0;border-radius:7px 7px 6px 6px;overflow:hidden;
+  background:linear-gradient(150deg,var(--cover1),var(--cover2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 9px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
+#scr-coll .dk-loslot::before{content:"";position:absolute;left:0;right:0;top:16px;height:1px;background:rgba(0,0,0,.3);box-shadow:0 1px 0 rgba(255,255,255,.12)}
+#scr-coll .dk-loslot:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 9px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
+#scr-coll .dk-loslot b{max-width:100%;font:600 11px/1.15 var(--display);color:#fff;white-space:normal;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#scr-coll .dk-loslot span{font-size:10.5px;line-height:1.2;color:rgba(255,255,255,.7)}
+#scr-coll .dk-loslot span.bad{color:#ff8a9a}
+#scr-coll .dk-loslot .stack{display:none}
+#scr-coll .dk-loslot .tagx{display:none}
+#scr-coll .dk-loslot.on{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--cta),0 9px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
+#scr-coll .dk-loslot.empty{min-height:0;padding:6px;justify-content:center;align-items:center;background:none;box-shadow:inset 0 0 0 1.5px var(--line2);color:var(--muted);font-size:10.5px;line-height:1.25}
+#scr-coll .dk-loslot.empty::before{display:none}
+#scr-coll .dk-loslot.pick{box-shadow:inset 0 0 0 1.5px var(--accent-hi);animation:loPulse 1.2s ease-in-out infinite}
+#scr-coll .dk-loedit{right:1px;top:0;bottom:auto;width:24px;height:17px;border-radius:5px;color:rgba(255,255,255,.75)}
+#scr-coll .dk-loedit svg{width:12px;height:12px}
+#scr-coll .dk-loedit:hover{background:rgba(255,255,255,.12);color:#fff}
+#scr-coll .dk-star{position:absolute;left:6px;top:1px;margin:0;font-size:11px;line-height:15px;color:#ffd76a}
+/* the hand: a mat with five places */
+#scr-coll .dk-tray{position:relative;bottom:auto;padding:0;border:0;border-radius:0;background:none;box-shadow:none;display:flex;flex-direction:column;gap:10px}
 #scr-coll .dk-tray::after{display:none}
-#scr-coll .dk-fan{height:7.8em}
-.coll-sides{grid-template-columns:repeat(4,auto minmax(14px,40px))!important;justify-content:space-between;column-gap:6px!important;margin-top:2px;min-width:0}
+#scr-coll .dk-fan{height:auto;display:flex;justify-content:center;align-items:center;gap:.55em;padding:.8em 1em;border-radius:14px;font-size:min(14px,calc((100cqw - 24px) / 29.6));transition:box-shadow .2s;
+  background:var(--book);box-shadow:inset 0 0 0 1px var(--line2),0 12px 22px -14px rgba(var(--sh),calc(.8*var(--shk)))}
+#scr-coll .dk-fs{position:relative;left:auto;bottom:auto;margin:0;transform:none!important;transition:transform .25s var(--spring)}
+@media (hover:hover){#scr-coll .dk-fs:has(.card):hover{transform:translateY(-.3em)!important}}
+#scr-coll .dk-fs .card{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .15em .35em rgba(var(--sh),calc(.5*var(--shk)))}
+#scr-coll .dk-fs .dk-empty{border:.08em dashed var(--line2);color:var(--muted);opacity:.8}
+.coll-tray.over .dk-fan{box-shadow:inset 0 0 0 2px var(--accent-hi),0 0 22px -4px var(--accent-glow)}
+/* the panel: power, the best number on each side, Best 5 / Clear / Save hand (and Play when picking) */
+.coll-panel{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;padding:10px 12px;border-radius:14px;
+  background:var(--book);box-shadow:inset 0 0 0 1px var(--line2),0 12px 22px -14px rgba(var(--sh),calc(.8*var(--shk)))}
+.coll-sides{grid-template-columns:repeat(4,auto minmax(14px,40px))!important;justify-content:space-between;column-gap:6px!important;min-width:0}
 .coll-sides .dk-bar{width:auto}
-.coll-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.coll-row{display:flex;align-items:center;gap:8px}
 .coll-row .dk-power{flex:none;margin-right:4px}
 .coll-row .dk-act{flex:none;min-height:42px}
 #scr-coll:not(.pick) .coll-row #collClear{width:42px;padding:0}
 #scr-coll:not(.pick) .coll-row #collClear span{display:none}
-.coll-row .btn.primary{flex:1;min-width:0;min-height:42px;padding:6px 12px;font-size:15px}
-#scr-coll .dk-lohead{min-height:22px}
-#scr-coll .dk-lonote:empty{display:none}
-/* compact loadout tiles: name and power only */
-#scr-coll .dk-loslot{padding:7px 10px;gap:1px}
-#scr-coll .dk-loslot .stack,#scr-coll .dk-loslot .tagx{display:none}
-#scr-coll .dk-loslot.empty{min-height:48px}
+.coll-row .btn.primary{flex:1;min-width:0;min-height:42px;padding:6px 12px;font-size:15px;white-space:nowrap}
 @media (max-width:599px){#scr-coll .coll-sides{display:none}}
-@media (max-height:740px){#scr-coll .dk-fan{font-size:min(11px,calc(100cqw / 28.5))}}
-.coll-row .btn.primary{white-space:nowrap}
-/* a narrow hand panel shows Best 5 as an icon so Save hand keeps one line */
+/* a narrow panel shows Best 5 as an icon so Save hand keeps one line */
 @container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
 /* picking cards for a match: Best 5, Clear and Save hand share the row with their words, and Play gets its own row under them */
 #scr-coll.pick .coll-row{flex-wrap:wrap}
@@ -263,20 +330,18 @@
 @container (max-width:360px){#scr-coll.pick .coll-row .dk-act svg{display:none}}
 /* a card you can't add right now (every copy in hand, hand full, over the rarity limit) fades */
 .pk-cell.used .pocket{opacity:.35}
+/* wide screens: deck boxes | mat | panel, in one row under the book */
 @media (min-width:700px) and (orientation:landscape){
-  #scr-coll .wrap.coll-wrap{grid-template-columns:minmax(0,1fr) clamp(300px,calc(34vw / var(--ui)),380px);grid-template-rows:minmax(0,1fr)}
-  #scr-coll .dk-lorow{grid-template-columns:1fr}
-  #scr-coll .dk-loslot{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;min-height:54px;padding:6px 10px}
-  #scr-coll .dk-loslot .stack{display:flex;grid-row:1/3}
-  #scr-coll .dk-loslot b{align-self:end} #scr-coll .dk-loslot span{align-self:start}
-  #scr-coll .dk-loslot.empty{display:flex;min-height:54px}
+  .coll-side{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:16px;width:100%;max-width:1000px;justify-self:center}
+  /* picking for a match has no loadouts: the hand gets the whole row */
+  .coll-side:has(#collLo.hidden){grid-template-columns:minmax(0,1fr)}
+  #scr-coll .dk-tray{flex-direction:row;align-items:stretch;gap:14px;container-type:inline-size}
+  #scr-coll .dk-fan{flex:none;font-size:min(13px,calc(56cqw / 29.6))}
+  .coll-panel{flex:1}
 }
-/* phones held sideways: loadouts go back to one compact row so the side column fits the short height */
+/* phones held sideways: everything a bit more compact */
 @media (orientation:landscape) and (max-height:520px){
-  #scr-coll .wrap.coll-wrap{min-height:0}
-  #scr-coll .topbar.coll-top{margin:0 0 6px}
-  #scr-coll .dk-lorow{grid-template-columns:repeat(3,minmax(0,1fr))}
-  #scr-coll .dk-loslot{display:flex;min-height:48px;padding:7px 10px}
-  #scr-coll .dk-loslot .stack{display:none}
-  #scr-coll .dk-loslot.empty{min-height:48px}
+  #scr-coll .wrap.coll-wrap{min-height:0;gap:10px}
+  #scr-coll .topbar.coll-top{margin:0}
+  #scr-coll .dk-loslot{width:66px}
 }

@@ -22,7 +22,7 @@ function collMode(h,title,meta){
 $('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
 $('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
 function openCollection(){
-  sfx('coll_open');collNewSeen(); // the menu tile's "new" count starts again (menu.js)
+  collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
@@ -31,7 +31,7 @@ function openCollection(){
   CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
   bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
-  bdCoverOpen();
+  bdCoverOpen(); // plays the open sound as the cover swings
 }
 
 /* ---------- card detail: the card slides out of its sleeve and flies into the popup ---------- */
@@ -49,13 +49,13 @@ function collDetail(id,pocket){
   const shiny=!lost&&c.rar>=4;
   sfx(lost?'coll_lost':'coll_card_out');if(shiny)setTimeout(()=>sfx('coll_shimmer'),120);
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id),src=pocket&&pocket.querySelector('.card');
-  const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
+  const box=modal(`<div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
     <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'grey',{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
     <h2 class="nm2 cd-name">${esc(c.name)}</h2>
     <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
     <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
-    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your binder':n>1?'copies in your binder':'copy in your binder'}</div>
+    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your book':n>1?'copies in your book':'copy in your book'}</div>
     ${lost?'<p class="cd-msg">You lost every copy of this card. Win it back in a match with a trade rule.</p>':''}</div>`,
     lost?[{label:'Close',cls:'primary',esc:true}]
       :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':capped?'Over rarity limit':'Add to hand',cls:'primary',keep:true,fn:()=>{
@@ -113,15 +113,15 @@ function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dat
 const bdPocketCard=id=>{const p=$(`#bdL .pocket[data-id="${id}"],#bdR .pocket[data-id="${id}"]`);return p&&p.querySelector('.card')};
 const bdPocketLand=card=>{const p=card&&card.closest('.pocket');if(p&&!noMotion())p.animate([{transform:'scale(1.07)'},{transform:'none'}],{duration:260,easing:'cubic-bezier(.2,1.4,.4,1)'})};
 
-/* ---------- binder: pages by rarity ----------
-   8 cards a page (3×3 sleeves with one spare, 4×2 on short pages, 2×4 on tall ones). Epic and Legendary are
-   trophy pages: 4 cards in bigger sleeves. With two pages side by side, a rarity with an odd number of pages
-   gets a blank one, so every rarity starts on its own spread and a tab always opens just that rarity. */
-const BD_PER=8,BD_BIG=4;
+/* ---------- the book: pages by rarity ----------
+   4 cards a page (2×2), each in a shallow spot pressed into the paper. Epic and Legendary glow in their colour.
+   With two pages side by side, a rarity with an odd number of pages gets a blank one, so every rarity starts on
+   its own spread and a bookmark always opens just that rarity. */
+const BD_PER=4;
 function bdBook(spread){
   const out=[];
   for(let r=1;r<=5;r++){
-    const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),big=r>=4,per=big?BD_BIG:BD_PER,n=Math.ceil(cs.length/per),start=out.length;
+    const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),big=r>=4,per=BD_PER,n=Math.ceil(cs.length/per),start=out.length;
     for(let i=0;i<n;i++)out.push({r,big,cards:cs.slice(i*per,(i+1)*per),part:i+1,parts:n});
     if(spread&&(out.length-start)%2)out.push({r,blank:true});
   }
@@ -139,34 +139,32 @@ function bdPage(k){
   const pg=BD_BOOK[k];
   if(!pg)return '';
   if(pg.blank)return '<div class="bd-blank"></div>';
-  const cs=pg.cards,[f,t]=rarFound(pg.r),slots=pg.big?BD_BIG:9;
+  const cs=pg.cards,[f,t]=rarFound(pg.r);
   let pk='';
-  for(let i=0;i<slots;i++){
+  for(let i=0;i<BD_PER;i++){
     const c=cs[i];
-    if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
+    if(!c){pk+='<div class="pk-cell"><div class="pocket blank" aria-hidden="true"></div></div>';continue}
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
     const face=n?cardHTML(c.id,'grey',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
-    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
+    const seal=n>1?`<span class="seal" aria-hidden="true">×${n}</span>`:'';
+    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${seal}${add}</div>`;
   }
-  return `<div class="bd-h rar${pg.r}"><b><span class="rt">${pg.r}★</span> ${RARITY[pg.r-1]}${pg.parts>1?` <em>${pg.part}/${pg.parts}</em>`:''}</b>`+
-    `<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
-    `<div class="bd-bar"><i style="width:${(f/t*100).toFixed(1)}%"></i></div><div class="bd-grid${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-num">${k+1}</div>`;
+  // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
+  const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;
+  return `<div class="bd-chap rar${pg.r}">${head}</div><div class="bd-grid${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-num">${k+1}</div>`;
 }
 function bdChrome(p){
   const sp=BD.sp,n=BD_BOOK.length;
-  // the open rarity's tab rises and joins the page
-  const seen=new Set((sp?[p,p+1]:[p]).map(k=>BD_BOOK[k]&&BD_BOOK[k].r));
-  $$('#bdTabs .bd-tab').forEach(b=>{const on=seen.has(+b.dataset.r);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  // bookmarks: the open rarity's ribbon is pulled out, passed ones lie on the left (flipping over with the page), the rest wait on the right
+  const cur=BD_BOOK[p]?BD_BOOK[p].r:1;
+  $$('#bdTabs .bd-rib').forEach(b=>{const r=+b.dataset.r,on=r===cur;b.classList.toggle('on',on);b.classList.toggle('left',r<cur);b.style.setProperty('--d',Math.max(0,cur-1-r));b.setAttribute('aria-pressed',on)});
   $('#bdPos').textContent=sp?`Pages ${p+1}–${p+2} of ${n}`:`Page ${p+1} of ${n}`;
   $('#bdPrev').disabled=p===0;
   $('#bdNext').disabled=p+(sp?2:1)>=n;
   // the folded corner shows on a page you can turn
   $('#binder').classList.toggle('has-prev',p>0);$('#binder').classList.toggle('has-next',p+(sp?2:1)<n);
-  // keep the current tab in view by scrolling the tab row sideways only (never the screen)
-  const row=$('#bdTabs'),t=$('#bdTabs .bd-tab.on');
-  if(t&&row.scrollWidth>row.clientWidth)row.scrollTo({left:t.offsetLeft-(row.clientWidth-t.offsetWidth)/2,behavior:'smooth'});
 }
 function bdRender(){
   if(BD.done)BD.done();
@@ -177,14 +175,14 @@ function bdRender(){
   $('#binder').classList.toggle('single',!sp);$('#collBook').classList.toggle('single',!sp);
   $('#bdL').innerHTML=sp?bdPage(BD.p):'';
   $('#bdR').innerHTML=bdPage(sp?BD.p+1:BD.p);
-  // one tab per rarity; it opens that rarity's first page. On one page only the open tab shows its name.
+  // one bookmark per rarity; it opens that rarity's first page. Two faces, so it reads the right way round on either side.
   $('#bdTabs').innerHTML=[1,2,3,4,5].map(r=>{
-    const [f,t]=rarFound(r);
-    return `<button class="bd-tab rar${r}" data-r="${r}" aria-label="${RARITY[r-1]}"><span class="rt">${r}★</span><span class="tn"> ${RARITY[r-1]}</span>${f===t?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
-  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>{bdTabPop(b);bdTurn(bdFirst(+b.dataset.r),'tab')});
+    const [f,t]=rarFound(r),lbl=`${r}★${f===t?'<em>✓</em>':''}`;
+    return `<button class="bd-rib rar${r}" data-r="${r}" aria-label="${RARITY[r-1]}${f===t?', complete':''}"><i>${lbl}</i><i class="b">${lbl}</i></button>`}).join('');
+  $$('#bdTabs .bd-rib').forEach(b=>b.onclick=()=>{if(bdCovered())return;bdTabPop(b);bdTurn(bdFirst(+b.dataset.r),'tab')});
   bdChrome(BD.p);
 }
-const bdTabPop=b=>{if(!noMotion())b.animate([{transform:'none'},{transform:'translateY(-4px) scale(1.04)',offset:.45},{transform:'none'}],{duration:210,easing:'ease-out'})};
+const bdTabPop=b=>{if(!noMotion())b.animate([{scale:'1'},{scale:'1.06',offset:.45},{scale:'1'}],{duration:210,easing:'ease-out'})};
 
 /* ---------- page turns ----------
    One engine for arrows, tabs, riffles and drags. A sheet is cut into 8 strips that each turn a little more
@@ -319,8 +317,8 @@ const bdStep=d=>{
   if(to===BD.p){bdBump(d);return}
   bdTurn(to);
 };
-$('#bdPrev').onclick=()=>bdStep(-1);
-$('#bdNext').onclick=()=>bdStep(1);
+$('#bdPrev').onclick=$('#bdPrevEar').onclick=()=>bdStep(-1);
+$('#bdNext').onclick=$('#bdNextEar').onclick=()=>bdStep(1);
 
 /* ---------- drag a page ----------
    Grab any empty bit of paper (or the folded corner) and pull: the free edge follows the finger. Let go past
@@ -396,10 +394,18 @@ const bdEdgeTheta=(T,x)=>{const c=T.dirE*(T.edge0+(x-T.x0)*1.15-T.hinge)/T.W;ret
 }
 
 /* ---------- the front cover ----------
-   Opening the collection: two pages, the cover (the right half) swings open on the rings and lands as the
-   left half while the binder slides to the middle. One page: it swings off to the left and fades. Leaving
-   plays it backwards, quickly. Not when picking cards for a match. */
-let bdCover=null;
+   Opening the collection: the elastic band snaps off, the Leylines sigil lights up, then the cover swings open on
+   the spine and lands as the left half while the book slides to the middle. One page: it swings off to the left
+   and fades. Light follows the swing: the cover darkens as it turns away, the inside lightens as it lands, and its
+   shadow sweeps over the page under it. Leaving plays the swing backwards, quickly. Not when picking for a match. */
+// the Leylines emblem in light lines; its ley lines and gems light up as the book opens
+const CV_SIGIL='<svg class="cv-sigil" viewBox="0 0 240 240" aria-hidden="true"><circle class="pulse" cx="120" cy="120" r="114"/>'+
+  '<circle class="eng" cx="120" cy="120" r="114"/><circle class="eng" cx="120" cy="120" r="104" stroke-dasharray="3 6"/><g class="eng f">'+
+  [26,92,158].map(y=>[26,92,158].map(x=>`<rect x="${x}" y="${y}" width="56" height="56" rx="8"/>`).join('')).join('')+'</g>'+
+  '<path class="ln" pathLength="1" d="M54 54H120V120H186V186"/><path class="ln" pathLength="1" d="M54 120V186H120V120"/><path class="ln" pathLength="1" d="M186 54L120 120L54 186"/>'+
+  [[54,54],[120,54],[54,120],[186,120],[120,186],[186,186]].map(([x,y])=>`<polygon class="gem" points="${x},${y-10} ${x+10},${y} ${x},${y+10} ${x-10},${y}"/>`).join('')+
+  '<polygon class="gem" points="120,104 136,120 120,136 104,120"/></svg>';
+let bdCover=null,bdCast=null;
 const bdCovered=()=>!!bdCover;
 function bdCoverBuild(){
   if(bdCover)bdCover.remove();
@@ -407,31 +413,60 @@ function bdCoverBuild(){
   const left=sp?binder.offsetLeft+binder.offsetWidth/2:binder.offsetLeft+R.offsetLeft-8;
   const cv=bdCover=document.createElement('div');cv.className='bd-cover';cv.setAttribute('aria-hidden','true');
   Object.assign(cv.style,{left:left+'px',top:binder.offsetTop+'px',height:binder.offsetHeight+'px',width:(binder.offsetLeft+binder.offsetWidth-left)+'px'});
-  cv.innerHTML=`<div class="cf front"><div class="emb"><i class="emb-ic"></i><b>Leylines</b><span>Collection</span></div><i class="strap"></i></div>`+
-    `<div class="cf back">${sp?`<div class="bd-page l" style="left:${L.offsetLeft}px;top:${L.offsetTop}px;width:${L.offsetWidth}px;height:${L.offsetHeight}px">${L.innerHTML}</div>`:''}</div>`;
+  cv.innerHTML=`<div class="cf front"><i class="cv-spine"></i>${CV_SIGIL}<span class="cv-title">Collection</span><i class="cv-band"></i><i class="cv-shd"></i></div>`+
+    `<div class="cf back">${sp?`<div class="bd-page l" style="left:${L.offsetLeft}px;top:${L.offsetTop}px;width:${L.offsetWidth}px;height:${L.offsetHeight}px">${L.innerHTML}</div>`:''}<i class="cv-shd"></i></div>`;
   $('#bdWrap').append(cv);
   return cv;
 }
-function bdCoverReset(){if(bdCover){bdCover.remove();bdCover=null}$('#binder').style.clipPath='';$('#bdWrap').style.transform=''}
+function bdCoverReset(){
+  if(bdCover){bdCover.remove();bdCover=null}if(bdCast){bdCast.remove();bdCast=null}
+  $('#binder').style.clipPath='';$('#bdWrap').style.transform='';$('#bdTabs').classList.remove('hide');
+}
 function bdCoverOpen(){
-  bdCoverReset();if(noMotion())return;
-  const cv=bdCoverBuild(),sp=BD.sp,wrap=$('#bdWrap'),binder=$('#binder');let a;
+  bdCoverReset();
+  if(noMotion()){sfx('coll_open');return}
+  const cv=bdCoverBuild(),sp=BD.sp,wrap=$('#bdWrap'),binder=$('#binder'),ribs=$('#bdTabs');
+  const D=520,T=1000,CE='cubic-bezier(.35,.05,.25,1)',live=()=>bdCover===cv;
+  ribs.classList.add('hide');
+  // 1. the elastic band is pulled back, then snaps off past the edge (with a click)
+  const band=cv.querySelector('.cv-band');
+  band.animate([{transform:'none'},{transform:'translateX(-30%) scaleX(.85)',offset:.55},{transform:'translateX(-40%) scaleX(.8)'}],{duration:210,delay:30,easing:'ease-out',fill:'forwards'});
+  band.animate([{transform:'translateX(-40%) scaleX(.8)',opacity:1},{transform:'translateX(260%) scaleX(1.1)',opacity:1,offset:.6},{transform:'translateX(420%) scaleX(1)',opacity:0}],{duration:300,delay:240,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
+  setTimeout(()=>{if(live())sfx('coll_tab')},250);
+  // 2. the sigil's ley lines draw themselves, the gems light, a ring of light pulses out
+  const sg=cv.querySelector('.cv-sigil');
+  sg.querySelectorAll('.ln').forEach((l,k)=>l.animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:260,delay:170+k*80,easing:'ease-in-out',fill:'forwards'}));
+  setTimeout(()=>{if(!live())return;sg.classList.add('lit');
+    sg.querySelector('.pulse').animate([{opacity:.9,transform:'scale(.92)'},{opacity:0,transform:'scale(1.4)'}],{duration:700,easing:'ease-out'});
+    cv.querySelector('.cf.front').animate([{filter:'brightness(1)'},{filter:'brightness(1.45)'},{filter:'brightness(1)'}],{duration:420})},430);
+  // 3. the swing, with its sound; light and shadow follow it
+  setTimeout(()=>{if(live())sfx('coll_open')},D);
+  let a;
   if(sp){
     // the left half appears the moment the cover lies flat on it, so the swap can't be seen
     binder.style.clipPath='inset(0 0 0 50%)';
-    a=[wrap.animate([{transform:'translateX(-25%) translateY(10px) scale(.97)'},{transform:'translateX(-25%)',offset:.14},{transform:'none'}],{duration:820,easing:'cubic-bezier(.3,.1,.2,1)'}),
-      cv.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-12deg)',offset:.12},{transform:'rotateY(-180deg)',offset:.82},{transform:'rotateY(-174deg)',offset:.91},{transform:'rotateY(-180deg)'}],{duration:1000,easing:'cubic-bezier(.35,.05,.25,1)',fill:'forwards'})];
-    setTimeout(()=>{if(bdCover===cv)binder.style.clipPath=''},820);
+    a=[wrap.animate([{transform:'translateX(-25%) translateY(10px) scale(.97)'},{transform:'translateX(-25%)',offset:.14},{transform:'none'}],{duration:820,delay:D,easing:'cubic-bezier(.3,.1,.2,1)',fill:'backwards'}),
+      cv.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-12deg)',offset:.12},{transform:'rotateY(-180deg)',offset:.82},{transform:'rotateY(-174deg)',offset:.91},{transform:'rotateY(-180deg)'}],{duration:T,delay:D,easing:CE,fill:'both'})];
+    setTimeout(()=>{if(live())binder.style.clipPath=''},D+820);
   }else{
-    a=[wrap.animate([{transform:'translateY(10px) scale(.97)'},{transform:'none'}],{duration:260,easing:'cubic-bezier(.2,.8,.3,1)'}),
-      cv.animate([{transform:'rotateY(0deg)',opacity:1},{transform:'rotateY(-12deg)',opacity:1,offset:.12},{transform:'rotateY(-105deg)',opacity:1,offset:.55},{transform:'rotateY(-160deg)',opacity:0,offset:.8},{transform:'rotateY(-180deg)',opacity:0}],{duration:1000,easing:'cubic-bezier(.35,.05,.25,1)',fill:'forwards'})];
+    a=[wrap.animate([{transform:'translateY(10px) scale(.97)'},{transform:'none'}],{duration:260,delay:D,easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'}),
+      cv.animate([{transform:'rotateY(0deg)',opacity:1},{transform:'rotateY(-12deg)',opacity:1,offset:.12},{transform:'rotateY(-105deg)',opacity:1,offset:.55},{transform:'rotateY(-160deg)',opacity:0,offset:.8},{transform:'rotateY(-180deg)',opacity:0}],{duration:T,delay:D,easing:CE,fill:'both'})];
   }
-  a[1].onfinish=()=>{if(bdCover===cv)bdCoverReset()};
+  const o={duration:T,delay:D,easing:CE,fill:'both'};
+  cv.querySelector('.front .cv-shd').animate([{opacity:0},{opacity:.7,offset:.5},{opacity:.7}],o);
+  cv.querySelector('.back .cv-shd').animate([{opacity:.75},{opacity:.75,offset:.5},{opacity:0}],o);
+  bdCast=document.createElement('i');bdCast.className='bd-under to-r';$('#bdR').append(bdCast);
+  bdCast.animate([{opacity:0},{opacity:.9,offset:.4},{opacity:0}],o);
+  // the bookmarks come out once the cover is past them
+  setTimeout(()=>{if(live())ribs.classList.remove('hide')},D+T*.75);
+  a[1].onfinish=()=>{if(live())bdCoverReset()};
 }
 function bdCoverClose(then){
   if(BD.done)BD.done();
   if(noMotion()||bdCover||!$('#scr-coll').classList.contains('on')){bdCoverReset();then();return}
   const cv=bdCoverBuild(),sp=BD.sp;let a;
+  $('#bdTabs').classList.add('hide');
+  cv.querySelector('.front .cv-shd').animate([{opacity:.7},{opacity:0}],{duration:250,easing:'ease-in',fill:'both'});
   if(sp){
     $('#binder').style.clipPath='inset(0 0 0 50%)';
     a=[cv.animate([{transform:'rotateY(-180deg)'},{transform:'rotateY(0deg)'}],{duration:240,easing:'cubic-bezier(.55,0,.9,.45)',fill:'forwards'}),

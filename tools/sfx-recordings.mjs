@@ -57,6 +57,9 @@ export const RECIPES = {
   coll_bump:        [L('kit:tap/kenney-impact-impact-wood-light-000.wav')],
   coll_tab:         [L('kit:click/kenney-ui-audio-switch21.wav')],
   coll_close:       [L('fs-617410.mp3')],
+  // the close recording played the other way round in spirit: its rustle as the cover lifts, then its thud, deeper and
+  // softer, as the cover lands open on the table (about .8 s in, with the swing in collection.js)
+  coll_open:        [L('fs-617410.mp3', { to: .15, db: -3, fout: .06 }), L('fs-617410.mp3', { from: .17, at: .74, rate: .92, lp: 2600, db: -3 })],
   coll_locked:      [L('impactWood_medium_000.ogg')],
   // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
   badge_claim:      [L('fs-169146.mp3', { to: .7, fout: .3 }), P(.08, 0, { db: -4 })],

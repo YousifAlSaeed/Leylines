@@ -6,6 +6,13 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.24.2 (2026-10-14)
+- The collection is a book: a violet cover with an elastic band that snaps off and a sigil that lights up before it opens
+- Bigger cards, four to a page; pages turn by tapping their folded corner, or drag them as before
+- Bookmarks work like real ones: the open rarity's ribbon is pulled out, the ones you've passed flip over to the left as the page turns, and the rest wait on the right
+- Under the book: your loadouts are deck boxes, your hand has its own mat, and Best 5, Clear and Save hand sit beside it; a pink dot shows how many copies you have
+- Opening the book has a real book sound now, made from the same recording as closing it
+
 ## 0.24.1 (2026-10-14)
 - Cards in the collection are grey, nobody's yet; a card turns your blue as it flies into your hand (and grey again on the way back)
 

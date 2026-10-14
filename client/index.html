@@ -222,14 +222,20 @@
     <div class="coll-book" id="collBook">
       <div class="bd-top">
         <button class="iconbtn bd-arrow" id="bdPrev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <div class="bd-tabs" id="bdTabs"></div>
+        <span class="bd-gap"></span>
         <button class="iconbtn bd-arrow" id="bdNext" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
       <div class="bd-wrap" id="bdWrap">
+        <!-- one bookmark ribbon per rarity, tucked into the book behind the pages (collection.js) -->
+        <div class="bd-ribs" id="bdTabs"></div>
         <div class="binder" id="binder">
-          <div class="bd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <!-- the pages under the open ones, seen where a corner is folded back -->
+          <div class="bd-sheet l" aria-hidden="true"></div><div class="bd-sheet r" aria-hidden="true"></div>
           <div class="bd-page l" id="bdL"></div>
           <div class="bd-page r" id="bdR"></div>
+          <!-- folded corners: tap (or drag the page) to turn -->
+          <button class="bd-ear l" id="bdPrevEar" aria-label="Previous page"><i></i></button>
+          <button class="bd-ear r" id="bdNextEar" aria-label="Next page"><i></i></button>
         </div>
       </div>
       <span class="vh" id="bdPos" aria-live="polite"></span>
@@ -242,7 +248,9 @@
         <div class="dk-lonote" id="collLoNote" aria-live="polite"></div>
       </div>
       <div class="dk-tray coll-tray">
+        <!-- the hand: a felt mat with 5 places; power, side strength and the buttons in a panel beside it -->
         <div class="dk-fan" id="collSlots"></div>
+        <div class="coll-panel">
         <div class="dk-sides coll-sides" id="collSides"></div>
         <div class="coll-row">
           <div class="dk-power">Power<b id="collPower">0</b></div>
@@ -250,6 +258,7 @@
           <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Clear</span></button>
           <button class="btn primary" id="collSave">Save hand</button>
           <button class="btn primary hidden" id="collGo" disabled>Play</button>
+        </div>
         </div>
       </div>
     </div>

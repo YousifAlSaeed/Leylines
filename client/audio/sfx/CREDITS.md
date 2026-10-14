@@ -28,6 +28,6 @@ CC0 (public domain): credit is not required but given. The other effects are mad
 | pack_rip | "duct tape tear rip" by AlaskaRobotics ([245198](https://freesound.org/people/AlaskaRobotics/sounds/245198)) and the crystal bell |
 | pack_fling | "Swish 4" by ihitokage ([395369](https://freesound.org/people/ihitokage/sounds/395369)) |
 | pack_reveal_1–5, coll_hand_full, badge_claim | "Mein bottle pling" by skylarjulian ([521332](https://freesound.org/people/skylarjulian/sounds/521332)), with the crystal bell, bell tree, sparkling star and a Kenney card snap and book thud |
-| coll_close | "Book Close" by xavierrrangel ([617410](https://freesound.org/people/xavierrrangel/sounds/617410)) |
+| coll_open, coll_close | "Book Close" by xavierrrangel ([617410](https://freesound.org/people/xavierrrangel/sounds/617410)) |
 | badge_claim | "coins_03" by Butilko ([169146](https://freesound.org/people/Butilko/sounds/169146)) |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |
