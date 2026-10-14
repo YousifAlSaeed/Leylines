@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.24.1 (2026-10-14)
+- Cards in the collection are grey, nobody's yet; a card turns your blue as it flies into your hand (and grey again on the way back)
+
 ## 0.24.0 (2026-10-13)
 - The menu moves, on phones and PCs alike: the logo's squares turn over like a tiny match, the cards on the Play card float and open out, and Play has a slow heartbeat
 - Card drift: the cards you've found slide slowly past behind the menu, and now and then one turns over. Settings has a switch for it (Menu background)

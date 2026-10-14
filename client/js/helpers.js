@@ -50,6 +50,7 @@ function ghostSweep(keep){$$('body > .ghost').forEach(g=>{if(g!==keep)g.remove()
 /* ---------- flying cards (collection and hand) ----------
    A copy of the card on <body> (outside the zoomed screens) flies from one card to another in an arc,
    turning and resizing to match. The cards themselves stay put; hide them while the copy is in the air. */
+const CARD_COLS=['blue','red','grey','gold','green','purple','teal'];
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 // a card's font size in window pixels (cards are sized in em; screens and popups are zoomed by --ui)
 const cardPx=el=>parseFloat(getComputedStyle(el).fontSize)*(el.closest('.screen,#modal')?UI:1);
@@ -60,9 +61,12 @@ function fly(src,dst,o={}){
   const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect(),fa=cardPx(src),fb=cardPx(dst);
   if(noMotion()||!a.width||!b.width){o.done&&o.done();return}
   const g=src.cloneNode(true);g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer');if(o.shadow)g.classList.add('lifted');
+  // a card changing hands changes colour on the way (grey in the collection, blue in your hand)
+  const col=e=>CARD_COLS.find(c=>e.classList.contains(c)),c0=col(g),c1=col(dst);
   const ax=a.left+a.width/2,ay=a.top+a.height/2,dx=b.left+b.width/2-ax,dy=b.top+b.height/2-ay;
   Object.assign(g.style,{fontSize:fa+'px',left:(ax-2.5*fa)+'px',top:(ay-3*fa)+'px',transform:'',visibility:''});
   document.body.append(g);
+  if(c0&&c1&&c0!==c1){getComputedStyle(g).getPropertyValue('--c1');g.style.transition=`--c1 ${o.ms||360}ms,--c2 ${o.ms||360}ms`;g.classList.replace(c0,c1)}
   const s0=o.s0||1,s=fb/fa,r0=o.r0||0,r1=o.r1||0,tf=(x,y,r,k)=>`translate(${x}px,${y}px) rotate(${r}deg) scale(${k})`;
   const kf=[{transform:tf(0,0,r0,s0)}];
   if(o.lift)kf.push({transform:tf(0,-o.lift*6*fa*s0,r0*.5,s0*(o.liftScale||1)),offset:o.liftAt||.25});
