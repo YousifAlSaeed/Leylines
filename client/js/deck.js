@@ -28,6 +28,8 @@ function renderDeck(){
    ===================================================================== */
 function handRemaining(h,id){const e=h.pool.find(x=>x.id===id);return e?e.count-h.sel.filter(x=>x===id).length:0}
 // from: a card on screen to fly in from (a binder sleeve, the card popup, a dragged card); returns whether it was added
+// set for a moment after a hand card is dragged, so the click that ends the drag doesn't also remove it (collection.js)
+let handDragged=false;
 function handAdd(h,id,from){
   const tray=$(`#${h.pfx}Slots`).closest('.dk-tray');
   if(h.sel.length>=5||handRemaining(h,id)<=0){sfx('coll_deny');shakeNo(tray);return false}
@@ -47,19 +49,19 @@ function handFull(h){
   setTimeout(()=>{
     sfx('coll_hand_full');if(noMotion())return;
     $$(`#${h.pfx}Slots .card`).forEach((c,i)=>c.animate([{transform:'none'},{transform:'translateY(-.7em) scale(1.05)',offset:.4},{transform:'none'}],{duration:440,delay:i*95,easing:'ease-in-out'}));
-    const t=$(`#${h.pfx}Slots`).closest('.dk-tray'),glow=getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim();
-    if(t)t.animate([{boxShadow:`0 0 0 0 transparent`},{boxShadow:`0 0 0 4px ${glow},0 0 40px ${glow}`,offset:.35},{boxShadow:`0 0 0 0 transparent`}],{duration:1500,easing:'ease-out'});
+    // the glow goes round the hand's own mat (its rounded corners), on top of its usual edge
+    const t=$(`#${h.pfx}Slots`),glow=getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim(),base=t&&getComputedStyle(t).boxShadow,b=base&&base!=='none'?base+',':'';
+    if(t)t.animate([{boxShadow:`${b}0 0 0 0 transparent,0 0 0 0 transparent`},{boxShadow:`${b}0 0 0 4px ${glow},0 0 40px ${glow}`,offset:.35},{boxShadow:`${b}0 0 0 0 transparent,0 0 0 0 transparent`}],{duration:1500,easing:'ease-out'});
   },120);
 }
-// tap a hand card: it pops up and flies back to its sleeve (or floats off if its page isn't open); the rest slide over
-function handRemove(h,i){
-  const P=h.pfx,id=h.sel[i],card=$(`#${P}Slots .dk-fs[data-i="${i}"] .card`);
+// tap a hand card (or drag it onto the book): it goes back to its spot in the book, which turns to its page if that
+// isn't open (collection.js); with no book on screen it floats off. The rest slide over. from: a dragged card to fly from.
+function handRemove(h,i,from){
+  const P=h.pfx,id=h.sel[i],card=from||$(`#${P}Slots .dk-fs[data-i="${i}"] .card`);
   sfx('coll_hand_remove');
   const old=$$(`#${P}Slots .dk-fs`).map(s=>{const c=s.querySelector('.card');return c&&c.getBoundingClientRect()});
   if(card&&!noMotion()){
-    const home=bdPocketCard(id);
-    if(home){home.style.visibility='hidden';fly(card,home,{ms:560,lift:.25,liftAt:.24,liftScale:1.08,r0:(i-2)*4,arc:30,shadow:true,ease:'cubic-bezier(.4,.1,.25,1)',done:()=>{home.style.visibility='';bdPocketLand(home)}})}
-    else{const g=card.cloneNode(true),a=card.getBoundingClientRect(),fs=cardPx(card);g.classList.add('flyer','lifted');
+    if(!bdSendHome(card,id)){const g=card.cloneNode(true),a=card.getBoundingClientRect(),fs=cardPx(card);g.classList.add('flyer','lifted');
       Object.assign(g.style,{fontSize:fs+'px',left:(a.left+a.width/2-2.5*fs)+'px',top:(a.top+a.height/2-3*fs)+'px'});document.body.append(g);
       g.animate([{transform:`rotate(${(i-2)*4}deg)`},{transform:'translateY(-1.4em) scale(1.08)',offset:.3},{transform:'translateY(-4em) scale(.9)',opacity:0}],{duration:560,easing:'cubic-bezier(.4,.1,.25,1)',fill:'forwards'}).onfinish=()=>g.remove()}
   }
@@ -79,7 +81,7 @@ function renderHand(h){
       ?`<div class="dk-fs" ${st} data-i="${i}" role="button" aria-label="Remove ${esc(CARDS[id].name)}">${cardHTML(id,col,{name:false,cls:i===h.deal?'deal':i===h.hold?'hold':''})}</div>`
       :`<div class="dk-fs" ${st}><div class="dk-empty">${i+1}</div></div>`}).join('');
   h.deal=-1;
-  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>handRemove(h,+s.dataset.i));
+  $$(`#${P}Slots .dk-fs[data-i]`).forEach(s=>s.onclick=()=>{if(!handDragged)handRemove(h,+s.dataset.i)});
   // stats: total power and the best number on each side
   $(`#${P}Power`).textContent=h.sel.reduce((a,id)=>a+CARDS[id].sum,0);
   $(`#${P}Sides`).innerHTML=SIDE_NAMES.map((s,i)=>{const v=n?Math.max(...h.sel.map(id=>CARDS[id].s[i])):0;
@@ -165,6 +167,9 @@ function wireHand(P,get){
     const all=[];h.pool.forEach(e=>{for(let i=0;i<e.count;i++)all.push(e.id)});
     all.sort((a,b)=>CARDS[b].sum-CARDS[a].sum||CARDS[b].lv-CARDS[a].lv);
     h.sel=legalDeck(all);h.saving=false;h.note='';h.render();
+    // the five cards deal onto the mat one after another, then the hand does its "full" wave and glow
+    if(!noMotion())$$(`#${P}Slots .card`).forEach((c,k)=>c.animate([{transform:'translateY(-1.6em) scale(1.08)',opacity:0},{transform:'none',opacity:1}],{duration:320,delay:k*70,easing:'cubic-bezier(.2,1.3,.4,1)',fill:'backwards'}));
+    if(h.sel.length===5)setTimeout(()=>handFull(h),noMotion()?0:300);
   };
   $(`#${P}Clear`).onclick=()=>{const h=get();sfx('click');h.sel=[];h.saving=false;h.note='';h.render()};
 }

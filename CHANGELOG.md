@@ -6,6 +6,14 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.24.3 (2026-10-14)
+- Every card in the book sits in its own clear plastic sleeve, open at the top, with a soft shine that moves when you point at it
+- A card leaving your hand goes back to its spot in the book; if that page isn't open, the book turns to it first. You can also drag a hand card onto the book
+- Tap anywhere to put a card you're looking at back in the book
+- Best 5 deals your cards onto the mat and celebrates like finishing a hand; the glow around a full hand no longer shows a stray outline
+- Spare copies of a card stack up behind it in the book, with a small tab under it that says how many (×2, ×3)
+- Cards you put in your hand show it in the book: the copy count goes down, and a card with every copy in your hand fades and says "In hand"
+
 ## 0.24.2 (2026-10-14)
 - The collection is a book: a violet cover with an elastic band that snaps off and a sigil that lights up before it opens
 - Bigger cards, four to a page; pages turn by tapping their folded corner, or drag them as before

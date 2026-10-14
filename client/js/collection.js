@@ -62,6 +62,8 @@ function collDetail(id,pocket){
         // the card flies from the popup straight into the hand instead of back to its sleeve
         CD.toHand=true;handAdd(CH,id,box.querySelector('.cd-sleeve .card'));closeModal()}}]);
   box.classList.add('cd-box');
+  // a tap anywhere outside the buttons puts the card back
+  $('#modal').onclick=e=>{if($('#modal .cd-box')&&!e.target.closest('button'))closeModal()};
   // move the buttons onto the page (this drops focus, so set it again below)
   box.querySelector('.cd-sheet').append(box.querySelector('.mbtns'));
   const add=box.querySelector('.mbtns .btn.primary');
@@ -108,9 +110,46 @@ const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&!rarBlock(BH.sel,id)
 // how many of a card the binder holds: owned copies in the collection, the picker's pool when picking
 const bdHave=id=>{const e=BH.pool.find(x=>x.id===id);return e?e.count:0};
 // when picking, a card you can't add right now also fades, like the old picker grid
-function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dataset.add);b.classList.toggle('off',no);b.setAttribute('aria-disabled',no);b.parentNode.classList.toggle('used',no&&picking())})}
+function bdSyncAdd(){
+  $$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dataset.add);b.classList.toggle('off',no);b.setAttribute('aria-disabled',no);b.parentNode.classList.toggle('used',no&&picking())});
+  // cards in the hand are out of the book: the seal counts the copies left, and with none left the card fades
+  $$('#binder .pocket[data-id]').forEach(p=>{const id=+p.dataset.id;if(!bdHave(id))return;bdOut(p,handRemaining(BH,id))});
+}
+function bdOut(p,left){
+  p.classList.toggle('out',left<=0);p.classList.toggle('x2',left===2);p.classList.toggle('x3',left>2);
+  let s=p.parentNode.querySelector('.seal');
+  if(left>1){if(!s){s=document.createElement('span');s.className='seal';s.setAttribute('aria-hidden','true');p.after(s)}s.textContent=`×${left}`}
+  else if(s)s.remove();
+}
 // a card's face in its sleeve on the open pages (where hand cards fly home to)
 const bdPocketCard=id=>{const p=$(`#bdL .pocket[data-id="${id}"],#bdR .pocket[data-id="${id}"]`);return p&&p.querySelector('.card')};
+// a card leaving the hand goes back to its spot in the book. If that page isn't open, the card is held up while the
+// book turns there, then drops in. Returns false when there's no book to go to (it floats off instead).
+function bdSendHome(src,id){
+  if(!$('#scr-coll').classList.contains('on')||noMotion())return false;
+  const land=(from,home)=>{home.style.visibility='hidden';
+    fly(from,home,{ms:560,lift:.25,liftAt:.24,liftScale:1.08,arc:30,shadow:true,ease:'cubic-bezier(.4,.1,.25,1)',done:()=>{home.style.visibility='';bdPocketLand(home)}})};
+  const home=bdPocketCard(id);
+  if(home){land(src,home);return true}
+  const k=BD_BOOK.findIndex(pg=>pg.cards&&pg.cards.some(c=>c.id===id));
+  if(k<0||bdCovered())return false;
+  const a=src.getBoundingClientRect(),fs=cardPx(src),g=src.cloneNode(true);
+  g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer','lifted');
+  Object.assign(g.style,{fontSize:fs+'px',left:(a.left+a.width/2-2.5*fs)+'px',top:(a.top+a.height/2-3*fs)+'px',transform:'',visibility:''});
+  document.body.append(g);
+  g.animate([{transform:'none'},{transform:'translateY(-1.6em) scale(1.08) rotate(-3deg)'}],{duration:280,easing:'cubic-bezier(.3,1.3,.5,1)',fill:'forwards'});
+  bdTurn(k);
+  // wait for the turn to land, then drop in (give up after 2 s, or if the collection closes)
+  const t0=performance.now(),wait=()=>{
+    if(!$('#scr-coll').classList.contains('on')){g.remove();return}
+    if(BD_TURN&&performance.now()-t0<2000){setTimeout(wait,40);return}
+    const h=bdPocketCard(id);
+    if(h){land(g,h);g.remove()}
+    else g.animate([{opacity:1},{opacity:0,transform:'translateY(-4em) scale(.9)'}],{duration:300,fill:'forwards'}).onfinish=()=>g.remove();
+  };
+  setTimeout(wait,120);
+  return true;
+}
 const bdPocketLand=card=>{const p=card&&card.closest('.pocket');if(p&&!noMotion())p.animate([{transform:'scale(1.07)'},{transform:'none'}],{duration:260,easing:'cubic-bezier(.2,1.4,.4,1)'})};
 
 /* ---------- the book: pages by rarity ----------
@@ -148,8 +187,10 @@ function bdPage(k){
     const face=n?cardHTML(c.id,'grey',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
-    const seal=n>1?`<span class="seal" aria-hidden="true">×${n}</span>`:'';
-    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${seal}${add}</div>`;
+    // spare copies stack up behind the card with a tab under it counting the copies still in the book (the rest are in your
+    // hand); none left and the card fades
+    const left=n?handRemaining(BH,c.id):0,seal=left>1?`<span class="seal" aria-hidden="true">×${left}</span>`:'';
+    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
   }
   // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
   const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;
@@ -548,6 +589,32 @@ $('#binder').addEventListener('click',e=>{
  $('#binder').addEventListener('contextmenu',e=>{if(BD.drag)e.preventDefault()});
  window.addEventListener('pointerup',e=>end(e,false));
  window.addEventListener('pointercancel',e=>end(e,true));
+}
+// drag a card from the hand onto the book: it goes back to its spot (turning to its page if need be);
+// let go anywhere else and it slides back into the hand
+{const book=$('#bdWrap'),overBook=(x,y)=>{const r=book.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom};
+ let D=null;
+ $('#collSlots').addEventListener('pointerdown',e=>{const s=e.target.closest('.dk-fs[data-i]');if(!s||e.button>0||bdCovered())return;D={s,i:+s.dataset.i,x:e.clientX,y:e.clientY,pid:e.pointerId,g:null}});
+ window.addEventListener('pointermove',e=>{
+   if(!D||e.pointerId!==D.pid)return;
+   if(!D.g){
+     if(Math.hypot(e.clientX-D.x,e.clientY-D.y)<8)return;
+     const c=D.s.querySelector('.card');if(!c){D=null;return}
+     const g=c.cloneNode(true);g.classList.remove('deal','hold');g.classList.add('ghost');g.style.fontSize=cardPx(c)+'px';
+     ghostSweep();document.body.append(g);D.g=g;c.style.visibility='hidden';sfx('coll_lift');
+   }
+   D.g.style.left=e.clientX+'px';D.g.style.top=e.clientY+'px';book.classList.toggle('drop',overBook(e.clientX,e.clientY));
+ },{passive:true});
+ const up=(e,cancel)=>{
+   if(!D||e.pointerId!==D.pid)return;const d=D;D=null;if(!d.g)return;
+   book.classList.remove('drop');handDragged=true;setTimeout(()=>{handDragged=false},0);
+   const c=d.s.querySelector('.card');
+   if(!cancel&&overBook(e.clientX,e.clientY))handRemove(BH,d.i,d.g);
+   else{sfx('coll_return');fly(d.g,c,{ms:300,arc:16,shadow:true,ease:'cubic-bezier(.4,0,.3,1)',done:()=>{if(c){c.style.visibility='';settle(c)}}})}
+   d.g.remove();ghostSweep();
+ };
+ window.addEventListener('pointerup',e=>up(e,false));window.addEventListener('pointercancel',e=>up(e,true));
+ $('#collSlots').addEventListener('touchmove',e=>{if(D&&D.g&&e.cancelable)e.preventDefault()},{passive:false});
 }
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&BD.sp!==bdSpread()){bdCoverReset();bdRender()}};

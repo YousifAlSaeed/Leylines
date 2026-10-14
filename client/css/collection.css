@@ -131,8 +131,8 @@
 .bd-chap em{font-style:normal;letter-spacing:0;margin-right:.5em}
 .bd-chap .done{color:var(--accent-ink)}
 /* 2×2 cards, as big as the page allows */
-.bd-grid{flex:1;min-height:0;align-self:stretch;display:grid;grid-template-columns:repeat(2,auto);grid-template-rows:repeat(2,auto);align-content:center;justify-content:center;gap:.8em 1.3em;padding-top:4px;
-  font-size:min(44px,calc((100cqw - 34px) / 12.4),calc((100cqh - 46px) / 14.2))}
+.bd-grid{flex:1;min-height:0;align-self:stretch;display:grid;grid-template-columns:repeat(2,auto);grid-template-rows:repeat(2,auto);align-content:center;justify-content:center;gap:1.65em 2.1em;padding-top:4px;
+  font-size:min(44px,calc((100cqw - 34px) / 13.4),calc((100cqh - 46px) / 16.1))}
 .bd-grid.big .pocket::before{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),0 0 1.1em -.4em var(--rc)}
 .bd-num{flex:none;font:500 10.5px var(--body);color:var(--muted);opacity:.6;font-variant-numeric:tabular-nums}
 @container bdpage (max-height:260px){.bd-num{display:none}}
@@ -148,8 +148,21 @@
 .pocket.blank::before{display:none}
 .pocket:focus-visible{outline:2px solid var(--accent-hi);outline-offset:.3em}
 /* a wax seal shows how many copies you have */
-.seal{position:absolute;right:-.42em;top:-.42em;z-index:3;width:1.4em;height:1.4em;border-radius:50%;display:grid;place-items:center;pointer-events:none;
-  font:800 .5em/1 var(--display);color:var(--on-cta);background:var(--cta);box-shadow:0 0 0 .14em var(--page)}
+/* every copy is in your hand: the card fades in its spot and says so */
+.pocket.out .card{opacity:.22;filter:grayscale(.85)}
+.pocket.out::after{content:"In hand";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;white-space:nowrap;pointer-events:none;
+  font:600 .5em/1 var(--display);letter-spacing:.06em;padding:.45em .8em;border-radius:99px;color:var(--text);background:var(--book);box-shadow:inset 0 0 0 1px var(--line2)}
+.pocket{z-index:1}
+.pocket::before{z-index:-2}
+/* spare copies: their edges stack up behind the card (one for 2 copies, two for 3 or more), and a tab hanging from under
+   the card counts the copies still in the book */
+.pocket.x2::after,.pocket.x3::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:.6em;transform:translate(.2em,.2em);pointer-events:none;
+  background:linear-gradient(160deg,var(--grey1),var(--grey2));box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc) 60%,transparent)}
+.pocket.x3::after{box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc) 60%,transparent),.2em .2em 0 -.02em var(--grey2),.2em .2em 0 .04em color-mix(in srgb,var(--rc) 40%,transparent)}
+/* the tab starts under the card's bottom edge, so it reads as part of that card */
+.seal{position:absolute;left:50%;top:calc(100% - 1em);z-index:0;transform:translateX(-50%);pointer-events:none;white-space:nowrap;
+  font:700 .58em/1 var(--display);letter-spacing:.04em;padding:1.8em .85em .42em;border-radius:0 0 .7em .7em;
+  color:var(--text);background:color-mix(in srgb,var(--accent) 22%,var(--book));box-shadow:inset 0 0 0 1px var(--line2)}
 /* the turning page: a sheet cut into 8 strips, each bent a little more than the last, so the paper curls (collection.js) */
 .bd-leaf{position:absolute;transform-style:preserve-3d;pointer-events:none;will-change:transform}
 .bd-strip{position:absolute;top:0;transform-style:preserve-3d}
@@ -168,6 +181,72 @@
 /* empty paper can be grabbed to turn the page */
 #bdL,#bdR{cursor:grab}
 .binder.grabbing,.binder.grabbing *{cursor:grabbing!important}
+
+/* ---------- binder pages: clear sleeves ----------
+   Each card sits in its own clear, stiff sleeve: a bright edge all round, a thicker sealed lip under the card, an
+   open top with a thumb notch, and a soft band of light across the plastic that slides a little when you point at
+   it. The page itself stays plain. The back of the sleeve is the cell's ::before (under the card and its tab), the
+   front sheet is the cell's ::after (over the card, under the + button, never catching a click). */
+#bdWrap{
+  /* how far the sleeve reaches past the card: top, sides, and the lip at the bottom. The top stays short so a copies
+     tab hanging from the card above never touches this sleeve */
+  --sl-t:.26em;--sl-s:.3em;--sl-b:.48em;
+  /* the plastic: a shade of the page edge, a little denser in the sealed lip */
+  --sl-body:color-mix(in srgb,var(--edge) 42%,transparent);
+  --sl-lip:color-mix(in srgb,var(--edge) 78%,transparent);
+  /* light on the edges: soft on the dark page, stronger on the light one (where white needs more to show) */
+  --sl-hi:rgba(255,255,255,calc(.92 - .56*var(--shk)));
+  --sl-glint:rgba(255,255,255,calc(.5 - .32*var(--shk)))}
+/* the old soft spot under the card gives way to the sleeve */
+#bdWrap .pocket::before{display:none}
+/* the back of the sleeve: clear plastic a shade off the page, a bright edge, a little shade where you look into the
+   open top, and the sealed lip the card rests on, with a bright seam and a thicker bright bottom edge */
+#bdWrap .pk-cell::before{content:"";position:absolute;z-index:0;pointer-events:none;
+  top:calc(-1*var(--sl-t));left:calc(-1*var(--sl-s));right:calc(-1*var(--sl-s));bottom:calc(-1*var(--sl-b));border-radius:.82em .82em .72em .72em;
+  background:
+    linear-gradient(180deg,var(--sl-hi) 0 1px,var(--sl-lip) 1px,color-mix(in srgb,var(--sl-lip) 80%,transparent)) 0 100%/100% var(--sl-b) no-repeat,
+    linear-gradient(180deg,rgba(var(--sh),calc(.26*var(--shk))),transparent .22em),
+    var(--sl-body);
+  box-shadow:0 0 0 1px var(--line2),inset 0 0 0 1px var(--sl-hi),inset 0 -.07em 0 var(--sl-hi),0 .2em .45em -.2em rgba(var(--sh),calc(.55*var(--shk)))}
+/* the front sheet: a faint haze, a soft band of light, bright inner edges at the sides, and its top edge a little
+   lower than the back's, broken by a thumb notch, so the sleeve reads as open at the top. It stops where the card
+   rests, so the copies tab under the card stays crisp. */
+#bdWrap .pk-cell::after{content:"";position:absolute;z-index:1;pointer-events:none;
+  top:calc(.09em - var(--sl-t));left:calc(-1*var(--sl-s));right:calc(-1*var(--sl-s));bottom:0;border-radius:.7em .7em 0 0;
+  background:
+    radial-gradient(circle at 50% 0,transparent calc(.42em - 1.5px),var(--sl-hi) calc(.42em - .5px),transparent calc(.42em + .5px)) 50% 0/.9em .45em no-repeat,
+    linear-gradient(var(--sl-hi),var(--sl-hi)) 0 0/calc(50% - .42em) 1px no-repeat,
+    linear-gradient(var(--sl-hi),var(--sl-hi)) 100% 0/calc(50% - .42em) 1px no-repeat,
+    linear-gradient(180deg,rgba(var(--sh),calc(.2*var(--shk))) 1px,transparent .12em),
+    linear-gradient(90deg,var(--sl-glint),transparent .14em,transparent calc(100% - .12em),color-mix(in srgb,var(--sl-glint) 60%,transparent)),
+    linear-gradient(115deg,transparent 36%,rgba(255,255,255,.13) 44%,rgba(255,255,255,.045) 49%,transparent 53%,transparent 57%,rgba(255,255,255,.085) 58.5%,transparent 60%) 30% 0/200% 100% no-repeat,
+    radial-gradient(120% 55% at 0 0,rgba(255,255,255,.06),transparent 70%),
+    linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015) 45%,rgba(255,255,255,.03));
+  transition:background-position .6s var(--ease)}
+/* a slot with no card on it has no sleeve */
+#bdWrap .pk-cell:has(>.pocket.blank)::before,#bdWrap .pk-cell:has(>.pocket.blank)::after{display:none}
+/* 4★ and 5★ pages: the sleeve's edge takes the rarity colour, with a soft glow */
+#bdWrap .bd-grid.big .pk-cell::before{box-shadow:0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),inset 0 0 0 1px var(--sl-hi),inset 0 -.07em 0 var(--sl-hi),
+  0 0 1.1em -.4em var(--rc),0 .2em .45em -.2em rgba(var(--sh),calc(.55*var(--shk)))}
+/* keyboard focus rings the whole sleeve, instead of a box round the card that cuts across the lip */
+@supports selector(:has(*)){
+  #bdWrap .pocket:focus-visible{outline:none}
+  #bdWrap .pk-cell:has(>.pocket:focus-visible)::before{outline:2px solid var(--accent-hi);outline-offset:1px}}
+/* spare copies sit a little tighter, so the whole stack fits inside the sleeve. Their edges take the card's rarity
+   colour on every page (1★–3★ pages have no colour of their own, so the pocket borrows it from its card) */
+#bdWrap .pocket:has(>.rar1){--rc:var(--r1)} #bdWrap .pocket:has(>.rar2){--rc:var(--r2)} #bdWrap .pocket:has(>.rar3){--rc:var(--r3)}
+#bdWrap .pocket.x2::after,#bdWrap .pocket.x3::after{transform:translate(.11em,.11em);box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc,var(--muted)) 60%,transparent)}
+#bdWrap .pocket.x3::after{box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc,var(--muted)) 60%,transparent),.11em .11em 0 -.02em var(--grey2),.11em .11em 0 .04em color-mix(in srgb,var(--rc,var(--muted)) 40%,transparent)}
+/* pointing at a card: it slides straight up in its sleeve, toward the open top, and the light on the plastic moves */
+@media (hover:hover){
+  #bdWrap .pocket:not(.blank):hover{transform:translateY(-.18em)}
+  #bdWrap .pk-cell:hover::after{background-position:50% 0,0 0,100% 0,0 0,0 0,42% 0,0 0,0 0}}
+#bdWrap .pk-cell:has(>.pocket:focus-visible)::after{background-position:50% 0,0 0,100% 0,0 0,0 0,42% 0,0 0,0 0}
+/* less motion: the card and the light stay put */
+@media (prefers-reduced-motion:reduce){
+  #bdWrap .pk-cell::after{transition:none}
+  #bdWrap .pocket:not(.blank):hover{transform:none}
+  #bdWrap .pk-cell:hover::after,#bdWrap .pk-cell:has(>.pocket:focus-visible)::after{background-position:50% 0,0 0,100% 0,0 0,0 0,30% 0,0 0,0 0}}
 
 /* bookmarks: one ribbon per rarity, tucked into the book behind the pages. The open rarity's ribbon is pulled all
    the way out; the ones still ahead peek out on the right; the ones you've passed lie on the left, and flip over the
@@ -307,6 +386,8 @@
 @media (hover:hover){#scr-coll .dk-fs:has(.card):hover{transform:translateY(-.3em)!important}}
 #scr-coll .dk-fs .card{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .15em .35em rgba(var(--sh),calc(.5*var(--shk)))}
 #scr-coll .dk-fs .dk-empty{border:.08em dashed var(--line2);color:var(--muted);opacity:.8}
+/* a hand card dragged over the book: the book lights up to take it back */
+.bd-wrap.drop .binder{box-shadow:inset 0 0 0 2px var(--accent-hi),0 0 30px -6px var(--accent-glow),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
 .coll-tray.over .dk-fan{box-shadow:inset 0 0 0 2px var(--accent-hi),0 0 22px -4px var(--accent-glow)}
 /* the panel: power, the best number on each side, Best 5 / Clear / Save hand (and Play when picking) */
 .coll-panel{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;padding:10px 12px;border-radius:14px;
