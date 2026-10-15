@@ -1374,9 +1374,10 @@ function hostPick(){
   if(!playerName()){openOnline();askName('Enter your name, then tap <b>Host a game</b>.');return}
   const box=modal(`<h2>Host a game</h2><p>What kind of game?</p><div class="hostpick">`+
     `<button class="hp" data-k="one"><b>1v1</b><span>You and one friend on the 3×3 board. You pick the rules and the trade.</span></button>`+
+    `<button class="hp" data-k="draft"><b>Draft <em class="dbeta">Testing</em></b><span>1v1, but nobody brings cards. 10 go on the table and you take turns picking 5. No trades.</span></button>`+
     `<button class="hp" data-k="cr"><b>Crossroads <em class="dbeta">Testing</em></b><span>4 players on a 4×4 board: 2v2 or Free-for-all. Empty seats can be CPUs. No trades.</span></button></div>`,
     [{label:'Cancel',esc:true}]);
-  box.querySelectorAll('.hp').forEach(b=>b.onclick=()=>{sfx('click');closeModal();if(b.dataset.k==='one')hostStart();else{duoHost();show('duoroom')}});
+  box.querySelectorAll('.hp').forEach(b=>b.onclick=()=>{sfx('click');closeModal();const k=b.dataset.k;if(k==='cr'){duoHost();show('duoroom')}else hostStart(k==='draft')});
   box.querySelector('.hp').focus({preventScroll:true});
 }
 function duoRejoin(){

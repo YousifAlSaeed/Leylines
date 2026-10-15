@@ -54,6 +54,7 @@
 <link rel="stylesheet" href="css/leaderboard.css">
 <link rel="stylesheet" href="css/store.css">
 <link rel="stylesheet" href="css/duo.css">
+<link rel="stylesheet" href="css/draft.css">
 <link rel="stylesheet" href="css/aero.css"><!-- last: a developer's look over both themes -->
 </head>
 <body>
@@ -317,6 +318,20 @@
   </div>
 </section>
 
+<!-- DRAFT: an online 1v1 where both players pick their 5 from 10 cards on the table (draft.js) -->
+<section id="scr-draft" class="screen">
+  <div class="topbar"><button class="iconbtn" id="drBack" aria-label="Leave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Draft <em class="dbeta">Testing</em></h2><span class="dr-clock" id="drClock" aria-label="Seconds left for this pick"></span></div>
+  <div class="wrap dr-wrap">
+    <div class="dr-side foe"><div class="dr-who" id="drFoeName"></div><div class="dr-hand" id="drFoe"></div></div>
+    <div class="dr-mid">
+      <div class="dr-status" id="drStatus" role="status" aria-live="polite"></div>
+      <div class="dr-order" id="drOrder" aria-hidden="true"></div>
+      <div class="dr-pool" id="drPool"></div>
+    </div>
+    <div class="dr-side me"><div class="dr-who" id="drMeName"></div><div class="dr-hand" id="drMe"></div></div>
+  </div>
+</section>
+
 <!-- HOW TO PLAY -->
 <div id="how" role="dialog" aria-modal="true" aria-labelledby="hTitle">
   <div class="hbox">
@@ -379,6 +394,7 @@
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
 <script src="js/spare.js"></script>
+<script src="js/draft.js"></script>
 <script src="js/duo-handoff.js"></script>
 <script src="js/duo.js"></script>
 <script src="js/profile.js"></script>

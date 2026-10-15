@@ -1,0 +1,45 @@
+/* ---------- Draft (draft.js): their hand on top, the 10 cards on the table, your hand at the bottom ---------- */
+#scr-draft .topbar{max-width:760px}
+.dr-clock{font:800 26px/1 var(--display);font-variant-numeric:tabular-nums;min-width:2ch;text-align:right;color:var(--muted);transition:color .2s}
+#scr-draft.mine .dr-clock{color:var(--text)}
+.dr-clock.low{color:var(--danger)!important;animation:drPulse 1s ease-in-out infinite}
+@keyframes drPulse{50%{transform:scale(1.12)}}
+.dr-wrap{max-width:760px;gap:14px;container-type:inline-size}
+
+.dr-side{display:grid;gap:6px;padding:8px;border-radius:14px;background:var(--surf);border:1px solid var(--line)}
+.dr-side.active{border-color:var(--line2)}
+/* a player's row, the same look as a match's (.pname in game.css): avatar, name, HOST/GUEST, cards taken */
+.dr-who{display:flex;align-items:center;gap:10px;height:40px;padding:0 4px}
+.dr-side.me .av{background:linear-gradient(160deg,var(--me1,var(--blue1)),var(--me2,var(--blue2)))}
+.dr-side.foe .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
+.dr-who .av.art{font:400 19px/1 var(--body)}
+.dr-side.active .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--hot)}
+.dr-who .who{flex:1;min-width:0;font:600 14px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dr-who .tag{font:700 9.5px/1 var(--body);letter-spacing:.06em;color:var(--accent-ink);border:1px solid var(--line2);border-radius:4px;padding:3px 5px;margin-left:6px;vertical-align:2px}
+.dr-who .sc{font:900 26px/1 var(--display);font-variant-numeric:tabular-nums;text-shadow:0 0 .45em currentColor}
+.dr-who .sc small{font-size:.5em;opacity:.6;text-shadow:none}
+.dr-side.me .sc{color:var(--me-ink,var(--blue-ink))} .dr-side.foe .sc{color:var(--red-ink)}
+/* 5 cards a row; a card is 5em wide, so the row is 25em plus the gaps */
+.dr-hand{display:grid;grid-template-columns:repeat(5,5em);justify-content:center;gap:6px;font-size:min(15px,calc((100cqw - 16px - 24px)/25))}
+.dr-slot{display:block;width:5em;height:6em;border-radius:.6em;border:1.5px dashed var(--line2);background:var(--well)}
+.dr-hand .card.dr-in{animation:drIn .38s var(--spring)}
+@keyframes drIn{from{transform:translateY(-1.2em) scale(.7);opacity:0}}
+
+.dr-mid{display:grid;gap:10px;padding:12px 8px;border-radius:16px;background:var(--board);border:1px solid var(--line)}
+.dr-status{display:grid;justify-items:center;gap:2px;text-align:center;min-height:42px}
+.dr-status b{font:800 19px/1.2 var(--display)}
+.dr-status b.you{color:var(--me-ink,var(--blue-ink))} .dr-status b.foe{color:var(--red-ink)} .dr-status b.ok{color:var(--green-ink)}
+.dr-status span{font-size:13px;color:var(--muted)}
+.dr-order{display:flex;justify-content:center;gap:4px}
+.dr-order i{width:20px;height:6px;border-radius:3px;opacity:.3}
+.dr-order i.me{background:var(--me1,var(--blue1))} .dr-order i.foe{background:var(--red1)}
+.dr-order i.past{opacity:.9} .dr-order i.now{opacity:1;outline:2px solid var(--text);outline-offset:1px}
+/* a column per rarity, 1★ on the left to 5★ on the right (draftPool deals them in that order) */
+.dr-pool{display:grid;grid-template-columns:repeat(5,5em);grid-template-rows:auto auto;grid-auto-flow:column;justify-content:center;gap:8px;font-size:min(18px,calc((100cqw - 16px - 32px)/25))}
+.dr-pick{all:unset;display:block;border-radius:.6em;cursor:pointer;transition:transform .18s var(--spring),filter .2s}
+.dr-pick:disabled{cursor:default;filter:saturate(.75) brightness(.92)}
+.dr-pick:not(:disabled):hover{transform:translateY(-.25em)}
+.dr-pick:focus-visible{outline:2px solid var(--cta);outline-offset:2px}
+#scr-draft.mine .dr-pick:not(:disabled) .card{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 0 0 .1em var(--accent),0 .3em .9em var(--accent-glow)}
+.dr-pool .dr-slot{opacity:.6}
+@media (prefers-reduced-motion:reduce){.dr-clock.low,.dr-hand .card.dr-in{animation:none}.dr-pick{transition:none}}

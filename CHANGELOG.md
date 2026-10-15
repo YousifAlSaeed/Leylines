@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.0 (2026-10-15)
+- New online game: Draft. Tap Host a game, then Draft. Nobody brings cards: 10 go on the table, 2 of each rarity, and you take turns picking 5. Whoever plays second picks first, and each pick has 15 seconds
+- Drafted cards are borrowed, so no cards are traded. The winner gets XP and coins as usual
+- No friend around? Tap Play the CPU in the Draft room to draft against the computer
+- In a Draft, the Random rule makes the table a random mix: any 10 cards, so there might be three Legendaries or none
+
 ## 0.27.4 (2026-10-15)
 - Crossroads on phones: names show in full in the corners instead of being cut short
 

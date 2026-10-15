@@ -365,7 +365,8 @@ function resultModal(html,extra){
   ]);
 }
 function playAgain(){
-  if(G.mode==='ai')startAI();
+  if(G.mode==='ai'&&G.draft)draftCpuAgain();
+  else if(G.mode==='ai')startAI();
   else if(G.mode==='local')startLocal();
   else backToRoom();
 }
@@ -447,7 +448,7 @@ $('#btnQuit').onclick=()=>{
 // the menu offers to carry on, and giving up counts as leaving. The Daily has its own rules, so it isn't saved.
 function liveSave(next){
   if(!G||G.mode!=='ai'||G.daily||!G.st||!next&&(G.over||isFull(G.st)))return;
-  SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
+  SAVE.live=JSON.parse(JSON.stringify({v:1,next:!!next,draft:G.draft?1:0,rules:G.rules,trade:G.trade,diff:G.diff,bo:G.bo,names:G.names,decks:G.decks,
     seed:G.seed,a:G.rng.a,ser:G.ser,sd:G.sd,first:G.first,st:G.st,moved:!!G.moved,trk:G.trk,wb:G.wb||null,bank:G.bank}));
   save();
 }
@@ -462,7 +463,7 @@ function liveMatchFrom(L){
     // a Win them back try (data.js)
     const w=L.wb,wb=w&&(w.step===2||w.step===3)&&[w.cpu,w.l1,w.lost].every(hand)&&w.cpu.length===5&&w.lost.length<=5&&Array.isArray(w.idx)&&w.idx.length===w.lost.length&&w.idx.every(i=>i>=0&&i<5)?w:null;
     const g=baseMatch('ai',{rules:{...defSave().rules,...L.rules},trade:netTrade(L.trade),diff:DIFFS.some(d=>d[0]===L.diff)?L.diff:'normal',bo:boOf(L.bo),
-      names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved,wb});
+      names:L.names,decks:L.decks,seed:L.seed>>>0,ser:L.ser,sd:L.sd|0,first:L.first?1:0,st,moved:!!L.moved,wb,draft:L.draft?1:0});
     g.rng=mulberry32(L.a|0);
     normTimer(g.rules);
     g.bank=isBank(g.rules)&&Array.isArray(L.bank)&&L.bank.length===2&&L.bank.every(n=>Number.isFinite(n)&&n>=0)?L.bank:isBank(g.rules)?[g.rules.bank*1000,g.rules.bank*1000]:null;
