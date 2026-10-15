@@ -161,11 +161,12 @@
 #scr-duo.narrow :is(.dhand.dh-top,#duoHand) .card{box-shadow:-6px 0 10px -6px rgba(0,0,0,.6)}
 #scr-duo.narrow .dhand.dh-side .card{box-shadow:0 -6px 10px -6px rgba(0,0,0,.6)}
 #scr-duo.narrow #duoHand .card.sel{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.35),0 0 0 .1em var(--hot),0 .5em 1.2em -.3em var(--hot-glow)}
-/* a corner, built like PC's: clock bar, a small avatar with the name beside it, the big score. Yours reads down;
-   the top player's is mirrored (score by their cards); the side players' are laid out on their side and turned to face them */
+/* a corner, built like PC's: clock bar, name, and the small avatar beside the big score. The name has the corner's
+   whole width (two lines if it needs them), so it isn't cut short. Yours reads down; the top player's is mirrored
+   (score by their cards); the side players' are laid out on their side and turned to face them */
 #scr-duo.narrow .dname{display:grid;width:var(--dk);height:var(--dra);box-sizing:border-box;align-content:space-between;align-items:center;gap:3px 5px;
-  text-align:left;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "av who" "sc sc"}
-#scr-duo.narrow .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc sc" "who av" "tm tm"}
+  text-align:left;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "who who" "av sc"}
+#scr-duo.narrow .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc av" "who who" "tm tm"}
 #scr-duo.narrow .dname.dk-br{grid-area:3/3;height:var(--drc)}
 #scr-duo.narrow .dname.dk-tr{grid-area:1/3;width:var(--dra);height:var(--dk);justify-self:center;align-self:center;transform:rotate(-90deg)}
 #scr-duo.narrow .dname.dk-bl{grid-area:3/1;width:var(--drc);height:var(--dk);justify-self:center;align-self:center;transform:rotate(90deg)}
@@ -174,7 +175,8 @@
 #scr-duo.narrow .dname.dactive .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 3px var(--hot)}
 #scr-duo.narrow .dname .dwho{grid-area:who;min-width:0;max-width:100%}
 #scr-duo.narrow .dname.dk-tl .dwho{text-align:right}
-#scr-duo.narrow .dname .dwho b{display:block;max-width:100%;font-size:10.5px;line-height:1.1}
+#scr-duo.narrow .dname .dwho b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-width:100%;font-size:10.5px;line-height:1.1;
+  white-space:normal;overflow-wrap:anywhere}
 #scr-duo.narrow .dname .dwho small{display:none}
 #scr-duo.narrow .dname .ptm{grid-area:tm;display:flex;justify-self:stretch;align-items:center;justify-content:space-between;gap:4px;min-width:0;
   padding:2px 6px;border-radius:6px;color:#fff;font:700 11.5px/1.2 var(--body);font-variant-numeric:tabular-nums}

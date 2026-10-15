@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.27.4 (2026-10-15)
+- Crossroads on phones: names show in full in the corners instead of being cut short
+
 ## 0.27.3 (2026-10-15)
 - The Night Market marks cards you don't own yet with a "New" tag
 
