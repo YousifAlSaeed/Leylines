@@ -357,7 +357,11 @@
 /* loadouts: deck boxes shaped to hold the cards on the mat (taller than wide), a lid, the name on the front.
    The one in your hand is outlined; the star and the pencil sit on the lid. */
 #scr-coll .dk-lo{gap:6px}
-#scr-coll .dk-lohead{min-height:20px}
+#scr-coll .dk-lohead{min-height:22px;justify-content:flex-start;gap:10px}
+#scr-coll .dk-lohead .lbl{flex:none}
+#scr-coll .dk-lohead .btn.text{flex:none}
+/* the note: one line at the top right of the loadouts, cut short with … if it is long */
+#scr-coll .dk-lonote{flex:1 1 auto;min-width:0;min-height:0;margin:0;text-align:right;font-size:12px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #scr-coll .dk-lonote:empty{display:none}
 #scr-coll .dk-lorow{grid-template-columns:repeat(3,auto);justify-content:start;gap:10px}
 #scr-coll .dk-loslot{width:82px;aspect-ratio:82/104;min-height:0;padding:22px 6px 7px;justify-content:flex-end;gap:2px;border:0;border-radius:7px 7px 6px 6px;overflow:hidden;

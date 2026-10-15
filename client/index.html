@@ -243,9 +243,9 @@
     <div class="coll-side">
       <!-- build and save loadouts straight from the binder -->
       <div class="dk-lo" id="collLo">
-        <div class="dk-lohead"><span class="lbl">Loadouts</span><button class="btn text hidden" id="collLoCancel">Cancel</button></div>
+        <!-- the note ("Saved to …", "Pick a slot …") sits in the header row, so it never pushes the boxes around -->
+        <div class="dk-lohead"><span class="lbl">Loadouts</span><div class="dk-lonote" id="collLoNote" aria-live="polite"></div><button class="btn text hidden" id="collLoCancel">Cancel</button></div>
         <div class="dk-lorow" id="collLoRow"></div>
-        <div class="dk-lonote" id="collLoNote" aria-live="polite"></div>
       </div>
       <div class="dk-tray coll-tray">
         <!-- the hand: a felt mat with 5 places; power, side strength and the buttons in a panel beside it -->
