@@ -35,6 +35,7 @@ function cardHTML(id,color,o={}){
     (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+1':'−1'}</div>`:'')+
     (o.count>1?`<div class="cnt">×${o.count}</div>`:'')+
     `<div class="rchip" aria-hidden="true">${c.rar}★</div>`+
+    (o.isNew?'<div class="nchip" aria-hidden="true">New</div>':'')+
     (o.name===false?'':`<div class="nm">${esc(c.name)}</div>`)+
     '<i class="rf"></i>'+
   `</div>`;

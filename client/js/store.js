@@ -213,9 +213,10 @@ function renderStore(){
   const map=`<nav class="st-map" aria-label="Market stops"><svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="st-zig" d="M${ST_ZIG.map(p=>p.join(' ')).join('L')}" vector-effect="non-scaling-stroke"/><path class="st-arcp" d="${ST_ARC}" vector-effect="non-scaling-stroke"/></svg>${moon(' st-mm')}${
     ST_STOPS.map(([k,,,short])=>`<button class="st-star s-${k}${k===stStop?' on':''}" data-stop="${k}" aria-pressed="${k===stStop}">${mark}<span>${short}${k==='packs'&&s&&!s.got.deal?` −${DEAL_OFF*100}%`:''}</span></button>`).join('')}</nav>`;
 
-  const merch=!ok?wait:`<div class="st-cards">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id];
-    return `<div class="st-slot${sold?' sold':''}${it.mine?' mine':''}">${cardHTML(it.id,myCol())}<span class="st-cn">${esc(c.name)}<small>${it.mine?'For you':'★'.repeat(c.rar)}</small></span>
-      <button class="st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>`;
+  // "New" on a card you have no copies of; it goes once you own one (buying it here draws the market again)
+  const merch=!ok?wait:`<div class="st-cards">${st.cards.map((it,i)=>{const sold=s.got[i]!=null,c=CARDS[it.id],nw=!owned(it.id);
+    return `<div class="st-slot${sold?' sold':''}${it.mine?' mine':''}">${cardHTML(it.id,myCol(),{isNew:nw})}<span class="st-cn">${esc(c.name)}<small>${it.mine?'For you':'★'.repeat(c.rar)}</small></span>
+      <button class="st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}${nw?", one you don't own":''}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>`;
 
   const forge=forgeHTML();
 
