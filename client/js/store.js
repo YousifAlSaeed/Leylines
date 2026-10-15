@@ -118,13 +118,18 @@ function buyPack(t,deal){
 }
 
 /* ---------- the Store screen: the Night Market (and the menu tile) ---------- */
-// Four stops under a starry sky: the Merchant, the Forge (forge.js), the Pack Counter and the Shard well.
+// Four stops under a starry sky: the Merchant, the Forge (forge.js), the Pack Counter (with the shards you've earned on its
+// second tab) and the Atelier (closed for now: it will sell cosmetics).
 // A wide screen shows them side by side. A phone opens on just the sky; tapping a star brings up a carousel of the four
 // stops to swipe through, and swiping past either end goes back to the sky.
 // The light theme gets the Day Market: the same four stops under a sun and a daytime sky.
 // Tapping the moon (or the sun) turns on the dial: it crosses an arc as the game day runs out, and the sky's colours go
 // with it. The dial is off to begin with and is kept on this device only, outside the save (which follows the account).
-const ST_STOPS=[['merchant','I','Merchant','Merchant'],['forge','II','The Forge','Forge'],['packs','III','Pack counter','Packs'],['well','IV','Shard well','Well']];
+const ST_STOPS=[['merchant','I','Merchant','Merchant'],['forge','II','The Forge','Forge'],['packs','III','Pack counter','Packs'],['atelier','IV','Atelier','Atelier']];
+// the Atelier's sign: a cauldron with bubbles rising out of it (store.css makes them rise and pop)
+const ST_BREW='<svg class="st-brew" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="10" width="18.8" height="2.4" rx="1.2"/><path d="M4.4 11.8h15.2c0 4.6-3.1 8.4-7.6 8.4s-7.6-3.8-7.6-8.4z"/><path d="M6.8 18.6l-1.3 2.6h2.1l1-2zM17.2 18.6l1.3 2.6h-2.1l-1-2z"/><circle class="bub" cx="9" cy="7.2" r="1.3"/><circle class="bub" cx="12.8" cy="5.4" r="1.7"/><circle class="bub" cx="16" cy="7.6" r="1"/></svg>';
+// the Pack counter's tab: 'packs' or 'shards' (the shards you've earned today and the 5★ guarantee); kept while the game is open
+let stPkTab='packs';
 const ST_DIAL_KEY='ninefold.dial';
 let stDial=(()=>{try{return localStorage.getItem(ST_DIAL_KEY)==='1'}catch(e){return false}})();
 const stDay=()=>document.documentElement.dataset.theme==='light';
@@ -216,7 +221,7 @@ function renderStore(){
 
   // the pack on offer today is marked on its own row until it's bought
   const mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null,dl=ok&&!s.got.deal?st.deal:null;
-  const packs=`<div class="st-tiers">${Object.entries(PACKS).map(([t,T])=>{
+  const tiers=`<div class="st-tiers">${Object.entries(PACKS).map(([t,T])=>{
       const out=t==='mythic'&&mythLeft===0,deal=dl&&dl.t===t;
       return `<button class="st-pk t-${t}${out?' sold':''}${deal?' deal':''}" data-p="${t}" ${out?'disabled':''}>${miniPack(t,out?'spent':'ready')}
         <span class="st-dt">${deal?`<span class="st-tag">−${DEAL_OFF*100}% ${day?'today':'tonight'}</span>`:''}<b>${T.name}</b><small>${T.n} cards${T.min>1?` · ${T.min}★+ last`:''}${t==='mythic'?` · ${out?'next on Monday':'1 a week'}`:''}</small></span>${
@@ -225,17 +230,22 @@ function renderStore(){
 
   const d=shardDay(),pity=Math.min(PITY,SAVE.pity);
   const ring=(n,max,col,label)=>`<div class="st-ring-w"><div class="st-ring" style="--p:${(Math.min(n,max)/max*100).toFixed(1)};--rc:${col}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${n}"><span><b>${fmtSh(n)}</b><small>of ${max}</small></span></div><div class="st-rl">${label}</div></div>`;
-  const well=`<div class="st-rings">${ring(d.n,SHARD_CAP,'var(--shard)','Shards from matches today')}${ring(pity,PITY,'var(--st-gold)','5★ guarantee')}</div>
+  const earned=`<div class="st-rings">${ring(d.n,SHARD_CAP,'var(--shard)','Shards from matches today')}${ring(pity,PITY,'var(--st-gold)','5★ guarantee')}</div>
     <dl class="st-rates">
       <div><dt>Solo win</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
       <div><dt>Daily tab</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
     </dl>
     <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily tab pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
+  // both tabs are drawn, and switching only shows one or the other (the market isn't drawn again)
+  const tab=(k,html)=>`<div class="st-pane" data-pane="${k}"${stPkTab===k?'':' hidden'}>${html}</div>`;
+  const packs=`<div class="seg st-seg" role="group" aria-label="Pack counter">${[['packs','Packs'],['shards','Shards']].map(([k,l])=>
+    `<button data-pt="${k}" class="${stPkTab===k?'on':''}" aria-pressed="${stPkTab===k}">${l}</button>`).join('')}</div>${tab('packs',tiers)}${tab('shards',earned)}`;
+  const atelier=`<div class="st-closed">${ST_BREW}<b>Atelier</b><span class="st-soon">Coming soon</span><small>Come back another ${day?'day':'night'}.</small></div>`;
 
   const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',forge:'Melt extra cards into shards, or forge five into one of the next rarity.',
-    packs:'Opens the moment you buy.',well:'What you\'ve drawn from the ley today.'};
-  const body={merchant:merch,forge,packs,well};
+    packs:'Packs open the moment you buy.',atelier:'Closed for now.'};
+  const body={merchant:merch,forge,packs,atelier};
   $('#stBody').innerHTML=hero+map+`<div class="st-swipe"><div class="st-view"><div class="st-stops">${ST_STOPS.map(([k,n,name])=>
     `<section class="st-stop s-${k}${k===stStop?' on':''}" data-stop="${k}"><h3 class="st-sh">${mark}<span>${n} · ${name}</span><i></i></h3><p class="st-sub">${sub[k]}</p><div class="st-glass">${body[k]}</div></section>`).join('')}</div></div>
     <div class="st-dots" aria-hidden="true">${ST_STOPS.map(([k])=>`<i class="s-${k}${k===stStop?' on':''}" data-stop="${k}"></i>`).join('')}</div>
@@ -255,6 +265,11 @@ function renderStore(){
   $$('#stBody .st-buy[data-c]').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
   $$('#stBody .st-pk').forEach(b=>b.onclick=()=>{sfx('click');buyPack(b.dataset.p,b.classList.contains('deal'))});
   forgeWire();
+  $$('#stBody [data-pt]').forEach(b=>b.onclick=()=>{
+    if(stPkTab===b.dataset.pt)return;sfx('click');stPkTab=b.dataset.pt;
+    $$('#stBody [data-pt]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});
+    $$('#stBody .st-pane').forEach(p=>{p.hidden=p.dataset.pane!==stPkTab});
+  });
 }
 // A phone shows either just the sky (stDown: the constellation over the whole screen, the stars without their names,
 // the phone's own time in place of the countdown, the top bar faded; good for a screenshot) or the market's carousel.
