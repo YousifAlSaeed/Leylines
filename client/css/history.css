@@ -23,7 +23,7 @@
 .mh-who b{display:block;font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mh-who small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mh-sc{font:800 17px/1 var(--display);white-space:nowrap;text-align:right}
-.mh-sc .b{color:var(--blue-ink)}.mh-sc .r{color:var(--red-ink)}
+.mh-sc .b{color:var(--me-ink,var(--blue-ink))}.mh-sc .r{color:var(--red-ink)}
 .mh-tr{font:600 12px/1 var(--body);padding:4px 8px;border-radius:999px;white-space:nowrap}
 .mh-tr.won{color:var(--pf-win);background:color-mix(in srgb,var(--pf-win) 14%,transparent)}
 .mh-tr.lost{color:var(--red-ink);background:color-mix(in srgb,var(--red-ink) 14%,transparent)}

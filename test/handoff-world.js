@@ -17,6 +17,10 @@ const STUBS = `
 function playerName(){return __dev.name}
 function myUser(){return __dev.user}
 function myAv(){return null}
+const MY_COLS=['blue','teal','green','gold','purple','grey'];
+const COL_NAME={blue:'Blue',red:'Red',gold:'Gold',green:'Green',purple:'Purple',teal:'Teal',grey:'Black'};
+const okCol=c=>MY_COLS.includes(c)?c:'blue';
+function myCol(){return okCol(__dev.col||MY_COLS[__dev.n%MY_COLS.length])} // everyone a colour of their own, unless a test picks one
 const netUser=u=>typeof u==='string'&&/^[A-Za-z0-9_]{3,20}$/.test(u)?u:'';
 const netAv=v=>Number.isInteger(v)?v:null;
 const cleanName=s=>String(s==null?'':s).trim().slice(0,16);
@@ -248,7 +252,7 @@ export class World {
       addEventListener: (t, f) => { dev.on[t] = f; },
       document: { addEventListener: (t, f) => { dev.on[t] = f; }, hidden: false, body: { classList: { contains: (c) => c === 'pc' && pc } }, querySelectorAll: () => [] },
       Peer: peerClass(w, dev), $: () => hole(), $$: () => [],
-      __w: w, __dev: dev, __rand: prng(this.seed * 977 + this.devs.length * 31 + 7),
+      __w: w, __dev: Object.assign(dev, { n: this.devs.length }), __rand: prng(this.seed * 977 + this.devs.length * 31 + 7),
     });
     vm.runInContext('Date.now=()=>__w.now;Math.random=__rand;', ctx);
     vm.runInContext(STUBS, ctx, { filename: 'stubs.js' });

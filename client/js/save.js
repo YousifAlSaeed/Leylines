@@ -152,6 +152,12 @@ const unlocked=()=>!!SAVE.unlockAll&&isDev();
 // "Frutiger Aero" (a developer tool): glossy glass and a summer sky over the light theme (settings.js applyTheme, aero.css).
 // Ignored for everyone else in the same way.
 const aeroOn=()=>!!SAVE.aero&&isDev();
+// your colour (Settings → Your colour): your cards and your side everywhere, blue to start with. Red is always
+// the other side's, so it's never one of them. Free for now; it moves to the Atelier (store.js) as a cosmetic later.
+const MY_COLS=['blue','teal','green','gold','purple','grey'];
+const COL_NAME={blue:'Blue',red:'Red',gold:'Gold',green:'Green',purple:'Purple',teal:'Teal',grey:'Black'}; // grey is the collection's old colour, called Black
+const okCol=c=>MY_COLS.includes(c)?c:'blue';
+const myCol=()=>okCol(SAVE.col);
 const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
 const isSeen=id=>unlocked()||SAVE.seen.includes(id);
 const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;

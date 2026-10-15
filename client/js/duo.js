@@ -58,13 +58,25 @@ function duoResumeInfo(){
 }
 duoLS(DUO_HOST_KEY,null);
 function duoName(){return playerName()||'Player'}
-// colours: in 2v2 your team is blue and theirs red, from where you sit. In Free-for-all each seat has its own
-// colour, the same on everyone's screen: players pick one in the room (CPUs get a free one)
-const DUO_COLS=['blue','red','gold','green','purple','teal'];
-const DUO_COL_NAME={blue:'Blue',red:'Red',gold:'Gold',green:'Green',purple:'Purple',teal:'Teal'};
-const duoCol=(S,q)=>S.rules.ffa?(S.seats[q].col||DUO_COLS[q]):duoTeam(q)===duoTeam(S.you)?'blue':'red';
-// the first colour no seat has taken (host only)
-const duoFreeCol=()=>DUO_COLS.find(c=>!DUO.seats.some(s=>s.kind!=='open'&&s.col===c));
+// colours: in 2v2 your team is in your colour (save.js myCol) and theirs red, from where you sit. In Free-for-all
+// each seat has its own colour, the same on everyone's screen: a player sits down in theirs if it's free, and can
+// change it in the room (CPUs get a free one). Red is only ever a CPU's: it's the other side's colour
+const DUO_COLS=['blue','red','gold','green','purple','teal','grey'];
+const DUO_COL_NAME=COL_NAME;
+const duoCol=(S,q)=>S.rules.ffa?(S.seats[q].col||DUO_COLS[q]):duoTeam(q)===duoTeam(S.you)?myCol():'red';
+// the colours no seat but i has taken, leaving out skip (host only)
+const duoFreeCols=(i,skip)=>DUO_COLS.filter(c=>c!==skip&&!DUO.seats.some((s,k)=>k!==i&&s.kind!=='open'&&s.col===c));
+// the first colour no seat has taken, for a CPU (host only)
+const duoFreeCol=()=>duoFreeCols(-1)[0];
+// a player's colour as they sit at seat i: their own (want) if nobody has it, and a CPU that has it gives it up;
+// otherwise a random free one that isn't red (host only)
+function duoColFor(i,want){
+  want=okCol(want);
+  const k=DUO.seats.findIndex((s,j)=>j!==i&&s.kind!=='open'&&s.col===want);
+  if(k<0)return want;
+  if(DUO.seats[k].kind==='cpu'){DUO.seats[k].col=duoFreeCols(k,want).find(c=>DUO.seats[i].col!==c)||duoFreeCols(k,want)[0];return want}
+  const f=duoFreeCols(i,'red');return f[Math.floor(Math.random()*f.length)]||duoFreeCols(i)[0];
+}
 const duoMode=R=>R.ffa?'Free-for-all':'2v2';
 const duoSeatName=s=>s.kind==='cpu'?`CPU ${s.diff==='easy'?'Easy':'Normal'}`:s.kind==='human'?s.name:'Open seat';
 // this seat's way back in from the menu (Rejoin): the room's code, the seat's key, and the match's other addresses,
@@ -89,7 +101,7 @@ async function duoHost(){
   netClose(true);duoQuit();
   DUO.role='host';DUO.closing=false;DUO.took=false;DUO.me=0;DUO.ep=1;DUO.tok=duoNewTok();
   DUO.code=newCode();DUO.rules=duoLoadRules();DUO.invSeat={};DUO.phase='room';DUO.st=null;DUO.last=null;DUO.decks=[null,null,null,null];
-  DUO.seats=[{kind:'human',name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok,ready:true,col:'blue'},duoOpen(),duoOpen(),duoOpen()];
+  DUO.seats=[{kind:'human',name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok,ready:true,col:myCol()},duoOpen(),duoOpen(),duoOpen()];
   duoBroadcast();
   try{await loadPeerJS()}catch(e){toast(e.message,4000);duoQuit();show('menu');return}
   if(DUO.role!=='host'||DUO.closing)return;
@@ -152,7 +164,7 @@ function duoGuestIn(c){
     i=Number.isInteger(want)&&want!==DUO.me&&DUO.seats[want]&&DUO.seats[want].kind!=='human'?want:free.find(k=>DUO.seats[k].kind==='open');
     if(i==null)i=free.find(k=>DUO.seats[k].kind==='cpu'); // a player takes a CPU's seat
     if(i==null){refuse({t:'full',ep:DUO.ep});return}
-    const col=DUO.seats[i].kind==='cpu'&&DUO.seats[i].col||duoFreeCol(); // taking a CPU's seat takes its colour too
+    const col=duoColFor(i,meta.col); // their own colour if it's free
     DUO.seats[i]={kind:'human',name,user:netUser(meta.user),av:netAv(meta.av),tok:duoNewTok(),ready:false,col};
     toast(`${name} joined`);sfx('banner');
   }
@@ -231,9 +243,9 @@ function duoSetSeat(i,kind){
   DUO.seats[i]=kind==='open'?duoOpen():{kind:'cpu',diff:kind,col:DUO.seats[i].col||duoFreeCol()};duoChanged();
 }
 function duoFill(){[0,1,2,3].forEach(i=>{if(DUO.seats[i].kind==='open')DUO.seats[i]={kind:'cpu',diff:'normal',col:duoFreeCol()}});duoChanged()}
-// a player picks their Free-for-all colour: any colour another seat hasn't taken
+// a player picks their Free-for-all colour: any of theirs (save.js MY_COLS) another seat hasn't taken
 function duoSetCol(i,c){
-  if(DUO.role!=='host'||DUO.phase!=='room'||!DUO_COLS.includes(c)||DUO.seats[i].kind!=='human')return;
+  if(DUO.role!=='host'||DUO.phase!=='room'||!MY_COLS.includes(c)||DUO.seats[i].kind!=='human')return;
   if(DUO.seats.some((s,k)=>k!==i&&s.kind!=='open'&&s.col===c))return;
   DUO.seats[i].col=c;duoChanged();
 }
@@ -539,7 +551,7 @@ async function duoJoin(code,tok,alt){
 }
 // what this game tells the other end when it opens a line (sb: a standby line to the heir, probe: an old host asking)
 function duoHello(extra){
-  return{duo:1,name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok,tab:DUO.tab,hv:DUO_HV,ep:DUO.ep,hp:DUO.hp,
+  return{duo:1,name:duoName(),user:myUser(),av:myAv(),col:myCol(),tok:DUO.tok,tab:DUO.tab,hv:DUO_HV,ep:DUO.ep,hp:DUO.hp,
     pc:document.body.classList.contains('pc'),...extra};
 }
 // this game's own line to the matchmaking server. It's kept across reconnects, so the standby lines on it stay up and the
@@ -960,7 +972,7 @@ function duoScoreRow(S,st){
   if(S.rules.ffa)$('#duoScore').innerHTML=[0,1,2,3].map(k=>{const q=(me+k)%4;
     return `<span class="dc-${duoCol(S,q)}"><small>${k?esc(duoSeatName(S.seats[q])):'You'}</small><b>${st?duoPts(st,S.rules,q):5}</b></span>`}).join('');
   else{const a=st?duoScore(st,duoTeam(me)):0,b=st?duoScore(st,1-duoTeam(me)):0;
-    $('#duoScore').innerHTML=`<span class="dc-blue"><small>Your team</small><b>${a}</b></span><span class="dc-red"><small>Other team</small><b>${b}</b></span>`}
+    $('#duoScore').innerHTML=`<span class="dc-${myCol()}"><small>Your team</small><b>${a}</b></span><span class="dc-red"><small>Other team</small><b>${b}</b></span>`}
   const nums=$$('#duoScore b').map(x=>x.textContent);
   if(DUO.scores&&DUO.scores.length===nums.length)$$('#duoScore b').forEach((x,k)=>{if(nums[k]!==DUO.scores[k])x.classList.add('pop')});
   DUO.scores=nums;
@@ -981,7 +993,7 @@ function duoPickDeck(){
     duoShowGame();duoRender();
   };
   if(DUO.snap.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:`${duoMode(DUO.snap.rules)} — choose 5`,pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,onDone:done,onBack:duoLeave});
+  openDeck({title:`${duoMode(DUO.snap.rules)} — choose 5`,pool:collPool(),pre:preDeck(),loadouts:true,onDone:done,onBack:duoLeave});
 }
 
 /* ---------- the room ---------- */
@@ -1034,11 +1046,11 @@ function duoRoomRender(){
   if(host)$$('#duoMode button').forEach(b=>b.onclick=()=>{sfx('click');DUO.rules={...DUO.rules,ffa:b.dataset.f==='1'};duoResetReady();duoChanged()});
   const dv=$('#dval-timer');dv.textContent=R.timer?R.timer+'s a turn':'Off';dv.classList.toggle('off',!R.timer);
   duoTimerRow(R.timer,host);
-  const taken=c=>S.seats.find((s,k)=>k!==me&&s.kind!=='open'&&duoCol(S,k)===c),myCol=duoCol(S,me);
+  const taken=c=>S.seats.find((s,k)=>k!==me&&s.kind!=='open'&&duoCol(S,k)===c),myc=duoCol(S,me);
   $('#duoColRow').hidden=!ffa;if(!ffa&&duoRowOpen==='col')duoRowOpen=null;
-  $('#dval-col').innerHTML=`<i class="dcdot dc-${myCol}"></i>${DUO_COL_NAME[myCol]}`;
-  $('#duoCols').innerHTML=DUO_COLS.map(c=>{const t=taken(c);
-    return `<button class="dc-${c}${c===myCol?' on':''}" data-col="${c}" aria-pressed="${c===myCol}" ${t?'disabled':''} title="${DUO_COL_NAME[c]}${t?' · '+esc(duoSeatName(t)):''}" aria-label="${DUO_COL_NAME[c]}${t?', taken by '+esc(duoSeatName(t)):''}">${c===myCol?'✓':''}</button>`}).join('');
+  $('#dval-col').innerHTML=`<i class="dcdot dc-${myc}"></i>${DUO_COL_NAME[myc]}`;
+  $('#duoCols').innerHTML=MY_COLS.map(c=>{const t=taken(c);
+    return `<button class="dc-${c}${c===myc?' on':''}" data-col="${c}" aria-pressed="${c===myc}" ${t?'disabled':''} title="${DUO_COL_NAME[c]}${t?' · '+esc(duoSeatName(t)):''}" aria-label="${DUO_COL_NAME[c]}${t?', taken by '+esc(duoSeatName(t)):''}">${c===myc?'✓':''}</button>`}).join('');
   $$('#duoCols [data-col]').forEach(b=>b.onclick=()=>{sfx('click');if(host)duoSetCol(DUO.me,b.dataset.col);else duoSend({t:'color',c:b.dataset.col})});
   duoRows();
   // the rules: the same cards as 1v1's, with Ley lines (Crossroads' own rule) where 1v1 has Sweep

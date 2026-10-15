@@ -54,7 +54,7 @@ function oweNews(){
   const news=OWES.news.splice(0);
   modal(`<h2>While you were away</h2><p>You left a match before it ended, so it counted as a loss.</p>`+news.map(x=>x.spared
     ?`<p><b class="gold">${esc(x.name)}</b> spared you 💛 You kept your cards.</p>`
-    :`<p><b class="gold">${esc(x.name)}</b> took:</p>`+rowHTML(x.ids,'red')+(x.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(x.added,'blue'):'')).join(''),
+    :`<p><b class="gold">${esc(x.name)}</b> took:</p>`+rowHTML(x.ids,'red')+(x.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(x.added,myCol()):'')).join(''),
     [{label:'OK',cls:'primary',esc:true,wait:true}]);
   renderMenu();
 }
@@ -87,7 +87,7 @@ function spareHTML(name,r){
     `<small>${!r.counted?`You already spared ${esc(name)} today, so this one doesn't count.`:r.pack?'Your pack is waiting in Packs.':`${plural(SPARE_PACK-n,'more spare')} for a free pack`}</small></div>`+freshHTML();
 }
 function sparedHTML(name,deck){
-  return `<p class="spared"><b class="gold">${esc(name)} spared you</b> 💛<br><small>You keep all your cards.</small></p>`+rowHTML(deck,'blue');
+  return `<p class="spared"><b class="gold">${esc(name)} spared you</b> 💛<br><small>You keep all your cards.</small></p>`+rowHTML(deck,myCol());
 }
 // the spared player's first button
 function thanksBtn(){
@@ -122,7 +122,7 @@ function oppForfeit(why){
     if(r==='spare'){forfeitPost(user,key,[]);end(head+spareHTML(opp,spareGive(user)));return}
     const ids=r.map(i=>deck[i]);ids.forEach(collAdd);earn('spoils');profCheck();histTrade('won',ids);save();
     forfeitPost(user,key,ids);
-    end(head+`<p>You took ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue'));
+    end(head+`<p>You took ${ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,myCol()));
   });
 }
 // you were gone for longer than the other player waits: the match went to them

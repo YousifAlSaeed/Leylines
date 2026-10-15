@@ -3,7 +3,7 @@
    COLLECTION
    ===================================================================== */
 // the hand you build in the collection; it stays put while you browse, and survives leaving the screen
-const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
+const CH={pfx:'coll',sel:[],pool:[],loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
 // the hand the binder and tray work on: CH in the collection, DK when picking cards for a match, the Forge's anvil
 // (forge.js) when picking cards to dissolve or forge
@@ -53,7 +53,7 @@ function collDetail(id,pocket){
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id),src=pocket&&pocket.querySelector('.card');
   const box=modal(`<div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
-    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'grey',{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
+    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':myCol(),{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
     <h2 class="nm2 cd-name">${esc(c.name)}</h2>
     <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
     <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
@@ -188,7 +188,7 @@ function bdPage(k){
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
     // the Forge's book holds only spare copies: a card you own but can't spare shows faded
     const kept=!n&&BH.forge&&owned(c.id)>0;
-    const face=n?cardHTML(c.id,'grey',{count:n}):kept?cardHTML(c.id,'grey'):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const face=n?cardHTML(c.id,myCol(),{count:n}):kept?cardHTML(c.id,myCol()):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
     const lbl=n?esc(cardLabel(c.id))+(BH.forge?`, ${n} spare`:`, owned ×${n}`):kept?esc(c.name)+', no spare copies':seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
     // spare copies stack up behind the card with a tab under it counting the copies still in the book (the rest are in your

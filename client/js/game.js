@@ -64,7 +64,7 @@ function renderHud(){
   let msg;
   if(G.tut)msg=G.over?'Well played!':'Your turn';
   else if(G.over)msg='Game over';
-  else if(G.mode==='local')msg=(st.turn===0?'Blue':'Red')+"'s turn";
+  else if(G.mode==='local')msg=(st.turn===0?COL_NAME[myCol()]:'Red')+"'s turn";
   else if(st.turn===G.me)msg='Your turn';
   else msg=G.mode==='ai'?'CPU is thinking…':`${oppName()}'s turn`;
   $('#turnMsg').textContent=msg; // read out by screen readers

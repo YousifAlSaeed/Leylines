@@ -278,7 +278,7 @@ function dealCards(){
   PK.state='deal';
   $('#pkDeck').innerHTML=PK.ids.map((id,i)=>{const c=CARDS[id];
     return `<div class="pk-slot" data-i="${i}" style="--rc:${RC[c.rar-1]};--rt:var(--r${c.rar}t);z-index:${50-i};transform:translate(-50%,10vh) scale(.6);opacity:0">
-    <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,'blue')}</div></div>
+    <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,myCol())}</div></div>
     ${PK.fresh[i]?'<span class="pk-new">NEW</span>':''}<div class="pk-rname"><b>${esc(c.name)}</b><small class="rt rar${c.rar}">${rarName(c.rar)}</small></div></div>`}).join('');
   const slots=$$('#pkDeck .pk-slot');
   slots.forEach((s,i)=>{bindSlot(s);setTimeout(()=>{s.style.opacity=1;s.style.transform=`translate(-50%,-50%) translate(${-i*3}px,${-i*4}px)`},120+i*90)});
@@ -344,7 +344,7 @@ function summary(){
   pkHint('');$('#pkCount').style.opacity=0;$('#pkDeck').innerHTML='';
   const n=PK.fresh.filter(Boolean).length;
   $('#pkSum').innerHTML=`<h3>${PACKS[PK.src.t].name} pack</h3><div class="pk-row">${PK.ids.map((id,i)=>
-    `<div class="pk-it" style="animation-delay:${i*80}ms">${PK.fresh[i]?'<em>NEW</em>':'<em class="dup">+1 copy</em>'}${cardHTML(id,'blue')}</div>`).join('')}</div>
+    `<div class="pk-it" style="animation-delay:${i*80}ms">${PK.fresh[i]?'<em>NEW</em>':'<em class="dup">+1 copy</em>'}${cardHTML(id,myCol())}</div>`).join('')}</div>
     <p>${plural(PK.ids.length,'card')} added to your collection${n?` · <b>${n} new</b>`:''}</p>`;
   $('#pkSum').className='pk-sum on';
   const next=nextPack();

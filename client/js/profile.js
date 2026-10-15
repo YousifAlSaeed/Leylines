@@ -262,7 +262,7 @@ function pickShowcase(){
   const sel=SAVE.showcase.filter(isSeen);
   const ids=CARDS.filter(c=>isSeen(c.id)).sort((x,y)=>y.rar-x.rar||y.sum-x.sum).map(c=>c.id);
   const box=modal(`<h2 class="nm2">Showcase</h2><p>Pick up to 3 cards to show on your profile.</p>
-    <div class="pf-pick">${ids.map(id=>`<button class="pk" data-id="${id}" aria-label="${esc(cardLabel(id))}">${cardHTML(id,'blue')}</button>`).join('')}</div>`,
+    <div class="pf-pick">${ids.map(id=>`<button class="pk" data-id="${id}" aria-label="${esc(cardLabel(id))}">${cardHTML(id,myCol())}</button>`).join('')}</div>`,
     [{label:'Cancel',esc:true},{label:'Save',cls:'primary',fn:()=>{SAVE.showcase=sel.slice();save();renderProfilePage()}}]);
   const paint=()=>box.querySelectorAll('.pf-pick .pk').forEach(b=>{const k=sel.indexOf(+b.dataset.id);
     b.classList.toggle('on',k>=0);b.dataset.n=k>=0?k+1:'';b.setAttribute('aria-pressed',k>=0)});
@@ -429,7 +429,7 @@ function renderProfilePage(force){
 
   // showcase
   const sc=s.showcase.filter(id=>!mine||isSeen(id));
-  const slots=[0,1,2].map(i=>sc[i]!=null?cardHTML(sc[i],'blue'):mine?'<button class="pf-slot" data-pin aria-label="Pin a card">+</button>':'').join('');
+  const slots=[0,1,2].map(i=>sc[i]!=null?cardHTML(sc[i],mine?myCol():okCol(s.col)):mine?'<button class="pf-slot" data-pin aria-label="Pin a card">+</button>':'').join('');
   const show=(mine||sc.length)?`<section class="pf-card"><h3>Showcase ${mine?'<button class="pf-link" data-pin>Change</button>':''}</h3>
     <div class="pf-show">${slots}</div>${mine&&!sc.length?'<p class="pf-hint">Pin up to 3 cards to show off.</p>':''}</section>`:'';
 

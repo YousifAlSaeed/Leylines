@@ -37,17 +37,14 @@
   .duo-room #duoNote{grid-area:note;margin:14px 0 0}
   .duo-room .s-left{gap:16px}
 }
-/* seat colours, from where you sit (duoCol): blue and red in 2v2; blue, red, gold, green in Free-for-all */
+/* seat colours, from where you sit (duoCol): your colour and red in 2v2; each seat its own in Free-for-all */
 .dc-blue{--dc1:var(--blue1);--dc2:var(--blue2);--dink:var(--blue-ink)}
 .dc-red{--dc1:var(--red1);--dc2:var(--red2);--dink:var(--red-ink)}
-.dc-gold{--dc1:#c98a1e;--dc2:#5a3208;--dink:#e9b44c}
-.dc-green{--dc1:#1f9e70;--dc2:#0b4a35;--dink:#3fd49c}
-:root[data-theme="light"] .dc-gold{--dink:#9a6a0a} :root[data-theme="light"] .dc-green{--dink:#13865c}
-.dc-purple{--dc1:#8a52e8;--dc2:#2e1470;--dink:#b48cff}
-.dc-teal{--dc1:#1aa3b8;--dc2:#07414c;--dink:#4fd3e6}
-:root[data-theme="light"] .dc-purple{--dink:#6a2bae} :root[data-theme="light"] .dc-teal{--dink:#0e7d8f}
-.card.gold{--c1:#c98a1e;--c2:#5a3208} .card.green{--c1:#1f9e70;--c2:#0b4a35}
-.card.purple{--c1:#8a52e8;--c2:#2e1470} .card.teal{--c1:#1aa3b8;--c2:#07414c}
+.dc-gold{--dc1:var(--gold1);--dc2:var(--gold2);--dink:var(--gold-ink)}
+.dc-green{--dc1:var(--green1);--dc2:var(--green2);--dink:var(--green-ink)}
+.dc-purple{--dc1:var(--purple1);--dc2:var(--purple2);--dink:var(--purple-ink)}
+.dc-teal{--dc1:var(--teal1);--dc2:var(--teal2);--dink:var(--teal-ink)}
+.dc-grey{--dc1:var(--grey1);--dc2:var(--grey2);--dink:var(--grey-ink)}
 /* Free-for-all: picking your colour in the room */
 .dsw{display:flex;gap:10px;flex-wrap:wrap}
 .dsw button{width:42px;height:42px;border-radius:12px;border:2px solid transparent;background:linear-gradient(160deg,var(--dc1),var(--dc2));color:#fff;font:800 18px var(--display);cursor:pointer;transition:transform .15s,box-shadow .2s}

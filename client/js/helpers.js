@@ -61,7 +61,7 @@ function fly(src,dst,o={}){
   const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect(),fa=cardPx(src),fb=cardPx(dst);
   if(noMotion()||!a.width||!b.width){o.done&&o.done();return}
   const g=src.cloneNode(true);g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer');if(o.shadow)g.classList.add('lifted');
-  // a card changing hands changes colour on the way (grey in the collection, blue in your hand)
+  // a card changing hands changes colour on the way (a lost red one coming back into your colour)
   const col=e=>CARD_COLS.find(c=>e.classList.contains(c)),c0=col(g),c1=col(dst);
   const ax=a.left+a.width/2,ay=a.top+a.height/2,dx=b.left+b.width/2-ax,dy=b.top+b.height/2-ay;
   Object.assign(g.style,{fontSize:fa+'px',left:(ax-2.5*fa)+'px',top:(ay-3*fa)+'px',transform:'',visibility:''});

@@ -15,7 +15,7 @@ function startAI(){
   G=baseMatch('ai',{rules:{...SAVE.rules,timer:SAVE.cpuTimer,...SAVE.cpuTk},trade:SAVE.trade,names:['You',`CPU · ${DIFFS.find(d=>d[0]===SAVE.diff)[1]}`]});
   G.decks[1]=aiDeck(G.diff);
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
-  openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
+  openDeck({title:'Choose 5 cards',pool:collPool(),pre:preDeck(),loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},onBack:()=>openSetup('ai')});
 }
 // Win them back (rules in data.js): the CPU plays holding the cards it took, and you pick a new hand
@@ -25,7 +25,7 @@ function wbStart(wb){
   G=baseMatch('ai',{rules:{...p.rules},trade:p.trade,diff:p.diff,bo:p.bo,names:p.names.slice(),wb:{...wb,idx}});
   G.decks[1]=h;
   if(G.rules.random){G.decks[0]=randomDeck(collPool());startMatch();return}
-  openDeck({title:wbName(G.wb),pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
+  openDeck({title:wbName(G.wb),pool:collPool(),pre:preDeck(),loadouts:true,
     onDone:ids=>{SAVE.lastDeck=ids;save();G.decks[0]=ids;startMatch()},
     onBack:()=>modal(`<h2>Give up?</h2><p>The cards the CPU took stay with it.</p>`,[
       {label:'Give up',cls:'danger',fn:()=>{G=null;show('menu')}},{label:'Keep choosing',cls:'primary',esc:true}])});
@@ -43,9 +43,9 @@ function wbHTML(x){
     (G.trade==='all'?'Win and you take all 5 back. Lose and it takes 5 more. You get one try.</p>':'Win and the trade rule says how many of them you take back. Lose and it takes more.</p>');
 }
 function startLocal(){
-  G=baseMatch('local',{names:['Blue','Red']});
+  G=baseMatch('local',{names:[COL_NAME[myCol()],'Red']});
   if(G.rules.random){G.decks=[randomDeck(foundPool()),randomDeck(foundPool())];startMatch();return}
-  openDeck({title:'Blue — choose 5',pool:foundPool(),free:true,color:'blue',onBack:()=>openSetup('local'),
+  openDeck({title:`${COL_NAME[myCol()]} — choose 5`,pool:foundPool(),free:true,onBack:()=>openSetup('local'),
     onDone:ids=>{G.decks[0]=ids;
       modal('<h2>Pass the device</h2><p>Red, it\'s your turn to choose 5 cards.</p>',[{label:'Ready',cls:'primary',fn:()=>
         openDeck({title:'Red — choose 5',pool:foundPool(),free:true,color:'red',onBack:startLocal,onDone:ids2=>{G.decks[1]=ids2;SAVE.localDecks=G.decks.map(d=>d.slice());save();startMatch()}})}]);
@@ -58,7 +58,7 @@ function localDecks(){
 }
 function quickLocal(){
   const d=localDecks();if(!d){openSetup('local');return}
-  G=baseMatch('local',{names:['Blue','Red']});
+  G=baseMatch('local',{names:[COL_NAME[myCol()],'Red']});
   G.decks=G.rules.random?[randomDeck(foundPool()),randomDeck(foundPool())]:d.map(h=>h.slice());
   startMatch();
 }
@@ -91,7 +91,7 @@ async function newRound(h0,h1,first){
   // Three open: 3 cards of each hand are face up, drawn from the seeded random numbers so both online players agree
   if(G.rules.threeOpen&&!G.rules.open)G.trk.v=threePick(G.rng);
   renderGame();
-  const who=G.mode==='local'?(first===0?'Blue':'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
+  const who=G.mode==='local'?(first===0?COL_NAME[myCol()]:'Red')+' goes first':first===G.me?'You go first':esc(G.mode==='ai'?'CPU':oppName())+' goes first';
   if(G.bo>1&&!G.sd){await banner(`Match ${G.ser.n}`);if(G!==g)return}
   await banner(who,'small');await wait(250);
   if(G!==g)return;
@@ -99,7 +99,7 @@ async function newRound(h0,h1,first){
 }
 function isHuman(p){return G.mode==='local'||p===G.me}
 function canAct(p){return G&&!G.busy&&!G.over&&!G.timeUp&&G.st.turn===p&&isHuman(p)}
-function colorOf(p){return p===G.bottom?'blue':'red'}
+function colorOf(p){return p===G.bottom?myCol():'red'}
 function viewerSees(p){return G.rules.open||(G.mode==='local'?p===G.st.turn:p===G.me)}
 // Three open: is card i of player p's hand one of the face-up ones?
 function faceUp(p,i){const t=G.trk;return !!(t&&t.v&&t.v[p]&&t.v[p].includes(t.h[p][i]))}
@@ -180,7 +180,7 @@ function flipCells(cells,p,origin){
     const card=CELLS[c].querySelector('.card');if(!card)continue;
     const cls=Math.floor(c/3)===Math.floor(origin/3)?'fy':'fx';
     card.classList.remove('fx','fy','drop');void card.offsetWidth;card.classList.add(cls);
-    setTimeout(()=>{card.classList.remove('blue','red');card.classList.add(col)},230);
+    setTimeout(()=>{card.classList.remove(...CARD_COLS);card.classList.add(col)},230);
   }
 }
 async function endRound(){
@@ -225,7 +225,7 @@ function tradeCount(s0,s1,w){
 // a NEW tag on cards you've never found, like in packs
 const NEW_TAG='<em class="cr-new">NEW</em>';
 function rowHTML(ids,color,fresh=[]){return`<div class="cardrow">${ids.map((id,i)=>fresh[i]?`<div class="cr-it">${NEW_TAG}${cardHTML(id,color)}</div>`:cardHTML(id,color)).join('')}</div>`}
-const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?'Blue':'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
+const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?COL_NAME[myCol()]:'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
   G.over=true;G.busy=true;
   // a player out of time with "You lose" on loses, whatever the score
@@ -239,7 +239,7 @@ function finish(s0,s1){
   if(G.mode!=='local')reward=rewardHTML(histXp(recordMatch(mw<0?'d':mw===G.me?'w':'l',
     {online:G.mode==='online',diff:G.mode==='ai'?G.diff:null,daily:!!G.daily,sweep:swept(mw),sd:G.sd>0,rules:G.rules})));
   sfx(mw<0?'draw':(G.mode==='local'||mw===G.me)?'win':'lose');
-  const ran=G.flagged!=null?`<p class="note">${G.mode==='local'?(G.flagged===0?'Blue':'Red')+' ran':G.flagged===G.me?'You ran':esc(G.mode==='ai'?'The CPU':oppName())+' ran'} out of time.</p>`:'';
+  const ran=G.flagged!=null?`<p class="note">${G.mode==='local'?(G.flagged===0?COL_NAME[myCol()]:'Red')+' ran':G.flagged===G.me?'You ran':esc(G.mode==='ai'?'The CPU':oppName())+' ran'} out of time.</p>`:'';
   const vs=ran+(G.mode==='online'?`<p>${esc(G.names[G.me])} vs <b class="gold">${esc(oppName())}</b></p><div class="fr-res">${friendBtn(NET.oppUser)}</div>`:'');
   const big=(b,r)=>`<div class="bigscore"><span class="b">${b}</span> – <span class="r">${r}</span></div>`;
   const sw=[ser.wins[G.bottom],ser.wins[1-G.bottom]];
@@ -293,7 +293,7 @@ function finish(s0,s1){
         ids.forEach(id=>{fresh.push(!isSeen(id));collAdd(id)});earn('spoils');if(G.wb){earn('winback');if(wbLast())earn('laststand')}profCheck();histTrade('won',ids);save();
         // also through the server, in case they close the game before it reaches them
         if(online){netSend({t:'trade',idx});forfeitPost(NET.oppUser,matchKey(),ids)}
-        resultModal(head+`<p>You won ${G.wb?`back your ${ids.length>1?'cards':'card'}`:ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,'blue',fresh)+freshHTML());
+        resultModal(head+`<p>You won ${G.wb?`back your ${ids.length>1?'cards':'card'}`:ids.length>1?'these cards':'this card'}:</p>`+rowHTML(ids,myCol(),fresh)+freshHTML());
       });
     }else if(cpuTook)resultModal(head+tookHTML('The CPU',cpuTook)+wbHTML(wbn),wbBtn());
     else{
@@ -305,7 +305,7 @@ function finish(s0,s1){
       };
       if(G.pendingTrade){decided(G.pendingTrade);return}
       G.onTrade=decided;
-      modal(head+`<p><span class="spin"></span>${esc(oppName())} is deciding: take ${plural(n,'card')} or spare you…</p>`+rowHTML(G.decks[G.me],'blue'),[]);
+      modal(head+`<p><span class="spin"></span>${esc(oppName())} is deciding: take ${plural(n,'card')} or spare you…</p>`+rowHTML(G.decks[G.me],myCol()),[]);
     }
   },600);
 }
@@ -399,7 +399,7 @@ function loseCards(idx){
   return {ids,added:ensureMinimum()};
 }
 function tookHTML(who,t){
-  return `<p>${who} took:</p>`+rowHTML(t.ids,'red')+(t.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(t.added,'blue'):'');
+  return `<p>${who} took:</p>`+rowHTML(t.ids,'red')+(t.added.length?`<p>Your collection ran low — a wandering dealer gives you:</p>`+rowHTML(t.added,myCol()):'');
 }
 // you left, or tapped Give up on a CPU match you closed: a loss, and in Solo the cards go now
 function quitMatch(){

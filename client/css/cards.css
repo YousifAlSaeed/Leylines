@@ -6,6 +6,15 @@
 .card.blue{--c1:var(--blue1);--c2:var(--blue2)}
 .card.red{--c1:var(--red1);--c2:var(--red2)}
 .card.grey{--c1:var(--grey1);--c2:var(--grey2)} /* a card in the collection, nobody's yet */
+.card.gold{--c1:var(--gold1);--c2:var(--gold2)} .card.green{--c1:var(--green1);--c2:var(--green2)}
+.card.purple{--c1:var(--purple1);--c2:var(--purple2)} .card.teal{--c1:var(--teal1);--c2:var(--teal2)}
+/* your colour (save.js myCol), for what isn't a card: your side, avatar and score. Blue sets nothing, so
+   these fall back to --blue1/2 and -ink, which some screens retune */
+:root[data-me="gold"]{--me1:var(--gold1);--me2:var(--gold2);--me-ink:var(--gold-ink)}
+:root[data-me="green"]{--me1:var(--green1);--me2:var(--green2);--me-ink:var(--green-ink)}
+:root[data-me="purple"]{--me1:var(--purple1);--me2:var(--purple2);--me-ink:var(--purple-ink)}
+:root[data-me="teal"]{--me1:var(--teal1);--me2:var(--teal2);--me-ink:var(--teal-ink)}
+:root[data-me="grey"]{--me1:var(--grey1);--me2:var(--grey2);--me-ink:var(--grey-ink)}
 /* registered so a flying card can fade from one colour to another */
 @property --c1{syntax:'<color>';inherits:true;initial-value:#777}
 @property --c2{syntax:'<color>';inherits:true;initial-value:#333}

@@ -21,6 +21,7 @@ const CARD_COUNT = 55;
 const nat = (v, max = 1e9) => (Number.isInteger(v) && v >= 0 ? Math.min(v, max) : 0);
 export const cardId = (v) => Number.isInteger(v) && v >= 0 && v < CARD_COUNT;
 const results = (v) => (Array.isArray(v) ? v : []).filter((r) => r === 'w' || r === 'l' || r === 'd').slice(-10);
+const MY_COLS = ['blue', 'teal', 'green', 'gold', 'purple', 'grey'];
 export function publicProfile(save) {
   const s = save && typeof save === 'object' ? save : {};
   const st = s.stats && typeof s.stats === 'object' ? s.stats : {};
@@ -40,6 +41,8 @@ export function publicProfile(save) {
     showcase: (Array.isArray(s.showcase) ? s.showcase : []).filter(cardId).slice(0, 3),
     seen: (Array.isArray(s.seen) ? s.seen : []).filter(cardId),
     avatar: av && cardId(av.c) ? { c: av.c, r: nat(av.r, 5) } : null,
+    // their colour (client/js/save.js MY_COLS): others see their cards in it
+    col: MY_COLS.includes(s.col) ? s.col : 'blue',
   };
 }
 

@@ -16,7 +16,10 @@
   --text:var(--ley-text); --muted:var(--ley-text-muted);
   --accent:var(--ley-violet-500); --accent-hi:var(--ley-violet-300); --on-accent:var(--ley-surface); --accent-ink:var(--ley-violet-300); --accent-glow:rgba(139,108,255,.4);
   --cta:var(--ley-pink-500); --cta-hi:var(--ley-pink-300); --on-cta:#1e0b2a; --cta-glow:rgba(255,95,168,.4);
-  --blue1:var(--ley-blue-700); --blue2:#142a6e; --red1:var(--ley-red-700); --red2:#5c1224; --grey1:#5d6273; --grey2:#2b2e39; --blue-ink:var(--ley-blue-300); --red-ink:var(--ley-red-300);
+  --blue1:var(--ley-blue-700); --blue2:#142a6e; --red1:var(--ley-red-700); --red2:#5c1224; --grey1:#5d6273; --grey2:#2b2e39; --grey-ink:#b9bfd0; --blue-ink:var(--ley-blue-300); --red-ink:var(--ley-red-300);
+  /* the other colours a player can pick for themselves (Settings → Your colour), and Crossroads seats */
+  --gold1:#c98a1e; --gold2:#5a3208; --gold-ink:#e9b44c; --green1:#1f9e70; --green2:#0b4a35; --green-ink:#3fd49c;
+  --purple1:#8a52e8; --purple2:#2e1470; --purple-ink:#b48cff; --teal1:#1aa3b8; --teal2:#07414c; --teal-ink:#4fd3e6;
   --glow-a:rgba(106,43,174,.32); --glow-b:rgba(194,70,154,.12);
   --board:#110a29;
   --hot:var(--ley-violet-100); --hot-glow:rgba(237,230,255,.35);
@@ -37,6 +40,7 @@
   --accent:var(--ley-violet-700); --accent-hi:var(--ley-violet-500); --on-accent:#fff; --accent-ink:var(--ley-violet-700); --accent-glow:rgba(106,43,174,.3);
   --cta:var(--ley-pink-700); --cta-hi:#dc5aad; --on-cta:#fff; --cta-glow:rgba(194,70,154,.35);
   --blue1:#3a6bdb; --blue2:#1e3f99; --red1:#d24560; --red2:#8e1f36; --grey1:#8c92a3; --grey2:#565c6c; --blue-ink:#2553c0; --red-ink:#b3304a;
+  --grey-ink:#4a5062; --gold-ink:#9a6a0a; --green-ink:#13865c; --purple-ink:#6a2bae; --teal-ink:#0e7d8f;
   --glow-a:rgba(139,108,255,.16); --glow-b:rgba(255,95,168,.12);
   --board:#e4ddf7;
   --hot:var(--ley-violet-700); --hot-glow:rgba(106,43,174,.3);
@@ -160,5 +164,13 @@ h3,.lbl{margin:0 0 8px;font:600 12.5px var(--body);color:var(--muted);letter-spa
 [aria-checked="true"] .switch::after{transform:translateX(16px)}
 .setrow .seg{flex:0 0 auto}
 .setrow .seg button{min-height:34px;padding:4px 10px;font-size:13px}
+/* Settings → Your colour: a little card in each colour (save.js MY_COLS; the colours are duo.css .dc-*) */
+.colpick{display:flex;gap:7px;flex:0 0 auto}
+.colpick button{position:relative;width:30px;height:36px;border-radius:7px;border:0;cursor:pointer;color:#fff;font:800 15px var(--display);
+  background:linear-gradient(160deg,var(--dc1),var(--dc2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);transition:transform .15s,box-shadow .2s}
+.colpick button:hover:not(.on){transform:translateY(-2px)}
+.colpick button.on{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 0 0 2px var(--surf),0 0 0 4px var(--dc1)}
+.colpick button.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+@media (max-width:420px){.setcol{flex-wrap:wrap}.setcol .colpick{width:100%;justify-content:flex-start}}
 button.setrow{cursor:pointer}
 button.setrow:hover{background:rgba(var(--tint),.03)}

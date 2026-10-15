@@ -48,12 +48,12 @@ body.land .ttag.on{display:none}
 .side{display:flex;flex-direction:column;align-items:center;gap:6px}
 .pname{display:flex;align-items:center;gap:10px;height:40px;width:min(100%,calc(var(--hc)*5 + 24px));padding:0 4px}
 .av{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font:800 15px var(--display);color:#fff;flex:none;transition:box-shadow .25s}
-.side.me .av{background:linear-gradient(160deg,var(--blue1),var(--blue2))}
+.side.me .av{background:linear-gradient(160deg,var(--me1,var(--blue1)),var(--me2,var(--blue2)))}
 .side.opp .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .av.art{font:400 19px/1 var(--body)}
 .pname .who{flex:1;min-width:0;font:600 14px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s}
 .pname .sc{font:900 28px/1 var(--display);min-width:1.1em;text-align:right;text-shadow:0 0 .45em currentColor} /* the same glow as the big landscape scores */
-.side.me .sc{color:var(--blue-ink)} .side.opp .sc{color:var(--red-ink)}
+.side.me .sc{color:var(--me-ink,var(--blue-ink))} .side.opp .sc{color:var(--red-ink)}
 .side.active .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--hot)}
 .side.crit .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 4px var(--crit)}
 .side.crit .who{color:var(--crit)}
@@ -136,7 +136,7 @@ body.pc .ptm{grid-area:tm}
 body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:110px;box-sizing:border-box;padding:3px 10px;border-radius:7px;
   color:#fff;font:800 calc(var(--t) * .17)/1.15 var(--display);font-variant-numeric:tabular-nums;transition:opacity .25s,background .25s}
 .ptm svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-.side.me .ptm{background:linear-gradient(160deg,var(--blue1),var(--blue2))}
+.side.me .ptm{background:linear-gradient(160deg,var(--me1,var(--blue1)),var(--me2,var(--blue2)))}
 .side.opp .ptm{background:linear-gradient(160deg,var(--red1),var(--red2))}
 .ptm.idle{opacity:.4}
 /* a clock that never runs (the CPU's, or with no turn timer): just the box */
@@ -175,11 +175,11 @@ body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space
 .mbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .mbtns .btn{flex:1 1 130px}
 .bigscore{font:900 40px var(--display);margin:4px 0}
-.bigscore .b{color:var(--blue-ink)} .bigscore .r{color:var(--red-ink)}
-.serscore{font:700 15px var(--display)} .serscore .b{color:var(--blue-ink)} .serscore .r{color:var(--red-ink)}
+.bigscore .b{color:var(--me-ink,var(--blue-ink))} .bigscore .r{color:var(--red-ink)}
+.serscore{font:700 15px var(--display)} .serscore .b{color:var(--me-ink,var(--blue-ink))} .serscore .r{color:var(--red-ink)}
 .serlog{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:2px 0 8px}
 .serlog span{font:600 12px/22px var(--body);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:6px;padding:0 8px;color:var(--muted)}
-.serlog .b{color:var(--blue-ink);border-color:color-mix(in srgb,var(--blue-ink) 45%,transparent)} .serlog .r{color:var(--red-ink);border-color:color-mix(in srgb,var(--red-ink) 45%,transparent)}
+.serlog .b{color:var(--me-ink,var(--blue-ink));border-color:color-mix(in srgb,var(--me-ink,var(--blue-ink)) 45%,transparent)} .serlog .r{color:var(--red-ink);border-color:color-mix(in srgb,var(--red-ink) 45%,transparent)}
 .cardrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0;font-size:13px}
 .cardrow .pk{position:relative;cursor:pointer;border-radius:10px;padding:3px;border:2px solid transparent;transition:transform .2s var(--spring),border-color .15s}
 /* Diff: a card the winner didn't flip can't be taken */

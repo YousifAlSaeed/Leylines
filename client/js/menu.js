@@ -40,6 +40,8 @@ function renderNewsTiles(){
   ht.querySelector('small').textContent=tut?'Tutorial: free pack':'Rules in 2 minutes';
   ht.classList.toggle('hot',tut);
 }
+// your colour changed (Settings): the menu's cards are drawn again in it
+function recolour(){driftDim=null;renderMenu()}
 function renderMenu(){
   if(SAVE.wipe&&!ACCT.token)acctWipe(); // signed out during a match (account.js)
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
@@ -63,16 +65,16 @@ function heroDeck(random){
     :mlo?(mlo.miss.length?`${mlo.l.name} is missing ${mlo.miss.length} card${mlo.miss.length>1?'s':''}`:mlo.over.length?`${mlo.l.name} breaks the rarity limits`:`${mlo.l.name} ready`)
     :d?'Last deck ready':'Pick 5 cards';
   const cards=random?Array(5).fill(back)
-    :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,'blue',{name:false}))
-    :d?d.map(id=>cardHTML(id,'blue',{name:false})):Array(5).fill(back);
+    :mlo?mlo.l.ids.map((id,k)=>mlo.miss.includes(k)?back:cardHTML(id,myCol(),{name:false}))
+    :d?d.map(id=>cardHTML(id,myCol(),{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
 // on your own first (Solo, Daily), then with other people (Online, Couch)
 const MODES=[['ai','Solo'],['daily','Daily'],['online','Online'],['local','Couch']];
-// a small fan for Couch: two of Blue's cards (or backs) vs two of Red's
+// a small fan for Couch: two of your colour's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
-  return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,'blue')}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
+  return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,myCol())}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
 }
 // the bar of 3 numbers above a mode's buttons: [value, label]. XP, shards, then one more that fits the mode
 const shardsToday=()=>[`${shd()}${shardDay().n}/${SHARD_CAP}`,'shards today'];
@@ -92,7 +94,7 @@ function heroPane(m){
   }else if(m==='local'){
     // Quick play: last game's rules and both players' cards, straight into the match
     const d=localDecks();
-    h='Couch';sub=d?'Quick play repeats your last game':'Blue picks, then passes to Red';side=localFan(d);
+    h='Couch';sub=d?'Quick play repeats your last game':`${COL_NAME[myCol()]} picks, then passes to Red`;side=localFan(d);
     // no XP or shards here, so the bar says what kind of game it is
     stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
     row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;
@@ -221,7 +223,7 @@ let driftDim=null; // the sheet that's up: its columns, rows, card size and the 
 // a lighter card than cardHTML's: the picture, the numbers and the rarity frame
 function driftCard(pool){
   const c=CARDS[pool[Math.floor(Math.random()*pool.length)]];
-  return `<div class="card ${Math.random()<.6?'blue':'red'} rar${c.rar}${Math.random()<.3?' back':''}"><div class="art">${c.art}</div>`+
+  return `<div class="card ${Math.random()<.6?myCol():'red'} rar${c.rar}${Math.random()<.3?' back':''}"><div class="art">${c.art}</div>`+
     `<div class="nums">${c.s.map((v,k)=>`<b class="n${k}">${fmt(v)}</b>`).join('')}</div><i class="rf"></i></div>`;
 }
 function driftSync(){

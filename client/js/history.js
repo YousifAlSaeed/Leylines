@@ -104,7 +104,7 @@ function histRow(h,i,mine,owner){
       ${quit?`<p class="mh-quit">${quit}</p>`:''}
       ${h.bo>1?`<p class="mh-h">Matches</p><div class="mh-log">${h.log.map((m,k)=>`<span class="${m[0]>m[1]?'w':m[0]<m[1]?'l':'d'}">M${k+1} ${m[0]}–${m[1]}</span>`).join('')}</div>`:''}
       <p class="mh-h">Hands</p>
-      <div class="mh-hand"><span>${esc(you)}</span>${histHand(h.me,h.lost,'blue')}</div>
+      <div class="mh-hand"><span>${esc(you)}</span>${histHand(h.me,h.lost,mine?myCol():okCol(PROF.view&&PROF.view.profile&&PROF.view.profile.col))}</div>
       <div class="mh-hand"><span>${esc(opp.replace(/^CPU · .*/,'CPU'))}</span>${histHand(h.op,h.won,'red')}</div>
       <p class="mh-h">Rules</p>
       <div class="mh-rules">${rules.length?rules.map(r=>`<span>${esc(r)}</span>`).join(''):'<span>No rules</span>'}</div>

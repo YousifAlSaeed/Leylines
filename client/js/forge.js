@@ -75,7 +75,7 @@ function forgeHTML(){
   const n=FG.sel.length,can=forgeCan(FG.sel),worth=forgeWorth(FG.sel),fill=!can.rar&&forgeFill(forgePool());
   const slots=FG_AT.map(([x,y],i)=>{const id=FG.sel[i];
     return `<button class="fg-slot${id!=null?' on':''}" data-i="${i}" style="left:${x}%;top:${y}%" aria-label="${id!=null?`${esc(CARDS[id].name)} on the anvil. Change the cards`:'An empty place on the anvil. Choose cards'}">${
-      id!=null?cardHTML(id,'gold',{name:false}):'<i class="fg-plus" aria-hidden="true">+</i>'}</button>`}).join('');
+      id!=null?cardHTML(id,myCol(),{name:false}):'<i class="fg-plus" aria-hidden="true">+</i>'}</button>`}).join('');
   const say=!n?'Tap a + to put extra cards on the anvil.'
     :n<FORGE_N?`${n} of ${FORGE_N} on the anvil. Five of one rarity can be forged into the next.`
     :can.rar?`Five ${can.rar-1}★ cards make one random ${can.rar}★.<br>${forgeFind(can.rar)}`:can.why;
@@ -126,7 +126,7 @@ function forgeBack(){
 
 /* ---------- dissolving and forging ---------- */
 // cards of 3★ and up take a few seconds to confirm (helpers.js), so a rare card isn't lost to a quick tap
-const fgRow=ids=>`<div class="fg-row">${ids.map(id=>cardHTML(id,'gold')).join('')}</div>`;
+const fgRow=ids=>`<div class="fg-row">${ids.map(id=>cardHTML(id,myCol())).join('')}</div>`;
 function forgeMeltAsk(){
   const ids=FG.sel.slice(),worth=forgeWorth(ids),n=ids.length;if(!n)return;
   modal(`<div class="kick">The Forge</div><h2>Dissolve ${n} card${n>1?'s':''}?</h2>${fgRow(ids)}
@@ -158,7 +158,7 @@ function forgeMake(ids){
   forgeSink(()=>{
     renderStore();stGo(stIdx(),false);renderStoreTile();
     const c=CARDS[id];sfx(`pack_reveal_${c.rar}`);
-    modal(`<div class="kick">Forged</div><h2>${esc(c.name)}</h2><div class="st-one fg-new">${cardHTML(id,'gold')}</div>
+    modal(`<div class="kick">Forged</div><h2>${esc(c.name)}</h2><div class="st-one fg-new">${cardHTML(id,myCol())}</div>
       <p class="fg-got">${rarName(c.rar)}${fresh?' · <b>new to your collection</b>':''}</p>`,[{label:'Done',cls:'primary',esc:true}]);
     freshToast();
   },true);

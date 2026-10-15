@@ -163,7 +163,7 @@ function playGauntlet(sure){
   if(g.run&&!gauntActive(g)&&sure!==true){gauntNewRun();return}
   if(deckable(collPool())<5)ensureMinimum();
   // a new run only starts once a deck is chosen, so backing out doesn't use up the first run
-  openDeck({title:'Gauntlet · choose 5',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
+  openDeck({title:'Gauntlet · choose 5',pool:collPool(),pre:preDeck(),loadouts:true,
     onDone:ids=>{const g2=trial().g;if(!gauntActive(g2)){g2.run++;g2.stage=0;g2.over=0}g2.deck=ids;SAVE.lastDeck=ids;save();startGauntStage()},onBack:()=>show('menu')});
 }
 // before a second run (or later) today: say plainly what it pays, so nobody plays it expecting the first run's rewards
@@ -281,7 +281,7 @@ function dailyBrief(k){
   if(k==='duel'){
     const d=duelSetup();
     modal(`<div class="kick">Daily Duel #${n}</div><h2>${t.duel?'Won today':'Today\'s duel'}</h2>${ruleChips(d.rules)}
-      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,'blue')}<p class="dly-lab">Challenger CPU</p>${rowHTML(d.cpu,'red')}
+      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,myCol())}<p class="dly-lab">Challenger CPU</p>${rowHTML(d.cpu,'red')}
       <p class="dly-note">${t.duel?'You already won today. Play again for fun; there\'s no reward.':`First win: <b>${rewardText(DAILY_REWARD.duel)}</b>. Lose and you can try again, as often as you like.`} Same hands and rules for every player.</p>`,
       [{label:t.duel?'Play again':t.dt?'Try again':'Start',cls:'primary',fn:startDuel},{label:'Close',esc:true}]);
   }else if(k==='puzzle'){

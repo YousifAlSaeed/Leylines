@@ -72,7 +72,7 @@ function handRemove(h,i,from){
   });
 }
 function renderHand(h){
-  const P=h.pfx,col=h.color||'blue',n=h.sel.length;
+  const P=h.pfx,col=h.color||myCol(),n=h.sel.length;
   // 5 cards spread in a gentle arc, spaced so each card's art stays visible
   $(`#${P}Slots`).innerHTML=[0,1,2,3,4].map(i=>{
     const d=i-2,t=`translate(${d*5.5}em,${(d*d*.18).toFixed(2)}em) rotate(${d*4}deg)`,id=h.sel[i];
@@ -99,7 +99,7 @@ function renderLoadouts(h){
   $(`#${P}Lo`).classList.toggle('hidden',!h.loadouts);
   $(`#${P}Save`).classList.toggle('hidden',!h.loadouts);
   if(!h.loadouts)return;
-  const col=h.color||'blue';
+  const col=h.color||myCol();
   $(`#${P}LoRow`).innerHTML=SAVE.loadouts.map((l,i)=>{
     const attrs=`data-i="${i}"`;
     if(!l)return `<div class="dk-lowrap"><button class="dk-loslot empty ${h.saving?'pick':''}" ${attrs}>${h.saving?'Save here':'+ Save hand<br>to this slot'}</button></div>`;

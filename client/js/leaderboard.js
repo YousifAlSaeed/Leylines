@@ -153,7 +153,7 @@ function lbPlayerHTML(p){
   const lv=levelOf(p.xp),me=lbIsMe(p),hand=(p.hand||[]).filter(i=>CARDS[i]);
   return `<div class="lb-pp">${frAvatar(p)}<div><b>${esc(p.displayName)}${me?' <em>(you)</em>':''}</b><div>${lbTier(lv)}<small>#${p.rank} · LV ${lv} · @${esc(p.username)}</small></div></div></div>
     <div class="lb-trio"><div><b>${lv}</b><small>Level</small></div><div><b>${lbRate(p.wins,p.losses,p.draws)}</b><small>Online win rate</small></div><div><b>${p.best}</b><small>Best online streak</small></div></div>
-    <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,'blue',{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
+    <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,me?myCol():okCol(p.col),{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
     <h4>Recent online results</h4>${p.recent?`<span class="pf-form">${[...p.recent].map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<p class="lb-none">No online matches yet.</p>'}
     <div class="lb-kv"><span>Online W / L / D</span><b>${p.wins} / ${p.losses} / ${p.draws}</b></div>
     <div class="lb-kv"><span>Cards found</span><b>${p.cards} / ${CARDS.length}</b></div>

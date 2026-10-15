@@ -16,7 +16,7 @@ export function leaderboardRouter(db) {
 
   // ?by=level|wins|streak|cards &show=all|friends &q=name
   // → { by, show, rows: [player], me: player | null, counts: { all, friends } }
-  // A player is { rank, username, displayName, avatar, xp, wins, losses, draws, best, cards, recent, hand }.
+  // A player is { rank, username, displayName, avatar, col, xp, wins, losses, draws, best, cards, recent, hand }.
   // Equal numbers share a rank. me is you, wherever you are on the board.
   r.get('/', async (req, res) => {
     const by = BY[req.query.by] ? req.query.by : 'level', col = BY[by];
@@ -56,8 +56,9 @@ function player(row) {
   try { save = row.data && JSON.parse(row.data); } catch { /* a broken save just shows no avatar */ }
   let hand = null;
   try { hand = row.hand ? JSON.parse(row.hand) : null; } catch { /* written by board.js, so this can't happen */ }
+  const pub = publicProfile(save);
   return {
-    rank: Number(row.rank), ...publicUser(row), avatar: publicProfile(save).avatar,
+    rank: Number(row.rank), ...publicUser(row), avatar: pub.avatar, col: pub.col,
     xp: row.xp, wins: row.wins, losses: row.losses, draws: row.draws, best: row.best, cards: row.cards,
     recent: row.recent, hand,
   };
