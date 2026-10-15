@@ -269,21 +269,29 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 #scr-menu.on .em-core{animation:emCore 2.6s ease-in-out infinite}
 @keyframes emCore{50%{opacity:.85;transform:scale(1.35)}}
 /* card drift (menu.js): a dim sheet of cards behind the menu, tilted about the middle of the screen. --h is half a
-   column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered */
+   column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered.
+   The sheet turns with transform, not the newer translate/rotate properties, which browsers before Chrome 104 drop */
 .drift{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;font-size:16px;opacity:.2}
 :root[data-theme="light"] .drift{opacity:.3}
 .drift-on .drift{display:block}
-.drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);translate:-50% 0;transform-origin:50% calc(var(--h)/2);rotate:-14deg;display:flex;gap:1.1em}
+.drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);transform-origin:50% calc(var(--h)/2);transform:translateX(-50%) rotate(-14deg);display:flex;gap:1.1em}
 .drift-col{display:flex;flex-direction:column;gap:1.1em;padding-bottom:1.1em;will-change:transform;animation:driftUp var(--d,90s) linear infinite}
 .drift-col:nth-child(even){animation-direction:reverse}
 @keyframes driftUp{to{transform:translateY(-50%)}}
 .drift .card.back>*{display:none}
-/* the menu covers a phone's whole screen, so its panels let a little of the drift through */
+/* with reduced motion the cards keep still, every other column half a card lower. Phones ask for it more often than you'd
+   think: Android's Battery Saver and Remove animations, and an iPhone's Reduce Motion, all do */
+@media (prefers-reduced-motion:reduce){.drift-col{animation:none;will-change:auto}.drift-col:nth-child(even){transform:translateY(-3.55em)}}
+/* the menu covers a phone's whole screen, so its panels let a little of the drift through. Only where color-mix works:
+   with var() inside, a browser without it (before Chrome 111 or iOS 16.2) would drop the background and leave them clear */
+@supports (color:color-mix(in srgb,red 50%,transparent)){
 .drift-on .hero{background:linear-gradient(160deg,color-mix(in srgb,var(--surf2) 84%,transparent),color-mix(in srgb,var(--surf) 84%,transparent))}
 .drift-on .tile{background:color-mix(in srgb,var(--surf) 82%,transparent)}
 /* the player card and the settings button are see-through on a plain page; over the drift they're filled like the tiles */
 #scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:color-mix(in srgb,var(--surf) 82%,transparent)}
 #scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .mstats .iconbtn:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}
+}
+@supports not (color:color-mix(in srgb,red 50%,transparent)){#scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:var(--surf)}}
 @media (min-width:920px) and (min-height:560px){.drift{font-size:22px}}
 /* the hand breathes: the cards on the Play card float, one after the other, and a glint crosses each */
 .fan .card:nth-child(2){--i:1}.fan .card:nth-child(3){--i:2}.fan .card:nth-child(4){--i:3}.fan .card:nth-child(5){--i:4}

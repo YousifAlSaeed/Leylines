@@ -16,7 +16,7 @@ function openSettings(){
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
     <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
-    <div class="setrow"><span class="rt"><b>Menu background</b><small>Cards drifting behind the menu</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
+    <div class="setrow"><span class="rt"><b>Menu background</b><small>${noMotion()?'Cards behind the menu, kept still: your device reduces motion':'Cards drifting behind the menu'}</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
       [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${driftWanted()==!!k?'on':''}" aria-pressed="${driftWanted()==!!k}">${l}</button>`).join('')}</div></div>
     ${[['musicVol','Music','Background track'],['sfxVol','Sound effects','Clicks, flips and the timer']].map(([k,l,sub])=>
       `<div class="setrow" data-vol="${k}"><span class="rt"><b id="${k}L">${l}</b><small>${sub}</small></span>`+

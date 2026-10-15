@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.25.1 (2026-10-15)
+- The cards behind the menu show on every phone. A phone set to reduce motion (Android's Battery Saver or Remove animations, an iPhone's Reduce Motion) used to get none; now they're there and keep still
+- The sheet of cards sits straight and centred on older browsers too, and the menu's panels stay filled where a browser can't make them see-through
+- The cards behind the menu update when you find new ones or sign in, and a phone's keyboard or address bar no longer shuffles them
+- The game no longer breaks after an update on a slow connection: the page and its scripts always come from the same version, online or offline
+
 ## 0.25.0 (2026-10-15)
 - Crossroads: when the host leaves, closes the game or loses their connection, another player takes over hosting and the match goes on. The old host can rejoin from the menu and gets their seat back
 - The player who'd take over keeps a locked copy of the match, and the other players hold the key: they only hand it over once they've lost the host too, so nobody can peek at hidden hands
