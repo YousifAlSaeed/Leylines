@@ -72,7 +72,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, 
   api.use('/forfeits', forfeitsRouter(db, hub));
   api.use('/gifts', giftsRouter(db, hub));
   api.use('/pulse', pulseRouter(db, hub));
-  api.use('/push', pushRouter(db, push));
+  api.use('/push', pushRouter(db, push, app.locals.dailyAlerts));
   api.use('/leaderboard', leaderboardRouter(db));
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   // malformed JSON and other request errors come back as JSON, not an HTML page

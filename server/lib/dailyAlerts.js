@@ -32,7 +32,7 @@ export function reminderText({ pack, left }) {
   return left === 3 ? 'Today\'s Daily Duel, Puzzle and Gauntlet are waiting.' : `${ch[0].toUpperCase() + ch.slice(1)} left today.`;
 }
 
-// push: lib/push.js, hub: lib/hub.js. → { tick(now) } (tests call tick themselves)
+// push: lib/push.js, hub: lib/hub.js. → { tick(now), test(id) } (tests call tick themselves)
 export function startDailyAlerts(db, push, hub, { timer = true } = {}) {
   const site = config.appUrl;
   let busy = false;
@@ -68,9 +68,20 @@ export function startDailyAlerts(db, push, hub, { timer = true } = {}) {
     finally { busy = false; }
     return n;
   }
+  // Settings → Daily reminder → Test (developer accounts, routes/push.js): this player's reminder now,
+  // whatever the time, even if they had one today. With nothing waiting it sends a sample, so there's
+  // always one to see. → push.notify's { devices, sent, failed }, plus waiting (false: it was the sample)
+  async function test(id, now = Date.now()) {
+    const row = await db.get('SELECT data FROM user_saves WHERE user_id = $u', { $u: id });
+    let save = {};
+    try { save = row ? JSON.parse(row.data) : {}; } catch { /* a sample, then */ }
+    const real = reminderText(dailyWaiting(save, gameDay(now)));
+    const body = real ?? reminderText({ pack: true, left: 3 });
+    return { ...await push.notify(id, { title: 'Leylines', body, tag: 'daily', url: './?daily=1', ttl: 600 }), waiting: !!real };
+  }
   if (timer && push) {
     setInterval(() => tick(), EVERY).unref();
     setTimeout(() => tick(), 30 * 1000).unref(); // soon after waking up, too
   }
-  return { tick };
+  return { tick, test };
 }

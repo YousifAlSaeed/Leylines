@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-Object.assign(process.env, { EMAIL_KEY: 'test-email-key-0123456789abcdefghij', APP_URL: 'https://game.test' });
+Object.assign(process.env, { EMAIL_KEY: 'test-email-key-0123456789abcdefghij', APP_URL: 'https://game.test', DEV_USERS: 'bob' });
 delete process.env.RESEND_API_KEY;
 delete process.env.RENDER;
 delete process.env.VAPID_PUBLIC_KEY;
@@ -83,5 +83,21 @@ describe('daily reminder', () => {
     await saveAs('ana', { daily: { at: '2026-10-14' }, dailyAlert: false });
     assert.equal(await tick(EVENING + 2 * 864e5), 1);
     assert.ok(sent.slice(-1)[0].endpoint === sub(2).endpoint);
+  });
+
+  test('developers can send themselves the reminder now', async () => {
+    assert.equal((await api('/push/test-daily', { method: 'POST', token: T.ana })).status, 403);
+    // bob's save says all of today's are done (game time today, not the test's fake evenings): a sample
+    await saveAs('bob', { daily: { at: '2999-01-01' }, trial: { at: '2999-01-01', duel: 1, puz: 2, g: { run: 1 } } });
+    let r = await api('/push/test-daily', { method: 'POST', token: T.bob });
+    assert.equal(r.status, 200);
+    assert.equal(r.body.sent, 1);
+    assert.equal(r.body.waiting, false);
+    assert.equal(sent.at(-1).tag, 'daily');
+    // with something waiting, the real one, even though bob had one today already
+    await saveAs('bob', {});
+    r = await api('/push/test-daily', { method: 'POST', token: T.bob });
+    assert.equal(r.body.waiting, true);
+    assert.match(sent.at(-1).body, /daily pack/);
   });
 });

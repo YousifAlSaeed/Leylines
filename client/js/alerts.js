@@ -94,17 +94,33 @@ function alertsRow(){
   if(API==null)return '';
   return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests, match news and a daily reminder, even with the game closed</small></span><span id="alertsCtl"></span></div>`+
     // the evening reminder (server/lib/dailyAlerts.js): on unless the player turns it off. It's in the save, so the server can read it
-    `<div class="setrow" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><div class="seg" role="group" aria-label="Daily reminder">${
-      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div></div>`;
+    `<div class="setrow setalerts" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><span id="dailyAlertCtl"><div class="seg" role="group" aria-label="Daily reminder">${
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div>`+
+      // Test: developer accounts only (and a local copy of the game)
+      `${isDev()?'<button class="btn small" id="dailyAlertTest">Test</button>':''}</span></div>`;
 }
 const dailyAlertOn=()=>SAVE.dailyAlert!==false;
 function dailyAlertWire(box){
-  box.querySelectorAll('#setDailyAlert button').forEach(b=>b.onclick=()=>{
+  box.querySelectorAll('#setDailyAlert .seg button').forEach(b=>b.onclick=()=>{
     const on=b.dataset.k==='1';if(on===dailyAlertOn())return;
     if(on)delete SAVE.dailyAlert;else SAVE.dailyAlert=false;
     save();sfx('click');
-    box.querySelectorAll('#setDailyAlert button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+    box.querySelectorAll('#setDailyAlert .seg button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
+  const t=box.querySelector('#dailyAlertTest');
+  if(t)t.onclick=async()=>{
+    if(ALERTS.busy)return;
+    sfx('click');ALERTS.busy=true;t.disabled=true;
+    try{await dailyAlertTest()}catch(e){toast(e.message,5000)}
+    finally{ALERTS.busy=false;t.disabled=false}
+  };
+}
+// Settings → Daily reminder → Test: the server sends this account's reminder now (a sample when nothing's waiting)
+async function dailyAlertTest(){
+  const r=await api('/push/test-daily',{method:'POST'});
+  if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
+  if(r.failed.length)throw new Error(`The alert didn't go through (${r.failed[0]}).`);
+  toast(r.waiting?'Daily reminder sent. It should show up in a moment.':'Nothing is waiting today, so you got a sample. It should show up in a moment.',4000);
 }
 async function alertsPaint(box){
   const row=box.querySelector('#setAlerts');if(!row)return;
