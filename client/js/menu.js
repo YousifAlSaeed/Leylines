@@ -220,11 +220,11 @@ const DRIFT_KEY='leylines.drift';
 const driftWanted=()=>{try{return localStorage.getItem(DRIFT_KEY)!=='off'}catch(e){return true}};
 function driftSet(on){try{on?localStorage.removeItem(DRIFT_KEY):localStorage.setItem(DRIFT_KEY,'off')}catch(e){}driftSync()}
 let driftDim=null; // the sheet that's up: its columns, rows, card size and the cards it draws from
-// a lighter card than cardHTML's: the picture, the numbers and the rarity frame
+// a lighter card than cardHTML's: the picture, the numbers, the rarity tag and frame (no name, so the tag sits low: .nn)
 function driftCard(pool){
   const c=CARDS[pool[Math.floor(Math.random()*pool.length)]];
-  return `<div class="card ${Math.random()<.6?myCol():'red'} rar${c.rar}${Math.random()<.3?' back':''}"><div class="art">${c.art}</div>`+
-    `<div class="nums">${c.s.map((v,k)=>`<b class="n${k}">${fmt(v)}</b>`).join('')}</div><i class="rf"></i></div>`;
+  return `<div class="card ${Math.random()<.6?myCol():'red'} rar${c.rar} nn${Math.random()<.3?' back':''}"><div class="art">${c.art}</div>`+
+    `<div class="nums">${c.s.map((v,k)=>`<b class="n${k}">${fmt(v)}</b>`).join('')}</div><div class="rchip">${c.rar}★</div><i class="rf"></i></div>`;
 }
 function driftSync(){
   const scr=$('#scr-menu'),el=$('#drift'),on=driftWanted();

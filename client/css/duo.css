@@ -139,22 +139,48 @@
 #scr-duo:not(.narrow) .dname.dn-top .av{width:calc(var(--ds) * .62);height:calc(var(--ds) * .62);border-radius:calc(var(--ds) * .2);font-size:calc(var(--ds) * .3)}
 #scr-duo:not(.narrow) .dname.dn-top .av.art{font-size:calc(var(--ds) * .38)}
 #scr-duo:not(.narrow) .dname.dn-top .dwho b{font-size:clamp(12px,calc(var(--ds) * .22),15px);max-width:180px}
-/* your name sits under your hand on phones; wide screens use the room for bigger cards */
+/* your corner shows on PC and phones; other wide screens use the room for bigger cards */
 #scr-duo:not(.narrow) #duoMe{display:none}
-/* phones: a long side name wraps onto two lines inside its column instead of running off the screen */
-#scr-duo.narrow .dname.dn-side .dwho b{white-space:normal;overflow-wrap:break-word;max-width:calc(var(--ds) + 18px);font-size:11.5px;line-height:1.1;text-align:center}
-/* phones: bigger side players, paid for with tighter gaps round the board instead of a smaller board */
-#scr-duo.narrow .duo-mid{gap:4px}
-#scr-duo.narrow .duo-side{width:calc(var(--ds) + 6px);gap:7px}
-#scr-duo.narrow .dname.dn-side .av{width:calc(var(--ds) * .94);height:calc(var(--ds) * .94);border-radius:calc(var(--ds) * .28);font-size:calc(var(--ds) * .42)}
-#scr-duo.narrow .dname.dn-side .av.art{font-size:calc(var(--ds) * .55)}
-#scr-duo.narrow #duoBoard{padding:5px;gap:3px}
-/* phones: the top player as big as the side players (avatar) with bigger cards and name */
-#scr-duo.narrow .dname.dn-top{gap:8px}
-#scr-duo.narrow .dname.dn-top .av{width:calc(var(--ds) * .94);height:calc(var(--ds) * .94);border-radius:calc(var(--ds) * .28);font-size:calc(var(--ds) * .42)}
-#scr-duo.narrow .dname.dn-top .av.art{font-size:calc(var(--ds) * .55)}
-#scr-duo.narrow .dname.dn-top .dwho b{font-size:14.5px;max-width:120px}
-#scr-duo.narrow .duo-top{gap:12px}
+
+/* ---------- phones (.narrow, sizes set by duoFit): the PC square, fitted to the width. The board with a hand on each
+   side, a column each side as wide as a corner, and a corner per player in the same spots as PC's. The top hand and
+   yours overlap a little so their cards stay big; yours sits between the bottom corners ---------- */
+#scr-duo.narrow .duo-arena{display:grid;grid-template-columns:var(--dk) var(--dbw) var(--dk);grid-template-rows:var(--dra) auto var(--drc);
+  justify-content:center;align-content:center;gap:12px 6px}
+#scr-duo.narrow :is(.duo-top,.duo-mid,.duo-side,.duo-bot,#duoMe){display:contents}
+#scr-duo.narrow #duoScore{display:none}
+#scr-duo.narrow .dh-top{grid-area:1/2;align-self:center;justify-self:center;min-height:0}
+#scr-duo.narrow .dhand.dh-top .card+.card{margin-left:var(--dtf)}
+#scr-duo.narrow #duoLeft .dhand{grid-area:2/1;justify-self:center;align-self:center}
+#scr-duo.narrow #duoRight .dhand{grid-area:2/3;justify-self:center;align-self:center}
+#scr-duo.narrow .dhand.dh-side .card+.card{margin-top:var(--dso)}
+#scr-duo.narrow #duoBoard{grid-area:2/2;padding:5px;gap:3px}
+#scr-duo.narrow #duoHand{grid-area:3/2;align-self:start;justify-self:center;gap:0;min-height:0}
+#scr-duo.narrow #duoHand .card+.card{margin-left:var(--dfan)}
+/* a soft shadow where an overlapping card covers the one before it */
+#scr-duo.narrow :is(.dhand.dh-top,#duoHand) .card{box-shadow:-6px 0 10px -6px rgba(0,0,0,.6)}
+#scr-duo.narrow .dhand.dh-side .card{box-shadow:0 -6px 10px -6px rgba(0,0,0,.6)}
+#scr-duo.narrow #duoHand .card.sel{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.35),0 0 0 .1em var(--hot),0 .5em 1.2em -.3em var(--hot-glow)}
+/* a corner, built like PC's: clock bar, a small avatar with the name beside it, the big score. Yours reads down;
+   the top player's is mirrored (score by their cards); the side players' are laid out on their side and turned to face them */
+#scr-duo.narrow .dname{display:grid;width:var(--dk);height:var(--dra);box-sizing:border-box;align-content:space-between;align-items:center;gap:3px 5px;
+  text-align:left;min-width:0;justify-items:start;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"tm tm" "av who" "sc sc"}
+#scr-duo.narrow .dname.dk-tl{grid-area:1/1;justify-items:end;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sc sc" "who av" "tm tm"}
+#scr-duo.narrow .dname.dk-br{grid-area:3/3;height:var(--drc)}
+#scr-duo.narrow .dname.dk-tr{grid-area:1/3;width:var(--dra);height:var(--dk);justify-self:center;align-self:center;transform:rotate(-90deg)}
+#scr-duo.narrow .dname.dk-bl{grid-area:3/1;width:var(--drc);height:var(--dk);justify-self:center;align-self:center;transform:rotate(90deg)}
+#scr-duo.narrow .dname .av{grid-area:av;width:20px;height:20px;border-radius:6px;font-size:10px}
+#scr-duo.narrow .dname .av.art{font-size:13px}
+#scr-duo.narrow .dname.dactive .av{box-shadow:0 0 0 2px var(--bg1),0 0 0 3px var(--hot)}
+#scr-duo.narrow .dname .dwho{grid-area:who;min-width:0;max-width:100%}
+#scr-duo.narrow .dname.dk-tl .dwho{text-align:right}
+#scr-duo.narrow .dname .dwho b{display:block;max-width:100%;font-size:10.5px;line-height:1.1}
+#scr-duo.narrow .dname .dwho small{display:none}
+#scr-duo.narrow .dname .ptm{grid-area:tm;display:flex;justify-self:stretch;align-items:center;justify-content:space-between;gap:4px;min-width:0;
+  padding:2px 6px;border-radius:6px;color:#fff;font:700 11.5px/1.2 var(--body);font-variant-numeric:tabular-nums}
+#scr-duo.narrow .dname .ptm svg{width:12px;height:12px}
+#scr-duo.narrow .dsc{grid-area:sc;display:block;color:var(--dink);font:900 28px/.9 var(--display);font-variant-numeric:tabular-nums;text-shadow:0 0 14px currentColor}
+#scr-duo.narrow .dsc.pop{animation:scPop .45s var(--spring)}
 
 /* ---------- PC (body.pc, set in game.js layout): like 4-player chess. A square: the board in the middle, a hand on each
    side as long as the board, and in each corner (where a hand row meets a hand column) the player whose right-hand side

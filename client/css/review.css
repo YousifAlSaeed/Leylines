@@ -20,6 +20,8 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 body.puz #sideTop{visibility:hidden}
 /* Crossroads (review.js): the hands make room for the words and the buttons; the names and scores stay */
 body.drev #scr-duo .dhand,body.drev #duoHand{visibility:hidden}
-body.drev #duoQuitBtn,body.drev #scr-duo.narrow #duoMe{visibility:hidden}
+body.drev #duoQuitBtn{visibility:hidden}
+/* phones: the buttons fit between the bottom corners, where your hand was */
+@media (max-width:559px){body.drev .rv-bar{padding:10px 6px}body.drev .rv-nav{gap:3px}}
 /* who played, in their seat's colour */
 .tut-coach b.rv-who{color:var(--dink)}

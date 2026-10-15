@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.27.2 (2026-10-15)
+- Crossroads on phones looks like PC now: a corner for each player with their clock, name and score, and the hands around the board
+
+## 0.27.1 (2026-10-15)
+- The cards drifting behind the menu show their rarity
+
 ## 0.27.0 (2026-10-15)
 - Pick your colour in Settings: blue, teal, green, gold, purple or black. Your cards are that colour everywhere: your hand, your collection, new packs and the menu. The other side is always red
 - In Crossroads you play in your colour when nobody else at the table has it, otherwise you get a free one

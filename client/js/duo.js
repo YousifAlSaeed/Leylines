@@ -1307,18 +1307,16 @@ function duoFit(){
   if(!duoOn('duo'))return;
   const ui=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui'))||1;
   const W=Math.min(innerWidth/ui,860)-20,H=innerHeight/ui,el=$('#scr-duo');
-  // phones held upright keep the first 2v2 layout (small side columns, your name under your hand);
-  // wider screens get big side players
+  // PC and phones held upright get the square with a corner per player; other screens get big side players
   const narrow=W<540&&!document.body.classList.contains('pc');el.classList.toggle('narrow',narrow);
   if(document.body.classList.contains('pc')){duoFitPC(el,ui);DUO.fitKey=duoFitKey();return}
-  const sideOf=dc=>narrow?Math.max(30,Math.min(46,W*.094)):Math.max(34,Math.min(78,dc*.72));
+  if(narrow){duoFitPhone(el,W);DUO.fitKey=duoFitKey();return}
   const set=dc=>{
-    const ds=sideOf(dc),dt=narrow?Math.max(34,Math.min(56,dc*.7)):Math.max(30,Math.min(58,dc*.56));
-    const dh=narrow?Math.max(42,Math.min(100,(W-30)/5.4,dc*1.1)):Math.max(46,Math.min(118,(W-30)/5.3,dc*1.12));
+    const ds=Math.max(34,Math.min(78,dc*.72)),dt=Math.max(30,Math.min(58,dc*.56)),dh=Math.max(46,Math.min(118,(W-30)/5.3,dc*1.12));
     el.style.setProperty('--dc',dc+'px');el.style.setProperty('--ds',ds+'px');el.style.setProperty('--dt',dt+'px');el.style.setProperty('--dh',dh+'px');
   };
   // as big as the width allows (the board, a side column each side), then smaller until nothing runs off the bottom
-  let dc=narrow?(W-2*(sideOf(0)+6)-32)/4:(W-128)/(4+2*.72);
+  let dc=(W-128)/(4+2*.72);
   dc=Math.max(40,Math.min(132,dc));
   const fits=()=>{const b=$('.duo-bot').getBoundingClientRect(),sc=el.getBoundingClientRect();return b.bottom<=sc.bottom-parseFloat(getComputedStyle(el).paddingBottom)*ui+1};
   set(dc);
@@ -1341,6 +1339,22 @@ function duoFitPC(el,ui){
   el.style.setProperty('--ds',ds+'px');el.style.setProperty('--dt-row',t+'px');
   // the side cards share the board's height, overlapping when they must
   el.style.setProperty('--dso',Math.min(4,(bh-5*1.2*ds)/4)+'px');
+}
+// phones (.narrow): PC's square fitted to the width. A column each side as wide as a corner (k), the board between;
+// the top hand and yours are as long as the board, their cards overlapping a little so they stay big; the corner
+// rows are as tall as those hands. As wide as the screen allows, then narrower until it fits the height
+function duoFitPhone(el,W){
+  const k=Math.round(Math.max(52,Math.min(72,W*.152))),room=$('#scr-duo .duo-arena').clientHeight;
+  const set=bw=>{
+    const dc=Math.min(100,Math.floor((bw-21)/4)),bh=4.8*dc+21,dt=Math.floor(bw*.229),dh=Math.floor(bw*.286),ds=k-6;
+    const ra=Math.max(74,Math.ceil(dt*1.2)+2),rc=Math.max(74,Math.ceil(dh*1.2));
+    const v={'--dk':k,'--dbw':bw,'--dc':dc,'--dt':dt,'--dtf':-Math.ceil((5*dt-bw)/4),'--dra':ra,
+      '--ds':ds,'--dso':Math.min(4,(bh-6*ds)/4),'--dh':dh,'--dfan':-Math.ceil((5*dh-bw)/4),'--drc':rc};
+    for(const n in v)el.style.setProperty(n,v[n]+'px');
+    return ra+bh+rc+24;
+  };
+  let bw=W-2*k-12;
+  for(let n=0;n<60&&bw>180&&set(bw)>room;n++)bw-=4;
 }
 // refit when the window changes, or when the hands first appear (they take room)
 const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}:${document.body.classList.contains('pc')}`;
