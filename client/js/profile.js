@@ -77,6 +77,9 @@ const BADGE_GROUPS=[
     ['elements','🌈','All elements','Find a card of every element','s',s=>ELEM_KEYS.every(e=>s.seen.some(i=>CARDS[i].e===e))],
     ['shop','🛒','Shopper','Buy something in the Store','b'],
     ['packs25','📦','Pack rat','Open 25 packs','s',s=>s.opened>=25]]],
+  ['The Forge','🔨',[
+    ['forge1','🔨','Smith','Forge a card at the Forge','b'],
+    ['forge4','⚒️','Master smith','Forge a 4★ card','s']]],
   ['Levels','⭐',[
     ['lv5','🌱','Card adept','Reach level 5','b',s=>levelOf(s.xp)>=5],
     ['lv10','⭐','Seasoned','Reach level 10','s',s=>levelOf(s.xp)>=10],

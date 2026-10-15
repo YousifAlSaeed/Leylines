@@ -7,7 +7,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45,tkind:'turn',bank:180,flag:'random'},
-    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},musicVol:70,sfxVol:100,musicMute:false,sfxMute:false,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
@@ -79,8 +79,10 @@ function grantPacks(p){
   return got;
 }
 // a stored save with any missing fields filled in
-function normSave(s){
-  const d=defSave();
+function normSave(o){
+  const d=defSave(),{sound,...s}=o;
+  // sound used to be one mute for everything: now music and sound effects each have their own, and keep their level while muted
+  if(sound===false&&!('musicMute' in s))s.musicMute=s.sfxMute=true;
   return fixProfile({...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll},s);
 }
 function loadSave(){
@@ -89,6 +91,7 @@ function loadSave(){
 }
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
+for(const k of ['musicMute','sfxMute'])SAVE[k]=!!SAVE[k];
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 normTimer(SAVE.rules);
 // Sweep used to be a trade rule: it's a rule card now, played on top of a trade rule (One, the gentlest)
@@ -116,7 +119,7 @@ fixMain();
 // Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
 function resetSave(){
   const d=defSave();
-  for(const k of ['sound','musicVol','sfxVol','theme','cid'])d[k]=SAVE[k];
+  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','theme','aero','cid'])d[k]=SAVE[k];
   d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
   SAVE=d;fixMain();save();
 }
@@ -146,6 +149,9 @@ function isDev(){
 // "Unlock all cards" (a developer tool) lends at least 1 copy of every card while it's on; the real collection stays underneath.
 // It's ignored for everyone else, even if an old save has it switched on.
 const unlocked=()=>!!SAVE.unlockAll&&isDev();
+// "Frutiger Aero" (a developer tool): glossy glass and a summer sky over the light theme (settings.js applyTheme, aero.css).
+// Ignored for everyone else in the same way.
+const aeroOn=()=>!!SAVE.aero&&isDev();
 const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
 const isSeen=id=>unlocked()||SAVE.seen.includes(id);
 const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;

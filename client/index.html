@@ -54,6 +54,7 @@
 <link rel="stylesheet" href="css/leaderboard.css">
 <link rel="stylesheet" href="css/store.css">
 <link rel="stylesheet" href="css/duo.css">
+<link rel="stylesheet" href="css/aero.css"><!-- last: a developer's look over both themes -->
 </head>
 <body>
 <!-- shared by the menu logo and the small one in a match; outside the screens, so the glow still works when the menu is hidden -->
@@ -154,7 +155,8 @@
     <span class="vh" id="turnMsg" aria-live="polite"></span>
     <button class="btn small" id="tutSkip">Skip</button>
     <button class="iconbtn" id="btnHow" aria-label="How to play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
-    <button class="iconbtn" id="btnSnd" aria-label="Sound"></button>
+    <button class="iconbtn" id="btnSnd" aria-label="Sound" aria-expanded="false" aria-controls="sndPop"></button>
+    <div class="sndpop hidden" id="sndPop" role="group" aria-label="Sound"></div>
   </div>
   <div class="tbar off" id="tbar" role="timer" aria-live="off"><i id="tFill"></i></div>
   <div class="rulebar" id="ruleBar"></div>
@@ -254,6 +256,7 @@
         <div class="dk-sides coll-sides" id="collSides"></div>
         <div class="coll-row">
           <div class="dk-power">Power<b id="collPower">0</b></div>
+          <div class="dk-power" id="collWorth">Worth<b>0</b></div>
           <button class="dk-act gold" id="collBest" title="Best 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg><span>Best 5</span></button>
           <button class="dk-act quiet" id="collClear" aria-label="Clear hand" title="Clear hand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Clear</span></button>
           <button class="btn primary" id="collSave">Save hand</button>
@@ -376,12 +379,14 @@
 <script src="js/settings.js"></script>
 <script src="js/online.js"></script>
 <script src="js/spare.js"></script>
+<script src="js/duo-handoff.js"></script>
 <script src="js/duo.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/history.js"></script>
 <script src="js/packs.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/store.js"></script>
+<script src="js/forge.js"></script>
 <script src="js/news.js"></script>
 <script src="js/a2hs.js"></script>
 <script src="js/account.js"></script>

@@ -404,7 +404,7 @@ function renderPacks(){
       <li>Chances are for each card. Cards come out worst to best, so the best one is always last.</li>
       <li>The level road repeats every 10 levels: a Leyline at levels ending in 5, a Mythic at levels ending in 0 (from level 20; level 10 is a Leyline), and 4 small packs between them (Spark, or Arcane from level 21). The Leyline and Mythic levels are milestones: their last card is at least 4★.</li>
       <li>Light leaks out of the tear in the colour of the best card inside.</li>
-      <li>Duplicates are extra copies: use them in decks or lose them in trades.</li></ul></details>`;
+      <li>Duplicates are extra copies: use them in decks, lose them in trades, or take them to the market's Forge to melt into shards or forge five into a rarer card.</li></ul></details>`;
 
   const pity=`<section class="pk-card pk-pity">${pityHTML()}</section>`;
   $('#pkBody').innerHTML=daily+inv+pity+roadHTML+odds;

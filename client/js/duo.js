@@ -4,17 +4,35 @@
    ===================================================================== */
 // The host's device runs the match: it holds the board, the four decks and the CPUs, checks every move, and sends
 // each player a snapshot after every change (the other team's hands hidden). Guests only send what they do.
-// Seats go clockwise from the host: 0 bottom, 1 left, 2 top, 3 right. In 2v2, 0+2 and 1+3 are the teams;
-// in Free-for-all (rules.ffa) everyone plays for themselves.
+// When the host leaves, closes the game or drops out, another player's device takes over hosting (the heir) and the
+// match goes on; the old host can rejoin as a player. The heir holds a locked copy of the match and the others the
+// key to it (duo-handoff.js), and everyone keeps a standby line open to the heir, so the switch is quick.
+// Seats go clockwise from the player who opened the room: 0 bottom, 1 left, 2 top, 3 right. In 2v2, 0+2 and 1+3 are
+// the teams; in Free-for-all (rules.ffa) everyone plays for themselves.
 // A seat is {kind:'open'|'human'|'cpu', name, user, av, tok, ready, diff, away, awayAt, bot}:
 //   tok = the player's rejoin key, away = their link dropped, bot = a CPU (Normal) is playing their cards until they're back.
 const DUO_GRACE=60;      // seconds a dropped player has before a CPU takes over their cards
-const DUO_HOST_WAIT=60;  // seconds the others wait for a host whose link dropped (a brief glitch) before the match ends
+const DUO_HOST_WAIT=60;  // seconds the others wait for a host that dropped, when no one could take over, before the match ends
+const DUO_LOST_MS=8000;  // a host silent this long has dropped (it pings every 3 s); the heir takes over once a keeper agrees
+const DUO_RESUME_MIN=5000; // a turn timer a new host carries on has at least this long left
+const DUO_HV=1;          // this game can take over hosting (an older game in the room can't, so it's never the heir)
 const DUO_REWARDS=false; // Crossroads is being tested: no XP, shards or stats yet
-const DUO={role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),seats:[],me:0,rules:duoDefRules(),phase:'room',decks:[],st:null,seed:0,last:null,
+const DUO={role:null,code:null,peer:null,pid:'',conn:null,conns:{},kicked:new Set(),seats:[],me:0,rules:duoDefRules(),phase:'room',decks:[],st:null,seed:0,last:null,
   turnEnd:0,turnN:-1,cpuT:0,tickT:0,v:0,closing:false,
+  // both: which host this is (each new host counts one up), this seat's rejoin key, this tab (a second line from the
+  // same tab is that tab coming back, not another tab)
+  ep:0,tok:'',tab:Math.random().toString(36).slice(2,10),
+  // host side: the line holding the room's code for a host that took over, the heir and keepers with their key (vk),
+  // the match the heir was last sent (vaultS), asking a lost heir whether it took over (probe), handed the match on,
+  // took over from another host, when the next Sudden death round starts
+  codePeer:null,vk:null,vaultS:'',probe:null,handed:false,took:false,sdAt:0,
   // guest side
-  snap:null,snapAt:0,tok:'',hostLast:0,hostAway:false,hostAwayAt:0,retryT:0,joinT:0,
+  snap:null,snapAt:0,hostLast:0,hostAway:false,hostAwayAt:0,retryT:0,joinT:0,tryAt:0,
+  // the host's address (hp), where to knock when joining (addrs), the standby line to the heir (sb) and, on the heir,
+  // the others' standby lines (sbIn), the locked copy (vault, the heir), its key (keep, the keepers; vkey, the heir once
+  // a keeper hands it over), the heir taking over after the host left (moving), the cards this game chose (sent again
+  // to a new host that never got them)
+  hp:'',addrs:[],addrI:0,sb:null,sbIn:[],vault:null,keep:null,vkey:'',moving:null,myDeck:null,deckEp:0,
   // both: the picked hand card, a move sent and not answered yet, the last move animated, the result shown, picking a deck
   sel:null,pending:false,shownN:-1,resultV:-1,picking:false,
   // the host's list of the match's moves, [card, square], sent with the result for the Review; the Review on screen (review.js)
@@ -24,15 +42,15 @@ const DUO={role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),sea
   // the host's invites by seat: friend's username key → the seat they were invited to (duoInvPop)
   invSeat:{}};
 const DUO_HOST_KEY='leylines-duo-host',DUO_RJ_KEY='leylines-duo-rejoin',DUO_RULES_KEY='leylines-duo-rules';
-// The host's device runs the match, and when the host leaves (in any way) the match ends for everyone: nothing is kept
-// to resume it. A match saved by an older version is cleared.
+// When no one can take over from a host that leaves, the match ends for everyone: nothing is kept to resume it.
+// A match saved by an older version is cleared.
 const DUO_HOST_LEFT='The host left, so the match is over.';
 const duoOpen=()=>({kind:'open'});
 const duoNewTok=()=>Math.random().toString(36).slice(2,12);
 function duoLS(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||'null');if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}return null}
 function duoLoadRules(){const r=duoLS(DUO_RULES_KEY),d=duoDefRules();if(r&&typeof r==='object')for(const k in d)if(typeof r[k]===typeof d[k])d[k]=r[k];d.timer=timerSec(d.timer);return d}
-// a Crossroads game this device joined and can go back into, for the menu's Rejoin button: {code, host:false}
-// (a host can't go back: their leaving ended it)
+// a Crossroads game this device was in and can go back into, for the menu's Rejoin button: {code, host:false}
+// (a host that left comes back as a player of the new host)
 function duoResumeInfo(){
   if(DUO.role)return null;
   const g=duoLS(DUO_RJ_KEY);
@@ -49,15 +67,29 @@ const duoCol=(S,q)=>S.rules.ffa?(S.seats[q].col||DUO_COLS[q]):duoTeam(q)===duoTe
 const duoFreeCol=()=>DUO_COLS.find(c=>!DUO.seats.some(s=>s.kind!=='open'&&s.col===c));
 const duoMode=R=>R.ffa?'Free-for-all':'2v2';
 const duoSeatName=s=>s.kind==='cpu'?`CPU ${s.diff==='easy'?'Easy':'Normal'}`:s.kind==='human'?s.name:'Open seat';
+// this seat's way back in from the menu (Rejoin): the room's code, the seat's key, and the match's other addresses,
+// in case it has moved to a new host
+function duoSaveRejoin(alt){
+  if(!DUO.code||!DUO.tok)return;
+  try{sessionStorage.setItem('duo-tok:'+DUO.code,DUO.tok)}catch(e){}
+  const o=duoLS(DUO_RJ_KEY),a=alt||duoAlt(),same=!!o&&o.code===DUO.code;
+  if(same&&o.tok===DUO.tok&&String(o.alt)===String(a)&&Date.now()-o.at<60e3)return;
+  duoLS(DUO_RJ_KEY,{code:DUO.code,tok:DUO.tok,at:Date.now(),since:same&&o.since||Date.now(),alt:a});
+}
+// where else the match may be: the host's own address and the heir's (the room's code is always tried first)
+function duoAlt(){
+  const S=DUO.snap,a=DUO.role==='host'?[DUO.vk&&DUO.vk.pid]:[DUO.hp,S&&S.heir&&S.heir.pid];
+  return [...new Set(a)].filter(x=>x&&x!==DUO.pid&&x!==peerId(DUO.code||''));
+}
 
 /* =====================================================================
    HOST
    ===================================================================== */
 async function duoHost(){
   netClose(true);duoQuit();
-  DUO.role='host';DUO.closing=false;DUO.me=0;
+  DUO.role='host';DUO.closing=false;DUO.took=false;DUO.me=0;DUO.ep=1;DUO.tok=duoNewTok();
   DUO.code=newCode();DUO.rules=duoLoadRules();DUO.invSeat={};DUO.phase='room';DUO.st=null;DUO.last=null;DUO.decks=[null,null,null,null];
-  DUO.seats=[{kind:'human',name:duoName(),user:myUser(),av:myAv(),tok:'host',ready:true,col:'blue'},duoOpen(),duoOpen(),duoOpen()];
+  DUO.seats=[{kind:'human',name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok,ready:true,col:'blue'},duoOpen(),duoOpen(),duoOpen()];
   duoBroadcast();
   try{await loadPeerJS()}catch(e){toast(e.message,4000);duoQuit();show('menu');return}
   if(DUO.role!=='host'||DUO.closing)return;
@@ -66,8 +98,8 @@ async function duoHost(){
 // the host's line to the matchmaking server, under the room's code (a 1v1 guest who types it is sent over here)
 function duoHostPeer(tries){
   const peer=new Peer(peerId(DUO.code));DUO.peer=peer;
-  peer.on('open',()=>{if(DUO.peer!==peer)return;DUO.hostAway=false;duoBroadcast()});
-  peer.on('connection',c=>{if(DUO.peer!==peer||DUO.closing)return;c.on('open',()=>duoGuestIn(c))});
+  peer.on('open',id=>{if(DUO.peer!==peer)return;DUO.pid=id;DUO.hostAway=false;duoSaveRejoin();duoBroadcast()});
+  peer.on('connection',duoIncoming);
   peer.on('error',err=>{
     if(DUO.peer!==peer)return;
     if(err.type==='unavailable-id'){
@@ -79,44 +111,60 @@ function duoHostPeer(tries){
   });
   peer.on('disconnected',()=>setTimeout(()=>{if(DUO.peer===peer&&!DUO.closing&&!peer.destroyed&&peer.disconnected)try{peer.reconnect()}catch(e){}},1500));
 }
+// a line another device opened to this one: a player joining (on the host), the others' standby lines (on the heir),
+// or an old host asking whether hosting moved on while it was cut off (anyone not hosting answers 'nothost')
+function duoIncoming(c){
+  c.on('open',()=>{
+    const meta=c.metadata||{};
+    if(!DUO.role||DUO.closing){try{c.close()}catch(e){}return}
+    if(DUO.role==='host'){duoGuestIn(c);return}
+    if(meta.sb&&duoHeirMe()){duoBind(c);c.seen=Date.now();DUO.sbIn.push(c);duoAskKey(c);return}
+    // (with where this game's host is, so an old host that was cut off can find the match)
+    try{c.send({t:'nothost',ep:DUO.ep,hp:DUO.hp})}catch(e){}
+    setTimeout(()=>{try{c.close()}catch(e){}},400);
+  });
+  c.on('error',()=>{});
+}
 function duoGuestIn(c){
   const meta=c.metadata||{},refuse=(m)=>{try{c.send(m)}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},600)};
   // someone typed this code into the 1v1 Join box: tell them it's a 2v2 room, and their game joins again as a 2v2 player
   if(!meta.duo){refuse({t:'duo'});return}
+  // a player who has seen a newer host: hosting moved on while this game was cut off. Send them there, and follow
+  if(Number.isInteger(meta.ep)&&meta.ep>DUO.ep&&typeof meta.hp==='string'&&meta.hp){refuse({t:'moved',ep:meta.ep,pid:meta.hp});duoDemote(meta.hp,meta.ep);return}
   const tok=typeof meta.tok==='string'?meta.tok.slice(0,20):'';
   if(tok&&DUO.kicked.has(tok)){refuse({t:'end',kick:1,why:'The host removed you from this room.'});return}
   let i=tok?DUO.seats.findIndex((s,k)=>k!==DUO.me&&s.kind==='human'&&s.tok===tok):-1;
-  // the same key while that player's line is still alive: another tab on the same device, so a new player
-  if(i>=0&&DUO.conns[i]&&DUO.conns[i].open&&!DUO.seats[i].away&&Date.now()-(DUO.conns[i].seenAt||0)<6000)i=-1;
+  // the same key while that player's line is still alive, from another tab on the same device: a new player
+  const was=i>=0?DUO.conns[i]:null;
+  if(was&&was.open&&was.tab!==String(meta.tab||'')&&!DUO.seats[i].away&&Date.now()-(was.seenAt||0)<6000)i=-1;
   const name=cleanName(meta.name)||'Player';
   if(i>=0){
-    const s=DUO.seats[i],was=s.away||s.bot;
-    const old=DUO.conns[i];if(old&&old!==c)try{old.close()}catch(e){}
+    const s=DUO.seats[i],back=s.away||s.bot;
+    if(DUO.conns[i]&&DUO.conns[i]!==c){const old=DUO.conns[i];delete DUO.conns[i];try{old.close()}catch(e){}}
     Object.assign(s,{name,user:netUser(meta.user),av:netAv(meta.av),away:false,awayAt:0,bot:false});
-    if(was){toast(`${name} is back`);sfx('banner')}
+    if(back){toast(`${name} is back`);sfx('banner')}
     if(DUO.st&&DUO.st.turn===i)DUO.turnN=-1; // a fresh turn timer for a player back on their turn
+    if(DUO.probe){const p=DUO.probe.pids,j=p.indexOf(c.peer);if(j>=0)p.splice(j,1)} // back here: no need to ask them
   }else{
-    if(DUO.phase!=='room'){refuse({t:'full',busy:true});return}
+    if(DUO.phase!=='room'){refuse({t:'full',busy:true,ep:DUO.ep});return}
     // a friend invited to a seat sits there if it's still free; anyone else takes the first open seat
-    const want=DUO.invSeat[frKey(netUser(meta.user)||'')];
-    i=want>0&&DUO.seats[want].kind!=='human'?want:[1,2,3].find(k=>DUO.seats[k].kind==='open');
-    if(i==null)i=[1,2,3].find(k=>DUO.seats[k].kind==='cpu'); // a player takes a CPU's seat
-    if(i==null){refuse({t:'full'});return}
+    const want=DUO.invSeat[frKey(netUser(meta.user)||'')],free=[0,1,2,3].filter(k=>k!==DUO.me);
+    i=Number.isInteger(want)&&want!==DUO.me&&DUO.seats[want]&&DUO.seats[want].kind!=='human'?want:free.find(k=>DUO.seats[k].kind==='open');
+    if(i==null)i=free.find(k=>DUO.seats[k].kind==='cpu'); // a player takes a CPU's seat
+    if(i==null){refuse({t:'full',ep:DUO.ep});return}
     const col=DUO.seats[i].kind==='cpu'&&DUO.seats[i].col||duoFreeCol(); // taking a CPU's seat takes its colour too
     DUO.seats[i]={kind:'human',name,user:netUser(meta.user),av:netAv(meta.av),tok:duoNewTok(),ready:false,col};
     toast(`${name} joined`);sfx('banner');
   }
-  // when we last heard from this link (kept on the link, so it follows the player when seats move)
-  DUO.conns[i]=c;c.seenAt=Date.now();
-  c.on('data',m=>{const k=duoSeatOf(c);if(k<0)return;c.seenAt=Date.now();duoFromGuest(k,m)});
-  c.on('close',()=>{const k=duoSeatOf(c);if(k>=0)duoSeatLost(k)});
-  c.on('error',()=>{});
-  try{c.send({t:'welcome',tok:DUO.seats[i].tok})}catch(e){}
+  DUO.conns[i]=c;duoLinkInfo(c,meta);duoBind(c);
+  try{c.send({t:'welcome',tok:DUO.seats[i].tok,ep:DUO.ep})}catch(e){}
   duoChanged();
 }
+// a player's line: when we last heard on it (kept on the link, so it follows the player when seats move), which tab,
+// and whether their game can take over hosting (hv) and runs on a computer (pc)
+const duoLinkInfo=(c,meta)=>{c.seenAt=Date.now();c.tab=String(meta.tab||'');c.hv=Number.isInteger(meta.hv)?meta.hv:0;c.pc=!!meta.pc};
 const duoSeatOf=c=>{for(const k in DUO.conns)if(DUO.conns[k]===c)return +k;return -1};
 function duoFromGuest(i,m){
-  if(!m||typeof m!=='object')return;
   const s=DUO.seats[i];
   switch(m.t){
     case 'ready':if(DUO.phase==='room'){s.ready=!!m.on;duoChanged()}break;
@@ -125,7 +173,13 @@ function duoFromGuest(i,m){
     case 'back':if(DUO.phase==='over')duoBackToRoom();break; // anyone can take the table back to the room after a match
     case 'deck':if(DUO.phase==='decks'&&!DUO.decks[i]&&validDeck(m.ids)){DUO.decks[i]=m.ids.slice();duoChanged()}break;
     case 'move':if(DUO.phase==='play'&&DUO.st.turn===i&&!s.bot&&m.n===DUO.st.n&&duoLegal(m.hi,m.cell))duoApply(m.hi,m.cell);break;
-    case 'away':duoSeatLost(i);break;
+    case 'sync':{
+      // just after a takeover: this player's own move, which the old host took but this host's copy missed
+      const L=m.last,st=DUO.st;
+      if(DUO.phase==='play'&&L&&L.p===i&&L.n===st.n+1&&st.turn===i&&!s.bot){const hi=st.h[i].indexOf(L.id);if(duoLegal(hi,L.cell))duoApply(hi,L.cell)}
+      break;
+    }
+    case 'away':duoSeatLost(i,true);break;
     case 'leave':
       // left on purpose: in the room the seat frees up; in a match a CPU plays their cards straight away (they can still come back)
       if(DUO.phase==='room'){DUO.seats[i]=duoOpen();toast(`${s.name} left`)}
@@ -134,9 +188,12 @@ function duoFromGuest(i,m){
       duoChanged();break;
   }
 }
-function duoSeatLost(i){
+// said: they told us they were going (their game closed), rather than the line just dropping
+function duoSeatLost(i,said){
   const s=DUO.seats[i],c=DUO.conns[i];delete DUO.conns[i];try{c&&c.close()}catch(e){}
   if(!s||s.kind!=='human'||i===DUO.me)return;
+  // if it was this host that got cut off, this player may be hosting the match now, or know who is (duoProbe)
+  if(!said&&c)duoProbeAdd(c.peer);
   if(DUO.phase==='room'){DUO.seats[i]=duoOpen();toast(`${s.name} left the room`);duoChanged();return}
   if(s.away)return;
   s.away=true;s.awayAt=Date.now();
@@ -219,12 +276,15 @@ function duoApply(hi,cell){
   duoChaosPick();
   if(duoFull(st)){
     // Sudden death: a draw plays again (after the last move's animation and a moment to see the board)
-    if(DUO.rules.suddenDeath&&st.sd<5&&duoDraw(st,DUO.rules)){
-      DUO.phase='sd';
-      setTimeout(()=>{if(DUO.role==='host'&&DUO.phase==='sd'&&DUO.st===st)duoRound(duoSdHands(st,DUO.rules,DUO.decks),(st.first+1)%4,st.sd+1)},duoAnimMs(DUO.last)+1800);
-    }else DUO.phase='over';
+    if(DUO.rules.suddenDeath&&st.sd<5&&duoDraw(st,DUO.rules)){DUO.phase='sd';duoSdNext(duoAnimMs(DUO.last)+1800)}
+    else DUO.phase='over';
   }
   duoChanged();
+}
+// Sudden death's next round, in ms (a new host carries on the wait)
+function duoSdNext(ms){
+  const st=DUO.st;DUO.sdAt=Date.now()+ms;
+  setTimeout(()=>{if(DUO.role==='host'&&DUO.phase==='sd'&&DUO.st===st)duoRound(duoSdHands(st,DUO.rules,DUO.decks),(st.first+1)%4,st.sd+1)},ms);
 }
 // the host's clock: CPUs move, dropped players' time runs out, the turn timer plays for a player who ran out
 function duoTick(){
@@ -264,8 +324,8 @@ function duoTick(){
   }
   if(next<Infinity)DUO.tickT=setTimeout(duoTick,Math.max(50,next+30));
 }
-// after every change: tell everyone, run the clock
-function duoChanged(){duoBroadcast();duoTick()}
+// after every change: pick who takes over if this host goes, tell everyone, run the clock
+function duoChanged(){duoPlan();duoBroadcast();duoTick()}
 // one player's snapshot: the other team's hands are hidden unless Open is on
 function duoSnap(i){
   const R=DUO.rules,now=Date.now();
@@ -278,25 +338,198 @@ function duoSnap(i){
     // the turn timer only runs for a player who's here (a dropped player's minute is the countdown above)
     timeLeft:DUO.phase==='play'&&DUO.rules.timer&&DUO.turnN===(DUO.st&&DUO.st.n)&&!DUO.seats[DUO.st.turn].away?Math.max(0,DUO.turnEnd-now):0,
     online:!!(DUO.peer&&DUO.peer.open),
+    // which host this is, its address, and who takes over if it goes (everyone keeps a standby line to them)
+    ep:DUO.ep,hp:DUO.pid,heir:DUO.vk?{seat:DUO.vk.heir,pid:DUO.vk.pid}:null,
     // the whole match, once it's over, for the Review
     rev:DUO.phase==='over'?DUO.moves:null};
 }
 function duoBroadcast(){
   if(DUO.role!=='host')return;
+  duoVaultSend(); // first, so the heir is never behind what the others have seen
   for(const k in DUO.conns){const c=DUO.conns[k];if(c&&c.open)try{c.send(duoSnap(+k))}catch(e){}}
   duoGot(duoSnap(DUO.me));
+}
+
+/* ---------- handing hosting on (duo-handoff.js) ---------- */
+// who takes over if this host goes (the heir) and who holds the key to its copy (the keepers): players who are here and
+// whose game can. A new key whenever they change, so a key someone held before never opens a newer copy
+function duoPlan(){
+  if(DUO.role!=='host'||DUO.closing)return;
+  const ok=i=>{const c=DUO.conns[i];return !!(c&&c.open&&c.hv>=DUO_HV)};
+  const heir=duoPickHeir(DUO.seats,DUO.me,ok,i=>DUO.conns[i].pc),pid=heir>=0?DUO.conns[heir].peer:'';
+  const keepers=duoPickKeepers(DUO.seats,DUO.me,heir,ok),vk=DUO.vk;
+  if(vk?vk.heir===heir&&vk.pid===pid&&String(vk.keepers)===String(keepers):heir<0)return;
+  // the old key and copy are let go of
+  if(vk)for(const k of [vk.heir,...vk.keepers]){const c=DUO.conns[k];if(c&&c.open)try{c.send({t:'key',kid:0});if(k===vk.heir)c.send({t:'vault',kid:0})}catch(e){}}
+  DUO.vaultS='';
+  if(heir<0){DUO.vk=null;return}
+  DUO.vk={heir,pid,keepers,kid:1+Math.floor(Math.random()*2**31),key:duoNewKey()};
+  // with no one else to hold the key, the heir keeps it (self)
+  for(const k of keepers.length?keepers:[heir])try{DUO.conns[k].send({t:'key',kid:DUO.vk.kid,key:DUO.vk.key,self:keepers.length?0:1})}catch(e){}
+}
+// the whole match, as the next host needs it (the clocks travel apart, duoClocksNow, so an unchanged match packs the same)
+function duoPack(){
+  return{z:DUO_Z,ep:DUO.ep,code:DUO.code,host:DUO.me,rules:DUO.rules,phase:DUO.phase,
+    seats:DUO.seats.map(s=>{const t={...s};delete t.awayAt;return t}),
+    decks:DUO.decks,st:DUO.st,last:DUO.last,moves:DUO.moves,kicked:[...DUO.kicked],invSeat:DUO.invSeat,
+    inv:[...INV.sent].filter(([,st])=>st==='sent').map(([k])=>k)};
+}
+// the clocks now, for a hand-off: the turn timer's time left, each dropped player's minute, Sudden death's next round
+function duoClocksNow(){
+  const now=Date.now(),tm={left:0,aw:{},n:DUO.st?DUO.st.n:-1,sd:0};
+  if(DUO.phase==='play'&&DUO.rules.timer&&DUO.st&&DUO.turnN===DUO.st.n)tm.left=Math.max(0,DUO.turnEnd-now);
+  DUO.seats.forEach((s,k)=>{if(s.away&&!s.bot)tm.aw[k]=Math.max(0,s.awayAt+DUO_GRACE*1000-now)});
+  if(DUO.phase==='sd')tm.sd=Math.max(0,DUO.sdAt-now);
+  return tm;
+}
+// the heir's locked copy, sent again whenever the match changes
+function duoVaultSend(){
+  const vk=DUO.vk,c=vk&&DUO.conns[vk.heir];
+  if(!c||!c.open)return;
+  const P=duoPack(),s=vk.kid+':'+JSON.stringify(P);
+  if(s===DUO.vaultS)return;
+  DUO.vaultS=s;
+  try{c.send({t:'vault',kid:vk.kid,...duoSeal(P,vk.key)})}catch(e){}
+}
+// the player who'd take over if this host left now ('' if no one can)
+function duoHeirName(){duoPlan();return DUO.vk?DUO.seats[DUO.vk.heir].name||'Another player':''}
+// this host leaves ('leave') or its game is closing ('away'): the match goes to the heir and the others follow it there.
+// false: no one can take it
+function duoHandOff(how){
+  if(DUO.role!=='host'||DUO.closing)return false;
+  duoPlan();
+  const vk=DUO.vk,c=vk&&DUO.conns[vk.heir];
+  if(!c||!c.open)return false;
+  const ep=DUO.ep+1;
+  try{c.send({t:'host',ep,how,state:duoPack(),tm:duoClocksNow()})}catch(e){return false}
+  for(const k in DUO.conns)if(+k!==vk.heir)try{DUO.conns[k].send({t:'moved',ep,seat:vk.heir,pid:vk.pid})}catch(e){}
+  duoSaveRejoin([vk.pid]); // the way back in, as a player of the new host
+  DUO.handed=true;DUO.closing=true;
+  [DUO.tickT,DUO.cpuT].forEach(clearTimeout);
+  return true;
+}
+// this game becomes the host: of the match the old host handed over (how 'leave' or 'away'), or of the copy the heir
+// unlocked after the host dropped ('lost'). tm: the clocks then. The standby lines become the players' lines to this host
+function duoAdopt(P,how,tm){
+  if(DUO.role!=='guest'||!P||P.z!==DUO_Z||!Array.isArray(P.seats)||P.seats.length!==4||P.code!==DUO.code)return;
+  const me=P.seats.findIndex(s=>s&&s.kind==='human'&&s.tok===DUO.tok);
+  if(me<0)return;
+  const now=Date.now(),grace=DUO_GRACE*1000,h=P.host,aw=tm&&tm.aw||{};
+  [DUO.retryT,DUO.joinT,DUO.goneT].forEach(clearTimeout);
+  Object.assign(DUO,{role:'host',took:true,ep:(P.ep|0)+1,me,rules:P.rules,phase:P.phase,decks:P.decks||[null,null,null,null],st:P.st,last:P.last,moves:P.moves||[],
+    kicked:new Set(P.kicked||[]),invSeat:P.invSeat||{},hostAway:false,moving:null,vault:null,keep:null,vk:null,vaultS:'',probe:null,
+    seed:rand32(),v:(DUO.snap&&DUO.snap.v||0)+1});
+  DUO.rng=mulberry32(DUO.seed);
+  DUO.seats=P.seats.map((s,k)=>{const t={...s};if(t.away&&!t.bot)t.awayAt=now-grace+Math.min(grace,aw[k]!=null?aw[k]:grace);return t});
+  // the old host: in the room their seat frees up; in a match a CPU plays their cards (at once if they left on purpose)
+  const hs=DUO.seats[h];
+  if(h!==me&&hs&&hs.kind==='human'){
+    if(DUO.phase==='room')DUO.seats[h]=duoOpen();
+    else Object.assign(hs,{away:true,bot:how==='leave',awayAt:how==='leave'?now-grace:now});
+  }
+  Object.assign(DUO.seats[me],{away:false,bot:false,awayAt:0,ready:true});
+  // cards this game chose that the old host never got
+  if(DUO.phase==='decks'&&!DUO.decks[me]&&DUO.myDeck)DUO.decks[me]=DUO.myDeck.slice();
+  // the turn timer carries on with the time it had
+  DUO.turnN=-1;
+  if(DUO.phase==='play'&&DUO.rules.timer&&tm&&tm.left>0&&tm.n===DUO.st.n){DUO.turnN=DUO.st.n;DUO.turnEnd=now+Math.max(DUO_RESUME_MIN,tm.left)}
+  if(DUO.phase==='sd')duoSdNext(Math.max(1200,tm&&tm.sd||0));
+  // the players' standby lines are their lines to this host now; the line to the old host goes
+  const old=DUO.conn,sb=DUO.sb;DUO.conn=null;DUO.sb=null;
+  try{old&&old.close()}catch(e){}try{sb&&sb.close()}catch(e){}
+  DUO.conns={};
+  for(const c of DUO.sbIn.splice(0)){
+    const meta=c.metadata||{},k=DUO.seats.findIndex((s,i)=>i!==me&&s.kind==='human'&&s.tok===meta.tok);
+    if(k<0||!c.open||DUO.conns[k]){try{c.close()}catch(e){}continue}
+    DUO.conns[k]=c;duoLinkInfo(c,meta);
+    Object.assign(DUO.seats[k],{away:false,awayAt:0,bot:false});
+    try{c.send({t:'welcome',tok:DUO.seats[k].tok,ep:DUO.ep})}catch(e){}
+  }
+  // the old host's invites still lead here: the seats show who's invited
+  (Array.isArray(P.inv)?P.inv:[]).forEach(k=>{if(typeof k==='string'&&!INV.sent.has(k))INV.sent.set(k,'sent')});
+  duoClaimCode();
+  duoChanged();
+  toast(how==='lost'?'The host dropped out, so you\'re the host now.':'You\'re the host now.',3000);sfx('banner');
+}
+// a host that took over takes the room's code too, once the old host's line lets go of it, so the code, the invite link
+// and the old host's invites still lead to the match (until then players reach it at its own address)
+function duoClaimCode(){
+  if(DUO.role!=='host'||DUO.closing||!DUO.took||!DUO.code)return;
+  const p=DUO.codePeer;
+  if(p&&!p.destroyed)return; // ours, or still asking (a taken code destroys it: asked again soon)
+  const peer=new Peer(peerId(DUO.code));DUO.codePeer=peer;
+  peer.on('connection',duoIncoming);
+  peer.on('open',()=>{const p=DUO.probe,j=p?p.pids.indexOf(peer.id):-1;if(j>=0)p.pids.splice(j,1)});
+  // taken: the old host's line hasn't let go yet, or another player is hosting too. Asked again soon, and the holder is
+  // asked who it is (duoProbe): an older host steps down, a newer one (or another as new, holding the code) is joined
+  peer.on('error',err=>{if(err.type==='unavailable-id'&&DUO.codePeer===peer){setTimeout(duoClaimCode,1200);duoProbeAdd(peerId(DUO.code))}});
+  peer.on('disconnected',()=>setTimeout(()=>{if(DUO.codePeer===peer&&!DUO.closing&&!peer.destroyed&&peer.disconnected)try{peer.reconnect()}catch(e){}},1500));
+}
+// A player's line dropped. If it was this host that got cut off, the heir may have taken over: so the players it lost
+// are asked, one every few seconds for a few minutes, until they're back here. One that hosts the match now welcomes
+// this game; one that plays for a newer host says where it is. Either way this game becomes a player there (duoDemote)
+function duoProbeAdd(pid){
+  if(!pid||DUO.role!=='host')return;
+  const p=DUO.probe||(DUO.probe={pids:[],i:0,peer:null,c:null,at:0,until:0});
+  if(!p.pids.includes(pid))p.pids.push(pid);
+  p.until=Date.now()+180e3;
+  duoProbe();
+}
+function duoProbe(){
+  const p=DUO.probe;
+  if(!p)return;
+  if(DUO.role!=='host'||DUO.closing||Date.now()>p.until||!p.pids.length){duoProbeEnd();return}
+  if(!p.peer||p.peer.destroyed){p.peer=duoNewPeer();return}
+  // one question at a time, every few seconds
+  if(!p.peer.open||p.c&&p.c.open||Date.now()-p.at<6000)return;
+  const c=p.c;p.c=null;try{c&&c.close()}catch(e){}
+  p.at=Date.now();p.c=p.peer.connect(p.pids[p.i++%p.pids.length],{reliable:true,metadata:duoHello({probe:1})});duoBind(p.c);
+}
+function duoProbeEnd(){const p=DUO.probe;DUO.probe=null;if(p){try{p.c&&p.c.close()}catch(e){}try{p.peer&&p.peer.destroy()}catch(e){}}}
+// on a probe line: a newer host welcomes this game, or a player says where its (newer) host is
+function duoProbeData(c,m){
+  // (a host as new as this one that holds the room's code wins: the code is the room)
+  if((m.t==='welcome'||m.t==='snap')&&Number.isInteger(m.ep)&&(m.ep>DUO.ep||m.ep===DUO.ep&&c.peer===peerId(DUO.code))){duoDemote(c.peer,m.ep,m,c);return}
+  if(m.t==='full'&&Number.isInteger(m.ep)&&m.ep>DUO.ep){
+    // the room moved on to a newer host while this game was cut off, and has no seat left for it
+    duoQuit();show('menu');modal('<h2>Room moved on</h2><p>Your connection dropped and another player took over hosting. Their room is full now.</p>',[{label:'OK',cls:'primary'}]);
+    return;
+  }
+  if(m.t!=='nothost')return;
+  DUO.probe.c=null;try{c.close()}catch(e){}
+  if(Number.isInteger(m.ep)&&m.ep>DUO.ep&&typeof m.hp==='string'&&m.hp)duoDemote(m.hp,m.ep);
+}
+// hosting moved on while this game was cut off: it becomes a player of the new host (whose board is the real one).
+// m and line: the new host's welcome and the probe line it came on, which becomes this game's line to it
+function duoDemote(pid,ep,m,line){
+  if(DUO.role!=='host')return;
+  const p=DUO.probe,lines=Object.values(DUO.conns),mine=[DUO.peer,DUO.codePeer];
+  line=m&&p&&line===p.c?line:null;
+  [DUO.tickT,DUO.cpuT].forEach(clearTimeout);
+  Object.assign(DUO,{role:'guest',took:false,ep,hp:pid,conns:{},vk:null,vaultS:'',probe:null,codePeer:null,peer:null,conn:null,
+    hostAway:!line,hostAwayAt:Date.now(),hostLast:Date.now(),addrI:0,moving:null});
+  // this host's players follow (any copy or key it gave them is out of date: its heir mustn't take over with it), then the
+  // old lines go, and the room's code with them so the new host can take it (a moment first for the message to get out)
+  for(const c of lines)try{c.send({t:'moved',ep,pid,seat:-1})}catch(e){}
+  setTimeout(()=>{lines.forEach(c=>{try{c.close()}catch(e){}});mine.forEach(x=>{try{x&&x.destroy()}catch(e){}})},400);
+  toast('Your connection dropped, so another player took over hosting. You\'re back in as a player.',4000);
+  if(line){DUO.peer=p.peer;DUO.pid=p.peer.id;DUO.conn=line;duoFromHost(m);return}
+  if(p){const c=p.c;p.c=null;try{c&&c.close()}catch(e){}try{p.peer&&p.peer.destroy()}catch(e){}}
+  if(DUO.snap)DUO.goneT=setTimeout(duoHostGone,DUO_HOST_WAIT*1000);
+  duoConnect();
 }
 
 /* =====================================================================
    GUEST
    ===================================================================== */
-// tok: the rejoin key from the menu's Rejoin button; otherwise this tab's own key (sessionStorage), so a reload gets the seat back
-async function duoJoin(code,tok){
+// tok: the rejoin key from the menu's Rejoin button; otherwise this tab's own key (sessionStorage), so a reload gets the seat back.
+// alt: the match's other addresses (it may have moved to a new host)
+async function duoJoin(code,tok,alt){
   code=String(code||'').toUpperCase();
   duoQuit();
   DUO.role='guest';DUO.code=code;DUO.closing=false;
   try{tok=tok||sessionStorage.getItem('duo-tok:'+code)||''}catch(e){tok=tok||''}
-  DUO.tok=tok;
+  DUO.tok=tok;DUO.addrs=[peerId(code),...(Array.isArray(alt)?alt.filter(a=>typeof a==='string'&&a):[])];DUO.addrI=0;
   if(!$('#scr-online').classList.contains('on')&&!$('#scr-duo').classList.contains('on'))openOnline(code);
   onPanels('none');onStatus('<span class="spin"></span>Joining Crossroads game '+esc(code)+'…');
   try{await loadPeerJS()}catch(e){onPanels('choose');onStatus(esc(e.message),true);DUO.role=null;return}
@@ -304,36 +537,108 @@ async function duoJoin(code,tok){
   DUO.joinT=setTimeout(()=>{if(DUO.role==='guest'&&!DUO.snap){duoQuit();onPanels('choose');onStatus('Couldn\'t reach game '+esc(code)+'. Check the code and try again.',true)}},20000);
   duoConnect();
 }
-function duoConnect(){
-  clearTimeout(DUO.retryT);
-  const old=DUO.peer;DUO.peer=null;try{DUO.conn&&DUO.conn.close()}catch(e){}try{old&&old.destroy()}catch(e){}
-  const peer=new Peer();DUO.peer=peer;
-  peer.on('open',()=>{
-    if(DUO.peer!==peer)return;
-    const c=peer.connect(peerId(DUO.code),{reliable:true,metadata:{duo:1,name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok}});DUO.conn=c;
-    c.on('open',()=>{if(DUO.conn===c){DUO.hostLast=Date.now()}});
-    c.on('data',m=>{if(DUO.conn===c){DUO.hostLast=Date.now();duoFromHost(m)}});
-    c.on('close',()=>{if(DUO.conn===c)duoHostLost()});
-    c.on('error',()=>{});
+// what this game tells the other end when it opens a line (sb: a standby line to the heir, probe: an old host asking)
+function duoHello(extra){
+  return{duo:1,name:duoName(),user:myUser(),av:myAv(),tok:DUO.tok,tab:DUO.tab,hv:DUO_HV,ep:DUO.ep,hp:DUO.hp,
+    pc:document.body.classList.contains('pc'),...extra};
+}
+// this game's own line to the matchmaking server. It's kept across reconnects, so the standby lines on it stay up and the
+// heir keeps its address; a new one only when it has been off the server a while. then: once it's on
+function duoEnsurePeer(then){
+  const p=DUO.peer;
+  if(p&&!p.destroyed&&p.open){then();return}
+  DUO.peerThen=then;
+  if(p&&!p.destroyed&&Date.now()-(p.at||0)<10000)return; // still getting on (or back on) the server
+  try{p&&p.destroy()}catch(e){}
+  DUO.peer=duoNewPeer();
+}
+// a player's own line (also an old host's line for asking the heir, which stays its line if it becomes a player)
+function duoNewPeer(){
+  const peer=new Peer();peer.at=Date.now();
+  const mine=()=>DUO.peer===peer||!!DUO.probe&&DUO.probe.peer===peer;
+  peer.on('open',id=>{
+    if(DUO.peer===peer){DUO.pid=id;const f=DUO.peerThen;DUO.peerThen=null;f&&f()}
+    else if(mine())duoProbe();
   });
-  peer.on('error',err=>{
-    if(DUO.peer!==peer)return;
-    if(err.type==='peer-unavailable'&&!DUO.snap){clearTimeout(DUO.joinT);duoQuit();duoLS(DUO_RJ_KEY,null);onPanels('choose');onStatus('No game found with that code.',true);return}
-    duoHostLost();
+  peer.on('connection',duoIncoming);
+  peer.on('error',err=>{if(DUO.peer===peer)duoPeerError(err)});
+  peer.on('disconnected',()=>{peer.at=Date.now();setTimeout(()=>{if(mine()&&!DUO.closing&&!peer.destroyed&&peer.disconnected)try{peer.reconnect()}catch(e){}},1500)});
+  return peer;
+}
+// knock on the host's door: its address, then the room's code (a new host takes it over), then the other addresses
+function duoConnect(){
+  DUO.tryAt=Date.now();
+  duoEnsurePeer(()=>{
+    if(DUO.role!=='guest'||DUO.closing)return;
+    const to=duoNextAddr(),old=DUO.conn;DUO.conn=null;try{old&&old.close()}catch(e){}
+    const c=DUO.peer.connect(to,{reliable:true,metadata:duoHello()});c.at=Date.now();DUO.conn=c;duoBind(c);
+    c.on('open',()=>{if(DUO.conn===c)DUO.hostLast=Date.now()});
   });
 }
-function duoFromHost(m){
+function duoNextAddr(){
+  const sb=DUO.sb&&DUO.sb.peer; // already a line there
+  const a=[...new Set(DUO.snap?[DUO.hp,peerId(DUO.code),...duoAlt()]:DUO.addrs)].filter(x=>x&&x!==DUO.pid&&x!==sb);
+  return a.length?a[DUO.addrI++%a.length]:peerId(DUO.code);
+}
+function duoPeerError(err){
+  if(DUO.role!=='guest'||DUO.closing)return;
+  const to=(/peer (\S+)$/.exec(err&&err.message||'')||[])[1];
+  if(err.type==='peer-unavailable'){
+    if(DUO.sb&&to===DUO.sb.peer){DUO.sb=null;return}
+    if(!DUO.conn||to!==DUO.conn.peer)return;
+    if(!DUO.snap){
+      // joining: try the match's other addresses before giving up
+      if(DUO.addrI<DUO.addrs.length){duoConnect();return}
+      clearTimeout(DUO.joinT);duoQuit();duoLS(DUO_RJ_KEY,null);onPanels('choose');onStatus('No game found with that code.',true);return;
+    }
+  }
+  if(!DUO.conn||!DUO.conn.open)duoHostLost();
+}
+// every line, either side: what came in and what dropped, by what the line is to this game now
+function duoBind(c){
+  if(c.bound)return;c.bound=true;
+  c.on('data',m=>duoOnData(c,m));
+  c.on('close',()=>duoOnClose(c));
+  c.on('error',()=>{});
+}
+function duoOnData(c,m){
   if(!m||typeof m!=='object')return;
+  if(DUO.role==='host'){
+    const k=duoSeatOf(c);
+    if(k>=0){c.seenAt=Date.now();duoFromGuest(k,m)}
+    else if(DUO.probe&&c===DUO.probe.c)duoProbeData(c,m);
+    return;
+  }
+  if(DUO.role!=='guest')return;
+  if(c===DUO.conn){DUO.hostLast=Date.now();duoFromHost(m);return}
+  if(c===DUO.sb){duoFromSb(c,m);return}
+  if(DUO.sbIn.includes(c)){c.seen=Date.now();duoFromKeeper(c,m)}
+}
+function duoOnClose(c){
+  if(DUO.role==='host'){
+    const k=duoSeatOf(c);
+    if(k>=0)duoSeatLost(k);else if(DUO.probe&&c===DUO.probe.c)DUO.probe.c=null;
+    return;
+  }
+  if(DUO.role!=='guest')return;
+  if(c===DUO.conn)duoHostLost();
+  else if(c===DUO.sb)DUO.sb=null;
+  else{const i=DUO.sbIn.indexOf(c);if(i>=0)DUO.sbIn.splice(i,1)}
+}
+function duoFromHost(m){
   switch(m.t){
-    case 'welcome':
-      DUO.tok=String(m.tok||'').slice(0,20);
-      try{sessionStorage.setItem('duo-tok:'+DUO.code,DUO.tok)}catch(e){}
-      {const o=duoLS(DUO_RJ_KEY);duoLS(DUO_RJ_KEY,{code:DUO.code,tok:DUO.tok,at:Date.now(),since:o&&o.code===DUO.code&&o.since||Date.now()})}
+    case 'welcome':{
+      if(Number.isInteger(m.ep)&&m.ep<DUO.ep)return; // a host that was taken over from and doesn't know it yet
+      const moved=Number.isInteger(m.ep)&&m.ep>DUO.ep;
+      if(moved){DUO.ep=m.ep;DUO.keep=null;DUO.vault=null} // a new host: it sends its own key and copy
+      DUO.tok=String(m.tok||'').slice(0,20);DUO.moving=null;
+      duoSaveRejoin();
       clearTimeout(DUO.joinT);
       clearTimeout(DUO.goneT);
-      if(DUO.hostAway){DUO.hostAway=false;toast('Back in the game');sfx('banner')}
+      if(DUO.hostAway){DUO.hostAway=false;if(!moved){toast('Back in the game');sfx('banner')}}
       break;
-    case 'snap':if(Number.isInteger(m.you)&&m.you>=0&&m.you<4&&Array.isArray(m.seats))duoGot(m);break;
+    }
+    case 'snap':if(Number.isInteger(m.you)&&m.you>=0&&m.you<4&&Array.isArray(m.seats)&&!(Number.isInteger(m.ep)&&m.ep<DUO.ep))duoGot(m);break;
     case 'full':{
       const msg=m.busy?`Game ${DUO.code} is in the middle of a match.`:`Game ${DUO.code} already has four players.`;
       const was=!!DUO.snap;duoLS(DUO_RJ_KEY,null);duoQuit();
@@ -346,16 +651,105 @@ function duoFromHost(m){
       modal(`<h2>${m.kick?'Removed':'Match over'}</h2><p>${esc(String(m.why||'The host closed the room.').slice(0,120))}</p>`,[{label:'OK',cls:'primary'}]);
       break;
     }
+    // the key to the heir's copy (a keeper), or let go of it (kid 0)
+    case 'key':DUO.keep=m.kid&&typeof m.key==='string'?{kid:m.kid,key:m.key,self:!!m.self}:null;break;
+    // the locked copy (the heir)
+    case 'vault':DUO.vault=m.kid&&typeof m.n==='string'&&typeof m.d==='string'?{kid:m.kid,n:m.n,d:m.d}:null;break;
+    // the host is leaving and hands this game the match
+    case 'host':duoAdopt(m.state,m.how==='leave'?'leave':'away',m.tm);break;
+    // the host is leaving and the heir takes over: follow it there (the standby line, if it's up)
+    case 'moved':{
+      const pid=String(m.pid||'');if(!pid)break;
+      if(!DUO.snap){DUO.addrs=[pid,...DUO.addrs];DUO.addrI=0;setTimeout(()=>{if(DUO.role==='guest'&&!DUO.snap)duoConnect()},300);break}
+      DUO.moving={seat:m.seat,pid,ep:m.ep|0};DUO.hp=pid;
+      // a host stepping down to a newer one (seat -1): its match is out of date, so its copy and key are dropped (its
+      // heir mustn't take over with them). A host leaving keeps them: the key is the heir's way in if the hand-off is lost
+      if(!(m.seat>=0)){DUO.vault=null;DUO.keep=null}
+      duoStandby(true);duoRender();
+      break;
+    }
+    // joining, at an address that isn't hosting (yet): try again in a moment
+    case 'nothost':if(!DUO.snap)setTimeout(()=>{if(DUO.role==='guest'&&!DUO.snap)duoConnect()},1500);break;
   }
 }
-// lost the host: keep knocking on the room's code; a host that reloads comes back under the same code
+// the standby line to the heir (or to the player taking over after the host left), opened while there is one that isn't
+// this game, so a new host is one step away. Opened again if it drops or never opens
+function duoStandby(now){
+  if(DUO.role!=='guest'||DUO.closing)return;
+  const S=DUO.snap,h=DUO.moving||S&&S.heir;
+  let pid=h&&S&&h.seat!==S.you?String(h.pid||''):'';
+  if(pid&&DUO.conn&&DUO.conn.peer===pid)pid=''; // this game's line to the host already goes there
+  const c=DUO.sb;
+  if(c&&(c.peer!==pid||!c.open&&Date.now()-c.at>8000)){
+    DUO.sb=null;
+    // the host picked someone else while this game still hears it: the old heir's copy is out of date, so it mustn't
+    // take over with it (it may have lost the host and be asking the keepers for the key)
+    if(c.open&&c.peer!==pid&&!DUO.hostAway){try{c.send({t:'nokey',stale:1})}catch(e){}setTimeout(()=>{try{c.close()}catch(e){}},300)}
+    else try{c.close()}catch(e){}
+  }
+  if(!pid||DUO.sb||!DUO.peer||!DUO.peer.open||!now&&Date.now()-(DUO.sbAt||0)<2500)return;
+  DUO.sbAt=Date.now();
+  const n=DUO.peer.connect(pid,{reliable:true,metadata:duoHello({sb:1})});n.at=Date.now();DUO.sb=n;duoBind(n);
+  n.on('open',()=>{if(DUO.sb===n&&DUO.hostAway)try{n.send({t:'lost'})}catch(e){}});
+}
+const duoHeirMe=()=>{const S=DUO.snap;return !!(S&&S.heir&&S.heir.seat===S.you)};
+// on the standby line: the heir asking for the key, or (once it has taken over) the new host itself
+function duoFromSb(c,m){
+  if(m.t==='key?'){
+    // only for the heir's copy, and only once this game has lost the host too
+    const k=DUO.keep;
+    try{c.send(k&&!k.self&&k.kid===m.kid&&DUO.hostAway?{t:'key',kid:k.kid,key:k.key}:{t:'nokey'})}catch(e){}
+    return;
+  }
+  if((m.t==='welcome'||m.t==='snap')&&Number.isInteger(m.ep)&&(m.ep>DUO.ep||m.ep===DUO.ep&&c.peer===DUO.hp)){duoSwitchTo(c);duoFromHost(m)}
+}
+// this line becomes the line to the host (the heir took over), and the old one goes
+function duoSwitchTo(c){
+  const old=DUO.conn;DUO.conn=c;DUO.sb=null;DUO.hostLast=Date.now();DUO.hp=c.peer;DUO.moving=null;clearTimeout(DUO.retryT);
+  try{old&&old!==c&&old.close()}catch(e){}
+  // the last move this game saw, in case the new host's copy is one move behind it
+  const S=DUO.snap;
+  if(S&&S.phase==='play'&&S.last)try{c.send({t:'sync',last:S.last})}catch(e){}
+}
+// on the heir, a keeper's standby line: it lost the host too; here's the key (it has lost the host); or not (it hasn't)
+function duoFromKeeper(c,m){
+  if(m.t==='lost'){duoAskKey(c);return}
+  if(m.t==='nokey'){c.agreed=false;if(m.stale)DUO.vault=null;return} // stale: the host is there and picked another heir
+  if(m.t==='key'&&DUO.vault&&m.kid===DUO.vault.kid&&typeof m.key==='string'){c.agreed=true;DUO.vkey=m.key;duoTakeOver()}
+}
+// the heir lost the host: ask the keepers for the key (each says no until it has lost the host as well)
+function duoAskKey(only){
+  if(DUO.role!=='guest'||!DUO.hostAway||!DUO.vault||DUO.keep&&DUO.keep.self)return;
+  for(const c of only?[only]:DUO.sbIn)if(c.open)try{c.send({t:'key?',kid:DUO.vault.kid})}catch(e){}
+}
+// The heir unlocks its copy and becomes the host, once every keeper still answering has lost the host too: a host that
+// still has a player isn't gone, and a second host would split the table. (A keeper silent a while doesn't count: its
+// game may be asleep.) The heir's own line must be on the server, so the players can reach it
+function duoTakeOver(){
+  if(DUO.role!=='guest'||!DUO.hostAway||!DUO.vault||!DUO.peer||!DUO.peer.open)return false;
+  const self=!!(DUO.keep&&DUO.keep.self),key=self?DUO.keep.key:DUO.vkey,now=Date.now();
+  if(!key||!self&&!DUO.sbIn.every(c=>!c.open||c.agreed||now-(c.seen||0)>DUO_LOST_MS))return false;
+  const P=duoUnseal(DUO.vault,key);
+  if(!P)return false;
+  duoAdopt(P,'lost',duoClocksFrom(DUO.snap,DUO.hostLast-DUO.snapAt));
+  return true;
+}
+// lost the host: keep knocking on its door and keep the standby line to the heir up; the heir asks the keepers for the
+// key and takes over. Only when no one can does the match end, after DUO_HOST_WAIT
 function duoHostLost(){
   if(DUO.role!=='guest'||DUO.closing)return;
   if(!DUO.snap){return} // still joining: the join timeout reports it
-  if(!DUO.hostAway){DUO.hostAway=true;DUO.hostAwayAt=Date.now();duoRender();clearTimeout(DUO.goneT);DUO.goneT=setTimeout(duoHostGone,DUO_HOST_WAIT*1000)}
-  clearTimeout(DUO.retryT);DUO.retryT=setTimeout(()=>{if(DUO.role==='guest'&&DUO.hostAway&&!DUO.closing)duoConnect()},3000);
+  if(!DUO.hostAway){
+    DUO.hostAway=true;DUO.hostAwayAt=Date.now();duoRender();
+    clearTimeout(DUO.goneT);DUO.goneT=setTimeout(duoHostGone,DUO_HOST_WAIT*1000);
+    if(DUO.sb&&DUO.sb.open)try{DUO.sb.send({t:'lost'})}catch(e){} // a keeper: the heir can have the key now
+    DUO.vkey='';DUO.sbIn.forEach(c=>c.agreed=false); // the heir asks afresh
+    duoAskKey();
+    if(duoTakeOver())return;
+  }
+  clearTimeout(DUO.retryT);DUO.retryT=setTimeout(()=>{if(DUO.role==='guest'&&DUO.hostAway&&!DUO.closing){duoConnect();duoStandby()}},1500);
 }
-// the host didn't come back: the match is over (the host's device ran it)
+// the host didn't come back and no one could take over: the match is over
 function duoHostGone(){
   if(DUO.role!=='guest'||!DUO.hostAway)return;
   duoLS(DUO_RJ_KEY,null);duoQuit();show('menu');
@@ -363,7 +757,7 @@ function duoHostGone(){
 }
 function duoSend(m){try{DUO.conn&&DUO.conn.open&&DUO.conn.send(m)}catch(e){}}
 
-/* ---------- the link, both sides ---------- */
+/* ---------- the links, both sides ---------- */
 setInterval(()=>{
   if(!DUO.role||DUO.closing)return;
   const now=Date.now();
@@ -371,60 +765,85 @@ setInterval(()=>{
     for(const k in DUO.conns){const c=DUO.conns[k];if(!c)continue;try{c.open&&c.send({t:'ping'})}catch(e){}if(now-(c.seenAt||0)>15000)duoSeatLost(+k)}
     // the countdowns on everyone's screen
     if((DUO.phase==='play'||DUO.phase==='decks')&&DUO.seats.some(s=>s.away&&!s.bot))duoBroadcast();
-  }else if(DUO.conn&&DUO.conn.open){
-    duoSend({t:'ping'});
-    if(now-DUO.hostLast>15000)duoHostLost();
+    duoProbe();duoClaimCode();
+    return;
   }
-  if(DUO.role==='guest'&&DUO.hostAway&&$('#scr-duo').classList.contains('on'))duoNetBar();
+  if(DUO.conn&&DUO.conn.open){duoSend({t:'ping'});if(now-DUO.hostLast>DUO_LOST_MS)duoHostLost()}
+  else if(DUO.snap&&!DUO.hostAway&&now-DUO.hostLast>DUO_LOST_MS)duoHostLost();
+  else if(!DUO.snap&&DUO.conn&&!DUO.conn.open&&now-DUO.conn.at>8000)duoConnect(); // joining: an address that doesn't answer
+  if(DUO.hostAway){
+    if(now-DUO.tryAt>=3000)duoConnect();
+    duoAskKey();duoTakeOver();
+  }
+  if(DUO.role==='guest'){
+    duoStandby();
+    if(DUO.sb&&DUO.sb.open)try{DUO.sb.send({t:'ping'})}catch(e){}
+    if(DUO.hostAway&&$('#scr-duo').classList.contains('on'))duoNetBar();
+  }
 },3000);
 window.addEventListener('pagehide',()=>{
   if(!DUO.role||DUO.closing)return;
   if(DUO.role==='guest')duoSend({t:'away'});
-  else duoEndAll(DUO_HOST_LEFT); // the host closed or reloaded the game: it's over for everyone
+  // the host's game is closing or reloading: the match goes to the heir (it only ends when no one can take it)
+  else if(!duoHandOff('away')){duoEndAll(DUO_HOST_LEFT);duoLS(DUO_RJ_KEY,null)}
 });
+// back from the browser's page cache after handing the match on: go back in, as a player
+window.addEventListener('pageshow',e=>{if(e.persisted&&DUO.handed){duoQuit();duoRejoin()}});
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden||!DUO.role||DUO.closing)return;
   if(DUO.role==='host'){
-    if(!DUO.peer||DUO.peer.destroyed)duoHostPeer(0);else if(DUO.peer.disconnected)try{DUO.peer.reconnect()}catch(e){}
-    duoTick();
-  }else if(!DUO.conn||!DUO.conn.open||Date.now()-DUO.hostLast>8000)duoHostLost();
+    if(!DUO.peer||DUO.peer.destroyed){if(DUO.took)duoEnsurePeer(()=>{});else duoHostPeer(0)}
+    else if(DUO.peer.disconnected)try{DUO.peer.reconnect()}catch(e){}
+    duoProbe();duoTick();
+  }else if(!DUO.conn||!DUO.conn.open||Date.now()-DUO.hostLast>DUO_LOST_MS)duoHostLost();
 });
 // the host tells everyone the match is over (guests show why and go back to the menu)
 function duoEndAll(why){for(const k in DUO.conns)try{DUO.conns[k].send({t:'end',why})}catch(e){}}
-// leave everything behind: used before a new game and when the menu opens. A host leaving ends the match for everyone.
+// leave everything behind: used before a new game and when the menu opens. A host hands the match on; only when no one
+// can take it does it end for everyone
 function duoQuit(){
-  const told=DUO.role==='host'&&Object.keys(DUO.conns).length>0;
-  if(DUO.role==='host'&&!DUO.closing)duoEndAll(DUO_HOST_LEFT);
+  if(DUO.role==='host'&&!DUO.closing&&!duoHandOff('leave')){duoEndAll(DUO_HOST_LEFT);duoLS(DUO_RJ_KEY,null)}
+  const told=DUO.role==='host'&&Object.keys(DUO.conns).length>0,handed=DUO.handed;
   DUO.closing=true;
   [DUO.tickT,DUO.cpuT,DUO.retryT,DUO.joinT,DUO.goneT].forEach(clearTimeout);
   // a host's goodbye gets a moment to reach everyone before the links close
-  const conns=Object.values(DUO.conns),conn=DUO.conn,peer=DUO.peer;
-  const shut=()=>{conns.forEach(c=>{try{c.close()}catch(e){}});try{conn&&conn.close()}catch(e){}try{peer&&peer.destroy()}catch(e){}};
+  const p=DUO.probe,links=[...Object.values(DUO.conns),DUO.conn,DUO.sb,...DUO.sbIn,p&&p.c].filter(Boolean),peers=[DUO.peer,DUO.codePeer,p&&p.peer].filter(Boolean);
+  const shut=()=>{links.forEach(c=>{try{c.close()}catch(e){}});peers.forEach(x=>{try{x.destroy()}catch(e){}})};
   if(told)setTimeout(shut,400);else shut();
-  Object.assign(DUO,{role:null,code:null,peer:null,conn:null,conns:{},kicked:new Set(),seats:[],st:null,last:null,phase:'room',snap:null,hostAway:false,
-    sel:null,pending:false,shownN:-1,resultV:-1,picking:false,deckSent:false,turnN:-1,animQ:[],boardSt:null,qN:-1,animating:false,moves:[]});
-  DUO.gen++;if(INV.code&&!NET.role)invCancel(); // a hosted room's invites go down with it (pulse.js)
+  Object.assign(DUO,{role:null,code:null,peer:null,pid:'',conn:null,conns:{},kicked:new Set(),seats:[],st:null,last:null,phase:'room',snap:null,hostAway:false,
+    sel:null,pending:false,shownN:-1,resultV:-1,picking:false,deckSent:false,turnN:-1,animQ:[],boardSt:null,qN:-1,animating:false,moves:[],
+    ep:0,tok:'',codePeer:null,vk:null,vaultS:'',probe:null,handed:false,took:false,hp:'',addrs:[],addrI:0,sb:null,sbIn:[],vault:null,keep:null,vkey:'',moving:null,myDeck:null,deckEp:0});
+  DUO.gen++;
+  // a hosted room's invites go down with it (pulse.js); a room handed on keeps them, as they still lead to it
+  if(INV.code&&!NET.role){if(handed){INV.sent.clear();INV.code=''}else invCancel()}
   $('#duoNet')&&$('#duoNet').classList.add('hidden');
 }
 // the Leave / Menu button
 function duoLeave(){
   // a guest only knows the phase from the host's last snapshot
   const host=DUO.role==='host',ph=host?DUO.phase:DUO.snap&&DUO.snap.phase,inMatch=ph==='decks'||ph==='play';
+  const heir=host?duoHeirName():'',others=host&&DUO.seats.some((s,i)=>i!==DUO.me&&s.kind==='human'&&!s.away);
+  const ffa=host?DUO.rules.ffa:!!(DUO.snap&&DUO.snap.rules.ffa);
   const go=()=>{
     if(host){
-      duoEndAll(inMatch?'The host ended the match.':'The host closed the room.');DUO.closing=true;
+      // the match goes on with a new host; only when no one can take it does it end for everyone
+      if(!duoHandOff('leave')){duoEndAll(inMatch?'The host ended the match.':'The host closed the room.');DUO.closing=true;duoLS(DUO_RJ_KEY,null)}
+      // a match keeps the Rejoin button on the menu; a room doesn't
+      if(!inMatch)duoLS(DUO_RJ_KEY,null);
       setTimeout(()=>{duoQuit();show('menu')},250);
     }else{
       duoSend({t:'leave'});
-      // a match keeps the Rejoin button on the menu; a room doesn't
       if(!inMatch)duoLS(DUO_RJ_KEY,null);
       setTimeout(()=>{duoQuit();show('menu')},250);
     }
   };
-  if(!inMatch&&!(host&&DUO.seats.some((s,i)=>i!==DUO.me&&s.kind==='human'))){go();return}
-  modal(host?`<h2>${inMatch?'End the match?':'Close the room?'}</h2><p>${inMatch?'You\'re the host, so the match ends for everyone.':'Everyone in the room is sent back to the menu.'}</p>`
-    :inMatch?`<h2>Leave the match?</h2><p>A CPU plays your cards${DUO.snap&&DUO.snap.rules.ffa?'':' for your partner'}. You can rejoin from the menu while the match is on.</p>`:'<h2>Leave the room?</h2>',
-    [{label:host?(inMatch?'End match':'Close room'):'Leave',cls:'danger',wait:true,fn:go},{label:'Stay',cls:'primary',esc:true}]);
+  // leaving a room asks nothing (unless it closes on the others); leaving a match asks first
+  if(!inMatch&&(!host||heir||!others)){go();return}
+  modal(host&&heir?`<h2>Leave the match?</h2><p><b>${esc(heir)}</b> becomes the host and the match goes on. A CPU plays your cards${ffa?'':' for your partner'}. You can rejoin from the menu while the match is on.</p>`
+    :host?(others?`<h2>${inMatch?'End the match?':'Close the room?'}</h2><p>No one else can take over hosting${inMatch?', so the match ends for everyone.':', so everyone is sent back to the menu.'}</p>`
+      :'<h2>End the match?</h2><p>It\'s just you and the CPUs, so the match ends.</p>')
+    :inMatch?`<h2>Leave the match?</h2><p>A CPU plays your cards${ffa?'':' for your partner'}. You can rejoin from the menu while the match is on.</p>`:'<h2>Leave the room?</h2>',
+    [{label:host&&!heir?(inMatch?'End match':'Close room'):'Leave',cls:'danger',wait:true,fn:go},{label:'Stay',cls:'primary',esc:true}]);
 }
 
 /* =====================================================================
@@ -433,8 +852,19 @@ function duoLeave(){
 const duoOn=id=>$('#scr-'+id).classList.contains('on');
 function duoGot(snap){
   const prev=DUO.snap;DUO.snap=snap;DUO.snapAt=Date.now();DUO.pending=false;
-  if(DUO.role==='guest'){clearTimeout(DUO.joinT);clearTimeout(DUO.goneT);DUO.hostAway=false}
   const ph=snap.phase,me=snap.you;
+  if(DUO.role==='guest'){
+    clearTimeout(DUO.joinT);clearTimeout(DUO.goneT);DUO.hostAway=false;
+    if(Number.isInteger(snap.ep))DUO.ep=Math.max(DUO.ep,snap.ep);
+    if(typeof snap.hp==='string'&&snap.hp)DUO.hp=snap.hp;
+    if(!snap.heir||snap.heir.seat!==me)DUO.vault=null; // not the heir (any more): its copy goes
+    duoStandby();duoSaveRejoin();
+    // a new host that never got this game's cards gets them again
+    if(ph==='decks'&&!snap.seats[me].deck&&DUO.deckSent&&DUO.myDeck&&DUO.deckEp!==DUO.ep){DUO.deckEp=DUO.ep;duoSend({t:'deck',ids:DUO.myDeck})}
+  }
+  // hosting moved to another player: say who
+  const host=snap.seats.findIndex(s=>s.host);
+  if(prev&&Number.isInteger(snap.ep)&&snap.ep>(prev.ep||0)&&host>=0&&host!==me)toast(`${snap.seats[host].name||'Another player'} is the host now`,3000);
   if(ph==='room'){
     DUO.picking=false;DUO.deckSent=false;DUO.shownN=-1;
     DUO.animQ=[];DUO.boardSt=null;DUO.qN=-1;DUO.animating=false;DUO.gen++;
@@ -545,7 +975,7 @@ function duoPickDeck(){
   DUO.picking=true;
   if(deckable(collPool())<5)ensureMinimum();
   const done=ids=>{
-    DUO.picking=false;DUO.deckSent=true;SAVE.lastDeck=ids;save();
+    DUO.picking=false;DUO.deckSent=true;DUO.myDeck=ids.slice();DUO.deckEp=DUO.ep;SAVE.lastDeck=ids;save();
     if(DUO.role==='host'){if(DUO.phase==='decks'&&!DUO.decks[DUO.me]){DUO.decks[DUO.me]=ids.slice();duoChanged()}}
     else duoSend({t:'deck',ids});
     duoShowGame();duoRender();
@@ -669,7 +1099,7 @@ function duoBuild(){
     b.append(c);DUO_CELLS.push(c);
   }
 }
-const duoMyTurn=()=>{const S=DUO.snap;return !!S&&S.phase==='play'&&S.st&&S.st.turn===S.you&&!DUO.pending&&!DUO.animating&&!(DUO.role==='guest'&&DUO.hostAway)};
+const duoMyTurn=()=>{const S=DUO.snap;return !!S&&S.phase==='play'&&S.st&&S.st.turn===S.you&&!DUO.pending&&!DUO.animating&&!(DUO.role==='guest'&&(DUO.hostAway||DUO.moving))};
 function duoTapCell(i){if(DUO.sel!=null)duoMove(DUO.sel,i)}
 // play hand card hi on square i: the host plays it, a guest sends it and waits for the host's answer
 function duoMove(hi,i){
@@ -801,6 +1231,7 @@ function duoTimerBar(){
   const end=DUO.snapAt+S.timeLeft,tot=S.rules.timer*1000,n=S.st.n;
   const step=()=>{
     if(!DUO.snap||!DUO.snap.st||DUO.snap.st.n!==n){clearInterval(duoTbT);return}
+    if(DUO.role==='guest'&&(DUO.hostAway||DUO.moving))return; // no host, no clock: it stops until the new host's word
     const left=Math.max(0,end-Date.now());
     bar.classList.remove('off');bar.classList.toggle('warn',left<10000);bar.classList.toggle('crit',left<5000);
     $('#duoTfill').style.transform=`scaleX(${left/tot})`;
@@ -813,9 +1244,12 @@ function duoTimerBar(){
 function duoNetBar(){
   const S=DUO.snap,el=$('#duoNet');if(!S||!el)return;
   let t='';
-  if(DUO.role==='guest'&&DUO.hostAway){
-    const s=Math.floor((Date.now()-DUO.hostAwayAt)/1000);
-    t=`<span class="spin"></span>Lost the host. Reconnecting… The match ends in ${fmtLeft(Math.max(0,DUO_HOST_WAIT-s))} if they're not back.`;
+  if(DUO.role==='guest'&&(DUO.hostAway||DUO.moving)){
+    // with an heir, hosting moves over in a moment; the countdown only shows if it's taking long
+    const h=DUO.moving||S.heir,who=h&&S.seats[h.seat],s=DUO.hostAway?Math.floor((Date.now()-DUO.hostAwayAt)/1000):0;
+    t=`<span class="spin"></span>${DUO.moving?'The host left.':'Lost the host.'} `+
+      (h?h.seat===S.you?'You\'re taking over…':`${esc(who&&who.name||'Another player')} is taking over…`:'Reconnecting…');
+    if(!h||s>=15)t+=` The match ends in ${fmtLeft(Math.max(0,DUO_HOST_WAIT-s))} if no one is back by then.`;
   }else{
     const aw=S.seats.map((s,i)=>[s,i]).filter(([s])=>s.away&&!s.bot&&S.phase!=='room');
     if(aw.length)t=aw.map(([s])=>`${esc(s.name)} disconnected. A CPU takes over in ${fmtLeft(s.left)} unless they're back.`).join(' ');
@@ -921,5 +1355,5 @@ function hostPick(){
 }
 function duoRejoin(){
   const r=duoResumeInfo();if(!r){renderHero();return}
-  const g=duoLS(DUO_RJ_KEY);duoJoin(g.code,g.tok);
+  const g=duoLS(DUO_RJ_KEY);duoJoin(g.code,g.tok,g.alt);
 }

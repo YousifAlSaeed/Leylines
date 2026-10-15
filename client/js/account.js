@@ -89,7 +89,7 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck();GIFTS.wait=true;giftsCheck()}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();applyTheme();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck();GIFTS.wait=true;giftsCheck()}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
@@ -112,7 +112,7 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();renderProfilePage();frLoad();lbAcct();GIFTS.wait=true;
+  acctStore();applyTheme();renderProfile();renderProfilePage();frLoad();lbAcct();GIFTS.wait=true; // applyTheme: a developer's look comes with their account (save.js aeroOn)
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
@@ -122,7 +122,7 @@ function acctSignedOut(msg){
   // the progress belonged to the account: this device goes back to a fresh guest. In a match that
   // waits for the menu (renderMenu), and SAVE.wipe makes sure it still happens if the app closes first.
   if(G){SAVE.wipe=1;save()}else acctWipe();
-  renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
+  applyTheme();renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
   if(msg)toast(msg,3500);
 }
 function acctWipe(){

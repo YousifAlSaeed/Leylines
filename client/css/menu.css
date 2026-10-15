@@ -20,9 +20,17 @@ input.rng::-moz-range-track{height:6px;border-radius:3px;background:linear-gradi
 input.rng::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
 input.rng::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
 input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}input.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
-.setrow .rng{flex:0 0 44%;min-width:0}
+.setrow .rng{flex:0 1 44%;min-width:0}
+.setrow[data-vol]{gap:10px}.setrow[data-vol] .rt{min-width:6.8em} /* on a phone the slider gives way, not the name */
 .setrow .vpct{font:800 14px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
-.setrow.muted .vpct{color:var(--muted)}
+.setrow.muted .vpct{color:var(--muted)}.setrow.muted .rng{opacity:.55}
+.vmute{flex:none;width:34px;height:34px;margin-left:-4px;padding:0;border-radius:10px;border:1px solid var(--line2);background:rgba(var(--tint),.04);color:var(--accent-ink);
+  display:grid;place-items:center;cursor:pointer;transition:background .18s,border-color .18s,transform .2s var(--spring)}
+.vmute svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.vmute[aria-pressed="true"]{color:var(--muted);background:rgba(var(--tint),.1)}
+@media (hover:hover){.vmute:hover{border-color:var(--accent)}}
+.vmute:active{transform:scale(.92)}
+.vmute:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-glow)}
 .trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
 .trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
 .rc{position:relative;aspect-ratio:5/3.6;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);
@@ -104,10 +112,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* online waiting room (the setup screen with the code and players on top) */
 .s-room{display:flex;flex-direction:column;gap:10px}
 .s-room h3{margin-bottom:-2px}
-.room-code{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+/* the game code in the middle, the buttons and the invite link under it as wide as the box */
+.room-code{display:flex;flex-direction:column;gap:10px;text-align:center;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px}
 .room-code .or{margin:0}
-.room-code .codebox{font-size:34px;padding:4px 0 0;text-align:left}
-.room-share{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px;max-width:340px}
+/* .3em on the left matches the letter spacing after the last letter, so the code sits in the middle */
+.room-code .codebox{font-size:34px;padding:2px 0 0 .3em}
+.room-share{display:flex;flex-direction:column;gap:6px}
+.room-share .linkin{text-align:center}
 .room-pl{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .room-pl li{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-height:52px}
 .room-pl li.h .av{background:linear-gradient(160deg,var(--blue1),var(--blue2))} .room-pl li.g .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
@@ -269,21 +280,29 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 #scr-menu.on .em-core{animation:emCore 2.6s ease-in-out infinite}
 @keyframes emCore{50%{opacity:.85;transform:scale(1.35)}}
 /* card drift (menu.js): a dim sheet of cards behind the menu, tilted about the middle of the screen. --h is half a
-   column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered */
+   column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered.
+   The sheet turns with transform, not the newer translate/rotate properties, which browsers before Chrome 104 drop */
 .drift{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;font-size:16px;opacity:.2}
 :root[data-theme="light"] .drift{opacity:.3}
 .drift-on .drift{display:block}
-.drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);translate:-50% 0;transform-origin:50% calc(var(--h)/2);rotate:-14deg;display:flex;gap:1.1em}
+.drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);transform-origin:50% calc(var(--h)/2);transform:translateX(-50%) rotate(-14deg);display:flex;gap:1.1em}
 .drift-col{display:flex;flex-direction:column;gap:1.1em;padding-bottom:1.1em;will-change:transform;animation:driftUp var(--d,90s) linear infinite}
 .drift-col:nth-child(even){animation-direction:reverse}
 @keyframes driftUp{to{transform:translateY(-50%)}}
 .drift .card.back>*{display:none}
-/* the menu covers a phone's whole screen, so its panels let a little of the drift through */
+/* with reduced motion the cards keep still, every other column half a card lower. Phones ask for it more often than you'd
+   think: Android's Battery Saver and Remove animations, and an iPhone's Reduce Motion, all do */
+@media (prefers-reduced-motion:reduce){.drift-col{animation:none;will-change:auto}.drift-col:nth-child(even){transform:translateY(-3.55em)}}
+/* the menu covers a phone's whole screen, so its panels let a little of the drift through. Only where color-mix works:
+   with var() inside, a browser without it (before Chrome 111 or iOS 16.2) would drop the background and leave them clear */
+@supports (color:color-mix(in srgb,red 50%,transparent)){
 .drift-on .hero{background:linear-gradient(160deg,color-mix(in srgb,var(--surf2) 84%,transparent),color-mix(in srgb,var(--surf) 84%,transparent))}
 .drift-on .tile{background:color-mix(in srgb,var(--surf) 82%,transparent)}
 /* the player card and the settings button are see-through on a plain page; over the drift they're filled like the tiles */
 #scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:color-mix(in srgb,var(--surf) 82%,transparent)}
 #scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .mstats .iconbtn:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}
+}
+@supports not (color:color-mix(in srgb,red 50%,transparent)){#scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:var(--surf)}}
 @media (min-width:920px) and (min-height:560px){.drift{font-size:22px}}
 /* the hand breathes: the cards on the Play card float, one after the other, and a glint crosses each */
 .fan .card:nth-child(2){--i:1}.fan .card:nth-child(3){--i:2}.fan .card:nth-child(4){--i:3}.fan .card:nth-child(5){--i:4}

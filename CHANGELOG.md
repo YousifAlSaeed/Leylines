@@ -6,8 +6,38 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
-## 0.24.4 (2026-10-15)
+## 0.26.3 (2026-10-15)
 - Loadout messages ("Loaded …", "Saved to …") show beside the Loadouts title, so the collection no longer jumps when one appears
+
+## 0.26.2 (2026-10-15)
+- **Small** behind-the-scenes changes
+- In the waiting room the game code sits in the middle of its box, with Copy link, Share and the invite link lined up under it the full width of the box
+
+## 0.26.1 (2026-10-15)
+- The Shard well moved into the Pack counter: a Packs / Shards switch shows either the packs or your shards from matches today, the 5★ guarantee and how to earn more
+- The market's fourth stop is now the Atelier, a bubbling cauldron behind a closed door: coming soon
+
+## 0.26.0 (2026-10-15)
+- The Forge opens at the market: tap a place on the anvil and pick extra copies of your cards in your book. Dissolve any of them into shards, or forge five of one rarity into a random card of the next, one you haven't found yet while there are any. It makes cards up to 4★
+- The Forge never takes your last copy of a card, copies your saved loadouts use, or cards still at stake in a match you left. Rare cards wait a few seconds before you can confirm
+- Auto-fill puts five spares of one rarity on the anvil in one tap, and the anvil shows how many cards of the rarity you're forging toward are still to find
+- Two new badges: Smith (forge a card) and Master smith (forge a 4★)
+- Fixed: on a wide screen, the first click on a market stop other than the Merchant did nothing
+
+## 0.25.2 (2026-10-15)
+- Music and sound effects each get a mute button next to their slider in Settings, and keep their level while muted; in a match the speaker opens a small panel with both sliders
+
+## 0.25.1 (2026-10-15)
+- The cards behind the menu show on every phone. A phone set to reduce motion (Android's Battery Saver or Remove animations, an iPhone's Reduce Motion) used to get none; now they're there and keep still
+- The sheet of cards sits straight and centred on older browsers too, and the menu's panels stay filled where a browser can't make them see-through
+- The cards behind the menu update when you find new ones or sign in, and a phone's keyboard or address bar no longer shuffles them
+- The game no longer breaks after an update on a slow connection: the page and its scripts always come from the same version, online or offline
+
+## 0.25.0 (2026-10-15)
+- Crossroads: when the host leaves, closes the game or loses their connection, another player takes over hosting and the match goes on. The old host can rejoin from the menu and gets their seat back
+- The player who'd take over keeps a locked copy of the match, and the other players hold the key: they only hand it over once they've lost the host too, so nobody can peek at hidden hands
+- Taking over takes a moment, not a minute: everyone keeps a line open to the next host. The turn timer keeps the time it had, and the wait doesn't count
+- The room's code, its invite link and invites still lead to the match after the host changes, and a seat kept for an invited friend stays kept
 
 ## 0.24.3 (2026-10-14)
 - Every card in the book sits in its own clear plastic sleeve, open at the top, with a soft shine that moves when you point at it

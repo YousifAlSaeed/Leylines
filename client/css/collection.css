@@ -415,6 +415,11 @@
 @container (max-width:360px){#scr-coll.pick .coll-row .dk-act svg{display:none}}
 /* a card you can't add right now (every copy in hand, hand full, over the rarity limit) fades */
 .pk-cell.used .pocket{opacity:.35}
+/* the Forge's picker (forge.js): no power, side strength or Best 5, just what the cards would dissolve for */
+#collWorth{display:none}
+#scr-coll.forge #collWorth{display:flex}
+#scr-coll.forge .coll-row .dk-power:not(#collWorth),#scr-coll.forge #collBest,#scr-coll.forge .coll-sides{display:none}
+#collWorth b{display:flex;align-items:center;color:var(--shard-ink)}
 /* wide screens: deck boxes | mat | panel, in one row under the book */
 @media (min-width:700px) and (orientation:landscape){
   .coll-side{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:16px;width:100%;max-width:1000px;justify-self:center}

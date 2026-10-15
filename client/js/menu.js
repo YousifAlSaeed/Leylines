@@ -211,12 +211,13 @@ setInterval(emTick,1600);
 /* ---------- card drift ----------
    Behind the menu, tilted columns of the cards you've found slide slowly past, every other column the other way,
    and now and then one turns over. Each column holds its cards twice and moves by half its height, so the loop
-   has no seam; only transforms move, so nothing is laid out again. Off with reduced motion or the switch in
-   Settings, which is kept per device (localStorage, like the other device-only things). */
+   has no seam; only transforms move, so nothing is laid out again. With reduced motion the cards keep still and
+   don't turn over (menu.css); the switch in Settings takes them away, and is kept per device (localStorage, like
+   the other device-only things). */
 const DRIFT_KEY='leylines.drift';
 const driftWanted=()=>{try{return localStorage.getItem(DRIFT_KEY)!=='off'}catch(e){return true}};
 function driftSet(on){try{on?localStorage.removeItem(DRIFT_KEY):localStorage.setItem(DRIFT_KEY,'off')}catch(e){}driftSync()}
-let driftDim='';
+let driftDim=null; // the sheet that's up: its columns, rows, card size and the cards it draws from
 // a lighter card than cardHTML's: the picture, the numbers and the rarity frame
 function driftCard(pool){
   const c=CARDS[pool[Math.floor(Math.random()*pool.length)]];
@@ -224,15 +225,19 @@ function driftCard(pool){
     `<div class="nums">${c.s.map((v,k)=>`<b class="n${k}">${fmt(v)}</b>`).join('')}</div><i class="rf"></i></div>`;
 }
 function driftSync(){
-  const scr=$('#scr-menu'),el=$('#drift'),on=driftWanted()&&!noMotion();
+  const scr=$('#scr-menu'),el=$('#drift'),on=driftWanted();
   scr.classList.toggle('drift-on',on);
-  if(!on){el.innerHTML='';driftDim='';return}
+  if(!on){el.innerHTML='';driftDim=null;return}
   if(!scr.classList.contains('on'))return;
   // enough columns and rows to cover the tilted screen (a card is 5 x 6 em, with 1.1 em between cards)
   const em=parseFloat(getComputedStyle(el).fontSize),w=innerWidth/UI,h=innerHeight/UI;
-  const cols=Math.ceil((w*.97+h*.25)/(6.1*em))+1,n=Math.ceil((h*.97+w*.25)/(7.1*em))+1,dim=cols+'x'+n+'x'+em;
-  if(dim===driftDim)return;driftDim=dim;
-  const pool=CARDS.map(c=>c.id).filter(isSeen);
+  const cols=Math.ceil((w*.97+h*.25)/(6.1*em))+1,n=Math.ceil((h*.97+w*.25)/(7.1*em))+1;
+  let pool=CARDS.map(c=>c.id).filter(isSeen);if(!pool.length)pool=CARDS.map(c=>c.id);
+  // a new sheet when the cards you've found change (a win, signing in) or the screen outgrows this one; a phone's
+  // keyboard or address bar coming and going makes it smaller, and that shouldn't shuffle the cards
+  const d=driftDim,seen=pool.join();
+  if(d&&d.em===em&&d.seen===seen&&d.cols>=cols&&d.n>=n)return;
+  driftDim={cols,n,em,seen};
   let out='';
   for(let c=0;c<cols;c++){
     const half=Array.from({length:n},()=>driftCard(pool)).join('');
@@ -243,7 +248,7 @@ function driftSync(){
 }
 // one card turns over: edge-on halfway through, and that's when it changes face (.fy, cards.css)
 setInterval(()=>{
-  if(!emOn()||document.hidden)return;
+  if(!emOn()||document.hidden||noMotion())return;
   const all=$$('#drift .card');if(!all.length)return;
   const c=all[Math.floor(Math.random()*all.length)];
   c.classList.add('fy');setTimeout(()=>c.classList.toggle('back'),230);setTimeout(()=>c.classList.remove('fy'),480);

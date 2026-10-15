@@ -33,7 +33,7 @@ let handDragged=false;
 function handAdd(h,id,from){
   const tray=$(`#${h.pfx}Slots`).closest('.dk-tray');
   if(h.sel.length>=5||handRemaining(h,id)<=0){sfx('coll_deny');shakeNo(tray);return false}
-  const why=rarBlock(h.sel,id);
+  const why=h.anyRar?'':rarBlock(h.sel,id); // the Forge (forge.js) has no deck rarity limits
   if(why){h.note=`<span class="bad">${why}</span>`;sfx('coll_deny');shakeNo(tray);h.render();return false}
   h.sel.push(id);const k=h.sel.length-1,full=k===4;h.note='';sfx('coll_hand_add');
   if(from&&!noMotion()){
