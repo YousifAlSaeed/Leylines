@@ -118,14 +118,13 @@ function buyPack(t,deal){
 }
 
 /* ---------- the Store screen: the Night Market (and the menu tile) ---------- */
-// Four stops under a starry sky: the Merchant, the Forge (closed for now), the Pack Counter and the Shard well.
+// Four stops under a starry sky: the Merchant, the Forge (forge.js), the Pack Counter and the Shard well.
 // A wide screen shows them side by side. A phone opens on just the sky; tapping a star brings up a carousel of the four
 // stops to swipe through, and swiping past either end goes back to the sky.
 // The light theme gets the Day Market: the same four stops under a sun and a daytime sky.
 // Tapping the moon (or the sun) turns on the dial: it crosses an arc as the game day runs out, and the sky's colours go
 // with it. The dial is off to begin with and is kept on this device only, outside the save (which follows the account).
 const ST_STOPS=[['merchant','I','Merchant','Merchant'],['forge','II','The Forge','Forge'],['packs','III','Pack counter','Packs'],['well','IV','Shard well','Well']];
-const ST_ANVIL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6h14v2.2c-2.6.3-4.4 1.7-5 4.3h-5.2C10.300 9.800 7.600 8.400 3 8.200V7h4z"/><path d="M9.500 13.800h7l1.500 4.200h1v2H7v-2h1z"/></svg>';
 const ST_DIAL_KEY='ninefold.dial';
 let stDial=(()=>{try{return localStorage.getItem(ST_DIAL_KEY)==='1'}catch(e){return false}})();
 const stDay=()=>document.documentElement.dataset.theme==='light';
@@ -213,7 +212,7 @@ function renderStore(){
     return `<div class="st-slot${sold?' sold':''}${it.mine?' mine':''}">${cardHTML(it.id,'blue')}<span class="st-cn">${esc(c.name)}<small>${it.mine?'For you':'★'.repeat(c.rar)}</small></span>
       <button class="st-buy" data-c="${i}" ${sold?'disabled':''} aria-label="${sold?`${esc(c.name)}, sold`:`Buy ${esc(c.name)}, ${rarName(c.rar)}, for ${shardsTxt(it.price)}`}">${sold?'Sold':price(it.price)}</button></div>`}).join('')}</div>`;
 
-  const forge=`<div class="st-forge">${ST_ANVIL}<b>The Forge</b><span class="st-soon">Coming soon</span><small>The fires are not lit yet.</small></div>`;
+  const forge=forgeHTML();
 
   // the pack on offer today is marked on its own row until it's bought
   const mythLeft=s?Math.max(0,MYTHIC_WEEK-s.myth):null,dl=ok&&!s.got.deal?st.deal:null;
@@ -234,7 +233,7 @@ function renderStore(){
     </dl>
     <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily tab pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
 
-  const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',forge:'Closed for now.',
+  const sub={merchant:'Four cards, the same for every player. <b>For you</b> is one you haven\'t found yet, picked for you.',forge:'Melt extra cards into shards, or forge five into one of the next rarity.',
     packs:'Opens the moment you buy.',well:'What you\'ve drawn from the ley today.'};
   const body={merchant:merch,forge,packs,well};
   $('#stBody').innerHTML=hero+map+`<div class="st-swipe"><div class="st-view"><div class="st-stops">${ST_STOPS.map(([k,n,name])=>
@@ -253,8 +252,9 @@ function renderStore(){
   stClock(); // the sky's clock is drawn again with the rest, so it doesn't wait empty for its next second
   stSwipe();
   if(!stDown)stGo(stIdx(),false);
-  $$('#stBody .st-buy').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
+  $$('#stBody .st-buy[data-c]').forEach(b=>b.onclick=()=>{sfx('click');buyCard(+b.dataset.c)});
   $$('#stBody .st-pk').forEach(b=>b.onclick=()=>{sfx('click');buyPack(b.dataset.p,b.classList.contains('deal'))});
+  forgeWire();
 }
 // A phone shows either just the sky (stDown: the constellation over the whole screen, the stars without their names,
 // the phone's own time in place of the countdown, the top bar faded; good for a screenshot) or the market's carousel.
@@ -361,7 +361,8 @@ function stSwipe(){
   // a swipe doesn't also tap what it started on, and a tap on a stop peeking in from the side moves to it
   vw.addEventListener('click',e=>{
     if(moved){e.stopPropagation();e.preventDefault();moved=false;return}
-    const sl=e.target.closest('.st-stop');
+    // (a phone's carousel only: a wide screen shows every stop, and a click there is meant for what it's on)
+    const sl=stPhone()&&e.target.closest('.st-stop');
     if(sl&&!sl.classList.contains('on')){e.stopPropagation();e.preventDefault();stGo(ST_STOPS.findIndex(x=>x[0]===sl.dataset.stop))}
   },true);
 }

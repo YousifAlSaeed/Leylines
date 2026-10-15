@@ -5,22 +5,24 @@
 // the hand you build in the collection; it stays put while you browse, and survives leaving the screen
 const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
-// the hand the binder and tray work on: CH in the collection, DK when picking cards for a match
+// the hand the binder and tray work on: CH in the collection, DK when picking cards for a match, the Forge's anvil
+// (forge.js) when picking cards to dissolve or forge
 let BH=CH;
 const picking=()=>BH!==CH;
 wireHand('coll',()=>BH);
 // switch the screen between the collection and the match picker (Play button, its own title and back)
 function collMode(h,title,meta){
   BH=h;const pick=picking();
-  $('#scr-coll').classList.toggle('pick',pick);
+  $('#scr-coll').classList.toggle('pick',pick);$('#scr-coll').classList.toggle('forge',!!h.forge);
   $('#collTitle').textContent=title;$('#collMeta').innerHTML=meta;
   $('#collGo').classList.toggle('hidden',!pick);
   const sv=$('#collSave');
   sv.className=pick?'dk-act':'btn primary';
   sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Save hand</span>':'Save hand';
 }
-$('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
-$('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
+$('#collBack').onclick=()=>{if(picking()){sfx('click');BH.onBack&&BH.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
+// a match needs 5 cards; the Forge takes any number (min)
+$('#collGo').onclick=()=>{if(picking()&&BH.sel.length>=(BH.min??5)){sfx('click');BH.onDone(BH.sel.slice())}};
 function openCollection(){
   collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
@@ -106,7 +108,7 @@ function collCardBack(m){
 }
 // the + on each owned card: faded once every copy is in the hand, the hand is full, or the rarity limit is reached
 // (it still answers a tap, with a "no", instead of doing nothing)
-const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&!rarBlock(BH.sel,id);
+const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&(BH.anyRar||!rarBlock(BH.sel,id));
 // how many of a card the binder holds: owned copies in the collection, the picker's pool when picking
 const bdHave=id=>{const e=BH.pool.find(x=>x.id===id);return e?e.count:0};
 // when picking, a card you can't add right now also fades, like the old picker grid
@@ -184,13 +186,15 @@ function bdPage(k){
     const c=cs[i];
     if(!c){pk+='<div class="pk-cell"><div class="pocket blank" aria-hidden="true"></div></div>';continue}
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
-    const face=n?cardHTML(c.id,'grey',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
-    const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
+    // the Forge's book holds only spare copies: a card you own but can't spare shows faded
+    const kept=!n&&BH.forge&&owned(c.id)>0;
+    const face=n?cardHTML(c.id,'grey',{count:n}):kept?cardHTML(c.id,'grey'):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const lbl=n?esc(cardLabel(c.id))+(BH.forge?`, ${n} spare`:`, owned ×${n}`):kept?esc(c.name)+', no spare copies':seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
     // spare copies stack up behind the card with a tab under it counting the copies still in the book (the rest are in your
     // hand); none left and the card fades
     const left=n?handRemaining(BH,c.id):0,seal=left>1?`<span class="seal" aria-hidden="true">×${left}</span>`:'';
-    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
+    pk+=`<div class="pk-cell${no&&picking()||kept?' used':''}"><button class="pocket${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
   }
   // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
   const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;
@@ -530,7 +534,10 @@ $('#binder').addEventListener('click',e=>{
   if(!b)return;
   // picking: a tap adds the card straight to the hand; in the collection it opens the card
   const id=+b.dataset.id;
-  if(picking()&&bdHave(id))handAdd(BH,id,b.querySelector('.card'));else collDetail(id,b);
+  if(picking()&&bdHave(id))handAdd(BH,id,b.querySelector('.card'));
+  else if(BH.forge&&owned(id)>0){sfx('coll_deny');shakeNo(b);
+    toast(forgeKeep(id,forgeHeld())>1?`A saved loadout or an unfinished match uses every ${CARDS[id].name} you have.`:`You have one ${CARDS[id].name}. The Forge only takes extra copies.`,2800)}
+  else collDetail(id,b);
 });
 // drag an owned card from the binder onto the hand. Mouse: just drag. Touch: press and hold first,
 // so a quick swipe still turns the page.

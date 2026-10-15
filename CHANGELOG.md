@@ -6,6 +6,13 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.26.0 (2026-10-15)
+- The Forge opens at the market: tap a place on the anvil and pick extra copies of your cards in your book. Dissolve any of them into shards, or forge five of one rarity into a random card of the next, one you haven't found yet while there are any. It makes cards up to 4★
+- The Forge never takes your last copy of a card, copies your saved loadouts use, or cards still at stake in a match you left. Rare cards wait a few seconds before you can confirm
+- Auto-fill puts five spares of one rarity on the anvil in one tap, and the anvil shows how many cards of the rarity you're forging toward are still to find
+- Two new badges: Smith (forge a card) and Master smith (forge a 4★)
+- Fixed: on a wide screen, the first click on a market stop other than the Merchant did nothing
+
 ## 0.25.2 (2026-10-15)
 - Music and sound effects each get a mute button next to their slider in Settings, and keep their level while muted; in a match the speaker opens a small panel with both sliders
 
