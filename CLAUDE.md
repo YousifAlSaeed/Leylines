@@ -27,6 +27,23 @@ Before bumping, pull `dev` first: two people work on this repo. If a merge
 conflicts on the version, take the higher number, then bump once more for
 your change.
 
+## Frutiger Aero (developers only, kept secret)
+
+The game has a hidden look, **Frutiger Aero**: glossy glass, bubbles, a summer
+sky by day and an aurora by night. Only developer accounts (`DEV_USERS`) and
+local copies can switch it on, from a Settings row nobody else sees. It lives in
+`client/css/aero.css` and `aeroOn()` (`client/js/save.js`).
+
+Players must not find out it exists, and `CHANGELOG.md` is shown in the game as
+What's new. So:
+
+- **Any change to Aero is logged in `CHANGELOG.md` as `- Small fixes`**, never
+  by name and never describing what changed. It still bumps the version (patch).
+- Commit messages and pull requests on GitHub can describe it normally.
+- **Before committing anything that touches Aero, remind whoever you're working
+  with (Yousif or Jawad) of this rule**, and check the new changelog line says
+  only "Small fixes".
+
 ## Pulling
 
 Two people push to this repo, so always pull `dev` (`git pull origin dev`):

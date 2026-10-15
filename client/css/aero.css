@@ -1,0 +1,233 @@
+/* =====================================================================
+   FRUTIGER AERO: a developer tool (Settings, developers only; save.js aeroOn).
+   Glossy glass panels, aqua and lime gel buttons and soap bubbles: a
+   summer sky over green hills in the light theme, an aurora night (NIGHT,
+   at the end) in the dark one. applyTheme (settings.js) gives <html>
+   class="aero" next to its data-theme. Loaded last, so :root.aero wins
+   over the themes' own colours; the book and the pack stage keep theirs.
+   ===================================================================== */
+:root.aero{
+  --bg0:#cfeefc; --bg1:#f2fbff; --bar:#2c9ae3; --surf:#f8fdff; --surf2:#e7f5fe; --seg-on:#ffffff;
+  --line:rgba(16,96,150,.16); --line2:rgba(16,96,150,.3);
+  --text:#0a2e4a; --muted:#3b6482;
+  --accent:#1c8ed8; --accent-hi:#62c7f6; --on-accent:#fff; --accent-ink:#0a69a8; --accent-glow:rgba(28,142,216,.38);
+  --cta:#3ea521; --cta-hi:#97e25a; --on-cta:#fff; --cta-glow:rgba(70,170,30,.5);
+  --hot:#0a69a8; --hot-glow:rgba(28,142,216,.35);
+  --board:#e6f6fe; --cell-bg:#cfeaf9;
+  --sh:8,60,110; --shk:.4; --well:rgba(10,80,140,.08); --dim:.28; --grain:0;
+  --glow-a:rgba(255,255,255,0); --glow-b:rgba(255,255,255,0);
+  --title-grad:linear-gradient(180deg,#0d63a8 15%,#1d9be2 55%,#3a9f1f);
+  --display:'Segoe UI',Frutiger,'Frutiger Linotype','Myriad Pro',Selawik,system-ui,-apple-system,Roboto,sans-serif;
+  --body:var(--display);
+  /* water-bead gloss: a bright top half that stops at the middle */
+  --gloss:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.22) 48%,rgba(255,255,255,0) 50.5%);
+  --glass:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.64) 47%,rgba(234,248,255,.52) 53%,rgba(220,242,255,.7));
+  --glass-sh:0 12px 30px -14px rgba(8,60,110,.5),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.5);
+  --gel-blue:var(--gloss),linear-gradient(180deg,#7fd2fb,#2b9fe6 50%,#1182cf 50.5%,#3db4f2);
+  --gel-green:var(--gloss),linear-gradient(180deg,#a6e86b,#55b92e 50%,#349c18 50.5%,#66cc38);
+}
+
+/* ---------- the sky: sun, two hills, a glass city in a bubble standing on them at the right (its foot 81% down the
+   picture, at about 88% of the screen), clouds, and bubbles rising ---------- */
+:root.aero body{
+  background:
+    radial-gradient(42% 34% at 10% 2%,rgba(255,255,255,.95),rgba(255,255,255,.35) 45%,rgba(255,255,255,0) 72%),
+    radial-gradient(120% 34% at 88% 110%,#3f9f1d 0 50%,#7ccf3f 64%,#c4f293 68%,rgba(200,245,150,0) 73%),
+    radial-gradient(95% 30% at 4% 112%,#2f8c15 0 52%,#5fbb2c 66%,#aee86c 70%,rgba(170,230,110,0) 75%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='gl' x1='0' y1='120' x2='0' y2='812' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23f2fbff'/%3E%3Cstop offset='.42' stop-color='%239fd4f5'/%3E%3Cstop offset='1' stop-color='%232f80c8'/%3E%3C/linearGradient%3E%3ClinearGradient id='fc'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='.75'/%3E%3Cstop offset='.05' stop-color='%23fff' stop-opacity='.18'/%3E%3Cstop offset='.62' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='.62' stop-color='%230a4580' stop-opacity='.32'/%3E%3Cstop offset='1' stop-color='%230a4580' stop-opacity='.52'/%3E%3C/linearGradient%3E%3Cpattern id='wg' width='7' height='9' patternUnits='userSpaceOnUse'%3E%3Crect x='1' y='1' width='5' height='6' fill='%230f4c88' fill-opacity='.38'/%3E%3C/pattern%3E%3Cpattern id='wb' width='4' height='8' patternUnits='userSpaceOnUse'%3E%3Crect width='4' height='4.5' fill='%230f4c88' fill-opacity='.36'/%3E%3Crect y='4.5' width='4' height='1' fill='%23fff' fill-opacity='.35'/%3E%3C/pattern%3E%3ClinearGradient id='sh' x1='180' y1='300' x2='620' y2='760' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.25' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='.42' stop-color='%23fff' stop-opacity='.5'/%3E%3Cstop offset='.5' stop-color='%23fff' stop-opacity='.08'/%3E%3Cstop offset='.62' stop-color='%23fff' stop-opacity='.38'/%3E%3Cstop offset='.75' stop-color='%23fff' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='bb'%3E%3Cstop offset='.62' stop-color='%23e8f8ff' stop-opacity='.04'/%3E%3Cstop offset='.9' stop-color='%23d6f3ff' stop-opacity='.2'/%3E%3Cstop offset='.985' stop-color='%23fff' stop-opacity='.6'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='.2'/%3E%3C/radialGradient%3E%3ClinearGradient id='ir' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff9bd5'/%3E%3Cstop offset='.3' stop-color='%23fff59b'/%3E%3Cstop offset='.55' stop-color='%238ff0ff'/%3E%3Cstop offset='.8' stop-color='%23b49bff'/%3E%3Cstop offset='1' stop-color='%239bffc4'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='.95'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='cl'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='.75'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='ms' x1='0' y1='692' x2='0' y2='842' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='.75' stop-color='%23fff' stop-opacity='.85'/%3E%3Cstop offset='1' stop-color='%23fff'/%3E%3C/linearGradient%3E%3ClinearGradient id='fd' x1='0' y1='0' x2='0' y2='1000' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0.822' stop-color='%23fff'/%3E%3Cstop offset='0.902' stop-color='%23fff' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cmask id='fm' maskUnits='userSpaceOnUse' x='0' y='0' width='1000' height='1000'%3E%3Crect width='1000' height='1000' fill='url(%23fd)'/%3E%3C/mask%3E%3CclipPath id='in'%3E%3Ccircle cx='500' cy='500' r='467'/%3E%3C/clipPath%3E%3Cg id='b'%3E%3Cpath d='M200 812V367A20 20 0 0 1 240 367V812z'/%3E%3Cpath d='M318 812V174.6H360V812z'/%3E%3Cpath d='M430 812V91.9H476V812z'/%3E%3Cpath d='M546 812V222.7H553.3V174.7H560.6V126.7H583.4V174.7H590.7V222.7H598V812z'/%3E%3Cpath d='M660 812V300.6L712 243.7V812z'/%3E%3Cpath d='M760 812V469.3H766.4V441.4H772.9V413.5H793.1V441.4H799.6V469.3H806V812z'/%3E%3C/g%3E%3Cg id='g'%3E%3Cpath d='M556 812V230.9L565.2 175.6L579 51.1L592.8 175.6L602 230.9V812z'/%3E%3Cpath d='M330 812V308.6L339.6 260.6L354 152.7L368.4 260.6L378 308.6V812z'/%3E%3Cpath d='M640 812V318.9L694 264.1V812z'/%3E%3Cpath d='M724 812V479.4H732.1V452.4H740.2V425.3H765.8V452.4H773.9V479.4H782V812z'/%3E%3C/g%3E%3Cg id='k'%3E%3Cpath d='M420 812V145.5H474V812z'/%3E%3Cpath d='M484 812V259.2Q524.6 218.5 542 358.2V812z'/%3E%3Cpath d='M262 812V395A30 30 0 0 1 322 395V812z'/%3E%3Cpath d='M170 812V514.2H177.8V490H185.7V465.8H210.3V490H218.2V514.2H226V812z'/%3E%3C/g%3E%3Cg id='l'%3E%3Cpath d='M196 812V699.6H292V812z'/%3E%3Cpath d='M360 812V674.8H372.6V663.7H385.2V652.5H424.8V663.7H437.4V674.8H450V812z'/%3E%3Cpath d='M500 812V694.6H610V812z'/%3E%3Cpath d='M660 812V679H756V812z'/%3E%3C/g%3E%3C/defs%3E%3Cg mask='url(%23fm)'%3E%3Ccircle cx='500' cy='500' r='470' fill='%23bfe8ff' fill-opacity='.16'/%3E%3Cg clip-path='url(%23in)'%3E%3Cellipse cx='330' cy='210' rx='120' ry='34' fill='url(%23cl)'/%3E%3Cellipse cx='420' cy='190' rx='80' ry='30' fill='url(%23cl)'/%3E%3Cellipse cx='690' cy='260' rx='110' ry='26' fill='url(%23cl)' opacity='.7'/%3E%3Cg opacity='.55'%3E%3Cuse href='%23b' fill='%23d9f2ff'/%3E%3Cuse href='%23b' fill='url(%23wg)'/%3E%3Cuse href='%23b' fill='url(%23fc)'/%3E%3C/g%3E%3Cuse href='%23g' fill='url(%23gl)'/%3E%3Cuse href='%23g' fill='url(%23fc)'/%3E%3Cuse href='%23g' fill='url(%23wg)'/%3E%3Cuse href='%23g' fill='url(%23sh)'/%3E%3Cuse href='%23g' fill='none' stroke='%23fff' stroke-opacity='.55' stroke-width='1.2'/%3E%3Cuse href='%23k' fill='url(%23gl)'/%3E%3Cuse href='%23k' fill='url(%23fc)'/%3E%3Cuse href='%23k' fill='url(%23wb)'/%3E%3Cuse href='%23k' fill='url(%23sh)'/%3E%3Cuse href='%23k' fill='none' stroke='%23fff' stroke-opacity='.55' stroke-width='1.2'/%3E%3Cg stroke='%23e9f8ff' stroke-width='2' fill='%23fff'%3E%3Cpath d='M753 425.3v-46.4'/%3E%3Ccircle cx='753' cy='378.9' r='2.2'/%3E%3Cpath d='M447 145.5v-80'/%3E%3Ccircle cx='447' cy='65.5' r='2.2'/%3E%3C/g%3E%3Cuse href='%23l' fill='url(%23gl)'/%3E%3Cuse href='%23l' fill='url(%23fc)'/%3E%3Cuse href='%23l' fill='url(%23wb)'/%3E%3Cuse href='%23l' fill='url(%23sh)'/%3E%3Cuse href='%23l' fill='none' stroke='%23fff' stroke-opacity='.55' stroke-width='1.2'/%3E%3Crect x='0' y='692' width='1000' height='308' fill='url(%23ms)'/%3E%3C/g%3E%3Ccircle cx='500' cy='500' r='470' fill='url(%23bb)'/%3E%3Ccircle cx='500' cy='500' r='466' fill='none' stroke='url(%23ir)' stroke-width='7' stroke-opacity='.3'/%3E%3Ccircle cx='500' cy='500' r='470' fill='none' stroke='%23fff' stroke-opacity='.85' stroke-width='2.5'/%3E%3Cpath d='M96 453A423 423 0 0 1 462 86A461 461 0 0 0 58 491z' fill='url(%23hl)' opacity='.75'/%3E%3Cellipse cx='265' cy='209' rx='52' ry='24' transform='rotate(-38 265 209)' fill='%23fff' fill-opacity='.85'/%3E%3Cpath d='M923 556A446 446 0 0 1 712 867' fill='none' stroke='%23fff' stroke-opacity='.5' stroke-width='5' stroke-linecap='round'/%3E%3C/g%3E%3Cellipse cx='500' cy='830' rx='479' ry='46' fill='url(%23cl)'/%3E%3C/svg%3E") 100% calc(88vh - .81*min(60vh,94vw))/min(60vh,94vw) no-repeat,
+    radial-gradient(14% 6% at 72% 16%,rgba(255,255,255,.85),rgba(255,255,255,0)),
+    radial-gradient(10% 4.5% at 80% 13%,rgba(255,255,255,.8),rgba(255,255,255,0)),
+    radial-gradient(18% 6% at 30% 30%,rgba(255,255,255,.55),rgba(255,255,255,0)),
+    linear-gradient(180deg,#2c9ae3 0%,#5cbcf1 30%,#a9e1fb 62%,#e2f7ff 82%,#f3fcef 100%);
+  background-color:#a9e1fb;
+}
+/* the film grain becomes a layer of bubbles behind everything, drifting up */
+:root.aero body::after{
+  inset:auto;left:0;top:0;width:100%;height:calc(100% + 760px);z-index:-1;opacity:1;mix-blend-mode:normal;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='760'%3E%3Cdefs%3E%3CradialGradient id='b'%3E%3Cstop offset='.55' stop-color='%23fff' stop-opacity='0'/%3E%3Cstop offset='.86' stop-color='%23d8f6ff' stop-opacity='.28'/%3E%3Cstop offset='.97' stop-color='%23fff' stop-opacity='.85'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='g' cx='.5' cy='.5' r='.5'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='.95'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3Cg id='o'%3E%3Ccircle r='1' fill='url(%23b)'/%3E%3Cellipse cx='-.4' cy='-.42' rx='.34' ry='.2' transform='rotate(-38 -.4 -.42)' fill='url(%23g)'/%3E%3Ccircle cx='.42' cy='.5' r='.07' fill='%23fff' fill-opacity='.7'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23o' transform='translate(62 96) scale(30)'/%3E%3Cuse href='%23o' transform='translate(188 40) scale(12)'/%3E%3Cuse href='%23o' transform='translate(300 170) scale(46)'/%3E%3Cuse href='%23o' transform='translate(450 80) scale(18)'/%3E%3Cuse href='%23o' transform='translate(110 300) scale(16)'/%3E%3Cuse href='%23o' transform='translate(410 330) scale(34)'/%3E%3Cuse href='%23o' transform='translate(230 420) scale(10)'/%3E%3Cuse href='%23o' transform='translate(70 520) scale(40)'/%3E%3Cuse href='%23o' transform='translate(330 560) scale(22)'/%3E%3Cuse href='%23o' transform='translate(470 640) scale(12)'/%3E%3Cuse href='%23o' transform='translate(180 690) scale(28)'/%3E%3Cuse href='%23o' transform='translate(500 470) scale(8)'/%3E%3Cuse href='%23o' transform='translate(26 700) scale(10)'/%3E%3Cuse href='%23o' transform='translate(260 270) scale(6)'/%3E%3C/svg%3E") 0 0/520px 760px repeat;
+  animation:aeroRise 80s linear infinite;will-change:transform}
+@keyframes aeroRise{to{transform:translateY(-760px)}}
+@media (prefers-reduced-motion:reduce){:root.aero body::after{animation:none}}
+:root.aero .drift{opacity:.22}
+/* a phone: the hills dip in the middle, where the city stands, so it stands lower, on the ground (its foot at 94%
+   of the screen). Only the city's layer (the 4th) moves */
+@media (max-width:759px){:root.aero body{background-position:0 0,0 0,0 0,100% calc(94vh - .81*min(60vh,94vw)),0 0,0 0,0 0,0 0}}
+
+/* ---------- glass ---------- */
+:root.aero :is(.hero,.tile,.pcard,.setlist,.rules,.pf-card,.srow,.rinfo,.room-code,.room-pl li,.pill,#toast){
+  background:var(--glass);border-color:rgba(255,255,255,.9);box-shadow:var(--glass-sh);
+  -webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+:root.aero .tile:hover{box-shadow:0 16px 30px -14px rgba(8,60,110,.6),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.7)}
+:root.aero .hero::before{background:radial-gradient(rgba(151,226,90,.45),transparent 70%)}
+:root.aero .hero-stats{background:rgba(255,255,255,.45);border-color:rgba(16,96,150,.14)}
+:root.aero :is(.mbox,.hbox){
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(244,251,255,.9) 46%,rgba(228,245,255,.9) 54%,rgba(236,249,255,.94));
+  border-color:#fff;box-shadow:0 30px 70px -20px rgba(8,60,110,.55),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.6);
+  -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5)}
+:root.aero .mbox h2{filter:drop-shadow(0 1px 0 #fff)}
+:root.aero .tile>svg,:root.aero .srh svg,:root.aero .rinfo svg{color:#1a8ad2;filter:drop-shadow(0 1px 0 #fff)}
+
+/* ---------- gel buttons ---------- */
+:root.aero .btn:not(.primary,.danger,.text){background:var(--gloss),linear-gradient(180deg,#fdfeff,#dcf0fc);border-color:rgba(20,100,160,.32);
+  box-shadow:0 3px 8px -3px rgba(8,60,110,.35),inset 0 1px 0 #fff,inset 0 -3px 6px rgba(130,200,240,.3)}
+:root.aero .btn.primary{background:var(--gel-green);border:1px solid #2c8414;color:#fff;text-shadow:0 1px 2px rgba(15,70,0,.6);
+  box-shadow:0 8px 22px -8px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -4px 10px rgba(200,255,140,.5)}
+:root.aero .btn.danger{background:rgba(255,255,255,.55)}
+:root.aero .iconbtn{background:var(--gloss),linear-gradient(180deg,#fff,#d9effc);border-color:rgba(20,100,160,.28);
+  box-shadow:0 3px 8px -3px rgba(8,60,110,.35),inset 0 1px 0 #fff}
+:root.aero .seg{background:rgba(255,255,255,.42);border-color:rgba(16,96,150,.2);box-shadow:inset 0 1px 3px rgba(8,60,110,.16)}
+:root.aero .seg button.on{background:var(--gel-blue);color:#fff;text-shadow:0 1px 2px rgba(0,50,100,.55);
+  box-shadow:0 3px 8px -3px rgba(17,130,207,.8),inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(0,90,160,.35)}
+:root.aero .rc.on,:root.aero :is(.dc,.tc).on{background:var(--gel-blue);color:#fff;text-shadow:0 1px 2px rgba(0,50,100,.5)}
+:root.aero :is(.dc,.tc).on :is(small,.n,.k){color:#fff}
+:root.aero [aria-checked="true"] .switch{background:var(--gel-blue)}
+:root.aero input.rng::-webkit-slider-runnable-track{background:var(--gloss),linear-gradient(90deg,#1c8ed8 var(--f),rgba(16,96,150,.15) var(--f))}
+:root.aero input.rng::-moz-range-track{background:var(--gloss),linear-gradient(90deg,#1c8ed8 var(--f),rgba(16,96,150,.15) var(--f))}
+:root.aero input.rng::-webkit-slider-thumb{background:radial-gradient(circle at 35% 30%,#fff 0 18%,#9fe0ff 40%,#1c8ed8);border-color:#fff}
+:root.aero input.rng::-moz-range-thumb{background:radial-gradient(circle at 35% 30%,#fff 0 18%,#9fe0ff 40%,#1c8ed8);border-color:#fff}
+
+/* ---------- the logo: blue and green squares, a white edge on the word ---------- */
+:root.aero :is(.brand .emblem,.wm-em){filter:hue-rotate(-120deg) saturate(1.2) brightness(1.08) drop-shadow(0 4px 10px rgba(20,120,200,.35))}
+:root.aero .title{color:#0b5c9c}
+:root.aero :is(.logo-word,.wm-word){filter:drop-shadow(0 1px 0 #fff) drop-shadow(0 3px 8px rgba(30,140,220,.35))}
+:root.aero .ver{background:rgba(255,255,255,.6);border-color:rgba(16,96,150,.25)}
+
+/* ---------- the board: a glass tray with clear wells ---------- */
+:root.aero .board{background:var(--glass);border-color:#fff;box-shadow:0 26px 60px -20px rgba(8,60,110,.6),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.5)}
+:root.aero .cell{background:linear-gradient(180deg,rgba(190,228,250,.75),rgba(225,244,255,.85));box-shadow:inset 0 2px 8px rgba(8,60,110,.22);border-color:rgba(255,255,255,.8)}
+
+/* ---------- players: you in the logo's light blue, the other side in its green ---------- */
+:root.aero{--blue1:#53c5ff;--blue2:#0a85c0;--blue-ink:#0a7cbd;--red1:#2fb865;--red2:#00682a;--red-ink:#0b7a35}
+/* a loss stays red, so it never reads as a win */
+:root.aero :is(.mh-res.l,.mh-tr.lost,.mh-log .l,.mh-facts b.l,.pf-wld .l b,.pf-form .l,.pf-ring){--red-ink:#b3304a}
+/* Crossroads has a green seat (and teal), so its seats keep the usual blue and red */
+:root.aero :is(#scr-duo,#scr-duoroom,.dc-blue,.dc-red){--blue1:#3a6bdb;--blue2:#1e3f99;--blue-ink:#2553c0;--red1:#d24560;--red2:#8e1f36;--red-ink:#b3304a}
+
+/* ---------- the market: the Aero sky itself instead of the Day Market's, glass stalls, a white summer sun ---------- */
+:root.aero.night{--bg0:#cfeefc;--bar:#2c9ae3}
+:root.aero #scr-store{background:none}
+:root.aero #scr-store.st-day{--text:#0a2e4a;--muted:#3b6482;--line:rgba(16,96,150,.16);--line2:rgba(16,96,150,.3);--well:rgba(10,80,140,.08);
+  --surf:#f8fdff;--surf2:#e7f5fe;--st-gold:#c77d00;--st-deal:#3a9f1f;--st-deal-on:#fff}
+:root.aero .st-day .st-lab{color:#2f8c15}
+:root.aero .st-day .st-count{background-image:linear-gradient(180deg,#0d63a8 20%,#1d9be2)}
+:root.aero .st-day .st-moon{background:radial-gradient(circle at 42% 38%,#fff 0 30%,#fffbe0 50%,#ffe98a 72%,#ffd54a);
+  box-shadow:0 0 0 12px rgba(255,255,255,.35),0 0 0 30px rgba(255,255,255,.14),0 0 90px rgba(255,255,225,.95)}
+:root.aero .st-day .s-merchant{--sc:#0a69a8}:root.aero .st-day .s-forge{--sc:#d9541e}:root.aero .st-day .s-packs{--sc:#0b8a9e}:root.aero .st-day .s-atelier{--sc:#2f8c15}
+:root.aero .st-day .st-sh i{border-top-color:rgba(16,96,150,.3)}
+:root.aero .st-day .st-glass{background:var(--glass);border-color:rgba(255,255,255,.9);box-shadow:var(--glass-sh);
+  -webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+:root.aero .st-day .s-forge .st-glass{border-color:color-mix(in srgb,var(--sc) 35%,#fff)}
+:root.aero .st-day :is(.st-buy,.st-bal){background:var(--gloss),linear-gradient(180deg,#fff,#dcf0fc);border-color:rgba(20,100,160,.3);
+  box-shadow:0 3px 8px -3px rgba(8,60,110,.35),inset 0 1px 0 #fff}
+:root.aero .st-day .st-buy:disabled{background:none;box-shadow:none}
+:root.aero .st-day .st-slot.mine .card{box-shadow:0 0 0 2px #3a9f1f,0 0 24px rgba(90,190,40,.5)}
+:root.aero .st-day .st-cn small{color:#9a5b00}
+:root.aero .st-day .mine .st-cn small{color:#2f8c15}
+:root.aero .st-day .st-ring span{background:#f4fbff}
+:root.aero .st-day .st-slot.sold::after{color:#c8324f}
+/* a phone: each stop is the glass panel, and the map's line is a white trail across the sky */
+@media (max-width:759px){
+  /* the stars stay clear of the city: the map (and its lines, drawn in its own %) is as tall as it can be with its
+     lowest star, 72% down, above the spires, which reach 80% of the picture up from the city's foot at 94% */
+  :root.aero .st-down .st-map{flex:0 0 auto;height:clamp(250px,calc((94vh - .8*min(60vh,94vw) - 190px)/.72),540px)}
+  :root.aero .st-day .st-moon{box-shadow:0 0 0 7px rgba(255,255,255,.35),0 0 0 16px rgba(255,255,255,.14),0 0 50px rgba(255,255,225,.95)}
+  :root.aero .st-day .st-stop{background:var(--glass);border-color:rgba(255,255,255,.9);box-shadow:var(--glass-sh);
+    -webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+  :root.aero .st-day :is(.st-glass,.s-forge .st-glass){border:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root.aero .st-day .st-lines{stroke:rgba(255,255,255,.9)}
+  :root.aero .st-day .st-star svg{filter:drop-shadow(0 2px 4px rgba(8,60,110,.35))}
+  :root.aero .st-day .st-dots i{background:rgba(16,96,150,.25)}
+  :root.aero .st-day .st-dots i.on{background:var(--sc)}
+}
+
+/* =====================================================================
+   NIGHT: the dark theme's Aero. An aurora over dark hills: curtains of light, pink at the lower edge
+   and purple and violet above, over a starry sky; the bubble city's windows lit warm; smoked
+   glass and the same gel buttons. Back to front: the sky and its stars (the page), the aurora
+   (:root::before, drifting slowly), the hills and the city (:root::after), the bubbles (body::after).
+   ===================================================================== */
+:root.aero[data-theme="dark"]{
+  --bg0:#060a22; --bg1:#0a1030; --bar:#05021a; --surf:#111a44; --surf2:#18245a; --seg-on:#22307a;
+  --line:rgba(180,210,255,.14); --line2:rgba(180,210,255,.28);
+  --text:#eef5ff; --muted:#a8bbdf;
+  --accent:#3cb6f2; --accent-hi:#8fe0ff; --on-accent:#03203a; --accent-ink:#86d6ff; --accent-glow:rgba(60,182,242,.45);
+  --cta-glow:rgba(110,230,60,.4); --hot:#9fe6ff; --hot-glow:rgba(159,230,255,.4);
+  --board:#0e1640; --cell-bg:#0b1236;
+  --sh:0,0,12; --shk:1; --tint:255,255,255; --well:rgba(0,0,0,.25); --dim:.5;
+  --title-grad:linear-gradient(180deg,#fff 15%,#e6d4ff 50%,#ffb3ec);
+  --glass:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06) 47%,rgba(255,255,255,.02) 53%,rgba(255,255,255,.07)),rgba(10,16,52,.5);
+  --glass-sh:0 16px 36px -14px rgba(0,0,12,.75),inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 1px rgba(170,200,255,.16);
+  --gel-dark:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.07) 48%,rgba(255,255,255,0) 50.5%),linear-gradient(180deg,#2a3a86,#16205a);
+  --blue-ink:#7fd0ff; --red-ink:#6fe39a;
+  /* the sky: stars in five sizes, a blue glow along the horizon, deep violet overhead */
+  background:
+    radial-gradient(circle at 23px 41px,rgba(255,255,255,.9) 0 1px,transparent 1.7px) 0 0/173px 157px,
+    radial-gradient(circle at 97px 12px,rgba(225,215,255,.6) 0 .8px,transparent 1.4px) 0 0/211px 193px,
+    radial-gradient(circle at 140px 120px,rgba(255,255,255,.95) 0 1.2px,transparent 2px) 0 0/263px 241px,
+    radial-gradient(circle at 60px 170px,rgba(190,170,255,.75) 0 1px,transparent 1.6px) 0 0/307px 229px,
+    radial-gradient(circle at 200px 60px,rgba(255,190,240,.6) 0 1px,transparent 1.6px) 0 0/337px 283px,
+    radial-gradient(circle at 31px 88px,rgba(255,255,255,.6) 0 .9px,transparent 1.5px) 0 0/389px 347px,
+    radial-gradient(circle at 120px 20px,rgba(255,255,255,.8) 0 1.1px,transparent 1.8px) 0 0/487px 457px,
+    radial-gradient(75% 28% at 50% 90%,rgba(80,130,255,.3),transparent 70%),
+    linear-gradient(180deg,#05021a 0%,#0d0836 28%,#171a5c 58%,#1a3574 80%,#0c1a3c 100%);
+  background-color:#0d0836;
+}
+:root.aero[data-theme="dark"] body{background:none}
+:root.aero[data-theme="dark"]::before{content:"";position:fixed;left:-4%;right:-4%;top:0;height:90%;z-index:-3;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 1000' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='rays' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.022 .0016' numOctaves='2' seed='7' result='n'/%3E%3CfeColorMatrix in='n' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 2.2 0 0 0 -.55'/%3E%3C/filter%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='0' y='0' width='1600' height='1000'%3E%3Crect width='1600' height='1000' filter='url(%23rays)'/%3E%3C/mask%3E%3Cfilter id='u0' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 150'/%3E%3CfeOffset dy='-250'/%3E%3C/filter%3E%3Cfilter id='l0' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 60'/%3E%3CfeOffset dy='-80'/%3E%3C/filter%3E%3Cfilter id='e0' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='5 7'/%3E%3C/filter%3E%3Cfilter id='u1' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 135'/%3E%3CfeOffset dy='-225'/%3E%3C/filter%3E%3Cfilter id='l1' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 54'/%3E%3CfeOffset dy='-72'/%3E%3C/filter%3E%3Cfilter id='e1' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='5 7'/%3E%3C/filter%3E%3Cfilter id='u2' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 120'/%3E%3CfeOffset dy='-200'/%3E%3C/filter%3E%3Cfilter id='l2' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='3 48'/%3E%3CfeOffset dy='-64'/%3E%3C/filter%3E%3Cfilter id='e2' filterUnits='userSpaceOnUse' x='-100' y='-100' width='1800' height='1200'%3E%3CfeGaussianBlur stdDeviation='5 7'/%3E%3C/filter%3E%3C/defs%3E%3Cg mask='url(%23m)' opacity='1.0'%3E%3Cpath d='M-100 640C-42 627 133 592 250 560C367 528 492 457 600 450C708 443 800 517 900 520C1000 523 1067 493 1200 470C1333 447 1617 395 1700 380' fill='none' stroke='%239b5cff' stroke-width='110' stroke-opacity='.95' filter='url(%23u0)'/%3E%3Cpath d='M-100 640C-42 627 133 592 250 560C367 528 492 457 600 450C708 443 800 517 900 520C1000 523 1067 493 1200 470C1333 447 1617 395 1700 380' fill='none' stroke='%23ff5fd2' stroke-width='56' stroke-opacity='1' filter='url(%23l0)'/%3E%3C/g%3E%3Cpath d='M-100 640C-42 627 133 592 250 560C367 528 492 457 600 450C708 443 800 517 900 520C1000 523 1067 493 1200 470C1333 447 1617 395 1700 380' fill='none' stroke='%23ff5fd2' stroke-width='8' stroke-opacity='0.70' filter='url(%23e0)'/%3E%3Cg mask='url(%23m)' opacity='0.8'%3E%3Cpath d='M-100 360C-33 350 175 300 300 300C425 300 542 367 650 360C758 353 850 270 950 260C1050 250 1125 307 1250 300C1375 293 1625 233 1700 220' fill='none' stroke='%236f5cff' stroke-width='110' stroke-opacity='.95' filter='url(%23u1)'/%3E%3Cpath d='M-100 360C-33 350 175 300 300 300C425 300 542 367 650 360C758 353 850 270 950 260C1050 250 1125 307 1250 300C1375 293 1625 233 1700 220' fill='none' stroke='%23c08bff' stroke-width='56' stroke-opacity='1' filter='url(%23l1)'/%3E%3C/g%3E%3Cpath d='M-100 360C-33 350 175 300 300 300C425 300 542 367 650 360C758 353 850 270 950 260C1050 250 1125 307 1250 300C1375 293 1625 233 1700 220' fill='none' stroke='%23c08bff' stroke-width='8' stroke-opacity='0.56' filter='url(%23e1)'/%3E%3Cg mask='url(%23m)' opacity='0.7'%3E%3Cpath d='M-100 760C-33 750 167 703 300 700C433 697 567 750 700 740C833 730 983 660 1100 640C1217 620 1300 633 1400 620C1500 607 1650 570 1700 560' fill='none' stroke='%23b06bff' stroke-width='110' stroke-opacity='.95' filter='url(%23u2)'/%3E%3Cpath d='M-100 760C-33 750 167 703 300 700C433 697 567 750 700 740C833 730 983 660 1100 640C1217 620 1300 633 1400 620C1500 607 1650 570 1700 560' fill='none' stroke='%23ff8ad8' stroke-width='56' stroke-opacity='1' filter='url(%23l2)'/%3E%3C/g%3E%3Cpath d='M-100 760C-33 750 167 703 300 700C433 697 567 750 700 740C833 730 983 660 1100 640C1217 620 1300 633 1400 620C1500 607 1650 570 1700 560' fill='none' stroke='%23ff8ad8' stroke-width='8' stroke-opacity='0.49' filter='url(%23e2)'/%3E%3C/svg%3E") 50% 100%/cover no-repeat;
+  animation:aeroAurora 40s ease-in-out infinite alternate}
+@keyframes aeroAurora{from{transform:translateX(-2.5%);opacity:.82}to{transform:translateX(2.5%);opacity:1}}
+:root.aero[data-theme="dark"]::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(120% 34% at 88% 110%,#0c1d33 0 50%,#132b48 64%,rgba(165,135,255,.5) 68%,rgba(165,135,255,0) 72%),
+    radial-gradient(95% 30% at 4% 112%,#0a0824 0 52%,#1a1442 66%,rgba(255,110,210,.5) 70%,rgba(255,110,210,0) 74%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='gl' x1='0' y1='120' x2='0' y2='812' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%234a66b8'/%3E%3Cstop offset='.42' stop-color='%231d3472'/%3E%3Cstop offset='1' stop-color='%230a1640'/%3E%3C/linearGradient%3E%3ClinearGradient id='fc'%3E%3Cstop offset='0' stop-color='%23cdbcff' stop-opacity='0.45'/%3E%3Cstop offset='.05' stop-color='%23cdbcff' stop-opacity='0.08'/%3E%3Cstop offset='.62' stop-color='%23cdbcff' stop-opacity='0'/%3E%3Cstop offset='.62' stop-color='%2302061a' stop-opacity='0.35'/%3E%3Cstop offset='1' stop-color='%2302061a' stop-opacity='0.55'/%3E%3C/linearGradient%3E%3Cpattern id='wg' width='42' height='54' patternUnits='userSpaceOnUse'%3E%3Crect x='1' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='8' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='15' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='22' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='29' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='36' y='1' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='1' y='10' width='5' height='6' fill='%23fff1c9' fill-opacity='0.65'/%3E%3Crect x='8' y='10' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='15' y='10' width='5' height='6' fill='%23fff1c9' fill-opacity='0.8'/%3E%3Crect x='22' y='10' width='5' height='6' fill='%23ffd27a' fill-opacity='0.65'/%3E%3Crect x='29' y='10' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='36' y='10' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='1' y='19' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='8' y='19' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='15' y='19' width='5' height='6' fill='%23ffd27a' fill-opacity='0.65'/%3E%3Crect x='22' y='19' width='5' height='6' fill='%23ffd27a' fill-opacity='0.95'/%3E%3Crect x='29' y='19' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='36' y='19' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='1' y='28' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='8' y='28' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='15' y='28' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='22' y='28' width='5' height='6' fill='%23ffe7a8' fill-opacity='0.65'/%3E%3Crect x='29' y='28' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='36' y='28' width='5' height='6' fill='%23ffd27a' fill-opacity='0.8'/%3E%3Crect x='1' y='37' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='8' y='37' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='15' y='37' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='22' y='37' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='29' y='37' width='5' height='6' fill='%23ffc46b' fill-opacity='0.8'/%3E%3Crect x='36' y='37' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='1' y='46' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='8' y='46' width='5' height='6' fill='%23ffd27a' fill-opacity='0.8'/%3E%3Crect x='15' y='46' width='5' height='6' fill='%23ffc46b' fill-opacity='0.8'/%3E%3Crect x='22' y='46' width='5' height='6' fill='%23ffd27a' fill-opacity='0.65'/%3E%3Crect x='29' y='46' width='5' height='6' fill='%23ffe7a8' fill-opacity='0.95'/%3E%3Crect x='36' y='46' width='5' height='6' fill='%2306102e' fill-opacity='.35'/%3E%3C/pattern%3E%3Cpattern id='wb' width='48' height='48' patternUnits='userSpaceOnUse'%3E%3Crect y='0' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='20' y='0' width='12' height='4' fill='%23ffc46b' fill-opacity='.8'/%3E%3Crect y='8' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect y='16' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='12' y='16' width='12' height='4' fill='%23ffd27a' fill-opacity='.8'/%3E%3Crect x='8' y='16' width='4' height='4' fill='%23ffe7a8' fill-opacity='.8'/%3E%3Crect y='24' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='12' y='24' width='8' height='4' fill='%23ffc46b' fill-opacity='.8'/%3E%3Crect x='4' y='24' width='12' height='4' fill='%23ffd27a' fill-opacity='.8'/%3E%3Crect y='32' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect y='40' width='48' height='4' fill='%2306102e' fill-opacity='.35'/%3E%3Crect x='24' y='40' width='8' height='4' fill='%23ffd27a' fill-opacity='.8'/%3E%3C/pattern%3E%3ClinearGradient id='sh' x1='180' y1='300' x2='620' y2='760' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='.25' stop-color='%23ffb3ec' stop-opacity='0'/%3E%3Cstop offset='.42' stop-color='%23ffb3ec' stop-opacity='0.18'/%3E%3Cstop offset='.5' stop-color='%23ffb3ec' stop-opacity='0.03'/%3E%3Cstop offset='.62' stop-color='%23ffb3ec' stop-opacity='0.14'/%3E%3Cstop offset='.75' stop-color='%23ffb3ec' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='bb'%3E%3Cstop offset='.62' stop-color='%23e6dcff' stop-opacity='0.02'/%3E%3Cstop offset='.9' stop-color='%23e6dcff' stop-opacity='0.12'/%3E%3Cstop offset='.985' stop-color='%23e6dcff' stop-opacity='0.5'/%3E%3Cstop offset='1' stop-color='%23e6dcff' stop-opacity='0.15'/%3E%3C/radialGradient%3E%3ClinearGradient id='ir' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff9bd5'/%3E%3Cstop offset='.3' stop-color='%23d6a3ff'/%3E%3Cstop offset='.55' stop-color='%238ff0ff'/%3E%3Cstop offset='.8' stop-color='%23b49bff'/%3E%3Cstop offset='1' stop-color='%23ff9be6'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e6dcff' stop-opacity='.95'/%3E%3Cstop offset='1' stop-color='%23e6dcff' stop-opacity='0'/%3E%3C/linearGradient%3E%3CradialGradient id='cl'%3E%3Cstop offset='0' stop-color='%23ffcf8a' stop-opacity='0.45'/%3E%3Cstop offset='1' stop-color='%23ffcf8a' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='ms' x1='0' y1='692' x2='0' y2='842' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%23ffcf8a' stop-opacity='0'/%3E%3Cstop offset='.75' stop-color='%23ffcf8a' stop-opacity='0.3'/%3E%3Cstop offset='1' stop-color='%23ffcf8a' stop-opacity='0.45'/%3E%3C/linearGradient%3E%3ClinearGradient id='fd' x1='0' y1='0' x2='0' y2='1000' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0.822' stop-color='%23fff'/%3E%3Cstop offset='0.902' stop-color='%23fff' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cmask id='fm' maskUnits='userSpaceOnUse' x='0' y='0' width='1000' height='1000'%3E%3Crect width='1000' height='1000' fill='url(%23fd)'/%3E%3C/mask%3E%3CclipPath id='in'%3E%3Ccircle cx='500' cy='500' r='467'/%3E%3C/clipPath%3E%3Cg id='b'%3E%3Cpath d='M200 812V367A20 20 0 0 1 240 367V812z'/%3E%3Cpath d='M318 812V174.6H360V812z'/%3E%3Cpath d='M430 812V91.9H476V812z'/%3E%3Cpath d='M546 812V222.7H553.3V174.7H560.6V126.7H583.4V174.7H590.7V222.7H598V812z'/%3E%3Cpath d='M660 812V300.6L712 243.7V812z'/%3E%3Cpath d='M760 812V469.3H766.4V441.4H772.9V413.5H793.1V441.4H799.6V469.3H806V812z'/%3E%3C/g%3E%3Cg id='g'%3E%3Cpath d='M556 812V230.9L565.2 175.6L579 51.1L592.8 175.6L602 230.9V812z'/%3E%3Cpath d='M330 812V308.6L339.6 260.6L354 152.7L368.4 260.6L378 308.6V812z'/%3E%3Cpath d='M640 812V318.9L694 264.1V812z'/%3E%3Cpath d='M724 812V479.4H732.1V452.4H740.2V425.3H765.8V452.4H773.9V479.4H782V812z'/%3E%3C/g%3E%3Cg id='k'%3E%3Cpath d='M420 812V145.5H474V812z'/%3E%3Cpath d='M484 812V259.2Q524.6 218.5 542 358.2V812z'/%3E%3Cpath d='M262 812V395A30 30 0 0 1 322 395V812z'/%3E%3Cpath d='M170 812V514.2H177.8V490H185.7V465.8H210.3V490H218.2V514.2H226V812z'/%3E%3C/g%3E%3Cg id='l'%3E%3Cpath d='M196 812V699.6H292V812z'/%3E%3Cpath d='M360 812V674.8H372.6V663.7H385.2V652.5H424.8V663.7H437.4V674.8H450V812z'/%3E%3Cpath d='M500 812V694.6H610V812z'/%3E%3Cpath d='M660 812V679H756V812z'/%3E%3C/g%3E%3C/defs%3E%3Cg mask='url(%23fm)'%3E%3Ccircle cx='500' cy='500' r='470' fill='%236b5cff' fill-opacity='0.1'/%3E%3Cg clip-path='url(%23in)'%3E%3Cg opacity='0.8'%3E%3Cuse href='%23b' fill='%231b2a66'/%3E%3Cuse href='%23b' fill='url(%23wg)' opacity='.5'/%3E%3Cuse href='%23b' fill='url(%23fc)'/%3E%3C/g%3E%3Cuse href='%23g' fill='url(%23gl)'/%3E%3Cuse href='%23g' fill='url(%23fc)'/%3E%3Cuse href='%23g' fill='url(%23wg)'/%3E%3Cuse href='%23g' fill='url(%23sh)'/%3E%3Cuse href='%23g' fill='none' stroke='%23b9c8ff' stroke-opacity='0.4' stroke-width='1.2'/%3E%3Cuse href='%23k' fill='url(%23gl)'/%3E%3Cuse href='%23k' fill='url(%23fc)'/%3E%3Cuse href='%23k' fill='url(%23wb)'/%3E%3Cuse href='%23k' fill='url(%23sh)'/%3E%3Cuse href='%23k' fill='none' stroke='%23b9c8ff' stroke-opacity='0.4' stroke-width='1.2'/%3E%3Cg stroke='%239fb2e0' stroke-width='2'%3E%3Cpath d='M753 425.3v-46.4'/%3E%3Ccircle cx='753' cy='378.9' r='3' fill='%23ff4d4d'/%3E%3Cpath d='M447 145.5v-80'/%3E%3Ccircle cx='447' cy='65.5' r='3' fill='%23ff4d4d'/%3E%3C/g%3E%3Cuse href='%23l' fill='url(%23gl)'/%3E%3Cuse href='%23l' fill='url(%23fc)'/%3E%3Cuse href='%23l' fill='url(%23wb)'/%3E%3Cuse href='%23l' fill='url(%23sh)'/%3E%3Cuse href='%23l' fill='none' stroke='%23b9c8ff' stroke-opacity='0.4' stroke-width='1.2'/%3E%3Crect x='0' y='692' width='1000' height='308' fill='url(%23ms)'/%3E%3C/g%3E%3Ccircle cx='500' cy='500' r='470' fill='url(%23bb)'/%3E%3Ccircle cx='500' cy='500' r='466' fill='none' stroke='url(%23ir)' stroke-width='7' stroke-opacity='0.45'/%3E%3Ccircle cx='500' cy='500' r='470' fill='none' stroke='%23e6dcff' stroke-opacity='0.6' stroke-width='2.5'/%3E%3Cpath d='M96 453A423 423 0 0 1 462 86A461 461 0 0 0 58 491z' fill='url(%23hl)' opacity='0.45'/%3E%3Cellipse cx='265' cy='209' rx='52' ry='24' transform='rotate(-38 265 209)' fill='%23e6dcff' fill-opacity='0.6'/%3E%3Cpath d='M923 556A446 446 0 0 1 712 867' fill='none' stroke='%23e6dcff' stroke-opacity='0.4' stroke-width='5' stroke-linecap='round'/%3E%3C/g%3E%3Cellipse cx='500' cy='830' rx='479' ry='46' fill='url(%23cl)'/%3E%3C/svg%3E") 100% calc(88vh - .81*min(60vh,94vw))/min(60vh,94vw) no-repeat}
+:root.aero[data-theme="dark"] body::after{opacity:.4}
+@media (prefers-reduced-motion:reduce){:root.aero[data-theme="dark"]::before{animation:none}}
+/* a phone: the city stands lower, on the ground, as by day */
+@media (max-width:759px){:root.aero[data-theme="dark"]::after{background-position:0 0,0 0,100% calc(94vh - .81*min(60vh,94vw))}}
+
+/* smoked glass */
+:root.aero[data-theme="dark"] :is(.hero,.tile,.pcard,.setlist,.rules,.pf-card,.srow,.rinfo,.room-code,.room-pl li,.pill,#toast){border-color:rgba(180,215,255,.26)}
+:root.aero[data-theme="dark"] .tile:hover{box-shadow:0 16px 30px -14px rgba(0,0,12,.8),inset 0 1px 0 rgba(255,255,255,.45),inset 0 0 0 1px rgba(170,210,255,.3)}
+:root.aero[data-theme="dark"] .hero::before{background:radial-gradient(rgba(160,120,255,.35),transparent 70%)}
+:root.aero[data-theme="dark"] .hero-stats{background:rgba(255,255,255,.05);border-color:var(--line)}
+:root.aero[data-theme="dark"] :is(.mbox,.hbox){
+  background:linear-gradient(180deg,rgba(44,56,128,.94),rgba(20,28,78,.92) 46%,rgba(12,18,56,.93) 54%,rgba(18,26,70,.95));
+  border-color:rgba(180,215,255,.3);box-shadow:0 30px 70px -20px rgba(0,0,12,.8),inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(170,210,255,.12)}
+:root.aero[data-theme="dark"] .mbox h2{filter:drop-shadow(0 0 14px rgba(255,150,230,.3))}
+:root.aero[data-theme="dark"] :is(.tile>svg,.srh svg,.rinfo svg){color:#86d6ff;filter:drop-shadow(0 0 6px rgba(134,214,255,.45))}
+
+/* gel buttons: the plain ones go dark, the coloured ones keep their colour */
+:root.aero[data-theme="dark"] :is(.btn:not(.primary,.danger,.text),.iconbtn){background:var(--gel-dark);border-color:rgba(170,210,255,.3);
+  box-shadow:0 3px 10px -3px rgba(0,0,12,.7),inset 0 1px 0 rgba(255,255,255,.3)}
+:root.aero[data-theme="dark"] .btn.danger{background:rgba(255,255,255,.04)}
+:root.aero[data-theme="dark"] .seg{background:rgba(0,0,12,.28);border-color:var(--line);box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+:root.aero[data-theme="dark"] input.rng::-webkit-slider-runnable-track{background:var(--gloss),linear-gradient(90deg,#3cb6f2 var(--f),rgba(255,255,255,.14) var(--f))}
+:root.aero[data-theme="dark"] input.rng::-moz-range-track{background:var(--gloss),linear-gradient(90deg,#3cb6f2 var(--f),rgba(255,255,255,.14) var(--f))}
+
+/* the logo glows */
+:root.aero[data-theme="dark"] :is(.brand .emblem,.wm-em){filter:hue-rotate(-120deg) saturate(1.3) brightness(1.25) drop-shadow(0 0 12px rgba(255,120,220,.35))}
+:root.aero[data-theme="dark"] .title{color:#f2f8ff}
+:root.aero[data-theme="dark"] :is(.logo-word,.wm-word){filter:drop-shadow(0 0 10px rgba(143,224,255,.55))}
+:root.aero[data-theme="dark"] .ver{background:rgba(255,255,255,.06);border-color:var(--line2)}
+
+/* the board: a smoked glass tray with dark wells */
+:root.aero[data-theme="dark"] .board{border-color:rgba(180,215,255,.3);box-shadow:0 26px 60px -20px rgba(0,0,12,.85),inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(170,210,255,.12)}
+:root.aero[data-theme="dark"] .cell{background:linear-gradient(180deg,rgba(22,32,86,.8),rgba(12,18,56,.9));box-shadow:inset 0 2px 10px rgba(0,0,0,.5);border-color:rgba(170,210,255,.14)}
+
+/* losses stay red, and Crossroads keeps the dark theme's blue and red */
+:root.aero[data-theme="dark"] :is(.mh-res.l,.mh-tr.lost,.mh-log .l,.mh-facts b.l,.pf-wld .l b,.pf-form .l,.pf-ring){--red-ink:#ff8a9a}
+:root.aero[data-theme="dark"] :is(#scr-duo,#scr-duoroom,.dc-blue,.dc-red){--blue1:#2F5FD0;--blue2:#142a6e;--blue-ink:#8CB4FF;--red1:#C8344F;--red2:#5c1224;--red-ink:#FF8A9A}
+
+/* the Night Market under the aurora: its own colours, Aero's smoked glass */
+:root.aero[data-theme="dark"].night{--bg0:#0c1a3c;--bar:#05021a}
+:root.aero[data-theme="dark"] .st-glass{background:var(--glass);border-color:rgba(180,215,255,.22);box-shadow:var(--glass-sh);
+  -webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5)}
+:root.aero[data-theme="dark"] :is(.st-buy,.st-bal){background:var(--gel-dark);box-shadow:0 3px 10px -3px rgba(0,0,12,.7),inset 0 1px 0 rgba(255,255,255,.3)}
+:root.aero[data-theme="dark"] .st-buy:disabled{background:none;box-shadow:none}
+@media (max-width:759px){
+  :root.aero[data-theme="dark"] .st-stop{background:var(--glass);border-color:rgba(180,215,255,.22);box-shadow:var(--glass-sh);
+    -webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5)}
+  :root.aero[data-theme="dark"] :is(.st-glass,.s-forge .st-glass){border:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+}

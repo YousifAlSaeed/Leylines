@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.26.2 (2026-10-15)
+- **Small** behind-the-scenes changes
+- In the waiting room the game code sits in the middle of its box, with Copy link, Share and the invite link lined up under it the full width of the box
+
 ## 0.26.1 (2026-10-15)
 - The Shard well moved into the Pack counter: a Packs / Shards switch shows either the packs or your shards from matches today, the 5★ guarantee and how to earn more
 - The market's fourth stop is now the Atelier, a bubbling cauldron behind a closed door: coming soon

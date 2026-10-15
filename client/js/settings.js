@@ -4,8 +4,9 @@
    ===================================================================== */
 const lightMQ=matchMedia('(prefers-color-scheme: light)');
 function applyTheme(){
-  const t=SAVE.theme||'system',dark=t==='dark'||(t==='system'&&!lightMQ.matches);
+  const t=SAVE.theme||'system',aero=aeroOn(),dark=t==='dark'||(t==='system'&&!lightMQ.matches);
   document.documentElement.dataset.theme=dark?'dark':'light';
+  document.documentElement.classList.toggle('aero',aero); // a developer's Frutiger Aero look: a summer day, or an aurora night in the dark theme (save.js, aero.css)
   stSky(); // the market's sky goes by the theme, and gives the page its top colour while it's open (store.js)
   // the browser's bar, and on an iPhone app the strip behind the clock: the colour at the top of the page (--bar, base.css)
   $('#themeColor').setAttribute('content',getComputedStyle(document.documentElement).getPropertyValue('--bar').trim()||(dark?'#0E0A1F':'#f6f3ff'));
@@ -13,9 +14,13 @@ function applyTheme(){
 lightMQ.addEventListener('change',()=>{if((SAVE.theme||'system')==='system')applyTheme()});
 function openSettings(){
   const th=SAVE.theme||'system';
+  // Frutiger Aero: a row only developers get (save.js aeroOn); the theme picks its day or its night
+  const themeSub=()=>aeroOn()?'Frutiger Aero: Light is day, Dark is night':'System follows your device';
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
-    <div class="setrow"><span class="rt"><b>Theme</b><small>System follows your device</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
+    <div class="setrow"><span class="rt"><b>Theme</b><small id="setThemeSub">${themeSub()}</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
+    ${isDev()?`<div class="setrow"><span class="rt"><b>Frutiger Aero</b><small>Glass, bubbles, a summer sky or an aurora night. Only developers see this</small></span><div class="seg" id="setAero" role="group" aria-label="Frutiger Aero">${
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${!!SAVE.aero==!!k?'on':''}" aria-pressed="${!!SAVE.aero==!!k}">${l}</button>`).join('')}</div></div>`:''}
     <div class="setrow"><span class="rt"><b>Menu background</b><small>${noMotion()?'Cards behind the menu, kept still: your device reduces motion':'Cards drifting behind the menu'}</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
       [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${driftWanted()==!!k?'on':''}" aria-pressed="${driftWanted()==!!k}">${l}</button>`).join('')}</div></div>
     ${volRows('set')}
@@ -24,6 +29,11 @@ function openSettings(){
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+  });
+  box.querySelectorAll('#setAero button').forEach(b=>b.onclick=()=>{
+    SAVE.aero=b.dataset.k==='1';save();applyTheme();sfx('click');
+    box.querySelector('#setThemeSub').textContent=themeSub();
+    box.querySelectorAll('#setAero button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
   box.querySelectorAll('#setDrift button').forEach(b=>b.onclick=()=>{
     driftSet(b.dataset.k==='1');sfx('click'); // menu.js

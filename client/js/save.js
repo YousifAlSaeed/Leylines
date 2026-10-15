@@ -119,7 +119,7 @@ fixMain();
 // Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
 function resetSave(){
   const d=defSave();
-  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','theme','cid'])d[k]=SAVE[k];
+  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','theme','aero','cid'])d[k]=SAVE[k];
   d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
   SAVE=d;fixMain();save();
 }
@@ -149,6 +149,9 @@ function isDev(){
 // "Unlock all cards" (a developer tool) lends at least 1 copy of every card while it's on; the real collection stays underneath.
 // It's ignored for everyone else, even if an old save has it switched on.
 const unlocked=()=>!!SAVE.unlockAll&&isDev();
+// "Frutiger Aero" (a developer tool): glossy glass and a summer sky over the light theme (settings.js applyTheme, aero.css).
+// Ignored for everyone else in the same way.
+const aeroOn=()=>!!SAVE.aero&&isDev();
 const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
 const isSeen=id=>unlocked()||SAVE.seen.includes(id);
 const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;

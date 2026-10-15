@@ -112,10 +112,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* online waiting room (the setup screen with the code and players on top) */
 .s-room{display:flex;flex-direction:column;gap:10px}
 .s-room h3{margin-bottom:-2px}
-.room-code{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+/* the game code in the middle, the buttons and the invite link under it as wide as the box */
+.room-code{display:flex;flex-direction:column;gap:10px;text-align:center;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px}
 .room-code .or{margin:0}
-.room-code .codebox{font-size:34px;padding:4px 0 0;text-align:left}
-.room-share{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px;max-width:340px}
+/* .3em on the left matches the letter spacing after the last letter, so the code sits in the middle */
+.room-code .codebox{font-size:34px;padding:2px 0 0 .3em}
+.room-share{display:flex;flex-direction:column;gap:6px}
+.room-share .linkin{text-align:center}
 .room-pl{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .room-pl li{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-height:52px}
 .room-pl li.h .av{background:linear-gradient(160deg,var(--blue1),var(--blue2))} .room-pl li.g .av{background:linear-gradient(160deg,var(--red1),var(--red2))}
