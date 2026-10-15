@@ -3,6 +3,7 @@ import path from 'node:path';
 import { authRouter } from './routes/auth.js';
 import { createHub } from './lib/hub.js';
 import { createPusher } from './lib/push.js';
+import { startDailyAlerts } from './lib/dailyAlerts.js';
 import { forfeitsRouter } from './routes/forfeits.js';
 import { friendsRouter } from './routes/friends.js';
 import { giftsRouter } from './routes/gifts.js';
@@ -17,6 +18,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, 
   const app = express();
   const push = createPusher(db, { send: pushSend }); // push alerts (lib/push.js), null without VAPID keys
   const hub = createHub(push); // presence, invites and change counters (lib/hub.js)
+  app.locals.dailyAlerts = startDailyAlerts(db, push, hub, { timer: !pushSend }); // the evening reminder (lib/dailyAlerts.js)
   app.disable('x-powered-by');
   app.set('trust proxy', trustProxy);
 

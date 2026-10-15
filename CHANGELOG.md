@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.26.4 (2026-10-15)
+- With alerts on, you get one reminder in the evening if your daily pack or Daily challenges are still waiting. Tap it to go straight to the Daily tab. Don't want it? Turn off Daily reminder in Settings
+
 ## 0.26.3 (2026-10-15)
 - Loadout messages ("Loaded …", "Saved to …") show beside the Loadouts title, so the collection no longer jumps when one appears
 

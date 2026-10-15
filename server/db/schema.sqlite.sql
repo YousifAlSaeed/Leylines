@@ -131,3 +131,12 @@ CREATE TABLE IF NOT EXISTS push_subs (
   created_at TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS push_subs_user ON push_subs (user_id);
+
+-- The day each player last got the daily reminder (lib/dailyAlerts.js), per site
+-- like push_subs, so a restart doesn't send it twice.
+CREATE TABLE IF NOT EXISTS daily_alerts (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  site    TEXT    NOT NULL,
+  day     TEXT    NOT NULL,
+  PRIMARY KEY (user_id, site)
+);

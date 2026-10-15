@@ -2,8 +2,9 @@
 /* =====================================================================
    ALERTS  (push notifications)
    A signed-in player can turn on alerts in Settings. Then invites,
-   friend requests and news about a match they left reach their device
-   even when the game is closed (server/lib/push.js sends them, sw.js
+   friend requests, news about a match they left and an evening
+   reminder about the daily pack and Daily challenges (only while
+   something's still waiting) reach their device even when the game is closed (server/lib/push.js sends them, sw.js
    shows them). Each device turns them on for itself; signing out turns
    them off. On iPhone and iPad they only work in the home-screen app.
    ===================================================================== */
@@ -91,11 +92,24 @@ async function alertsTest(){
 /* ---------- the Settings row ---------- */
 function alertsRow(){
   if(API==null)return '';
-  return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests and match news, even with the game closed</small></span><span id="alertsCtl"></span></div>`;
+  return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests, match news and a daily reminder, even with the game closed</small></span><span id="alertsCtl"></span></div>`+
+    // the evening reminder (server/lib/dailyAlerts.js): on unless the player turns it off. It's in the save, so the server can read it
+    `<div class="setrow" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><div class="seg" role="group" aria-label="Daily reminder">${
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div></div>`;
+}
+const dailyAlertOn=()=>SAVE.dailyAlert!==false;
+function dailyAlertWire(box){
+  box.querySelectorAll('#setDailyAlert button').forEach(b=>b.onclick=()=>{
+    const on=b.dataset.k==='1';if(on===dailyAlertOn())return;
+    if(on)delete SAVE.dailyAlert;else SAVE.dailyAlert=false;
+    save();sfx('click');
+    box.querySelectorAll('#setDailyAlert button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+  });
 }
 async function alertsPaint(box){
   const row=box.querySelector('#setAlerts');if(!row)return;
-  const sub=row.querySelector('#alertsSub'),ctl=row.querySelector('#alertsCtl');
+  const sub=row.querySelector('#alertsSub'),ctl=row.querySelector('#alertsCtl'),daily=box.querySelector('#setDailyAlert');
+  if(daily&&!daily.wired){daily.wired=true;dailyAlertWire(box)}
   const say=(t,c='')=>{sub.textContent=t;ctl.innerHTML=c};
   if(!await alertsKey())return; // this server sends none: no row
   row.hidden=false;
@@ -103,7 +117,8 @@ async function alertsPaint(box){
   if(!alertsCan())return say(alertsIOS()&&!alertsHome()?'Add Leylines to your home screen, then turn alerts on in the app.':'This browser can\'t show alerts.');
   if(Notification.permission==='denied')return say(`Blocked. Allow notifications for this site in your browser, and for your browser in ${DEVICE_HELP}.`);
   const draw=on=>{
-    say(on?'On for this device. Invites, friend requests and match news reach you even with the game closed.':'Invites, friend requests and match news, even with the game closed',
+    if(daily)daily.hidden=!on; // only with alerts on for this device
+    say(on?'On for this device. Invites, friend requests, match news and a daily reminder reach you even with the game closed.':'Invites, friend requests, match news and a daily reminder, even with the game closed',
       `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
       // Test: developer accounts only (and a local copy of the game)
       (on&&isDev()?'<button class="btn small" id="alertsTest">Test</button>':''));
@@ -132,10 +147,11 @@ async function alertsPaint(box){
 }
 
 /* ---------- tapping an alert ---------- */
-// ./?friends=1 opens Friends; ./?invite=1 brings up the invite (or says it ended)
+// ./?friends=1 opens Friends; ./?invite=1 brings up the invite (or says it ended); ./?daily=1 the Daily tab
 function alertOpen(url){
   let q;try{q=new URL(url,location.href).searchParams}catch(e){return}
   if(q.get('friends')&&!G)openFriends();
+  if(q.get('daily')&&!G){SAVE.menuMode='daily';save();if($('#scr-menu').classList.contains('on'))renderHero(true)}
   if(q.get('invite')){ALERTS.fromInvite=true;INV.done.clear();pulseSoon()}
 }
 // the game was open already: the service worker hands the alert over
