@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.25.2 (2026-10-15)
+- Music and sound effects each get a mute button next to their slider in Settings, and keep their level while muted; in a match the speaker opens a small panel with both sliders
+
 ## 0.25.1 (2026-10-15)
 - The cards behind the menu show on every phone. A phone set to reduce motion (Android's Battery Saver or Remove animations, an iPhone's Reduce Motion) used to get none; now they're there and keep still
 - The sheet of cards sits straight and centred on older browsers too, and the menu's panels stay filled where a browser can't make them see-through

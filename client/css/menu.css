@@ -20,9 +20,17 @@ input.rng::-moz-range-track{height:6px;border-radius:3px;background:linear-gradi
 input.rng::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
 input.rng::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(160deg,var(--accent-hi),var(--accent));border:2px solid var(--surf);box-shadow:0 2px 6px rgba(var(--sh),calc(.6*var(--shk)))}
 input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}input.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
-.setrow .rng{flex:0 0 44%;min-width:0}
+.setrow .rng{flex:0 1 44%;min-width:0}
+.setrow[data-vol]{gap:10px}.setrow[data-vol] .rt{min-width:6.8em} /* on a phone the slider gives way, not the name */
 .setrow .vpct{font:800 14px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
-.setrow.muted .vpct{color:var(--muted)}
+.setrow.muted .vpct{color:var(--muted)}.setrow.muted .rng{opacity:.55}
+.vmute{flex:none;width:34px;height:34px;margin-left:-4px;padding:0;border-radius:10px;border:1px solid var(--line2);background:rgba(var(--tint),.04);color:var(--accent-ink);
+  display:grid;place-items:center;cursor:pointer;transition:background .18s,border-color .18s,transform .2s var(--spring)}
+.vmute svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.vmute[aria-pressed="true"]{color:var(--muted);background:rgba(var(--tint),.1)}
+@media (hover:hover){.vmute:hover{border-color:var(--accent)}}
+.vmute:active{transform:scale(.92)}
+.vmute:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-glow)}
 .trow .ticks{grid-column:1/-1;position:relative;height:14px;font:500 11px/14px var(--body);color:var(--muted)}
 .trow .ticks span{position:absolute;left:calc(11px + (100% - 22px)*var(--p));transform:translateX(-50%)}
 .rc{position:relative;aspect-ratio:5/3.6;border-radius:14px;border:1px solid var(--line2);cursor:pointer;color:var(--muted);

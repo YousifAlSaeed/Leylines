@@ -192,6 +192,17 @@ body.pc .ptm:not([hidden]){display:flex;align-items:center;justify-content:space
 .stats{display:grid;grid-template-columns:auto auto;gap:4px 16px;justify-content:center;text-align:left;font-size:14px;color:var(--muted)}
 .stats b{color:var(--text);font-weight:600}
 
+/* ---------- sound panel: hangs under the speaker in the top bar, the music and sound effects rows from Settings ---------- */
+#btnSnd.on{background:rgba(var(--tint),.1);border-color:var(--line2)}
+.sndpop{position:absolute;top:calc(100% + 6px);right:0;z-index:40;width:min(340px,calc(100vw - 20px));box-sizing:border-box;background:var(--surf);border:1px solid var(--line2);
+  border-radius:18px;padding:4px;box-shadow:0 20px 50px rgba(var(--sh),calc(.7*var(--shk)));transform-origin:calc(100% - 22px) 0;animation:sndIn .24s var(--spring)}
+@keyframes sndIn{from{transform:scale(.8) translateY(-8px);opacity:0}}
+.sndpop .setlist{border:0;background:none;border-radius:14px}
+.sndpop .setrow{gap:10px;padding:10px 8px 10px 12px}
+.sndpop .setrow .rt{flex:0 0 auto;width:6.6em}
+.sndpop .setrow small{display:none}
+.sndpop .setrow .rng{flex:1 1 0}
+
 /* ---------- quick emotes ---------- */
 .side .pname{position:relative}
 /* the button sits right after your name, so both scores stay on the right edge, one above the other */

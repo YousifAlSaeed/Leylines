@@ -157,7 +157,7 @@ function sfxLoad(){
 // vol: 0–1 of the normal loudness (a softer version of the same sound)
 function sfx(k,vol=1){
   const v=SAVE.sfxVol/100*vol;
-  if(!SAVE.sound||!v)return;
+  if(SAVE.sfxMute||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
@@ -186,7 +186,7 @@ function sfx(k,vol=1){
 // Replace these numbers if the track changes.
 const MUSIC={src:'audio/theme.mp3',max:.5,first:0,loopAt:167.4085,
   buf:null,loading:null,node:null,gain:null,want:false,pos:null,t0:0,off:0};
-function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
+function musicOn(){return !!(!SAVE.musicMute&&SAVE.musicVol)}
 const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
 // download now; decoding needs the audio context, which waits for the first interaction
 MUSIC.data=fetch(MUSIC.src).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()});

@@ -492,10 +492,22 @@ function liveResume(L){
   if(L.next){G.over=true;nextMatch();return}
   G.busy=false;nextTurn();
 }
-$('#btnSnd').onclick=()=>{SAVE.sound=!SAVE.sound;save();updSnd();sfx('click');musicSync()};
+// the speaker opens a small panel with the music and sound effects rows from Settings (settings.js)
+function openSndPop(){
+  const p=$('#sndPop');p.innerHTML=`<div class="setlist">${volRows('pop')}</div>`;volWire(p);
+  p.classList.remove('hidden');$('#btnSnd').classList.add('on');$('#btnSnd').setAttribute('aria-expanded','true');
+}
+function closeSndPop(){
+  const p=$('#sndPop');if(p.classList.contains('hidden'))return;
+  p.classList.add('hidden');p.innerHTML='';$('#btnSnd').classList.remove('on');$('#btnSnd').setAttribute('aria-expanded','false');
+}
+$('#btnSnd').onclick=()=>{sfx('click');if($('#sndPop').classList.contains('hidden'))openSndPop();else closeSndPop()};
+// a tap anywhere else, or Esc, closes it
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#sndPop,#btnSnd'))closeSndPop()},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sndPop').classList.contains('hidden')){closeSndPop();$('#btnSnd').focus()}});
 const SND_ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a7.5 7.5 0 010 11"/></svg>',
   SND_OFF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 10l4 4M21 10l-4 4"/></svg>';
-function updSnd(){const b=$('#btnSnd');b.innerHTML=SAVE.sound?SND_ON:SND_OFF;b.setAttribute('aria-label',SAVE.sound?'Sound on':'Sound off');$$('[data-vol]').forEach(r=>r.paint&&r.paint())}
+function updSnd(){const b=$('#btnSnd'),off=sndSilent();b.innerHTML=off?SND_OFF:SND_ON;b.setAttribute('aria-label',off?'Sound (muted)':'Sound');$$('[data-vol]').forEach(r=>r.paint&&r.paint())}
 
 /* ---------- turn timer ---------- */
 // The ring (landscape) and the bar under the top bar are redrawn every frame from a fixed deadline, so they move at a steady speed however busy the page is.
