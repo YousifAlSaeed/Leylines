@@ -31,6 +31,7 @@ export function meRouter(db) {
       if (!name) return res.status(400).json({ error: 'Enter a name.' });
       ({ rows: [user] } = await db.run('UPDATE users SET display_name = $d, updated_at = $now WHERE id = $u RETURNING *',
         { $d: name, $now: now(), $u: user.id }));
+      forgetUser(user.id); // invites sent from the pulse show the new name
     }
     if (email !== undefined) {
       const mail = email ? String(email).trim().toLowerCase() : null;

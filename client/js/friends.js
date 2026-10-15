@@ -7,7 +7,6 @@
    someone's profile. Every one of those buttons repaints when the list changes.
    ===================================================================== */
 const FR={friends:[],incoming:[],outgoing:[],loaded:false,loading:null,again:false};
-const FR_POLL=120000; // the server says when the list changes (pulse.js); this catches anything that check missed
 const frKey=n=>String(n||'').toLowerCase();
 const frIn=(list,name)=>list.some(u=>frKey(u.username)===frKey(name));
 // 'friends' | 'incoming' (they asked you) | 'sent' (you asked them) | ''
@@ -27,8 +26,8 @@ function frLoad(){
 // signing out: nothing about the old account stays on screen
 function frReset(){Object.assign(FR,{friends:[],incoming:[],outgoing:[],loaded:false});frChanged()}
 function frChanged(){renderFriendTile();renderFriends();frPaint();frNotify()}
-// keep the list current while the game is open and in front: levels and avatars, and anything the pulse missed
-setInterval(()=>{if(ACCT.token&&ACCT.up&&document.visibilityState==='visible')frLoad()},FR_POLL);
+// No timer: the pulse says when the list changes (pulse.js) and opening Friends loads it again (levels and avatars),
+// so a game left open doesn't keep the database awake
 
 /* ---------- the button that goes next to a name ---------- */
 // remove: also offer "Remove" once you're friends (on their profile)

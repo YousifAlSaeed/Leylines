@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.1 (2026-10-16)
+- A game left open checks in with the server more lightly, so accounts stay up all month
+
 ## 0.28.0 (2026-10-15)
 - New online game: Draft. Tap Host a game, then Draft. Nobody brings cards: 10 go on the table, 2 of each rarity, and you take turns picking 5. Whoever plays second picks first, and each pick has 15 seconds
 - Drafted cards are borrowed, so no cards are traded. The winner gets XP and coins as usual

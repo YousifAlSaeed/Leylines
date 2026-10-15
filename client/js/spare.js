@@ -58,8 +58,8 @@ function oweNews(){
     [{label:'OK',cls:'primary',esc:true,wait:true}]);
   renderMenu();
 }
-// the server also says when one comes in (pulse.js); this is in case that check misses it
-setInterval(owesCheck,45000);
+// No timer: the pulse says when one comes in (pulse.js) and signing in checks too,
+// so a game left open doesn't keep the database awake
 
 // your choice, kept by the server in case they've closed the game (it also reaches them directly when they're still here)
 function forfeitPost(user,key,ids){

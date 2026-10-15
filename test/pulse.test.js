@@ -148,4 +148,22 @@ describe('pulse', () => {
     await api('/auth/logout', { method: 'POST', token: tok });
     assert.equal((await api('/pulse', { method: 'POST', token: tok, body: {} })).status, 401);
   });
+
+  test('a game left open doesn\'t ask the database who you are again for hours', async () => {
+    await pulse('cyd');
+    const get = db.get, now = Date.now;
+    let asked = 0;
+    db.get = (...a) => { asked++; return get.apply(db, a); };
+    Date.now = () => now() + 2 * 3600e3;
+    try { await pulse('cyd'); } finally { db.get = get; Date.now = now; }
+    assert.equal(asked, 0);
+  });
+
+  test('an invite shows your new name straight away', async () => {
+    await pulse('ana');
+    await pulse('bob');
+    assert.equal((await api('/me', { method: 'PATCH', token: T.ana, body: { displayName: 'Ana Renamed' } })).status, 200);
+    assert.equal((await invite('ana', 'bob', 'QWERT')).status, 204);
+    assert.ok((await pulse('bob')).invites.some((i) => i.code === 'QWERT' && i.name === 'Ana Renamed'));
+  });
 });

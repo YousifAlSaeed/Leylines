@@ -36,6 +36,9 @@ export function reminderText({ pack, left }) {
 export function startDailyAlerts(db, push, hub, { timer = true } = {}) {
   const site = config.appUrl;
   let busy = false;
+  // who has had today's reminder (or didn't need one), so the checks after it leave the database
+  // asleep (Neon's free plan counts the hours it's awake). daily_alerts is for after a restart
+  let told = { day: '', ids: new Set() };
   async function tick(now = Date.now()) {
     if (!push || busy || hourOf(now) < REMIND_HOUR) return 0;
     busy = true;
@@ -43,17 +46,19 @@ export function startDailyAlerts(db, push, hub, { timer = true } = {}) {
     try {
       await push.ready;
       const day = gameDay(now);
+      if (told.day !== day) told = { day, ids: new Set() };
       const ttl = Math.max(60, Math.round((864e5 - (now + DAY_TZ) % 864e5) / 1000)); // gone at midnight, when it's no longer true
       for (const id of push.ids()) {
         // the game is open in front of them: it shows the Daily dot itself. Try again next time
-        if (!hub.byAlert(id)) continue;
+        if (told.ids.has(id) || !hub.byAlert(id)) continue;
         const done = await db.get('SELECT day FROM daily_alerts WHERE user_id = $u AND site = $s', { $u: id, $s: site });
-        if (done?.day === day) continue;
+        if (done?.day === day) { told.ids.add(id); continue; }
         await db.run(
           `INSERT INTO daily_alerts (user_id, site, day) VALUES ($u, $s, $d)
            ON CONFLICT (user_id, site) DO UPDATE SET day = excluded.day`,
           { $u: id, $s: site, $d: day },
         );
+        told.ids.add(id);
         const row = await db.get('SELECT data FROM user_saves WHERE user_id = $u', { $u: id });
         if (!row) continue; // never played signed in
         let save;

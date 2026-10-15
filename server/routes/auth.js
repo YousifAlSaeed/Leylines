@@ -2,7 +2,7 @@
 // client sends as "Authorization: Bearer <token>".
 import { Router } from 'express';
 import { hashPassword, verifyPassword } from '../lib/password.js';
-import { createSession, deleteSession, requireAuth } from '../lib/sessions.js';
+import { createSession, deleteSession, forgetUser, requireAuth } from '../lib/sessions.js';
 import { rateLimit } from '../lib/rateLimit.js';
 import { checkPassword, checkSave, checkSignup, cleanName, privateUser } from '../lib/users.js';
 import { emailHash, sealEmail } from '../lib/emailCrypto.js';
@@ -89,6 +89,7 @@ export function authRouter(db) {
     const { rows: [user] } = await db.run('UPDATE users SET password_hash = $h, updated_at = $now WHERE id = $u RETURNING *',
       { $h: await hashPassword(password), $now: new Date().toISOString(), $u: userId });
     await db.run('DELETE FROM sessions WHERE user_id = $u', { $u: userId });
+    forgetUser(userId);
     const save = await db.get('SELECT * FROM user_saves WHERE user_id = $u', { $u: userId });
     res.json({ token: await createSession(db, userId), user: privateUser(user), save: saveInfo(save, true) });
   });

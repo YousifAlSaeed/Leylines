@@ -57,10 +57,11 @@ export function optionalAuth(db) {
 }
 
 // For the check the game makes every few seconds (routes/pulse.js): a token that
-// was fine a moment ago is trusted for a minute without asking the database.
-// Signing out, a password change and deleting the account forget it at once.
+// was fine earlier is trusted for 12 hours without asking the database, so a game
+// left open doesn't keep the database awake (Neon's free plan counts the hours it's awake).
+// Signing out, a password change or reset, a new name and deleting the account forget it at once.
 const known = new Map(); // token hash → { user, until }
-const KNOWN_MS = 60 * 1000;
+const KNOWN_MS = 12 * 60 * 60 * 1000;
 export function forgetUser(userId) {
   for (const [h, k] of known) if (k.user.id === userId) known.delete(h);
 }
@@ -71,7 +72,8 @@ export function cachedAuth(db) {
     if (k && k.until > Date.now()) { req.user = k.user; req.token = token; return next(); }
     auth(req, res, () => {
       if (known.size > 5000) known.clear();
-      known.set(sha256(token), { user: req.user, until: Date.now() + KNOWN_MS });
+      // never past the session's own end
+      known.set(sha256(token), { user: req.user, until: Math.min(Date.now() + KNOWN_MS, Date.parse(req.user.session_expires)) });
       next();
     });
   };

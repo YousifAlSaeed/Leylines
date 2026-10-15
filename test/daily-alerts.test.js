@@ -76,6 +76,12 @@ describe('daily reminder', () => {
 
     // not again the same day, even after a restart
     assert.equal(await tick(EVENING + 3600e3), 0);
+    // and without asking the database, so it can sleep
+    const get = db.get;
+    let asked = 0;
+    db.get = (...a) => { asked++; return get.apply(db, a); };
+    try { assert.equal(await tick(EVENING + 7200e3), 0); } finally { db.get = get; }
+    assert.equal(asked, 0);
     // but again the next evening, when bob's dailies are new again too
     assert.equal(await tick(EVENING + 864e5), 2);
 
