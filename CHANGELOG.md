@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.6 (2026-10-16)
+- Smoother music changes: the song playing eases out, and the next one eases in a moment later, instead of both playing loud at once
+
 ## 0.28.5 (2026-10-16)
 - Settings: How to play is gone from the list. Find it on the menu instead
 

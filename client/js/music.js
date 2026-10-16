@@ -107,20 +107,28 @@ function musicStart(id,L,fromTop){
   src.connect(g).connect(AC.destination);src.start(t,off);
   return {id,src,g,t0:t,off,ls:L.ls,le:L.le};
 }
-// from wherever the volume is now, over dur seconds (to nothing while the tab is hidden)
-function musicRamp(c,to,dur,hold=0){
+// from wherever the volume is now to `to`, after wait seconds, over dur seconds. The change follows an S-curve: it
+// starts gently and settles gently, which the ear hears as an even fade (a straight line seems to hold, then drop)
+function musicRamp(c,to,dur,wait=0){
   const g=c.g.gain,t=AC.currentTime;
-  if(g.cancelAndHoldAtTime)g.cancelAndHoldAtTime(t);else{const v=g.value;g.cancelScheduledValues(t);g.setValueAtTime(v,t)}
-  if(hold)g.setValueAtTime(g.value,t+hold);
-  g.linearRampToValueAtTime(to,t+hold+dur);
+  let v;
+  if(g.cancelAndHoldAtTime){g.cancelAndHoldAtTime(t);v=g.value}else{v=g.value;g.cancelScheduledValues(t)}
+  g.setValueAtTime(v,t);
+  const n=64,curve=new Float32Array(n);
+  for(let i=0;i<n;i++)curve[i]=v+(to-v)*(.5-.5*Math.cos(Math.PI*i/(n-1)));
+  // the curve starts a moment after the value is pinned, so the two never fall on the same instant
+  try{g.setValueCurveAtTime(curve,t+wait+.01,dur)}catch(e){g.setValueAtTime(v,t+wait+.01);g.linearRampToValueAtTime(to,t+wait+.01+dur)}
 }
-const musicFadeIn=(c,dur)=>musicRamp(c,document.hidden?0:musicGain(),dur);
-// a song going away: remember where it was, fade it out (after hold seconds) and stop it
-function musicFadeOut(c,dur,hold=0){
+const musicFadeIn=(c,dur,wait)=>musicRamp(c,document.hidden?0:musicGain(),dur,wait);
+// a song going away: remember where it was, fade it out and stop it
+function musicFadeOut(c,dur){
   MUS.pos[c.id]=musicAt(c);
-  musicRamp(c,0,dur,hold);
-  try{c.src.stop(AC.currentTime+hold+dur+.05)}catch(e){}
+  musicRamp(c,0,dur);
+  try{c.src.stop(AC.currentTime+dur+.06)}catch(e){}
 }
+// moving from one song to the next: the old one eases out over 1.6 s; the new one waits half a second, then eases in
+// over 2 s. They cross while both are quiet, so it sounds like one breathing out and the next breathing in
+const FADE_OUT=1.6,FADE_IN=2,FADE_GAP=.5;
 // the song to play now {id, top: from its start}, or null to leave things as they are
 function musicWanted(){
   if(MUS.preview&&document.getElementById('jbBox'))return {id:MUS.preview};
@@ -142,9 +150,8 @@ function musicUpdate(){
     if(AC.state==='suspended')AC.resume();
     const old=MUS.cur;
     MUS.cur=musicStart(w.id,L,w.top);
-    // the new song comes up while the old one holds a moment, then goes
-    musicFadeIn(MUS.cur,old?1.4:.4);
-    if(old)musicFadeOut(old,1.4,.35);
+    if(old){musicFadeOut(old,FADE_OUT);musicFadeIn(MUS.cur,FADE_IN,FADE_GAP)}
+    else musicFadeIn(MUS.cur,.8);
     // the song before stays decoded too, for going straight back
     musicPrune(w.id,old&&old.id);
     jbNowPaint();
@@ -153,13 +160,13 @@ function musicUpdate(){
 // music off (muted or turned to 0): fade out, keeping the place
 function musicHalt(){
   MUS.gen++;
-  if(MUS.cur){MUS.last=MUS.cur.id;musicFadeOut(MUS.cur,.6);MUS.cur=null;jbNowPaint()}
+  if(MUS.cur){MUS.last=MUS.cur.id;musicFadeOut(MUS.cur,.8);MUS.cur=null;jbNowPaint()}
 }
 function musicPlay(){MUS.want=true;musicUpdate()}
 // after a change to the music's volume or mute
 function musicSync(){
   if(!musicOn()){musicHalt();return}
-  if(MUS.cur)musicFadeIn(MUS.cur,.08);
+  if(MUS.cur)musicFadeIn(MUS.cur,.1);
   musicUpdate();
 }
 function audioUnlock(){
