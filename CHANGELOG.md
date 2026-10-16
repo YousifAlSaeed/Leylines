@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.2 (2026-10-16)
+- New sounds for placing and flipping cards, winning, draws, rule banners, emotes, opening packs and the card book
+
 ## 0.28.1 (2026-10-16)
 - A game left open checks in with the server more lightly, so accounts stay up all month
 

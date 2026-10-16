@@ -34,7 +34,8 @@ RECORDED = {'click', 'tick', 'place', 'flip', 'hand_pick', 'pack_whoosh', 'pack_
             'coll_card_out', 'coll_card_in', 'coll_hand_add', 'coll_hand_remove', 'coll_deny', 'coll_riffle',
             'coll_bump', 'coll_tab', 'coll_close', 'coll_open', 'coll_locked', 'coll_return', 'win',
             'coll_page_01', 'coll_page_02', 'coll_page_03', 'coll_page_04', 'coll_set_done', 'coll_lift',
-            'banner', 'coll_hand_full', 'pack_reveal_1', 'pack_reveal_2', 'pack_reveal_3', 'pack_reveal_4', 'pack_reveal_5'}
+            'banner', 'coll_hand_full', 'pack_reveal_1', 'pack_reveal_2', 'pack_reveal_3', 'pack_reveal_4', 'pack_reveal_5',
+            'emote', 'coll_lost', 'coll_shimmer', 'draw'}
 
 
 def note(name):

@@ -4,7 +4,7 @@
 //
 // <srcDir> holds the source recordings (Kenney casino, rpg and impact packs, plus the Freesound files named
 // fs-<id>.mp3); `kit:` sources come from the opus-sound-layer library (github.com/Bodila51/opus-sound-layer,
-// `sfx.py kit`) in <srcDir>/../../audio/kit. Every source is CC0: see client/audio/sfx/CREDITS.md.
+// `sfx.py kit`) in <srcDir>/../../audio/kit. Every source is CC0 or CC BY: see client/audio/sfx/CREDITS.md.
 // <oldDir> is the current client/audio/sfx: each new sound is matched to the old one's loudness.
 // Each sound = layers of recordings, cut, filtered, placed, then written as stereo MP3 through a peak limiter.
 // Prints a check line per sound (loudness, peak, start delay, clean ending).
@@ -36,26 +36,26 @@ const SNAP = (o = {}) => L('card-slide-6.ogg', { db: -4, ...o });
 export const RECIPES = {
   click:            [L('kit:click/kenney-ui-audio-click2.wav')],
   tick:             [X(0, 0)],
-  place:            [L('card-place-1.ogg'), L('bookPlace2.ogg', { db: -2, lp: 1500 })],
-  flip:             [L('card-shove-1.ogg', { to: .45 }), THUD({ db: -6 })],
+  place:            [L('fs-571576.mp3')],
+  flip:             [L('fs-554208.mp3')],
   hand_pick:        [L('card-slide-1.ogg')],
-  pack_whoosh:      [L('fs-485250.mp3', { lp: 9000, pan: [-.4, .4] }), L('card-place-1.ogg', { at: .3, db: -4, lp: 6000 })],
+  pack_whoosh:      [L('fs-446010.mp3')],
   pack_tick_01:     [L('card-fan-2.ogg', { pick: 0 })],
   pack_tick_02:     [L('card-fan-2.ogg', { pick: 1 })],
   pack_tick_03:     [L('card-fan-2.ogg', { pick: 2 })],
   pack_tick_04:     [L('card-fan-2.ogg', { pick: 3 })],
   pack_tick_05:     [L('card-fan-2.ogg', { pick: 4 })],
   pack_snapback:    [L('card-shove-3.ogg', { to: .4 }), L('bookPlace2.ogg', { db: -6, lp: 2500 })],
-  pack_rip:         [L('fs-245198.mp3'), ...runOf(CR, .2, .05, [1, 6, 13], { db: -14 })],
-  pack_fling:       [L('kit:swish/fs-395369-swish-4-1.wav', { pan: [-.2, .5] })],
-  coll_card_out:    [L('cards-pack-take-out-1.ogg')],
-  coll_card_in:     [L('card-shove-1.ogg', { to: .45 })],
+  pack_rip:         [L('fs-590329.mp3')],
+  pack_fling:       [L('fs-74691.mp3')],
+  coll_card_out:    [L('fs-571574.mp3')],
+  coll_card_in:     [L('fs-444431.mp3')],
   coll_hand_add:    [L('card-place-4.ogg'), L('bookPlace1.ogg', { db: -6, lp: 2500 })],
   coll_hand_remove: [L('cards-pack-take-out-1.ogg', { to: .5 })],
   coll_deny:        [L('fs-369710.mp3', { to: .12 }), L('fs-369710.mp3', { to: .12, at: .11, rate: .85, db: -2 })],
   coll_riffle:      [L('card-fan-1.ogg', { pan: [.35, -.35] })],
   coll_bump:        [L('kit:tap/kenney-impact-impact-wood-light-000.wav')],
-  coll_tab:         [L('kit:click/kenney-ui-audio-switch21.wav')],
+  coll_tab:         [L('fs-218115.mp3')],
   coll_close:       [L('fs-617410.mp3')],
   // the close recording played the other way round in spirit: its rustle as the cover lifts, then its thud, deeper and
   // softer, as the cover lands open on the table (about .8 s in, with the swing in collection.js)
@@ -73,26 +73,25 @@ export const RECIPES = {
                      L('fs-373364.mp3', { at: .075, rate: 1.6721, to: .45, fout: .25, pan: -.1 }), L('fs-373364.mp3', { at: .12, rate: 2.1067, to: .45, fout: .25, pan: .1 }),
                      L('fs-373364.mp3', { at: .165, rate: 2.5053, to: .45, fout: .25, pan: .3 }), L('fs-614832.mp3', { at: .165, rate: 2.1374, db: -10, pan: .4 }),
                      L('fs-375596.mp3', { at: .1, to: .45, fout: .25, db: -9, pan: [-.4, .4] })],
-  // win: real instruments, all in A major: celesta A4 C#5 E5 (fs-420489/420487/420491), glockenspiel C6 tuned up to C#6
-  // (fs-373364), crystal bell D#7 tuned up to E7 (fs-614832), bell tree (fs-693698 sweep up, fs-375596 scrape)
-  win:              [L('fs-420489.mp3', { to: .5, pan: -.4 }), L('fs-420487.mp3', { at: .11, to: .45, pan: -.15 }), L('fs-420491.mp3', { at: .22, to: .35, pan: .15 }),
-                     L('fs-693698.mp3', { from: .45, to: 3.0, at: .1, db: -4, th: .01, fout: 1.2, pan: [-.5, .5] }),
-                     L('fs-420489.mp3', { at: .45, rate: 2, to: 1.6, pan: .4 }), L('fs-420487.mp3', { at: .45, to: 2.8, pan: -.25 }), L('fs-420491.mp3', { at: .45, to: 2.8, pan: .25 }),
-                     L('fs-373364.mp3', { at: .45, rate: 1.0533, to: 2.6, db: -5 }), L('fs-614832.mp3', { at: .5, rate: 1.0687, db: -9, pan: .3 })],
-  // page turns: four real recordings, picked at random (fs-397549, 431871, 457767, 144110)
-  coll_page_01:     [L('fs-397549.mp3', { pan: [.3, -.3] })],
-  coll_page_02:     [L('fs-431871.mp3', { to: .75, pan: [.3, -.3] })],
-  coll_page_03:     [L('fs-457767.mp3', { pan: [.3, -.3] })],
-  coll_page_04:     [L('fs-144110.mp3', { to: 1.0, pan: [.3, -.3] })],
+  win:              [L('fs-626259.mp3')],
+  // page turns: four real recordings, picked at random
+  coll_page_01:     [L('fs-179007.mp3')],
+  coll_page_02:     [L('fs-241322.mp3')],
+  coll_page_03:     [L('fs-167047.mp3')],
+  coll_page_04:     [L('fs-20241.mp3')],
   coll_lift:        [L('card-slide-8.ogg', { th: .3, to: .3 })],
-  coll_set_done:    [L('kit:pop/fs-669918-the-best-bubble-pop-sound-fo-1.wav', { db: -6 }), ...runOf(G, .02, .06, [-3, 1, 4, 9, 13]), CR(.26, 13, { db: -10 }), SWEEP({ at: .2, db: -8 })],
-  banner:           [CHOIR({ to: 1.0, fout: .5 }), SWEEP({ to: 1.2, fout: .6, db: -10 })],
-  coll_hand_full:   [...runOf(P, 0, .06, [-12, -8, -5, 0, 4])],
+  coll_set_done:    [L('fs-636656.mp3')],
+  banner:           [L('fs-715784.mp3')],
+  coll_hand_full:   [L('fs-403012.mp3')],
   pack_reveal_1:    [SNAP(), P(.02, 0)],
   pack_reveal_2:    [SNAP(), ...runOf(P, .02, .07, [0, 4])],
   pack_reveal_3:    [SNAP(), ...runOf(P, .02, .06, [0, 4, 7]), CR(.14, 6)],
   pack_reveal_4:    [THUD(), ...runOf(P, .02, .05, [0, 4, 7, 12]), CR(.17, 6, { db: -10 }), SWEEP({ db: -8 })],
   pack_reveal_5:    [THUD({ db: -2 }), ...runOf(P, .02, .045, [-5, 0, 4, 7, 12], { to: 1.4, fout: .8 }), CR(.2, 13, { db: -8 }), SWEEP({ to: 3.0, fout: 1.2, db: -5 }), L('kit:shimmer/fs-462095-sparkling-star-01-wav-2.wav', { at: .25, db: -10 })],
+  draw:             [L('fs-162473.mp3')],
+  emote:            [L('fs-174695.mp3')],
+  coll_lost:        [L('fs-538013.mp3')],
+  coll_shimmer:     [L('fs-578803.mp3')],
   coll_return:      [L('card-shove-2.ogg', { to: .3 }), L('bookPlace3.ogg', { db: -6, lp: 2500 })],
 };
 
