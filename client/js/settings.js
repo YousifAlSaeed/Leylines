@@ -28,7 +28,6 @@ function openSettings(){
       [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${driftWanted()==!!k?'on':''}" aria-pressed="${driftWanted()==!!k}">${l}</button>`).join('')}</div></div>
     ${volRows('set')}
     <button class="setrow" id="setJuke"><span class="rt"><b>Jukebox</b><small>Pick the music for each place</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-    <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
@@ -52,7 +51,6 @@ function openSettings(){
   volWire(box);
   acctWireSettings(box);alertsPaint(box);
   box.querySelector('#setJuke').onclick=()=>{sfx('click');openJukebox()};
-  box.querySelector('#setHow').onclick=()=>{closeModal();openHow(0)};
 }
 /* ---------- the jukebox: a song for each place (music.js) ---------- */
 // the player's buttons

@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.5 (2026-10-16)
+- Settings: How to play is gone from the list. Find it on the menu instead
+
 ## 0.28.4 (2026-10-16)
 - Jukebox: Listen is a player now. The song's name over a bar showing the time played and left (drag it to jump), Play and Pause, Previous and Next, Repeat (off: the next song plays when one ends) and Shuffle, with all the songs in a list to tap
 
