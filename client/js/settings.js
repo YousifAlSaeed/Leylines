@@ -27,6 +27,7 @@ function openSettings(){
     <div class="setrow"><span class="rt"><b>Menu background</b><small>${noMotion()?'Cards behind the menu, kept still: your device reduces motion':'Cards drifting behind the menu'}</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
       [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${driftWanted()==!!k?'on':''}" aria-pressed="${driftWanted()==!!k}">${l}</button>`).join('')}</div></div>
     ${volRows('set')}
+    <button class="setrow" id="setJuke"><span class="rt"><b>Jukebox</b><small>Pick the music for each place</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="setrow" id="setHow"><span class="rt"><b>How to play</b><small>Rules, modes and tips</small></span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>`,[{label:'Done',cls:'primary',esc:true}]);
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
@@ -50,7 +51,41 @@ function openSettings(){
   });
   volWire(box);
   acctWireSettings(box);alertsPaint(box);
+  box.querySelector('#setJuke').onclick=()=>{sfx('click');openJukebox()};
   box.querySelector('#setHow').onclick=()=>{closeModal();openHow(0)};
+}
+/* ---------- the jukebox: a song for each place (music.js) ---------- */
+function openJukebox(){
+  const j=jb();
+  // a place's choices: the songs, and following the main menu (every place but the main menu), or leaving the music as it is (Sudden Death)
+  const opts=(k,v)=>[...(k==='main'?[]:[['main','Same as main menu']]),...(k==='sd'?[['keep','Keep the music playing']]:[]),
+    ...Object.entries(TRACKS).map(([id,t])=>[id,t.name])].map(([id,l])=>`<option value="${id}"${id===v?' selected':''}>${l}</option>`).join('');
+  const box=modal(`<h2 class="nm2">Jukebox</h2><p class="jbnow">Now playing: <b id="jbNow"></b></p><div class="setlist" id="jbBox">
+    <div class="setrow"><span class="rt"><b>One song everywhere</b><small>The main menu's song plays on every screen</small></span><div class="seg" id="jbOne" role="group" aria-label="One song everywhere">${
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${j.one==!!k?'on':''}" aria-pressed="${j.one==!!k}">${l}</button>`).join('')}</div></div>
+    ${JB_PLACES.map(([k,l,sub])=>`<div class="setrow jbrow" data-k="${k}"><span class="rt"><b id="jbL-${k}">${l}</b>${sub?`<small>${sub}</small>`:''}</span>`+
+      `<span class="jbsel"><select data-k="${k}" aria-labelledby="jbL-${k}">${opts(k,j[k])}</select></span></div>`).join('')}
+  </div><h3 class="jbh">Listen</h3><div class="jbtracks" role="group" aria-label="Listen to a song">${
+    Object.entries(TRACKS).map(([id,t])=>`<button data-id="${id}" aria-pressed="false">${t.name}</button>`).join('')}</div>`,
+    [{label:'Reset',keep:true,fn:()=>{SAVE.jb=null;save();musicUpdate();openJukebox()}},
+     {label:'Back',keep:true,fn:()=>{MUS.preview=null;openSettings();musicUpdate()}},
+     {label:'Done',cls:'primary',esc:true}]);
+  const paint=()=>{
+    const v=jb();
+    box.querySelectorAll('#jbOne button').forEach(x=>{const on=v.one==(x.dataset.k==='1');x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});
+    // with one song everywhere, only the main menu's choice counts
+    box.querySelectorAll('.jbrow').forEach(r=>{const off=v.one&&r.dataset.k!=='main';r.classList.toggle('off',off);r.querySelector('select').disabled=off});
+    box.querySelectorAll('.jbtracks button').forEach(x=>x.setAttribute('aria-pressed',MUS.preview===x.dataset.id));
+    jbNowPaint();
+  };
+  box.querySelectorAll('#jbOne button').forEach(b=>b.onclick=()=>{SAVE.jb={...jb(),one:b.dataset.k==='1'};save();sfx('click');musicUpdate();paint()});
+  box.querySelectorAll('.jbrow select').forEach(s=>s.onchange=()=>{SAVE.jb={...jb(),[s.dataset.k]:s.value};save();sfx('click');musicUpdate();paint()});
+  // listening to a song plays it here until it's tapped again or the jukebox closes
+  box.querySelectorAll('.jbtracks button').forEach(b=>b.onclick=()=>{
+    if(!musicOn()){toast('The music is off. Turn it up in Settings to listen.');return}
+    MUS.preview=MUS.preview===b.dataset.id?null:b.dataset.id;musicUpdate();paint();
+  });
+  paint();
 }
 /* ---------- volume rows: in Settings and in the sound panel during a match (match.js) ---------- */
 // [level, mute, name, what it covers]. A muted channel keeps its level, so unmuting brings it back

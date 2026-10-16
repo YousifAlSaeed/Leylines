@@ -42,6 +42,7 @@ const frKey=s=>String(s).toLowerCase();
 const frName=k=>k;
 function toast(m){__dev.toasts.push(m)}
 function sfx(){}
+function musicUpdate(){}
 function modal(html,btns){__dev.modals.push({html,btns:btns||[]});return{querySelector:()=>null}}
 function closeModal(){}
 const esc=s=>String(s);

@@ -14,6 +14,7 @@ function show(id){
   if(id==='game')layout();if(id==='menu')renderMenu();
   document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
+  musicUpdate(); // each place has its song (music.js)
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
 }
 // the last deck is only "ready" if every card in it is still owned

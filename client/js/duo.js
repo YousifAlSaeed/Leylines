@@ -864,6 +864,7 @@ function duoLeave(){
 const duoOn=id=>$('#scr-'+id).classList.contains('on');
 function duoGot(snap){
   const prev=DUO.snap;DUO.snap=snap;DUO.snapAt=Date.now();DUO.pending=false;
+  musicUpdate(); // a Sudden Death round has its own song, and the match's end takes it away (music.js)
   const ph=snap.phase,me=snap.you;
   if(DUO.role==='guest'){
     clearTimeout(DUO.joinT);clearTimeout(DUO.goneT);DUO.hostAway=false;

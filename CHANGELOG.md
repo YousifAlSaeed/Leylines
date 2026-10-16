@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.3 (2026-10-16)
+- Jukebox: Settings → Jukebox picks the music for each place. Six new songs: Ley Lines, Crossroads, Sudden Death, Market, Open Sky and Afterglow. The old theme is called Discovery and is still the main menu's song
+- The Leaderboard plays Afterglow, the Collection Open Sky, the Market its own song, Crossroads its own, and a Sudden Death in 1v1 or Crossroads plays Sudden Death
+- Each place can play any song, follow the main menu, or (for Sudden Death) keep the music playing; One song everywhere plays the main menu's song on every screen. Listen plays any song from the jukebox
+- Songs fade into each other, and one you come back to carries on where it was
+
 ## 0.28.2 (2026-10-16)
 - New sounds for placing and flipping cards, winning, draws, rule banners, emotes, opening packs and the card book
 

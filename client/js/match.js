@@ -188,7 +188,7 @@ async function endRound(){
   const s0=score(G.st,0),s1=score(G.st,1);
   await wait(450);if(G!==g)return;
   if(s0===s1&&G.rules.suddenDeath&&G.sd<5){
-    G.sd++;
+    G.sd++;musicUpdate(); // Sudden Death has its own song (music.js)
     await banner('Sudden Death!','sd');await wait(200);if(G!==g)return;
     const h=[[],[]];
     for(let i=0;i<9;i++)h[G.st.o[i]].push(G.st.b[i]);
@@ -227,7 +227,7 @@ const NEW_TAG='<em class="cr-new">NEW</em>';
 function rowHTML(ids,color,fresh=[]){return`<div class="cardrow">${ids.map((id,i)=>fresh[i]?`<div class="cr-it">${NEW_TAG}${cardHTML(id,color)}</div>`:cardHTML(id,color)).join('')}</div>`}
 const resultTitle=(w,end='')=>G.mode==='local'?(w<0?'Draw':(w===0?COL_NAME[myCol()]:'Red')+' wins'+end):w<0?'Draw':(w===G.me?'You win':'You lose')+end;
 function finish(s0,s1){
-  G.over=true;G.busy=true;
+  G.over=true;G.busy=true;musicUpdate(); // a Sudden Death's song ends with the match
   // a player out of time with "You lose" on loses, whatever the score
   const m=G.bottom===0?[s0,s1]:[s1,s0],mw=G.flagged!=null?1-G.flagged:s0>s1?0:s1>s0?1:-1,ser=G.ser;
   ser.log.push({w:mw,diff:Math.abs(s0-s1),sweep:swept(mw),sb:m[0],sr:m[1],fl:flipped(mw)});

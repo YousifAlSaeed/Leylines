@@ -119,7 +119,7 @@ fixMain();
 // Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
 function resetSave(){
   const d=defSave();
-  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','theme','aero','cid'])d[k]=SAVE[k];
+  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','jb','theme','aero','cid'])d[k]=SAVE[k];
   d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
   SAVE=d;fixMain();save();
 }
