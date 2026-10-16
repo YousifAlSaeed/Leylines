@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.4 (2026-10-16)
+- Jukebox: Listen is a player now. The song's name over a bar showing the time played and left (drag it to jump), Play and Pause, Previous and Next, Repeat (off: the next song plays when one ends) and Shuffle, with all the songs in a list to tap
+
 ## 0.28.3 (2026-10-16)
 - Jukebox: Settings → Jukebox picks the music for each place. Six new songs: Ley Lines, Crossroads, Sudden Death, Market, Open Sky and Afterglow. The old theme is called Discovery and is still the main menu's song
 - The Leaderboard plays Afterglow, the Collection Open Sky, the Market its own song, Crossroads its own, and a Sudden Death in 1v1 or Crossroads plays Sudden Death

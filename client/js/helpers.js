@@ -123,8 +123,8 @@ function closeModal(){
   modalReturn=null;
   // news about a match you left waits for the popup in front of it to close (spare.js)
   if(OWES.news.length)setTimeout(oweNews,300);
-  // a song the jukebox was playing to listen to stops with it (music.js)
-  if(MUS.preview){MUS.preview=null;musicUpdate()}
+  // the jukebox's player stops with it, and the place's own song comes back (music.js)
+  musicListenEnd();
 }
 
 // Same / Plus / Combo: n counts the Combos in this move; the second one and any after it ring higher

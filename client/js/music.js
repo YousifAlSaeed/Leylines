@@ -57,8 +57,9 @@ function musicPlace(){
 /* ---------- the player ---------- */
 // want: music may play (after the first tap or key press). cur: the song playing {id, src, g (its gain), t0, off,
 // ls, le}. pos: where each song stopped. data: downloads. buf: decoded songs. gen: the
-// newest change asked for (an older one that finishes loading later is dropped). preview: a song the jukebox is playing
-const MUS={want:false,cur:null,pos:{},data:{},buf:{},gen:0,preview:null};
+// newest change asked for (an older one that finishes loading later is dropped). preview: a song the jukebox's player
+// is playing; paused: its pause button is down (both end when the jukebox closes); last: the song playing before a pause
+const MUS={want:false,cur:null,pos:{},data:{},buf:{},gen:0,preview:null,paused:false,last:null};
 function musicOn(){return !!(!SAVE.musicMute&&SAVE.musicVol)}
 const musicGain=()=>.5*SAVE.musicVol/100;
 function musicFetch(id){
@@ -132,7 +133,7 @@ function musicWanted(){
 // play the song this place should have, crossfading from the one playing (it keeps going until the new one is ready)
 function musicUpdate(){
   if(!MUS.want||!AC)return;
-  if(!musicOn()){musicHalt();return}
+  if(!musicOn()||MUS.paused){musicHalt();return}
   const w=musicWanted();if(!w)return;
   const gen=++MUS.gen;
   if(MUS.cur&&MUS.cur.id===w.id)return;
@@ -152,7 +153,7 @@ function musicUpdate(){
 // music off (muted or turned to 0): fade out, keeping the place
 function musicHalt(){
   MUS.gen++;
-  if(MUS.cur){musicFadeOut(MUS.cur,.6);MUS.cur=null;jbNowPaint()}
+  if(MUS.cur){MUS.last=MUS.cur.id;musicFadeOut(MUS.cur,.6);MUS.cur=null;jbNowPaint()}
 }
 function musicPlay(){MUS.want=true;musicUpdate()}
 // after a change to the music's volume or mute
@@ -170,5 +171,33 @@ function audioUnlock(){
 addEventListener('pointerdown',audioUnlock,true);addEventListener('keydown',audioUnlock,true);
 // fade out while the tab is hidden, back in when it returns
 document.addEventListener('visibilitychange',()=>{if(MUS.cur)musicRamp(MUS.cur,document.hidden?0:musicGain(),document.hidden?.3:1)});
-// the jukebox's "Now playing" line, when it's open (settings.js)
-function jbNowPaint(){const el=document.getElementById('jbNow');if(el)el.textContent=MUS.cur?TRACKS[MUS.cur.id].name:musicOn()?'Nothing yet':'Music is off'}
+
+/* ---------- for the jukebox's player (settings.js) ---------- */
+// a song's length, and where in its file it starts
+const songLen=id=>TRACKS[id].len||TRACKS[id].loopAt;
+const songFirst=id=>TRACKS[id].loopAt?0:1;
+// the song the player shows: the one it asked for (even while that's still loading), the one playing, or (paused,
+// or nothing yet) the one that would play. t: how far into it, in seconds of the song. playing: something is playing
+function musicNow(){
+  // a place that leaves the music as it is shows the song it was left playing
+  const c=MUS.cur,pl=musicPlace(),id=MUS.preview||(c?c.id:pl?jbTrack(jb(),pl[0],pl[1]):MUS.last||jb().main),len=songLen(id);
+  const p=c&&c.id===id?musicAt(c):MUS.pos[id];
+  return {id,len,t:p==null?0:((p-songFirst(id))%len+len)%len,playing:!!c};
+}
+// jump to t seconds into the song the player shows (paused, it starts from there)
+function musicSeek(t){
+  const id=musicNow().id,c=MUS.cur;
+  if(c&&c.id===id){MUS.cur=null;musicFadeOut(c,.12)}
+  MUS.pos[id]=songFirst(id)+Math.max(0,Math.min(songLen(id)-.05,t));
+  if(!c||c.id!==id||!MUS.want||!musicOn()||MUS.paused)return;
+  musicLoad(id).then(L=>{
+    if(MUS.cur||!musicOn()||MUS.paused)return;
+    MUS.cur=musicStart(id,L,false);musicFadeIn(MUS.cur,.12);jbNowPaint();
+  }).catch(()=>{});
+}
+// play this song in the player, from its start
+function musicListen(id){MUS.preview=id;MUS.paused=false;MUS.pos[id]=undefined;musicUpdate();jbNowPaint()}
+function musicPause(on){MUS.paused=on;musicUpdate();jbNowPaint()}
+// the jukebox closing: the place's own song comes back, from where it was
+function musicListenEnd(){if(MUS.preview||MUS.paused){MUS.preview=null;MUS.paused=false;musicUpdate()}}
+function jbNowPaint(){if(document.getElementById('jbBox')&&typeof jbpPaint==='function')jbpPaint()}

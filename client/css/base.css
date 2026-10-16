@@ -175,8 +175,6 @@ h3,.lbl{margin:0 0 8px;font:600 12.5px var(--body);color:var(--muted);letter-spa
 button.setrow{cursor:pointer}
 button.setrow:hover{background:rgba(var(--tint),.03)}
 /* the jukebox (settings.js): a song for each place, and the songs to listen to */
-.jbnow{margin:2px 0 0;color:var(--muted);font-size:13px}
-.jbnow b{color:var(--text);font-weight:600}
 .jbsel{position:relative;flex:0 0 auto;display:inline-flex}
 .jbsel select{appearance:none;-webkit-appearance:none;width:11.5em;max-width:44vw;padding:7px 30px 7px 12px;border-radius:12px;border:1px solid var(--line);
   background:var(--well);color:var(--text);font:500 13.5px var(--body);cursor:pointer;min-height:38px;text-overflow:ellipsis}
@@ -186,10 +184,44 @@ button.setrow:hover{background:rgba(var(--tint),.03)}
 .jbsel option{background:var(--surf);color:var(--text)}
 .jbrow.off{opacity:.45}
 .jbh{margin:16px 2px 8px;font:700 12.5px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left}
-.jbtracks{display:flex;flex-wrap:wrap;gap:8px}
-.jbtracks button{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:99px;border:1px solid var(--line);background:var(--well);
-  color:var(--text);font:500 13px var(--body);cursor:pointer;min-height:36px;transition:background .18s,color .18s}
-.jbtracks button::before{content:"";flex:none;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent currentColor}
-.jbtracks button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
-.jbtracks button[aria-pressed="true"]::before{width:8px;height:10px;box-sizing:border-box;border-width:0 3px;border-color:currentColor}
-@media (pointer:coarse){.jbsel select,.jbtracks button{min-height:44px}}
+@media (pointer:coarse){.jbsel select{min-height:44px}}
+/* the jukebox's player: the song's name over a bar with the time gone and left, its buttons, and the songs to pick from */
+.jbplayer{padding:14px 16px 8px;border-radius:16px;background:var(--surf);border:1px solid var(--line);text-align:left}
+.jbtitle b{display:block;font:700 17px var(--display);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jbtitle small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:1px}
+.jbseek{display:block;width:100%;margin:8px 0 0}
+.jbtimes{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;margin-top:-2px}
+.jbctl{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.jbctl button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:none;color:var(--text);cursor:pointer;
+  transition:background .18s,color .18s,transform .15s}
+.jbctl button:hover{background:rgba(var(--tint),.07)}
+.jbctl button:active{transform:scale(.92)}
+.jbctl svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.jbctl svg .f{fill:currentColor}
+.jbctl .jbplay{width:58px;height:58px;background:linear-gradient(160deg,var(--accent-hi),var(--accent));color:var(--on-accent);
+  box-shadow:0 6px 16px -6px var(--accent-glow)}
+.jbctl .jbplay:hover{background:linear-gradient(160deg,var(--accent-hi),var(--accent));filter:brightness(1.08)}
+.jbctl .jbplay svg{width:26px;height:26px}
+.jbctl .jbtog{color:var(--muted);position:relative}
+.jbctl .jbtog[aria-pressed="true"]{color:var(--accent-ink)}
+.jbctl .jbtog[aria-pressed="true"]::after{content:"";position:absolute;bottom:4px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor}
+.jblist{list-style:none;margin:10px 0 0;padding:0;border-radius:16px;background:var(--surf);border:1px solid var(--line);overflow:hidden;text-align:left}
+.jblist button{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:8px 14px;border:0;border-top:1px solid var(--line);background:none;
+  color:var(--text);font:500 14px var(--body);text-align:left;cursor:pointer}
+.jblist li:first-child button{border-top:0}
+.jblist button:hover{background:rgba(var(--tint),.04)}
+.jblist .n{flex:none;width:18px;display:grid;place-items:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.jblist .n i{font-style:normal;font-size:13px}
+.jblist .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jblist .d{flex:none;color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.jblist button.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.jblist button.on .t{color:var(--accent-ink);font-weight:700}
+/* the song playing: three bars bouncing in place of its number */
+.jblist .eq{display:none;height:12px;align-items:flex-end;gap:2px}
+.jblist button.live .n i{display:none}
+.jblist button.live .eq{display:flex}
+.jblist .eq b{width:3px;height:100%;border-radius:1px;background:var(--accent-ink);transform-origin:bottom;animation:jbEq .9s ease-in-out infinite}
+.jblist .eq b:nth-child(2){animation-delay:-.3s}
+.jblist .eq b:nth-child(3){animation-delay:-.6s}
+@keyframes jbEq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){.jblist .eq b{animation:none;transform:scaleY(.7)}}
