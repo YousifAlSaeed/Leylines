@@ -7,7 +7,7 @@
 /* 5 cards × 5em + 4 gaps × .5em = 27em, plus room for the tilt; shrinks to fit narrow screens */
 .dk-fan{position:relative;height:8.4em;font-size:min(16px,calc(100cqw / 28.5))}
 .dk-fs{position:absolute;bottom:1.6em;left:50%;width:5em;height:6em;margin-left:-2.5em;transform-origin:50% 100%;transition:transform .45s var(--spring)}
-.dk-fs .dk-empty{width:100%;height:100%;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;color:var(--muted);font:700 .8em var(--display);opacity:.7}
+.dk-fs .dk-empty{width:100%;height:100%;border-radius:.6em;border:.08em dashed var(--line2);display:grid;place-items:center;color:var(--muted);font:700 max(10px,.8em) var(--display);opacity:.7}
 .dk-fs .card{cursor:pointer;transition:filter .18s}
 .dk-fs .card.deal{animation:deal .45s var(--spring)}
 @keyframes deal{from{transform:translateY(4em) rotate(8deg);opacity:0}}
@@ -113,7 +113,7 @@
 .binder.single.has-prev:has(#bdPrevEar:hover,#bdPrevEar:focus-visible){--earl1:34px}
 .bd-ear{position:relative;z-index:8;grid-row:1;align-self:end;width:var(--ear);height:var(--ear);border:0;padding:0;background:none;cursor:pointer;
   filter:drop-shadow(-1px -1px 2px rgba(var(--sh),calc(.4*var(--shk))));transition:width .3s var(--spring),height .3s var(--spring)}
-.bd-ear i{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,0 100%);
+.bd-ear i{position:absolute;top:0;right:0;bottom:0;left:0;clip-path:polygon(0 0,100% 0,0 100%);
   background:linear-gradient(135deg,color-mix(in srgb,var(--page) 80%,var(--edge)),color-mix(in srgb,var(--page) 70%,var(--edge)))}
 .bd-ear.r{grid-column:2;justify-self:end}
 .binder.single .bd-ear.r{grid-column:1}
@@ -131,14 +131,18 @@
 .bd-chap em{font-style:normal;letter-spacing:0;margin-right:.5em}
 .bd-chap .done{color:var(--accent-ink)}
 /* 2×2 cards, as big as the page allows */
+/* --res: the page's height that isn't cards (the chapter line and the page number) */
 .bd-grid{flex:1;min-height:0;align-self:stretch;display:grid;grid-template-columns:repeat(2,auto);grid-template-rows:repeat(2,auto);align-content:center;justify-content:center;gap:1.65em 2.1em;padding-top:4px;
-  font-size:min(44px,calc((100cqw - 34px) / 13.4),calc((100cqh - 46px) / 16.1))}
+  --res:46px;font-size:min(44px,calc((100cqw - 34px) / 13.4),calc((100cqh - var(--res)) / 16.1))}
 .bd-grid.big .pocket::before{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),0 0 1.1em -.4em var(--rc)}
 .bd-num{flex:none;font:500 10.5px var(--body);color:var(--muted);opacity:.6;font-variant-numeric:tabular-nums}
-@container bdpage (max-height:260px){.bd-num{display:none}}
+@container bdpage (max-height:260px){.bd-num{display:none}.bd-grid{--res:27px}}
+/* a wide, short page (a short browser window, a phone held sideways): the 4 cards in one row, so they can be bigger */
+@container bdpage (min-aspect-ratio:3/2){
+  .bd-grid{grid-template-columns:repeat(4,auto);grid-template-rows:auto;font-size:min(44px,calc((100cqw - 34px) / 27.6),calc((100cqh - var(--res)) / 8.2))}}
 /* each card sits in a shallow spot pressed into the page; a card not found yet leaves the spot empty */
 .pocket{position:relative;width:5em;height:6em;border-radius:.6em;display:grid;place-items:center;border:0;padding:0;cursor:pointer;background:none;transition:transform .25s var(--spring)}
-.pocket::before{content:"";position:absolute;inset:-.22em;border-radius:.78em;pointer-events:none;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
+.pocket::before{content:"";position:absolute;top:-.22em;right:-.22em;bottom:-.22em;left:-.22em;border-radius:.78em;pointer-events:none;background:var(--well);box-shadow:inset 0 0 0 1px var(--line)}
 .pocket .card{font-size:1em;box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .15em .35em rgba(var(--sh),calc(.5*var(--shk)));transition:box-shadow .25s}
 .pocket .card .cnt{display:none}
 .pocket .card.unknown{background:none;box-shadow:none}
@@ -156,7 +160,7 @@
 .pocket::before{z-index:-2}
 /* spare copies: their edges stack up behind the card (one for 2 copies, two for 3 or more), and a tab hanging from under
    the card counts the copies still in the book */
-.pocket.x2::after,.pocket.x3::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:.6em;transform:translate(.2em,.2em);pointer-events:none;
+.pocket.x2::after,.pocket.x3::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;z-index:-1;border-radius:.6em;transform:translate(.2em,.2em);pointer-events:none;
   background:linear-gradient(160deg,var(--grey1),var(--grey2));box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc) 60%,transparent)}
 .pocket.x3::after{box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc) 60%,transparent),.2em .2em 0 -.02em var(--grey2),.2em .2em 0 .04em color-mix(in srgb,var(--rc) 40%,transparent)}
 /* the tab starts under the card's bottom edge, so it reads as part of that card */
@@ -166,14 +170,14 @@
 /* the turning page: a sheet cut into 8 strips, each bent a little more than the last, so the paper curls (collection.js) */
 .bd-leaf{position:absolute;transform-style:preserve-3d;pointer-events:none;will-change:transform}
 .bd-strip{position:absolute;top:0;transform-style:preserve-3d}
-.bd-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.bd-face{position:absolute;top:0;right:0;bottom:0;left:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .bd-face.back{transform:rotateY(180deg)}
 .bd-face>.bd-page{position:absolute;top:0}
-.bd-dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4}
+.bd-dim{position:absolute;top:0;right:0;bottom:0;left:0;background:#000;opacity:0;pointer-events:none;z-index:4}
 /* one page: the sheet swings inside a box the size of the page, seen from the spine */
 .bd-clip{position:absolute;z-index:20;overflow:hidden;border-radius:4px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
 /* the shadow on the page under a lifting sheet (or the cover as it opens) */
-.bd-under{position:absolute;inset:0;border-radius:4px;pointer-events:none;z-index:5;opacity:0}
+.bd-under{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:4px;pointer-events:none;z-index:5;opacity:0}
 .bd-under.to-r{background:linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.14) 55%,transparent)}
 .bd-under.to-l{background:linear-gradient(270deg,rgba(0,0,0,.6),rgba(0,0,0,.14) 55%,transparent)}
 /* the blank page that keeps each rarity on its own spread */
@@ -224,7 +228,7 @@
     linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015) 45%,rgba(255,255,255,.03));
   transition:background-position .6s var(--ease)}
 /* a slot with no card on it has no sleeve */
-#bdWrap .pk-cell:has(>.pocket.blank)::before,#bdWrap .pk-cell:has(>.pocket.blank)::after{display:none}
+#bdWrap .pk-cell.blank::before,#bdWrap .pk-cell.blank::after{display:none}
 /* 4★ and 5★ pages: the sleeve's edge takes the rarity colour, with a soft glow */
 #bdWrap .bd-grid.big .pk-cell::before{box-shadow:0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),inset 0 0 0 1px var(--sl-hi),inset 0 -.07em 0 var(--sl-hi),
   0 0 1.1em -.4em var(--rc),0 .2em .45em -.2em rgba(var(--sh),calc(.55*var(--shk)))}
@@ -233,8 +237,7 @@
   #bdWrap .pocket:focus-visible{outline:none}
   #bdWrap .pk-cell:has(>.pocket:focus-visible)::before{outline:2px solid var(--accent-hi);outline-offset:1px}}
 /* spare copies sit a little tighter, so the whole stack fits inside the sleeve. Their edges take the card's rarity
-   colour on every page (1★–3★ pages have no colour of their own, so the pocket borrows it from its card) */
-#bdWrap .pocket:has(>.rar1){--rc:var(--r1)} #bdWrap .pocket:has(>.rar2){--rc:var(--r2)} #bdWrap .pocket:has(>.rar3){--rc:var(--r3)}
+   colour on every page (1★–3★ pages have no colour of their own, so the pocket gets its card's rar class: cards.css) */
 #bdWrap .pocket.x2::after,#bdWrap .pocket.x3::after{transform:translate(.11em,.11em);box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc,var(--muted)) 60%,transparent)}
 #bdWrap .pocket.x3::after{box-shadow:inset 0 0 0 .08em color-mix(in srgb,var(--rc,var(--muted)) 60%,transparent),.11em .11em 0 -.02em var(--grey2),.11em .11em 0 .04em color-mix(in srgb,var(--rc,var(--muted)) 40%,transparent)}
 /* pointing at a card: it slides straight up in its sleeve, toward the open top, and the light on the plastic moves */
@@ -259,10 +262,14 @@
   border:0;padding:0;background:none;cursor:pointer;pointer-events:auto;transform-style:preserve-3d;transform-origin:calc(-1 * var(--x)) 50%;translate:0 17px;--dim:brightness(.78) saturate(.85);
   transition:transform .7s cubic-bezier(.45,.05,.2,1),translate .4s var(--spring),left .6s cubic-bezier(.45,.05,.2,1)}
 .bd-rib.rar1{--r:1} .bd-rib.rar2{--r:2} .bd-rib.rar3{--r:3} .bd-rib.rar4{--r:4} .bd-rib.rar5{--r:5}
+/* a narrow book (a small phone, zoomed in): slimmer ribbons, closer together, so all five still fit */
+@container (max-width:259px){.bd-rib{--w:28px;--x:calc(18px + (var(--r) - 1) * (var(--w) + 3px))}.bd-rib i{font-size:11px}}
+.cq-poly .coll-book.cq-b260 .bd-rib{--w:28px;--x:calc(18px + (var(--r) - 1) * (var(--w) + 3px))}
+.cq-poly .coll-book.cq-b260 .bd-rib i{font-size:11px}
 .bd-rib.left{transform:rotateY(-180deg)}
 .bd-rib.on{translate:0 0;--dim:none}
 .bd-rib:not(.on):hover{translate:0 10px;--dim:brightness(.92)}
-.bd-rib i{position:absolute;inset:0;display:flex;justify-content:center;gap:2px;padding-top:10px;font:600 13px/1 var(--display);font-style:normal;color:#1b0d22;
+.bd-rib i{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:center;gap:2px;padding-top:10px;font:600 13px/1 var(--display);font-style:normal;color:#1b0d22;
   backface-visibility:hidden;-webkit-backface-visibility:hidden;filter:var(--dim);transition:filter .3s;clip-path:polygon(0 0,50% 13%,100% 0,100% 100%,0 100%);
   background:linear-gradient(transparent 55%,rgba(0,0,0,.18)),var(--rc)}
 .bd-rib.rar5 i{background:linear-gradient(transparent 55%,rgba(0,0,0,.15)),var(--prism)}
@@ -272,13 +279,21 @@
 .bd-rib:focus-visible i{outline:2px solid var(--text);outline-offset:-2px}
 .coll-book.single .bd-rib{left:calc(36px + var(--x) - 18px)}
 .coll-book.single .bd-rib.left{transform:none;left:calc(4px + var(--d) * 9px);z-index:calc(10 - var(--d));translate:0 calc(12px + var(--d) * 3px)}
+/* browsers without the translate property (Chrome before 104): the same drops, inside transform */
+@supports not (translate:0 0){
+  .bd-rib{transform:translateY(17px)}
+  .bd-rib.on{transform:none}
+  .bd-rib:not(.on):hover{transform:translateY(10px)}
+  .bd-rib.left{transform:translateY(17px) rotateY(-180deg)}
+  .bd-rib.left:hover{transform:translateY(10px) rotateY(-180deg)}
+  .coll-book.single .bd-rib.left,.coll-book.single .bd-rib.left:hover{transform:translateY(calc(12px + var(--d) * 3px))}}
 
 /* the front cover: smooth violet, the Leylines sigil in light lines, an elastic band round it. Opening the collection:
    the band snaps off, the sigil lights, then the cover swings open on the spine and lands as the left half while the
    book slides to the middle. One page: it swings off to the left and fades. Leaving plays it backwards, quickly.
    Not when picking. */
 .bd-cover{position:absolute;z-index:30;transform-style:preserve-3d;transform-origin:0 50%;pointer-events:none;container-type:inline-size}
-.bd-cover .cf{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.bd-cover .cf{position:absolute;top:0;right:0;bottom:0;left:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .bd-cover .cf.front{border-radius:6px 16px 16px 6px;background:linear-gradient(150deg,var(--cover1),var(--cover2));
   box-shadow:inset 10px 0 10px -8px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.12),0 24px 48px -20px rgba(var(--sh),calc(.9*var(--shk)))}
 .bd-cover .cv-spine{position:absolute;left:12px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.14)}
@@ -296,13 +311,13 @@
 .bd-cover .cf.back{transform:rotateY(180deg);border-radius:16px 6px 6px 16px;background:var(--book);box-shadow:inset 0 0 0 1px var(--line2)}
 .bd-cover .cf.back .bd-page{position:absolute}
 /* light and shadow as the cover swings: the front darkens as it turns away, the inside lightens as it lands */
-.bd-cover .cv-shd{position:absolute;inset:0;border-radius:inherit;background:#05020f;opacity:0;pointer-events:none;z-index:5}
+.bd-cover .cv-shd{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;background:#05020f;opacity:0;pointer-events:none;z-index:5}
 
 
 /* + adds a card to the hand: shows on hover (always on touch screens), so the page stays quiet */
 .pk-cell{position:relative}
 .pk-add{position:absolute;right:-.35em;bottom:-.35em;z-index:2;width:1.3em;height:1.3em;min-width:22px;min-height:22px;border-radius:50%;padding:0;cursor:pointer;opacity:0;
-  display:grid;place-items:center;font:800 .85em/1 var(--display);color:var(--on-accent);border:2px solid var(--page);
+  display:grid;place-items:center;font:800 max(11px,.85em)/1 var(--display);color:var(--on-accent);border:2px solid var(--page);
   background:linear-gradient(180deg,var(--accent-hi),var(--accent));box-shadow:0 3px 8px rgba(var(--sh),calc(.5*var(--shk)));transition:transform .2s var(--spring),opacity .18s}
 .pk-add:hover:not(.off){transform:scale(1.12)}
 .pk-add:active:not(.off){transform:scale(.92)}
@@ -323,11 +338,24 @@
 .cd-top{align-self:stretch;display:flex;justify-content:space-between;font:600 12px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
 .cd-top b{color:var(--accent-ink);font-weight:600}
 .cd-pulled{font-size:30px}
+/* a short screen: a smaller card, so the buttons stay in sight */
+@media (max-height:640px){.cd-pulled{font-size:22px}.cd-sheet{gap:10px}}
+@media (max-height:500px){.cd-pulled{font-size:17px}.mbox h2.cd-name{font-size:22px}}
+/* a phone held sideways: the card on the left, what it is and the buttons beside it */
+@media (orientation:landscape) and (max-height:520px){
+  .mbox.cd-box{max-width:600px}
+  .cd-sheet{display:grid;grid-template-columns:auto minmax(0,1fr);justify-items:center;align-items:center;gap:8px 18px;padding:12px 16px 14px}
+  .cd-sheet>*{grid-column:2}
+  .cd-sheet>.cd-top{grid-column:1/-1;justify-self:stretch}
+  .cd-sheet>.cd-pulled{grid-column:1;grid-row:2/span 6;font-size:20px}
+  .cd-sheet>.cd-sides,.cd-sheet>.mbtns{justify-self:stretch}
+  .cd-sub{margin-top:-4px}
+}
 .cd-sleeve{position:relative;padding:.3em;border-radius:.8em;background:var(--well);box-shadow:inset 0 0 0 1px var(--line2)}
-.cd-sleeve::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.1) 45%,transparent 58%)}
+.cd-sleeve::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.1) 45%,transparent 58%)}
 .cd-sleeve .card{transform:translateY(-.55em) rotate(-2.5deg);box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 .5em 1em -.2em rgba(0,0,0,.8)}
 /* Epic and Legendary: a band of light sweeps across the card as it lands (collection.js) */
-.card .shine{position:absolute;inset:-20% -60%;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 48%,rgba(255,240,255,.15) 53%,transparent 62%)}
+.card .shine{position:absolute;top:-20%;right:-60%;bottom:-20%;left:-60%;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.55) 48%,rgba(255,240,255,.15) 53%,transparent 62%)}
 .cd-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg);z-index:2;font:900 .5em/1 var(--display);letter-spacing:.12em;text-transform:uppercase;
   color:var(--danger);border:.08em solid var(--danger);border-radius:.18em;padding:.15em .4em;background:rgba(20,4,4,.55)}
 .mbox h2.cd-name{margin:0;font-size:26px}
@@ -364,7 +392,7 @@
 #scr-coll .dk-lonote{flex:1 1 auto;min-width:0;min-height:0;margin:0;text-align:right;font-size:12px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #scr-coll .dk-lonote:empty{display:none}
 #scr-coll .dk-lorow{grid-template-columns:repeat(3,auto);justify-content:start;gap:10px}
-#scr-coll .dk-loslot{width:82px;aspect-ratio:82/104;min-height:0;padding:22px 6px 7px;justify-content:flex-end;gap:2px;border:0;border-radius:7px 7px 6px 6px;overflow:hidden;
+#scr-coll .dk-loslot{width:82px;height:104px;min-height:0;padding:22px 6px 7px;justify-content:flex-end;gap:2px;border:0;border-radius:7px 7px 6px 6px;overflow:hidden;
   background:linear-gradient(150deg,var(--cover1),var(--cover2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 9px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
 #scr-coll .dk-loslot::before{content:"";position:absolute;left:0;right:0;top:16px;height:1px;background:rgba(0,0,0,.3);box-shadow:0 1px 0 rgba(255,255,255,.12)}
 #scr-coll .dk-loslot:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 9px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
@@ -407,12 +435,18 @@
 @media (max-width:599px){#scr-coll .coll-sides{display:none}}
 /* a narrow panel shows Best 5 as an icon so Save hand keeps one line */
 @container (max-width:330px){.coll-row .dk-act span{display:none}.coll-row #collBest{width:42px;padding:0}}
+.cq-poly .dk-tray.cq-b331 .coll-row .dk-act span{display:none}
+.cq-poly #scr-coll:not(.pick) .dk-tray.cq-b331 .coll-row #collBest{width:42px;padding:0}
+/* narrower still (a small phone held sideways, zoomed in): Save hand a little smaller so its words fit */
+@container (max-width:260px){.coll-row .btn.primary{padding:4px 6px;font-size:13.5px;line-height:1.05;white-space:normal}}
+.cq-poly .dk-tray.cq-b261 .coll-row .btn.primary{padding:4px 6px;font-size:13.5px;line-height:1.05;white-space:normal}
 /* picking cards for a match: Best 5, Clear and Save hand share the row with their words, and Play gets its own row under them */
 #scr-coll.pick .coll-row{flex-wrap:wrap}
-#scr-coll.pick .coll-row .dk-act{flex:1 1 0;width:auto;padding:6px 8px;white-space:nowrap}
+#scr-coll.pick .coll-row .dk-act{flex:1 1 0;width:auto;padding:6px 8px;white-space:normal;line-height:1.1} /* tight: two lines, never past the edge */
 #scr-coll.pick .coll-row .dk-act span{display:inline}
 #scr-coll.pick .coll-row #collGo{flex:1 0 100%;min-height:48px;font-size:16px}
 @container (max-width:360px){#scr-coll.pick .coll-row .dk-act svg{display:none}}
+.cq-poly #scr-coll.pick .dk-tray.cq-b361 .coll-row .dk-act svg{display:none}
 /* a card you can't add right now (every copy in hand, hand full, over the rarity limit) fades */
 .pk-cell.used .pocket{opacity:.35}
 /* the Forge's picker (forge.js): no power, side strength or Best 5, just what the cards would dissolve for */
@@ -420,18 +454,67 @@
 #scr-coll.forge #collWorth{display:flex}
 #scr-coll.forge .coll-row .dk-power:not(#collWorth),#scr-coll.forge #collBest,#scr-coll.forge .coll-sides{display:none}
 #collWorth b{display:flex;align-items:center;color:var(--shard-ink)}
-/* wide screens: deck boxes | mat | panel, in one row under the book */
-@media (min-width:700px) and (orientation:landscape){
+/* older phones without container queries: the same sizes from the box each thing sits in (cq.js) */
+.cq-poly .dk-fan{font-size:min(16px,calc(var(--cqw) / 28.5))}
+.cq-poly #scr-coll .dk-fan{font-size:min(14px,calc((var(--cqw) - 24px) / 29.6))}
+.cq-poly .bd-grid{font-size:min(44px,calc((var(--cqw) - 34px) / 13.4),calc((var(--cqh) - var(--res)) / 16.1))}
+.cq-poly .bd-page.cq-h261 .bd-num{display:none}
+.cq-poly .bd-page.cq-h261 .bd-grid{--res:27px}
+.cq-poly .bd-page.cq-wide .bd-grid{grid-template-columns:repeat(4,auto);grid-template-rows:auto;font-size:min(44px,calc((var(--cqw) - 34px) / 27.6),calc((var(--cqh) - var(--res)) / 8.2))}
+.cq-poly .bd-rib{--w:clamp(34px,calc(var(--cqw) * .054),54px)}
+.cq-poly .bd-cover .cv-sigil{width:clamp(110px,calc(var(--cqw) * .44),240px)}
+.cq-poly .bd-cover .cv-title{font:500 clamp(10px,calc(var(--cqw) * .034),15px)/1 var(--display)}
+.cq-poly .bd-cover .cv-band{width:clamp(9px,calc(var(--cqw) * .03),15px)}
+/* wide screens: deck boxes | mat | panel, in one row under the book (phones held sideways have their own layout, below) */
+@media (min-width:700px) and (orientation:landscape) and (min-height:521px){
   .coll-side{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:16px;width:100%;max-width:1000px;justify-self:center}
   /* picking for a match has no loadouts: the hand gets the whole row */
-  .coll-side:has(#collLo.hidden){grid-template-columns:minmax(0,1fr)}
+  .coll-side.nolo{grid-template-columns:minmax(0,1fr)}
   #scr-coll .dk-tray{flex-direction:row;align-items:stretch;gap:14px;container-type:inline-size}
   #scr-coll .dk-fan{flex:none;font-size:min(13px,calc(56cqw / 29.6))}
+  .cq-poly #scr-coll .dk-fan{font-size:min(13px,calc(var(--cqw) * .56 / 29.6))}
   .coll-panel{flex:1}
 }
-/* phones held sideways: everything a bit more compact */
+/* short screens (a phone in its browser, under the browser's own bars): the table round the book gets tighter, so
+   the book keeps its room. The deck boxes lie flat, three across. */
+@media (max-height:760px) and (max-width:699px),(max-height:760px) and (orientation:portrait),(orientation:landscape) and (max-height:520px){
+  #scr-coll .wrap.coll-wrap{gap:10px}
+  .coll-side{gap:8px}
+  .binder{padding:8px 10px 10px}
+  .bd-page{padding:8px 10px 6px}
+  .bd-page.l{padding-right:16px}
+  .bd-page.r{padding-left:16px}
+  #scr-coll .dk-lorow{grid-template-columns:repeat(3,minmax(0,124px));gap:8px}
+  #scr-coll .dk-loslot{width:auto;height:56px;padding:20px 8px 6px}
+  #scr-coll .dk-loslot b{display:block;max-width:100%;white-space:nowrap;text-overflow:ellipsis;padding-right:0}
+  #scr-coll .dk-loslot.empty{padding:4px 6px}
+  #scr-coll .dk-fan{padding:.55em .8em}
+  .coll-panel{padding:7px 10px}
+  .coll-row .dk-act,.coll-row .btn.primary{min-height:40px}
+  #scr-coll:not(.pick) .coll-row #collClear{width:40px}
+  #scr-coll.pick .coll-row #collGo{min-height:44px}
+}
+/* very short screens (an iPhone 6, 7 or 8 in Safari, an older Android in its browser): the book keeps a size you can
+   read and the hand sits right under it; the loadouts come after, a short scroll down (Save hand brings them up) */
+@media (max-height:600px) and (orientation:portrait){
+  #scr-coll .wrap.coll-wrap{min-height:auto;grid-template-rows:minmax(270px,1fr) auto auto}
+  .coll-side{display:contents}
+  #scr-coll .coll-tray{order:1}
+  #collLo{order:2}
+}
+/* picking for a match adds the Play button under the hand: the book gives a little back so Play stays in sight */
+@media (max-height:540px) and (orientation:portrait){#scr-coll.pick .wrap.coll-wrap{grid-template-rows:minmax(250px,1fr) auto auto}}
+@media (max-height:500px) and (orientation:portrait){#scr-coll .wrap.coll-wrap,#scr-coll.pick .wrap.coll-wrap{grid-template-rows:minmax(240px,1fr) auto auto}}
+/* phones held sideways: the book down the left, the title, loadouts, hand and buttons in a column on the right */
 @media (orientation:landscape) and (max-height:520px){
-  #scr-coll .wrap.coll-wrap{min-height:0;gap:10px}
-  #scr-coll .topbar.coll-top{margin:0}
-  #scr-coll .dk-loslot{width:66px}
+  #scr-coll.on{display:grid;grid-template-columns:minmax(0,1fr) clamp(240px,42%,360px);grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"book top" "book side";column-gap:14px;align-items:start}
+  #scr-coll .wrap.coll-wrap{display:contents}
+  #scr-coll .topbar.coll-top{grid-area:top;width:auto;min-width:0;margin:0 0 4px}
+  .coll-book{grid-area:book;align-self:stretch;max-width:none}
+  .coll-side{grid-area:side}
+  /* the column has no room for the side strength bars, and the screen's edge comes in a little */
+  #scr-coll .coll-sides{display:none}
+  :root:not(.ios-short) #scr-coll{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .coll-panel{gap:6px}
 }

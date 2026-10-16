@@ -22,6 +22,8 @@ input.rng::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:
 input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent-glow)}input.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent-glow)}
 .setrow .rng{flex:0 1 44%;min-width:0}
 .setrow[data-vol]{gap:10px}.setrow[data-vol] .rt{min-width:6.8em} /* on a phone the slider gives way, not the name */
+/* a tiny or zoomed-in phone: the name on its own line, the slider, level and mute under it */
+@media (max-width:299px){.setrow[data-vol]{flex-wrap:wrap}.setrow[data-vol] .rt{flex:1 1 100%}.setrow[data-vol] .rng{flex:1 1 0}}
 .setrow .vpct{font:800 14px var(--display);color:var(--accent-ink);font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
 .setrow.muted .vpct{color:var(--muted)}.setrow.muted .rng{opacity:.55}
 .vmute{flex:none;width:34px;height:34px;margin-left:-4px;padding:0;border-radius:10px;border:1px solid var(--line2);background:rgba(var(--tint),.04);color:var(--accent-ink);
@@ -282,7 +284,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* card drift (menu.js): a dim sheet of cards behind the menu, tilted about the middle of the screen. --h is half a
    column's height: the sheet starts that far above the middle and each column slides by it, so the screen stays covered.
    The sheet turns with transform, not the newer translate/rotate properties, which browsers before Chrome 104 drop */
-.drift{display:none;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;font-size:16px;opacity:.2}
+.drift{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:-1;overflow:hidden;pointer-events:none;font-size:16px;opacity:.2}
 :root[data-theme="light"] .drift{opacity:.3}
 .drift-on .drift{display:block}
 .drift-sheet{position:absolute;left:50%;top:50%;margin-top:calc(var(--h)/-2);transform-origin:50% calc(var(--h)/2);transform:translateX(-50%) rotate(-14deg);display:flex;gap:1.1em}
@@ -320,7 +322,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 @keyframes handOpen{0%,44%,100%{translate:0 0}22%{translate:0 -.4em}58%,80%{translate:var(--sx) -.3em}}
 /* the main button has a slow heartbeat */
 .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled){position:relative}
-.hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+.hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;opacity:0;
   box-shadow:0 0 0 4px color-mix(in srgb,var(--cta) 22%,transparent),0 10px 30px -4px var(--cta-glow);animation:playBeat 2.6s ease-in-out infinite}
 @keyframes playBeat{50%{opacity:1}}
 /* a tile moves only when it has news (.hot: packs to open, new stock at the market, a friend request, new cards in
@@ -338,7 +340,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .tile.hot .ptdot{animation:tilePing 1.8s ease-out infinite}
 /* the collection's bar: a light runs along the part that's filled */
 .tile.hot .bar i{position:relative;overflow:hidden}
-.tile.hot .bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-110%);animation:barRun 2.2s ease-in-out infinite}
+.tile.hot .bar i::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-110%);animation:barRun 2.2s ease-in-out infinite}
 @keyframes barRun{0%,30%{transform:translateX(-110%)}100%{transform:translateX(110%)}}
 @keyframes tilePing{from{box-shadow:0 0 0 0 var(--cta-glow)}to{box-shadow:0 0 0 9px transparent}}
 @media (prefers-reduced-motion:reduce){

@@ -1,6 +1,6 @@
 /* how to play: the text never scrolls. Every tab is short (the tab row itself swipes sideways),
    and howto.js shrinks the example and the text a little if a small screen still can't fit them */
-.hbox{width:100%;max-width:440px;height:min(680px,calc(100dvh / var(--ui) - 32px));display:flex;flex-direction:column;padding:12px}
+.hbox{width:100%;max-width:440px;height:min(680px,100%);height:min(680px,calc(100dvh / var(--ui) - 32px));display:flex;flex-direction:column;padding:12px}
 .hhead{display:flex;align-items:center;gap:6px}
 .htabs{flex:1;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:2px 8px;min-width:0;
   mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
@@ -36,7 +36,7 @@
 #hList.more li:last-child{border-bottom:0}
 #hList.more li>b:first-child{display:block;font:700 15px var(--display);color:var(--text);margin-bottom:1px}
 @media (min-width:900px) and (min-height:560px){
-  .hbox{max-width:960px;height:min(560px,calc(100dvh / var(--ui) - 32px));padding:16px}
+  .hbox{max-width:960px;height:min(560px,100%);height:min(560px,calc(100dvh / var(--ui) - 32px));padding:16px}
   .htabs{justify-content:safe center;gap:4px}
   .hmain{flex-direction:row;gap:22px;margin-top:14px}
   .hstage{height:auto;flex:1.1;margin:0;font-size:20px}
@@ -63,7 +63,7 @@
 .ex{position:relative;display:grid;gap:.3em;padding:.35em;border-radius:.8em;background:var(--board);border:1px solid var(--line2);font-size:16px}
 .ex.big{font-size:20px}
 .ex .c{width:4.6em;height:5.52em;border-radius:.45em;background:var(--cell-bg);position:relative}
-.ex .c .card{position:absolute;inset:0;font-size:.92em}
+.ex .c .card{position:absolute;top:0;right:0;bottom:0;left:0;font-size:.92em}
 .ex-tag{position:absolute;z-index:5;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:opacity .2s,transform .3s var(--spring);
   font:800 .82em var(--display);padding:.15em .45em;border-radius:.45em;background:var(--surf2);border:1.5px solid var(--gold-tag);color:var(--gold-tag);white-space:nowrap}
 .ex-tag.bad{border-color:var(--crit);color:var(--crit)}

@@ -26,7 +26,7 @@
 .ring{--p:72;--rc:var(--accent);width:2.3em;height:2.3em;border-radius:50%;display:grid;place-items:center;font:800 .8em var(--display);position:relative;flex:none;
   background:conic-gradient(var(--rc) 0 calc(var(--p)*1%),rgba(var(--tint),.12) 0)}
 .hstage .pill.big{font-size:1.25em}
-.ring::before{content:"";position:absolute;inset:.24em;border-radius:50%;background:var(--surf2)}
+.ring::before{content:"";position:absolute;top:.24em;right:.24em;bottom:.24em;left:.24em;border-radius:50%;background:var(--surf2)}
 .ring span{position:relative}
 .hstage .pill{min-height:0;font:700 .9em var(--display);padding:.25em 1em .25em .25em}
 .namein:read-only{opacity:.7;cursor:default}

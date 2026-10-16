@@ -184,7 +184,7 @@ function bdPage(k){
   let pk='';
   for(let i=0;i<BD_PER;i++){
     const c=cs[i];
-    if(!c){pk+='<div class="pk-cell"><div class="pocket blank" aria-hidden="true"></div></div>';continue}
+    if(!c){pk+='<div class="pk-cell blank"><div class="pocket blank" aria-hidden="true"></div></div>';continue}
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
     // the Forge's book holds only spare copies: a card you own but can't spare shows faded
     const kept=!n&&BH.forge&&owned(c.id)>0;
@@ -194,7 +194,7 @@ function bdPage(k){
     // spare copies stack up behind the card with a tab under it counting the copies still in the book (the rest are in your
     // hand); none left and the card fades
     const left=n?handRemaining(BH,c.id):0,seal=left>1?`<span class="seal" aria-hidden="true">×${left}</span>`:'';
-    pk+=`<div class="pk-cell${no&&picking()||kept?' used':''}"><button class="pocket${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
+    pk+=`<div class="pk-cell${no&&picking()||kept?' used':''}"><button class="pocket${n||kept||seen?' rar'+c.rar:''}${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
   }
   // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
   const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;

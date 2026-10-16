@@ -149,6 +149,9 @@ function iosFlags(){
   de.toggle('ios-bar',app&&top===0&&gap>0&&gap<=80);de.toggle('ios-app',app&&top>0);de.toggle('ios-short',app&&top>0&&gap>0&&gap<=top+8);
 }
 const PCMQ=matchMedia('(hover:hover) and (pointer:fine)');PCMQ.addEventListener('change',()=>layout());
+// the smallest a board square and a hand card get. A short screen (a small phone in its browser, or one held sideways)
+// goes a little smaller still and gets a slimmer hud and name rows (body.gshort, game.css), so nothing runs off the bottom
+let GMIN={cell:48,hc:40};
 function layout(){
   iosFlags();
   const vh=innerHeight;
@@ -159,19 +162,28 @@ function layout(){
   // screen's padding bigger than the usual 6px top/bottom and 10px sides; the extra comes off the space
   const pad=getComputedStyle($('#scr-game')),p=k=>parseFloat(pad['padding'+k])||0;
   const W=innerWidth/ui-Math.max(0,p('Left')-10)-Math.max(0,p('Right')-10);
-  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08,pc=land&&PCMQ.matches;
+  const H=vh/ui-Math.max(0,p('Top')-6)-Math.max(0,p('Bottom')-6),land=W>H*1.08,pc=land&&PCMQ.matches&&H>=520;
   // a wide window with a mouse gets the PC layout (like 4-player chess: hands above and below, each player in a corner);
-  // phones and tablets turned sideways keep the hands beside the board
+  // phones and tablets turned sideways keep the hands beside the board, and so does a window too short for the PC one
   document.body.classList.toggle('land',land&&!pc);document.body.classList.toggle('pc',pc);
+  const short=!pc&&(land?H<360:H<540),hud=short?44:52;
+  document.body.classList.toggle('gshort',short);GMIN=short?{cell:40,hc:32}:{cell:48,hc:40};
   let cell,hc;
   if(!land){
-    // hud 52, timer bar + rule bar 30, two player strips 46, gaps 8, screen padding 12, spare 4;
-    // the board is 3 cells of 1.2 × --cell tall plus 26px of gaps, padding and border
-    const extra=52+30+2*46+8+12+4+26;
-    hc=Math.min((W-36)/5,120);
-    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
-    hc=Math.min(hc,cell*.7);
-    cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
+    // hud 52 (44 when short), timer bar + rule bar 30, two player strips 46 (40 + a 6px gap; 38 when short), gaps 8, screen padding 12,
+    // spare 4; the board is 3 cells of 1.2 × --cell tall plus 26px of gaps, padding and border
+    const extra=hud+30+2*(short?38:46)+8+12+4+26;
+    if(short){
+      // the board and the two hands share the height, a hand card .7 of a square (3.6 + 2 × 1.2 × .7 = 5.28 squares)
+      cell=Math.min((W-40)/3,(H-extra-12)/5.28,190);
+      hc=Math.max(GMIN.hc,Math.min((W-36)/5,120,cell*.7));
+      cell=Math.min(cell,(H-extra-2*(hc*1.2+6))/3.6);
+    }else{
+      hc=Math.min((W-36)/5,120);
+      cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
+      hc=Math.min(hc,cell*.7);
+      cell=Math.min((W-40)/3,(H-extra-2*(hc*1.2+6))/3.6,190);
+    }
   }else if(pc){
     // the board (3.6 cells + 26) with a hand row above and below (1.2 card heights + 6, and an 8px gap each),
     // the cards sized so 5 of them span the board; a corner of at least 210px each side for the player
@@ -179,13 +191,14 @@ function layout(){
     cell=Math.min((avail-26-2*14)/(3.6+2*1.2*.6),(W-40-2*210)/3,200);
     hc=(cell*3+6)/5;
   }else{
-    const avail=H-52-10-22-24; // hud + timer bar + rulebar + padding
-    cell=Math.min(avail/3.7,(W-80-2*180)/3.25,200);
-    // each column fits beside the board: the name row with its big score (84 + a 6px gap + spare), then the
-    // stacked hand: 3.52 card widths tall, plus .32 for the room the stack opens up around a picked card
-    hc=Math.min(cell*.9,(Math.min(avail,cell*3.6+26)-96)/3.84);
+    const avail=H-hud-10-22-24; // hud + timer bar + rulebar + padding
+    // (short: the board's 26px of gaps and padding counted exactly, which avail/3.7 only gets right on big screens)
+    cell=Math.min(avail/3.7,short?(avail-26)/3.6:1e9,(W-80-2*180)/3.25,200);
+    // each column fits beside the board: the name row with its big score (84 + a 6px gap + spare; 50 when short),
+    // then the stacked hand: 3.52 card widths tall, plus .32 for the room the stack opens up around a picked card
+    hc=Math.min(cell*.9,(Math.min(avail,cell*3.6+26)-(short?62:96))/3.84);
   }
-  cell=Math.max(48,Math.floor(cell));hc=Math.max(40,Math.floor(hc));
+  cell=Math.max(GMIN.cell,Math.floor(cell));hc=Math.max(GMIN.hc,Math.floor(hc));
   const rs=document.documentElement.style;rs.setProperty('--cell',cell+'px');rs.setProperty('--hc',hc+'px');
   rs.setProperty('--t',Math.ceil(hc*1.2+6)+'px'); // PC: a hand row's height, and so a corner's
   // the emote button (36 + a 10px gap) hangs off the left of the player rows; when the space beside them is
@@ -200,17 +213,21 @@ function layout(){
 // onto two lines), shrink the board and hands until it fits
 function fitGame(){
   const sg=$('#scr-game');if(!sg.classList.contains('on'))return;
+  sg.classList.remove('gscroll');sg.scrollTop=0;
   const rs=document.documentElement.style,limit=innerHeight-parseFloat(getComputedStyle(sg).paddingBottom)*UI;
+  // on PC the sides are laid out by their parts (display: contents), so measure the hands
+  const measure=()=>{const parts=(document.body.classList.contains('pc')?[$('#handTop'),$('#board'),$('#handBot')]:[$('#sideTop'),$('#board'),$('#sideBot')]).map(e=>e.getBoundingClientRect());
+    const top=Math.min(...parts.map(r=>r.top)),bot=Math.max(...parts.map(r=>r.bottom));return {span:bot-top,over:bot-limit}};
   for(let k=0;k<3;k++){
-    // on PC the sides are laid out by their parts (display: contents), so measure the hands
-    const parts=(document.body.classList.contains('pc')?[$('#handTop'),$('#board'),$('#handBot')]:[$('#sideTop'),$('#board'),$('#sideBot')]).map(e=>e.getBoundingClientRect());
-    const top=Math.min(...parts.map(r=>r.top)),over=Math.max(...parts.map(r=>r.bottom))-limit;
+    const {span,over}=measure();
     if(over<=1)return;
-    const f=1-over/(Math.max(...parts.map(r=>r.bottom))-top),cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
-    if(cell<=48&&hc<=40)return;
-    rs.setProperty('--cell',Math.max(48,Math.floor(cell*f))+'px');rs.setProperty('--hc',Math.max(40,Math.floor(hc*f))+'px');
-    rs.setProperty('--t',Math.ceil(Math.max(40,Math.floor(hc*f))*1.2+6)+'px');
+    const f=1-over/span,cell=parseFloat(rs.getPropertyValue('--cell')),hc=parseFloat(rs.getPropertyValue('--hc'));
+    if(cell<=GMIN.cell&&hc<=GMIN.hc)break;
+    rs.setProperty('--cell',Math.max(GMIN.cell,Math.floor(cell*f))+'px');rs.setProperty('--hc',Math.max(GMIN.hc,Math.floor(hc*f))+'px');
+    rs.setProperty('--t',Math.ceil(Math.max(GMIN.hc,Math.floor(hc*f))*1.2+6)+'px');
   }
+  // still too tall with the smallest cards (a tiny phone, zoomed in): the match scrolls a little instead of cutting off the bottom
+  if(measure().over>1)sg.classList.add('gscroll');
 }
 window.addEventListener('resize',layout);
 // an iPhone home-screen app can come up full height and only then shrink (no resize event), so look again a few times,

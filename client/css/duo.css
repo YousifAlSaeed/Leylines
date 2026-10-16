@@ -147,7 +147,7 @@
    yours overlap a little so their cards stay big; yours sits between the bottom corners ---------- */
 #scr-duo.narrow .duo-arena{display:grid;grid-template-columns:var(--dk) var(--dbw) var(--dk);grid-template-rows:var(--dra) auto var(--drc);
   justify-content:center;align-content:center;gap:12px 6px}
-#scr-duo.narrow :is(.duo-top,.duo-mid,.duo-side,.duo-bot,#duoMe){display:contents}
+#scr-duo.narrow .duo-top,#scr-duo.narrow .duo-mid,#scr-duo.narrow .duo-side,#scr-duo.narrow .duo-bot,#scr-duo.narrow #duoMe{display:contents}
 #scr-duo.narrow #duoScore{display:none}
 #scr-duo.narrow .dh-top{grid-area:1/2;align-self:center;justify-self:center;min-height:0}
 #scr-duo.narrow .dhand.dh-top .card+.card{margin-left:var(--dtf)}
@@ -158,7 +158,7 @@
 #scr-duo.narrow #duoHand{grid-area:3/2;align-self:start;justify-self:center;gap:0;min-height:0}
 #scr-duo.narrow #duoHand .card+.card{margin-left:var(--dfan)}
 /* a soft shadow where an overlapping card covers the one before it */
-#scr-duo.narrow :is(.dhand.dh-top,#duoHand) .card{box-shadow:-6px 0 10px -6px rgba(0,0,0,.6)}
+#scr-duo.narrow .dhand.dh-top .card,#scr-duo.narrow #duoHand .card{box-shadow:-6px 0 10px -6px rgba(0,0,0,.6)}
 #scr-duo.narrow .dhand.dh-side .card{box-shadow:0 -6px 10px -6px rgba(0,0,0,.6)}
 #scr-duo.narrow #duoHand .card.sel{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.35),0 0 0 .1em var(--hot),0 .5em 1.2em -.3em var(--hot-glow)}
 /* a corner, built like PC's: clock bar, name, and the small avatar beside the big score. The name has the corner's
@@ -190,7 +190,7 @@
    A corner holds the big score, the name and avatar, and the clock. The score row under the board isn't needed ---------- */
 body.pc #scr-duo:not(.narrow) .duo-arena{max-width:none;display:grid;grid-template-columns:var(--dt-row) auto var(--dt-row);
   grid-template-rows:var(--dt-row) auto var(--dt-row);justify-content:center;align-content:center;gap:10px}
-body.pc #scr-duo:not(.narrow) :is(.duo-top,.duo-mid,.duo-side,.duo-bot,#duoMe){display:contents}
+body.pc #scr-duo:not(.narrow) .duo-top,body.pc #scr-duo:not(.narrow) .duo-mid,body.pc #scr-duo:not(.narrow) .duo-side,body.pc #scr-duo:not(.narrow) .duo-bot,body.pc #scr-duo:not(.narrow) #duoMe{display:contents}
 body.pc #scr-duo:not(.narrow) #duoScore{display:none}
 body.pc #scr-duo:not(.narrow) .dh-top{grid-area:1/2;align-self:center}
 body.pc #scr-duo:not(.narrow) #duoLeft .dhand{grid-area:2/1;justify-self:center;align-self:center}
@@ -227,4 +227,35 @@ body.pc #scr-duo:not(.narrow) .dsc{grid-area:sc;display:block;color:var(--dink);
   font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor}
 body.pc #scr-duo:not(.narrow) .dsc.pop{animation:scPop .45s var(--spring)}
 #scr-duo .ptm{background:linear-gradient(160deg,var(--dc1),var(--dc2))}
+/* ---------- phones held sideways (.lshort, sizes set by duoFitSide): one row, in the order the turns go round: the left
+   player, the top player, the board, the right player, then you. Each player is a column (avatar and score, name, then
+   their cards stacked downwards), so the board gets the whole height. Your stack opens round a picked card, like 1v1's ---------- */
+#scr-duo.lshort .duo-arena{max-width:none;display:grid;grid-template-columns:repeat(5,auto);grid-template-rows:minmax(0,1fr);justify-content:center;align-items:center;gap:0 10px}
+#scr-duo.lshort .duo-mid{display:contents}
+#scr-duo.lshort #duoScore{display:none}
+#scr-duo.lshort #duoLeft{order:1}
+#scr-duo.lshort .duo-top{order:2;flex-direction:column;flex-wrap:nowrap;gap:10px;width:calc(var(--ds) + 44px)}
+#scr-duo.lshort #duoBoard{order:3}
+#scr-duo.lshort #duoRight{order:4}
+#scr-duo.lshort .duo-bot{order:5}
+#scr-duo.lshort:not(.narrow) #duoMe{display:block}
+#scr-duo.lshort:not(.narrow) .dname.dn-side,#scr-duo.lshort:not(.narrow) .dname.dn-top,#scr-duo.lshort:not(.narrow) .dname.dn-me{display:grid;grid-template-columns:auto auto;grid-template-areas:"av sc" "who who";justify-content:center;
+  align-items:center;gap:2px 6px;text-align:center}
+#scr-duo.lshort:not(.narrow) .dname.dn-side .av,#scr-duo.lshort:not(.narrow) .dname.dn-top .av,#scr-duo.lshort:not(.narrow) .dname.dn-me .av{grid-area:av;width:22px;height:22px;border-radius:7px;font-size:11px}
+#scr-duo.lshort:not(.narrow) .dname.dn-side .av.art,#scr-duo.lshort:not(.narrow) .dname.dn-top .av.art,#scr-duo.lshort:not(.narrow) .dname.dn-me .av.art{font-size:14px}
+#scr-duo.lshort:not(.narrow) .dname.dn-side .dwho,#scr-duo.lshort:not(.narrow) .dname.dn-top .dwho,#scr-duo.lshort:not(.narrow) .dname.dn-me .dwho{grid-area:who;max-width:calc(var(--ds) + 44px)}
+#scr-duo.lshort:not(.narrow) .dname.dn-side .dwho b,#scr-duo.lshort:not(.narrow) .dname.dn-top .dwho b,#scr-duo.lshort:not(.narrow) .dname.dn-me .dwho b{max-width:100%;font-size:11.5px}
+#scr-duo.lshort:not(.narrow) .dname.dn-side .dwho small,#scr-duo.lshort:not(.narrow) .dname.dn-top .dwho small,#scr-duo.lshort:not(.narrow) .dname.dn-me .dwho small{display:none}
+#scr-duo.lshort .dsc{grid-area:sc;display:block;color:var(--dink);font:900 24px/1 var(--display);font-variant-numeric:tabular-nums;text-shadow:0 0 12px currentColor}
+#scr-duo.lshort .dsc.pop{animation:scPop .45s var(--spring)}
+#scr-duo.lshort .dhand.dh-top{flex-direction:column;min-height:0}
+#scr-duo.lshort .dhand.dh-top .card{font-size:calc(var(--ds)/5)}
+#scr-duo.lshort:not(.narrow) .dhand.dh-top .card+.card{margin-left:0;margin-top:calc(var(--ds) * -0.68)}
+#scr-duo.lshort .dmyhand{flex-direction:column;gap:0;min-height:0;min-width:calc(var(--dh) + 20px);padding:calc(var(--dh) * .16) 0}
+#scr-duo.lshort .dmyhand .card+.card{margin-top:calc(var(--dh) * -0.62)}
+#scr-duo.lshort .dmyhand .card{transform:translate(var(--dx,0),var(--dy,0))}
+#scr-duo.lshort .dmyhand .card.sel{--dx:-22%;--dy:calc(var(--dh) * -.16)}
+#scr-duo.lshort .dmyhand .card.sel ~ .card{--dy:calc(var(--dh) * .16)}
+#scr-duo.lshort .dmyhand .card:has(~ .card.sel){--dy:calc(var(--dh) * -.16)}
+
 #scr-duo .ptm.crit{background:var(--crit)}

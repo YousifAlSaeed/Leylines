@@ -1309,9 +1309,12 @@ function duoFit(){
   const ui=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui'))||1;
   const W=Math.min(innerWidth/ui,860)-20,H=innerHeight/ui,el=$('#scr-duo');
   // PC and phones held upright get the square with a corner per player; other screens get big side players
-  const narrow=W<540&&!document.body.classList.contains('pc');el.classList.toggle('narrow',narrow);
-  if(document.body.classList.contains('pc')){duoFitPC(el,ui);DUO.fitKey=duoFitKey();return}
+  const pc=document.body.classList.contains('pc'),narrow=W<540&&!pc;el.classList.toggle('narrow',narrow);
+  // a phone held sideways (or any short, wide window that isn't PC's): everyone in one row, see duoFitSide
+  const side=!pc&&!narrow&&innerWidth>innerHeight&&H<560;el.classList.toggle('lshort',side);
+  if(pc){duoFitPC(el,ui);DUO.fitKey=duoFitKey();return}
   if(narrow){duoFitPhone(el,W);DUO.fitKey=duoFitKey();return}
+  if(side){duoFitSide(el,W);DUO.fitKey=duoFitKey();return}
   const set=dc=>{
     const ds=Math.max(34,Math.min(78,dc*.72)),dt=Math.max(30,Math.min(58,dc*.56)),dh=Math.max(46,Math.min(118,(W-30)/5.3,dc*1.12));
     el.style.setProperty('--dc',dc+'px');el.style.setProperty('--ds',ds+'px');el.style.setProperty('--dt',dt+'px');el.style.setProperty('--dh',dh+'px');
@@ -1356,6 +1359,22 @@ function duoFitPhone(el,W){
   };
   let bw=W-2*k-12;
   for(let n=0;n<60&&bw>180&&set(bw)>room;n++)bw-=4;
+}
+// phones held sideways (.lshort): one row in the order the turns go round (left player, top player, the board, right
+// player, you), each player a column with their name and score over their cards stacked downwards. The board is as tall
+// as the room allows; the side cards (--ds) and yours (--dh, a taller stack that opens round a picked card, like 1v1's)
+// fit under a name of about 40px. Smaller until the row fits the width and nothing runs off the bottom
+function duoFitSide(el,W){
+  const arena=$('#scr-duo .duo-arena'),room=arena.clientHeight;
+  const set=dc=>{
+    const ds=Math.floor(Math.min(dc*.72,(room-50)/3.28)),dh=Math.floor(Math.min(dc*1.1,(room-46)/3.84));
+    for(const [n,v] of [['--dc',dc],['--ds',ds],['--dt',ds],['--dh',dh]])el.style.setProperty(n,v+'px');
+    return 4*dc+24+3*(ds+44)+dh+20+40; // the row's width: board, three player columns, yours, the gaps
+  };
+  const fits=()=>{const a=arena.getBoundingClientRect();return [...arena.querySelectorAll('.duo-side,.duo-top,.duo-bot,#duoBoard')].every(e=>e.getBoundingClientRect().bottom<=a.bottom+1)};
+  let dc=Math.floor(Math.max(30,Math.min(132,(room-26)/4.8)));
+  while(dc>30&&set(dc)>W)dc-=2;
+  for(let k=0;k<30&&dc>30&&!fits();k++){dc-=2;set(dc)}
 }
 // refit when the window changes, or when the hands first appear (they take room)
 const duoFitKey=()=>`${innerWidth}x${innerHeight}:${!!(DUO.snap&&DUO.snap.st)}:${document.body.classList.contains('pc')}`;

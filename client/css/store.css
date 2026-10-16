@@ -104,6 +104,7 @@
 .fg-slot{position:absolute;width:5em;height:6em;padding:0;border:0;border-radius:.6em;background:none;transform:translate(-50%,-50%);cursor:pointer;color:inherit;
   font-size:clamp(6px,calc(100cqh / 26),9px);
   transition:transform .25s var(--spring)}
+.cq-poly .fg-slot{font-size:clamp(6px,calc(var(--cqh) / 26),9px)} /* older phones without container queries (cq.js) */
 .fg-slot:hover{transform:translate(-50%,-50%) translateY(-2px)}
 .fg-slot:not(.on){display:grid;place-items:center;border:1.5px dashed color-mix(in srgb,var(--sc) 55%,transparent);background:color-mix(in srgb,var(--sc) 7%,transparent)}
 .fg-slot:not(.on):hover{background:color-mix(in srgb,var(--sc) 15%,transparent)}
@@ -196,7 +197,7 @@
   /* the constellation: a short strip over the market, the whole sky without it */
   .st-map{display:block;position:relative;height:100px;margin:4px -8px 0;flex:none}
   .st-down .st-map{flex:1;min-height:230px}
-  .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
+  .st-lines{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
   .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:56px;padding:0;border:0;background:none;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:600 12px/1.2 var(--body)}
   .st-star svg{width:30px;height:30px;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc));opacity:.55;transition:transform .35s var(--spring),opacity .3s}
@@ -245,6 +246,7 @@
   .st-sub{min-height:0}
   .st-glass,.s-forge .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .st-slot .card{font-size:max(12px,min(16px,4vw,calc((100cqh - 268px) / 12)))}
+  .cq-poly .st-slot .card{font-size:max(12px,min(16px,4vw,calc((var(--cqh) - 268px) / 12)))} /* no container queries (cq.js) */
   .st-cards{row-gap:12px}
   .st-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
   .st-dots i{width:6px;height:6px;border-radius:99px;background:rgba(237,230,255,.3);transition:width .35s var(--ease),background .35s}
@@ -269,7 +271,7 @@
     linear-gradient(180deg,var(--s1),var(--s2) 55%,var(--s3))}
 /* a wide screen: the arc takes the moon's place beside the countdown */
 .st-dial .st-orbit{flex:1 1 320px;display:block;position:relative;height:150px;min-width:0}
-.st-dial .st-arc{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:rgba(237,230,255,.4);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
+.st-dial .st-arc{display:block;position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overflow:visible;fill:none;stroke:rgba(237,230,255,.4);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
 .st-dial .st-orbit small{display:block;position:absolute;top:100%;margin-top:-14px;font:700 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .st-dial .st-orbit small:first-of-type{left:4%}
 .st-dial .st-orbit small:nth-of-type(2){left:50%;transform:translateX(-50%)}

@@ -43,3 +43,18 @@
 #scr-draft.mine .dr-pick:not(:disabled) .card{box-shadow:inset 0 0 0 .05em rgba(255,255,255,.32),0 0 0 .1em var(--accent),0 .3em .9em var(--accent-glow)}
 .dr-pool .dr-slot{opacity:.6}
 @media (prefers-reduced-motion:reduce){.dr-clock.low,.dr-hand .card.dr-in{animation:none}.dr-pick{transition:none}}
+/* older phones without container queries: the same sizes from the box they sit in (cq.js) */
+.cq-poly .dr-hand{font-size:min(15px,calc((var(--cqw) - 40px) / 25))}
+.cq-poly .dr-pool{font-size:min(18px,calc((var(--cqw) - 48px) / 25))}
+/* phones held sideways: their hand, the table and your hand side by side, each hand in two columns, every card sized
+   to the height left under the top bar (the stacked layout above would leave the table below the fold) */
+@media (orientation:landscape) and (max-height:520px){
+  #scr-draft .topbar{margin:0 0 6px}
+  #scr-draft .dr-wrap{flex:1 1 auto;min-height:0;max-width:none;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch;container-type:size}
+  .dr-side{align-content:start}
+  .dr-mid{align-content:center}
+  .dr-hand{grid-template-columns:repeat(2,5em);font-size:min(12px,calc((100cqh - 74px) / 18))}
+  .dr-pool{font-size:min(18px,calc((100cqh - 100px) / 12),calc((100cqw - 308px) / 25))}
+  .cq-poly .dr-hand{font-size:min(12px,calc((var(--cqh) - 74px) / 18))}
+  .cq-poly .dr-pool{font-size:min(18px,calc((var(--cqh) - 100px) / 12),calc((var(--cqw) - 308px) / 25))}
+}

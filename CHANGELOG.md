@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.7 (2026-10-17)
+- Every phone, big or small: on a short screen (an older phone, or a browser's bars taking room) the Collection keeps its cards big with your hand right under the book, and a match, the tutorial and card popups shrink to fit instead of running off the bottom
+- Phones held sideways: the Collection, Draft and Crossroads lay out side by side
+- Older phones and browsers (iOS 15, Samsung Internet and Chrome back to version 80) lay every screen out properly, and long popups scroll
+- A browser's own dark mode (Samsung Internet, Chrome) no longer recolours the game, and a zoomed-in or very small screen keeps every button on screen
+
 ## 0.28.6 (2026-10-16)
 - Smoother music changes: the song playing eases out, and the next one eases in a moment later, instead of both playing loud at once
 

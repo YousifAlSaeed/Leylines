@@ -96,7 +96,7 @@ function loMissing(h,ids){return missingIn(ids,id=>{const e=h.pool.find(x=>x.id=
 const sameHand=(a,b)=>a.length===b.length&&a.slice().sort((x,y)=>x-y).join()===b.slice().sort((x,y)=>x-y).join();
 function renderLoadouts(h){
   const P=h.pfx;
-  $(`#${P}Lo`).classList.toggle('hidden',!h.loadouts);
+  const lo=$(`#${P}Lo`);lo.classList.toggle('hidden',!h.loadouts);lo.parentElement.classList.toggle('nolo',!h.loadouts);
   $(`#${P}Save`).classList.toggle('hidden',!h.loadouts);
   if(!h.loadouts)return;
   const col=h.color||myCol();
@@ -160,7 +160,9 @@ function deleteLoadout(h,i){
 }
 // Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
 function wireHand(P,get){
-  $(`#${P}Save`).onclick=()=>{const h=get();if(h.sel.length!==5)return;sfx('click');h.saving=!h.saving;h.note='';h.render()};
+  $(`#${P}Save`).onclick=()=>{const h=get();if(h.sel.length!==5)return;sfx('click');h.saving=!h.saving;h.note='';h.render();
+    // on a short phone the loadouts can sit below the hand, out of sight: bring the slots up to pick from
+    if(h.saving){const lo=$(`#${P}Lo`);if(lo.getBoundingClientRect().bottom>innerHeight)lo.scrollIntoView({block:'end',behavior:noMotion()?'auto':'smooth'})}};
   $(`#${P}LoCancel`).onclick=()=>{const h=get();sfx('click');h.saving=false;h.render()};
   $(`#${P}Best`).onclick=()=>{
     const h=get();sfx('click');

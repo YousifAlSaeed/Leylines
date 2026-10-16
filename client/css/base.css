@@ -48,14 +48,18 @@
   --sh:40,20,90; --shk:.3; --tint:0,0,0; --well:rgba(0,0,0,.05); --dim:.35; --grain:.05;
   --title-grad:linear-gradient(180deg,var(--text) 25%,var(--accent-ink));
   color-scheme:light;
+  color-scheme:only light; /* picked on purpose: a browser's own dark mode mustn't darken it */
 }
 /* --cell is used for the board square size; the colour lives in --cell-bg */
 :root{--cell-bg:#0b0720} :root[data-theme="light"]{--cell-bg:#d6cdf0}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
+/* text stays the size the layouts were made for: an iPhone turned sideways, or an Android browser's text size setting,
+   would otherwise enlarge it and push the fitted screens (match, Collection) off the edge. Pinch zoom still works */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* measures the phone's notch and home bar (layout() reads its padding) */
-#safe{position:fixed;inset:0;z-index:-1;visibility:hidden;pointer-events:none;
+#safe{position:fixed;top:0;right:0;bottom:0;left:0;z-index:-1;visibility:hidden;pointer-events:none;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 /* iPhone home-screen app (layout() sets these classes; measured on an iPhone 16 Pro Max with iOS 27).
    .ios-bar   the status bar is opaque (index.html): the page starts below the clock and reaches the bottom of the
@@ -88,7 +92,7 @@ body{
   background-color:var(--bg0);
   overscroll-behavior:none;user-select:none;-webkit-user-select:none;
 }
-body::after{content:"";position:fixed;inset:0;z-index:var(--z-grain);pointer-events:none;opacity:var(--grain);mix-blend-mode:overlay;
+body::after{content:"";position:fixed;top:0;right:0;bottom:0;left:0;z-index:var(--z-grain);pointer-events:none;opacity:var(--grain);mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 button{font:inherit;color:inherit}
 p{text-wrap:pretty}
@@ -103,7 +107,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stro
    --ui is set by layout(); anything sized in vw/vh inside a zoomed box divides by it to stay viewport-true. */
 :root{--ui:1}
 .screen,#modal,#how,#away,#toast{zoom:var(--ui)}
-.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;
+.screen{position:fixed;top:0;right:0;bottom:0;left:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;
   padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 .screen.on{display:flex}
 .screen.on .wrap>*,.screen.on .topbar,#scr-menu.on .menu>*{animation:rise .4s var(--ease) both}
@@ -170,7 +174,7 @@ h3,.lbl{margin:0 0 8px;font:600 12.5px var(--body);color:var(--muted);letter-spa
   background:linear-gradient(160deg,var(--dc1),var(--dc2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);transition:transform .15s,box-shadow .2s}
 .colpick button:hover:not(.on){transform:translateY(-2px)}
 .colpick button.on{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 0 0 2px var(--surf),0 0 0 4px var(--dc1)}
-.colpick button.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.colpick button.on::after{content:"✓";position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
 @media (max-width:420px){.setcol{flex-wrap:wrap}.setcol .colpick{width:100%;justify-content:flex-start}}
 button.setrow{cursor:pointer}
 button.setrow:hover{background:rgba(var(--tint),.03)}

@@ -40,10 +40,14 @@ function tutCoach(nudge){
 function tutPlace(){
   if(!(G&&G.tut))return;
   const c=$('#tutCoach'),n=$('#tutNext'),land=document.body.classList.contains('land'),W=innerWidth/UI;
-  const r=(land?$('#sideTop'):$('#handTop')).getBoundingClientRect(),w=land?Math.max(240,r.width/UI):Math.min(W-24,440);
+  // (sideways it stops short of the board, which a phone's narrow side column would otherwise run into)
+  const r=(land?$('#sideTop'):$('#handTop')).getBoundingClientRect(),bl=$('#board').getBoundingClientRect().left/UI;
+  const w=land?Math.min(Math.max(240,r.width/UI),bl-18):Math.min(W-24,440);
   c.style.width=w+'px';
-  c.style.left=Math.max(12,Math.min(W-w-12,(r.left+r.width/2)/UI-w/2))+'px';
-  c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(r.top/UI-4,58))+'px';
+  c.style.left=Math.max(12,Math.min(W-w-12,land?bl-6-w:1e9,(r.left+r.width/2)/UI-w/2))+'px';
+  // upright: over the CPU's (empty) hand, lifted over their name row when it would cover the board's top row (a short
+  // screen), but never over the hud
+  c.style.top=(land?(r.top+r.height*.12)/UI:Math.max(58,Math.min(r.top/UI-4,$('#board').getBoundingClientRect().top/UI-c.offsetHeight-6)))+'px';
   if(!n.hidden){
     // sized to its text; the CSS translate centres it on the hand
     const h=$('#handBot').getBoundingClientRect();
