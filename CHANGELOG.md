@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.8 (2026-10-18)
+- Crossroads fits tiny and zoomed-in phones, and a small phone held sideways gets the one-row layout
+
 ## 0.28.7 (2026-10-17)
 - Every phone, big or small: on a short screen (an older phone, or a browser's bars taking room) the Collection keeps its cards big with your hand right under the book, and a match, the tutorial and card popups shrink to fit instead of running off the bottom
 - Phones held sideways: the Collection, Draft and Crossroads lay out side by side

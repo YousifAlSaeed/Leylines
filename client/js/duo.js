@@ -1309,9 +1309,9 @@ function duoFit(){
   const ui=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui'))||1;
   const W=Math.min(innerWidth/ui,860)-20,H=innerHeight/ui,el=$('#scr-duo');
   // PC and phones held upright get the square with a corner per player; other screens get big side players
-  const pc=document.body.classList.contains('pc'),narrow=W<540&&!pc;el.classList.toggle('narrow',narrow);
   // a phone held sideways (or any short, wide window that isn't PC's): everyone in one row, see duoFitSide
-  const side=!pc&&!narrow&&innerWidth>innerHeight&&H<560;el.classList.toggle('lshort',side);
+  const pc=document.body.classList.contains('pc'),side=!pc&&innerWidth>innerHeight&&H<560,narrow=W<540&&!pc&&!side;
+  el.classList.toggle('narrow',narrow);el.classList.toggle('lshort',side);el.classList.remove('dscroll');
   if(pc){duoFitPC(el,ui);DUO.fitKey=duoFitKey();return}
   if(narrow){duoFitPhone(el,W);DUO.fitKey=duoFitKey();return}
   if(side){duoFitSide(el,W);DUO.fitKey=duoFitKey();return}
@@ -1348,7 +1348,7 @@ function duoFitPC(el,ui){
 // the top hand and yours are as long as the board, their cards overlapping a little so they stay big; the corner
 // rows are as tall as those hands. As wide as the screen allows, then narrower until it fits the height
 function duoFitPhone(el,W){
-  const k=Math.round(Math.max(52,Math.min(72,W*.152))),room=$('#scr-duo .duo-arena').clientHeight;
+  const k=Math.round(Math.max(W<290?40:52,Math.min(72,W*.152))),room=$('#scr-duo .duo-arena').clientHeight;
   const set=bw=>{
     const dc=Math.min(100,Math.floor((bw-21)/4)),bh=4.8*dc+21,dt=Math.floor(bw*.229),dh=Math.floor(bw*.286),ds=k-6;
     const ra=Math.max(74,Math.ceil(dt*1.2)+2),rc=Math.max(74,Math.ceil(dh*1.2));
@@ -1357,8 +1357,11 @@ function duoFitPhone(el,W){
     for(const n in v)el.style.setProperty(n,v[n]+'px');
     return ra+bh+rc+24;
   };
-  let bw=W-2*k-12;
-  for(let n=0;n<60&&bw>180&&set(bw)>room;n++)bw-=4;
+  // (sizes are always set, however narrow; a screen too small even for the smallest board, like a tiny phone zoomed in,
+  // scrolls a little instead of cutting the bottom off)
+  const max=W-2*k-12,min=Math.min(max,W<290?140:180);let bw=max;
+  for(let n=0;n<60&&set(bw)>room&&bw>min;n++)bw=Math.max(min,bw-4);
+  el.classList.toggle('dscroll',set(bw)>room+1);
 }
 // phones held sideways (.lshort): one row in the order the turns go round (left player, top player, the board, right
 // player, you), each player a column with their name and score over their cards stacked downwards. The board is as tall

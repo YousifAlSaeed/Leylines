@@ -60,6 +60,7 @@
 #duoTimer button:disabled{cursor:default}
 
 /* the match: sizes set by duoFit (--dc square, --ds side cards, --dt partner's cards, --dh your hand) */
+#scr-duo.dscroll{overflow-y:auto} /* only when even the smallest board doesn't fit (duoFitPhone) */
 #scr-duo{--dc:64px;--ds:30px;--dt:36px;--dh:56px;overflow:hidden;overscroll-behavior:none;
   padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
 .ios-app #scr-duo{padding-top:calc(env(safe-area-inset-top) + 28px)}
