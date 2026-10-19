@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.9 (2026-10-19)
+- Buying a card from the Merchant plays a short coin clink instead of the long win tune
+
 ## 0.28.8 (2026-10-18)
 - Crossroads fits tiny and zoomed-in phones, and a small phone held sideways gets the one-row layout
 

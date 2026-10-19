@@ -31,11 +31,12 @@ here. The other effects are made by `tools/generate-sfx.py`.
 | coll_hand_full | "UI Confirmation Alert, A5.wav" by InspectorJ ([403012](https://freesound.org/people/InspectorJ/sounds/403012)), **CC BY 4.0** |
 | coll_shimmer | "Sparkle" by nomiqbomi ([578803](https://freesound.org/people/nomiqbomi/sounds/578803)) |
 | tick | Xylophone by juancamiloorjuela ([204647](https://freesound.org/people/juancamiloorjuela/sounds/204647)) |
-| same_plus, combo, combo2 | Glockenspiel C5 by sgossner ([373364](https://freesound.org/people/sgossner/sounds/373364)); crystal bell by arseniiv ([614832](https://freesound.org/people/arseniiv/sounds/614832)) |
+| same_plus, combo, combo2, buy | Glockenspiel C5 by sgossner ([373364](https://freesound.org/people/sgossner/sounds/373364)); crystal bell by arseniiv ([614832](https://freesound.org/people/arseniiv/sounds/614832)) |
 | same_plus, combo, combo2 | Bubble pops: "Pop!" by oldedgar ([97978](https://freesound.org/people/oldedgar/sounds/97978)), "Bubble Pop" by Reza5oO ([796298](https://freesound.org/people/Reza5oO/sounds/796298)), "The Best Bubble Pop Sound For Game and UI" by el_boss ([669918](https://freesound.org/people/el_boss/sounds/669918)) |
 | combo2 | Bell tree scrape by Samulis ([375596](https://freesound.org/people/Samulis/sounds/375596)) |
 | pack_reveal_4–5 | "Bell Tree Tinkle Up" by avajoliec ([693698](https://freesound.org/people/avajoliec/sounds/693698)) |
 | pack_reveal_1–5, badge_claim | "Mein bottle pling" by skylarjulian ([521332](https://freesound.org/people/skylarjulian/sounds/521332)), with the crystal bell, bell tree and a sparkling star ([462095](https://freesound.org/s/462095)) |
 | coll_open, coll_close | "Book Close" by xavierrrangel ([617410](https://freesound.org/people/xavierrrangel/sounds/617410)) |
 | badge_claim | "coins_03" by Butilko ([169146](https://freesound.org/people/Butilko/sounds/169146)) |
+| buy | "Coins" by Mateusz_Chenc ([512216](https://freesound.org/people/Mateusz_Chenc/sounds/512216)), with the glockenspiel |
 | coll_deny | "Wood Knock" by Mrguff, [Freesound 369710](https://freesound.org/people/Mrguff/sounds/369710) |

@@ -18,7 +18,7 @@ const SR = 44100;
 // layer: {f: file, from, to (s, cut of the source), at (s, place), db, hp, lp, pan (-1..1), rate (pitch), peakAt (align source peak to `at`)}
 // pick: 'clicks:i' cuts the i-th strongest click of the file (for pack ticks)
 const L = (f, o = {}) => ({ f, ...o });
-const TARGET = { badge_claim: -12.7, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
+const TARGET = { badge_claim: -12.7, buy: -12.7, same_plus: 'banner', combo: 'banner', combo2: 'banner' }; // a number (dBFS) or an old sound to match
 // instruments and layers shared by the recipes below
 const st = (n, c = 0) => +Math.pow(2, (n - c) / 12).toFixed(4);
 const G = (at, n, o = {}) => L('fs-373364.mp3', { at, rate: st(n, .1), to: .5, fout: .3, ...o });   // glockenspiel, n semitones from C6
@@ -63,6 +63,8 @@ export const RECIPES = {
   coll_locked:      [L('impactWood_medium_000.ogg')],
   // new sound, no old one to match: TARGET sets its loudness (loudest 50 ms RMS, dBFS)
   badge_claim:      [L('fs-169146.mp3', { to: .7, fout: .3 }), P(.08, 0, { db: -4 })],
+  // buying a card from the Merchant: a coin clink, then two glockenspiel notes up (E, A)
+  buy:              [L('fs-512216.mp3'), G(.06, 4, { db: -5, pan: -.2 }), G(.12, 9, { db: -4, pan: .2 })],
   // Same / Plus, Combo, second Combo: a real bubble pop and rising glockenspiel notes (A major), crystal sparkle, bell tree
   same_plus:        [L('kit:pop/fs-97978-pop-aif-1.wav', { db: -2 }), L('fs-373364.mp3', { at: .03, rate: 0.8361, to: .45, fout: .25, pan: -.2 }),
                      L('fs-373364.mp3', { at: .09, rate: 1.0534, to: .45, fout: .25, pan: .2 }), L('fs-614832.mp3', { at: .09, rate: 1.0687, db: -12, pan: .3 })],

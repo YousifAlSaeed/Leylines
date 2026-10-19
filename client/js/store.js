@@ -93,7 +93,7 @@ function buyCard(i){
       if(s2.at!==s.at||s2.got[i]!=null||SAVE.shards<it.price){renderStore();return}
       const fresh=!SAVE.seen.includes(it.id);
       SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();earnNow('shop');
-      sfx('win');renderStore();renderStoreTile();
+      sfx('buy');renderStore();renderStoreTile();
       toast(`${c.name} added to your collection${fresh?' (new!)':''}.`);freshToast();
     }},{label:'Cancel',esc:true}]);
 }
