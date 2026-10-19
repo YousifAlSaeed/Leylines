@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.10 (2026-10-19)
+- The shine on the cards of the Play card no longer flickers on iPhone
+
 ## 0.28.9 (2026-10-19)
 - Buying a card from the Merchant plays a short coin clink instead of the long win tune
 

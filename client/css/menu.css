@@ -310,10 +310,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .fan .card:nth-child(2){--i:1}.fan .card:nth-child(3){--i:2}.fan .card:nth-child(4){--i:3}.fan .card:nth-child(5){--i:4}
 .hero-pane:not(.hero-ghost) .fan .card{left:0;transition:left .35s var(--spring);animation:handBob 4.2s ease-in-out infinite;animation-delay:calc(var(--i,0)*-.7s)}
 @keyframes handBob{50%{translate:0 -.4em}}
-.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after{content:"";position:absolute;z-index:4;top:0;bottom:0;left:0;width:55%;pointer-events:none;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent);transform:translateX(-110%);
+/* the glint is a stripe of background moving inside a layer the size of the card. Sliding the layer itself
+   (transform) parked it outside the card, and iPhone Safari doesn't always clip a moving layer to a rounded
+   card, so the stripe flickered over the card beside it */
+.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after{content:"";position:absolute;z-index:4;top:0;right:0;bottom:0;left:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent) -135% 0/55% 100% no-repeat;
   animation:handGlint 5.6s ease-in-out infinite;animation-delay:calc(var(--i,0)*.12s)}
-@keyframes handGlint{0%,72%{transform:translateX(-110%)}100%{transform:translateX(200%)}}
+@keyframes handGlint{0%,72%{background-position:-135% 0}100%{background-position:245% 0}}
 /* your deck's five cards open out: under the pointer on a PC, by themselves every few seconds on a phone */
 @media (hover:hover){.hero:hover .hero-pane:not(.hero-ghost) .hero-top>.fan .card{left:calc((var(--i,0) - 2)*.4em)}}
 @media (hover:none){
