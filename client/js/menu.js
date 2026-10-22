@@ -102,7 +102,8 @@ function hubPacks(){
   const el=$('#hwPacks');if(!el)return;
   const d=dailyState(),list=SAVE.packs.map(p=>HUB_PK[p.t]||'sp');if(d.ready)list.unshift('dy');
   el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,4).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button">Open</button>`
-    :`<small class="hw-note">${d.wait?'Checking for your daily pack…':`Next daily pack in ${untilMidnight()}`}</small>`;
+    // nothing to open: the tile's line already counts down to the next daily pack (packs.js)
+    :'';
   const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openPacks()};
 }
 // friends: requests to answer, and who's free to play right now, with Invite (pulse.js)
@@ -154,7 +155,8 @@ function hubDots(){
   const tabs=$('#hubTabs');if(!tabs)return;
   const dot=(k,on,n)=>{const i=tabs.querySelector(`[data-tab="${k}"] .td`);i.hidden=!on;i.textContent=n||''};
   const req=ACCT.token?FR.incoming.length:0;
-  $('.hw-packs').classList.toggle('hot',$('#packTile').classList.contains('hot'));
+  // a widget has news when its tile does (the Daily sets its own, hubDaily)
+  $$('.hub-grid>.hw').forEach(w=>{const t=w.firstElementChild;if(w.id!=='hwDaily'&&t&&t.classList.contains('tile'))w.classList.toggle('hot',t.classList.contains('hot'))});
   dot('coll',collNew()>0);dot('store',$('#storeTile').classList.contains('hot'));dot('friends',req>0,req);dot('you',toClaim().length>0);
   $('#tabFriends').hidden=API==null;
   $('#tabAv').innerHTML=avatar(ACCT.token&&ACCT.user);

@@ -258,7 +258,11 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-cards{display:flex;gap:8px;padding:0;border:0;background:none;cursor:pointer;font-size:9px;align-self:flex-start}
 /* the market's four stops, in their own colours (store.css) */
 .hw-stops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.hst{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 10px;border-radius:12px;border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);text-align:left;cursor:pointer;font:inherit}
+.hst{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 10px;border-radius:12px;border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);text-align:left;cursor:pointer;font:inherit;
+  transition:transform .2s var(--spring),border-color .15s,background .15s}
+/* like the Daily's buttons: a small lift, and the stop's colour comes up */
+.hst:hover{transform:translateY(-1px);background:rgba(var(--tint),.06)}
+.hst:active{transform:scale(.97)}
 .hst.soon{border-style:dashed;opacity:.85}
 .hst-n{width:20px;height:20px;flex:none;display:grid;place-items:center;transform:rotate(45deg);border:1.5px solid var(--sc);border-radius:4px}
 .hst-n span{transform:rotate(-45deg);font:800 10px/1 var(--display);color:var(--sc)}
@@ -266,7 +270,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hst b{display:block;font:700 13px/1.15 var(--display)}
 .hst small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :root[data-theme="light"] .hst.s-merchant{--sc:#6a2bae}:root[data-theme="light"] .hst.s-forge{--sc:#c2255c}:root[data-theme="light"] .hst.s-packs{--sc:#0b7285}:root[data-theme="light"] .hst.s-atelier{--sc:#2b8a3e}
-@supports (color:color-mix(in srgb,red 50%,transparent)){.hst{border-color:color-mix(in srgb,var(--sc) 38%,transparent);background:color-mix(in srgb,var(--sc) 8%,transparent)}}
+@supports (color:color-mix(in srgb,red 50%,transparent)){.hst{border-color:color-mix(in srgb,var(--sc) 38%,transparent);background:color-mix(in srgb,var(--sc) 8%,transparent)}
+  .hst:hover{border-color:color-mix(in srgb,var(--sc) 75%,transparent);background:color-mix(in srgb,var(--sc) 15%,transparent)}}
 /* packs waiting, as a little stack */
 .hw-packs .hw-x{flex-direction:row;align-items:flex-end;justify-content:space-between}
 .hw-pk{display:flex;align-items:flex-end;padding-left:8px}
@@ -453,11 +458,11 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;opacity:0;
   box-shadow:0 0 0 4px color-mix(in srgb,var(--cta) 22%,transparent),0 10px 30px -4px var(--cta-glow);animation:playBeat 2.6s ease-in-out infinite}
 @keyframes playBeat{50%{opacity:1}}
-/* a tile moves only when it has news (.hot: packs to open, new stock at the market, a friend request, new cards in
-   the collection):
-   its icon shakes, a glint crosses it and its count pulses. The other tiles keep still */
-.tile.hot{overflow:hidden}
-.tile.hot::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;
+/* a widget moves only when it has news (.hot: Daily challenges left, packs to open, new stock at the market, a friend
+   request, new cards in the collection): a glint crosses the whole box, its tile's icon shakes and its count pulses.
+   The other widgets keep still */
+.hw.hot{overflow:hidden}
+.hw.hot::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;
   background:linear-gradient(100deg,transparent,rgba(var(--tint),.1),transparent);transform:translateX(-110%);animation:tileGlint 6s ease-in-out infinite}
 @keyframes tileGlint{0%,70%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
 .tile.hot>svg{transform-origin:50% 90%;animation:tileWig 2.6s ease-in-out infinite}
@@ -473,7 +478,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 @keyframes tilePing{from{box-shadow:0 0 0 0 var(--cta-glow)}to{box-shadow:0 0 0 9px transparent}}
 @media (prefers-reduced-motion:reduce){
   .em-turn,#scr-menu.on .em-core,.hero-pane:not(.hero-ghost) .fan .card,.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after,
-  .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before,.tile.hot::after,.tile.hot>svg,.tile.hot .ptdot,.tile.hot .bar i::after{animation:none}
+  .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before,.hw.hot::after,.tile.hot>svg,.tile.hot .ptdot,.tile.hot .bar i::after{animation:none}
 }
 /* add to home screen (a2hs.js): a card at the bottom of the menu, iPhone Safari only */
 .a2hs{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:5;width:min(420px,calc(100% - 24px));

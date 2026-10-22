@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.29.3 (2026-10-22)
+- The market's four stops on the menu light up when you point at them
+- A box on the menu with something new (Daily challenges left, packs to open, new stock) shines across the whole box, not just its title
+- The Packs box no longer shows the daily countdown twice
+
 ## 0.29.2 (2026-10-22)
 - On a phone the menu no longer shows the Night Market, since it has its own tab at the bottom. Packs takes its place
 
