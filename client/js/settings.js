@@ -114,7 +114,7 @@ function jbpTick(){
     const left=n.len-n.t;
     // a few seconds before the end the next song is picked and made ready, then takes over as this one fades out (music.js)
     if(left<8&&!PL.next){PL.next=jbpPick(1);musicLoad(PL.next).catch(()=>{})}
-    if(left<FADE_OUT+.4&&!PL.adv){PL.adv=true;jbpGo(PL.next||jbpPick(1))}
+    if(left<DUCK_T+FADE_OUT+.1&&!PL.adv){PL.adv=true;jbpGo(PL.next||jbpPick(1))}
   }
   jbpPaint();
 }

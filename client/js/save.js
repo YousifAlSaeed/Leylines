@@ -7,7 +7,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45,tkind:'turn',bank:180,flag:'random'},
-    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},musicVol:70,sfxVol:100,musicMute:false,sfxMute:false,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},musicVol:50,sfxVol:50,volV:1,musicMute:false,sfxMute:false,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
@@ -83,6 +83,9 @@ function normSave(o){
   const d=defSave(),{sound,...s}=o;
   // sound used to be one mute for everything: now music and sound effects each have their own, and keep their level while muted
   if(sound===false&&!('musicMute' in s))s.musicMute=s.sfxMute=true;
+  // the volumes start at half now: a slider still where the old defaults left it (music 70, effects 100) moves there,
+  // once (volV); one the player set stays
+  if(!s.volV){if(s.musicVol==null||s.musicVol===70)s.musicVol=50;if(s.sfxVol==null||s.sfxVol===100)s.sfxVol=50;s.volV=1}
   return fixProfile({...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll},s);
 }
 function loadSave(){

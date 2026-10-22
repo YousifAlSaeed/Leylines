@@ -40,6 +40,16 @@ describe('the songs', () => {
       else assert.ok(t.len > 50 && t.len < 120 && !t.loopAt, id);
     }
   });
+  test('every song knows its bar and phrase, so it can be joined again on a phrase', () => {
+    for (const [id, t] of Object.entries(TRACKS)) {
+      assert.ok(t.bar > 0.5 && t.bar < 4, `${id}: bar ${t.bar}`);
+      assert.ok([2, 4, 8, 16].includes(t.phrase), `${id}: phrase ${t.phrase}`);
+      const len = t.len || t.loopAt, ph = t.bar * t.phrase;
+      assert.ok(ph < len / 2, `${id}: a phrase is most of the song`);
+      // the new songs are whole phrases long, so every phrase starts where the song's own parts do
+      if (t.len) assert.ok(Math.abs(len / ph - Math.round(len / ph)) < 0.01, `${id}: ${len / ph} phrases`);
+    }
+  });
   test('every song file is in the folder, and no draft sits next to them', () => {
     const files = fs.readdirSync(new URL('../client/audio/music/', import.meta.url)).sort();
     assert.deepEqual(files, Object.values(TRACKS).filter((t) => t.src.startsWith('audio/music/')).map((t) => t.src.slice(12)).sort());
