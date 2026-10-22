@@ -48,11 +48,132 @@ function renderMenu(){
   renderProfile();if(ACCT.conflict)setTimeout(()=>ACCT.conflict&&acctTakeAccount(ACCT.conflict),300);
   renderNewsTiles();
   $('#collBar').style.width=(seenCount()/CARDS.length*100).toFixed(1)+'%';
-  driftSync();renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();
+  driftSync();renderHero();renderPackTile();renderStoreTile();renderFriendTile();renderLbTile();renderHub();
   // a CPU match the app closed on, or news about an online match you left (spare.js)
   if(SAVE.live||OWES.news.length)setTimeout(()=>{liveOffer();oweNews()},300);
   alertsTipMaybe(); // a tip about alerts, once a player has a few matches in (alerts.js)
 }
+
+/* ---------- the Hub ----------
+   Each place on the menu is a widget: its tile is the widget's header (the other scripts keep the tile's line and dot up
+   to date, as before) and under it the widget shows what's inside. A PC shows every widget in a grid; a phone shows the
+   Play card, the Daily and a glance at packs and the market, and reaches the rest from the tab bar and the top bar.
+   Nothing here asks the server for anything: it draws what this device already knows, so the database can sleep. */
+const HUB_STOP={merchant:'Four cards, one picked for you',forge:'Melt spares, forge five',atelier:'Coming soon'};
+const HUB_PK={spark:'sp',arcane:'ar',ley:'ly',mythic:'my'};
+const hubSvg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const HUB_IC={
+  friends:hubSvg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/>'),
+  badge:hubSvg('<circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5 5 2.5-1.5-7.5"/>'),
+  pack:hubSvg('<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M5 6.5h14"/><path d="M12 10l3 3.5-3 3.5-3-3.5z"/>'),
+  daily:hubSvg('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>'),
+  news:hubSvg('<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/>')};
+function renderHub(){
+  $('.hub-grid').classList.toggle('no-srv',API==null); // no friends or leaderboard without the server (menu.css)
+  hubDaily();hubColl();hubMarket();hubPacks();hubFriends();hubLb();hubDots();
+}
+// the Daily: its three challenges, always in view. The header turns the Play card to the Daily tab
+function hubDaily(){
+  const el=$('#hwDaily');if(!el)return;
+  const ok=clockOk(),ks=['duel','puzzle','gauntlet'],s=ok?dailyStatus():null,done=ok?ks.filter(k=>s[k].done).length:0,next=ok?ks.find(k=>!s[k].done):'';
+  el.innerHTML=`<button class="tile hw-dh" type="button">${MODE_ICON.daily}<div><b>Daily${ok?` <em>#${dayNo()}</em>`:''}</b><small>${ok?`${done} of 3 done · new in ${untilMidnight()}`:'Checking the time with the server…'}</small></div></button>`+
+    (ok?`<div class="dly-row">${ks.map(k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''} ${k===next?'next':''}" type="button" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`).join('')}</div>`:'');
+  el.classList.toggle('hot',dailyOpen());
+  el.querySelector('.hw-dh').onclick=()=>{sfx('click');if(SAVE.menuMode==='daily')return;SAVE.menuMode='daily';save();renderHero(true)};
+  el.querySelectorAll('.dly').forEach(b=>b.onclick=()=>{sfx('click');dailyBrief(b.dataset.k)});
+}
+// the Collection: the cards you found last, newest first
+function hubColl(){
+  const el=$('#hwColl');if(!el)return;
+  if(unlocked()){el.innerHTML='';return}
+  const nw=collNew(),ids=SAVE.seen.slice(-4).reverse();
+  el.innerHTML=ids.length?`<button class="hw-cards" type="button" aria-label="Open the collection">${ids.map((id,i)=>cardHTML(id,myCol(),{name:false,isNew:i<nw})).join('')}</button>`
+    :'<small class="hw-note">Win matches and open packs to find cards.</small>';
+  const b=el.querySelector('.hw-cards');if(b)b.onclick=()=>openCollection();
+}
+// the market: its four stops, each opening the market there
+function hubMarket(){
+  const el=$('#hwMkt');if(!el)return;
+  el.innerHTML=`<div class="hw-stops">${ST_STOPS.map(([k,n,name])=>`<button class="hst s-${k}${k==='atelier'?' soon':''}" type="button" data-stop="${k}"><span class="hst-n"><span>${n}</span></span><span class="hst-t"><b>${name}</b><small>${k==='packs'?`Pack of the day −${DEAL_OFF*100}%`:HUB_STOP[k]}</small></span></button>`).join('')}</div>`;
+  el.querySelectorAll('.hst').forEach(b=>b.onclick=()=>{sfx('click');stStop=b.dataset.stop;openStore()});
+}
+// packs waiting to be opened, the daily one first
+function hubPacks(){
+  const el=$('#hwPacks');if(!el)return;
+  const d=dailyState(),list=SAVE.packs.map(p=>HUB_PK[p.t]||'sp');if(d.ready)list.unshift('dy');
+  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,4).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button">Open</button>`
+    :`<small class="hw-note">${d.wait?'Checking for your daily pack…':`Next daily pack in ${untilMidnight()}`}</small>`;
+  const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openPacks()};
+}
+// friends: requests to answer, and who's free to play right now, with Invite (pulse.js)
+function hubFriends(){
+  const el=$('#hwFr');if(!el)return;
+  $('#frWidget').hidden=API==null;
+  if(API==null){el.innerHTML='';return}
+  if(!ACCT.token){
+    el.innerHTML=`<small class="hw-note">Add the people you play, see when they're on and invite them to a match.</small>${ACCT.up?'<button class="btn small" type="button">Sign in</button>':''}`;
+    const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openAuth('in')};
+    return;
+  }
+  if(!FR.loaded){el.innerHTML='<small class="hw-note">Loading friends…</small>';return}
+  const on=[...FR.friends.filter(u=>frFree(u.username)),...FR.friends.filter(u=>!frFree(u.username)&&frAlerted(u.username))].slice(0,3),req=FR.incoming.length;
+  el.innerHTML=(req?`<button class="hw-req" type="button"><b>${plural(req,'friend request')}</b><small>Answer in Friends</small></button>`:'')+
+    (on.length?`<div class="hw-fl">${on.map(u=>`<div class="hw-fr">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${frFree(u.username)?'Free to play':'Gets alerts'}</small></span><button class="btn small primary" type="button" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)} to a match">Invite</button></div>`).join('')}</div>`
+      :`<small class="hw-note">${FR.friends.length?'No friends online right now.':'No friends yet. Add someone by their username.'}</small>`);
+  el.querySelectorAll('[data-inv]').forEach(b=>b.onclick=()=>{sfx('click');inviteFriend(b.dataset.inv)});
+  const r=el.querySelector('.hw-req');if(r)r.onclick=()=>{sfx('click');openFriends()};
+}
+// the leaderboard as you saw it last: it's only fetched when you open it (leaderboard.js)
+function hubLb(){
+  const el=$('#hwLb');if(!el)return;
+  $('#lbWidget').hidden=API==null;$$('.fr-lb').forEach(b=>b.hidden=API==null);
+  const d=LB.data;
+  if(!d||!d.rows||!d.rows.length){el.innerHTML='<small class="hw-note">Ranked by level, online wins, streaks and cards found.</small>';return}
+  const val=p=>{const [v,unit]=lbStat(p);return LB.by==='level'?`Lv ${v}`:`${v} ${unit}`};
+  const rows=d.rows.slice(0,3);if(d.me&&!rows.some(lbIsMe))rows.push(d.me);
+  el.innerHTML=`<div class="hw-lb">${rows.map(p=>`<span class="hw-lr${lbIsMe(p)?' me':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
+}
+// what's waiting for you, gathered in one place
+function inboxItems(){
+  const it=[];
+  if(ACCT.token&&FR.incoming.length)it.push(['friends',plural(FR.incoming.length,'friend request'),FR.incoming.slice(0,3).map(u=>u.displayName).join(', '),()=>openFriends()]);
+  const b=toClaim().length;if(b)it.push(['badge',`${plural(b,'badge')} to claim`,'Shards are waiting on your profile',()=>openProfile()]);
+  const d=dailyState(),p=SAVE.packs.length+(d.ready?1:0);if(p)it.push(['pack',`${plural(p,'pack')} to open`,d.ready?'Your daily pack is ready':'From levels, the Daily and the market',()=>openPacks()]);
+  if(dailyOpen())it.push(['daily','Daily rewards left today',`${plural(dailyStatus().left,'challenge')} can still pay out`,()=>{SAVE.menuMode='daily';save();renderHero(true)}]);
+  if(OWES.news.length)it.push(['news','News about a match you left','What happened to your cards',()=>setTimeout(oweNews,50)]);
+  return it;
+}
+function openInbox(){
+  const it=inboxItems();
+  const box=modal(`<h2 class="nm2">Inbox</h2>`+(it.length?`<div class="ibx">${it.map(([ic,t,s],i)=>`<button class="ibx-row" type="button" data-i="${i}">${HUB_IC[ic]}<span class="rt"><b>${esc(t)}</b><small>${esc(s)}</small></span>${hubSvg('<path d="M9 5l7 7-7 7"/>')}</button>`).join('')}</div>`
+    :`<p>Nothing is waiting for you. You're all caught up.</p>`),[{label:'Close',esc:true}]);
+  box.querySelectorAll('.ibx-row').forEach(b=>b.onclick=()=>{sfx('click');closeModal();it[+b.dataset.i][3]()});
+}
+// the tab bar's dots and the inbox count follow the tiles
+function hubDots(){
+  const tabs=$('#hubTabs');if(!tabs)return;
+  const dot=(k,on,n)=>{const i=tabs.querySelector(`[data-tab="${k}"] .td`);i.hidden=!on;i.textContent=n||''};
+  const req=ACCT.token?FR.incoming.length:0;
+  $('.hw-packs').classList.toggle('hot',$('#packTile').classList.contains('hot'));
+  dot('coll',collNew()>0);dot('store',$('#storeTile').classList.contains('hot'));dot('friends',req>0,req);dot('you',toClaim().length>0);
+  $('#tabFriends').hidden=API==null;
+  $('#tabAv').innerHTML=avatar(ACCT.token&&ACCT.user);
+  tabs.querySelector('.tab-mkt').innerHTML=ST_ICON[stDay()?'day':'night'];
+  const n=inboxItems().length,ib=$('#inboxDot');ib.hidden=!n;ib.textContent=n;
+  $('#btnInbox').setAttribute('aria-label',n?`Inbox, ${plural(n,'thing')} waiting`:'Inbox');
+}
+// redraw the widgets whenever another script changes a tile (its line, its dot, news); the tiles' own 30-second timers keep the countdowns fresh
+let hubT=0;
+const hubSoon=()=>{if(!hubT)hubT=requestAnimationFrame(()=>{hubT=0;if($('#scr-menu').classList.contains('on'))renderHub()})};
+if(window.MutationObserver){const mo=new MutationObserver(hubSoon);$$('.hw>.tile').forEach(t=>mo.observe(t,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden']}))}
+$$('#hubTabs [data-tab]').forEach(b=>b.onclick=()=>{
+  const t=b.dataset.tab;
+  if(t==='menu'){$('#scr-menu').scrollTop=0;return}
+  if(t==='coll'){openCollection();return}
+  sfx('click');
+  if(t==='store')openStore();else if(t==='friends')openFriends();else openProfile();
+});
+$('#btnInbox').onclick=()=>{sfx('click');openInbox()};
 const MODE_ICON={
   // Solo: one player; Couch: two players side by side
   ai:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>',

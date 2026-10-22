@@ -138,14 +138,26 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 #tradeSeg .tc[aria-disabled]:not(.on){opacity:.55}
 
 
-/* ---------- menu ---------- */
-#scr-menu{justify-content:center}
-/* a phone: the menu fills the screen exactly, and the tiles take whatever height is left, so nothing scrolls */
-.menu{width:100%;max-width:440px;height:100%;display:flex;flex-direction:column;gap:14px;margin:auto 0}
-.m-right{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:14px;min-width:0}
-.menu>.brand,.menu>.hero,.m-right>:not(.tiles){flex:none}
-.brand{display:flex;align-items:center;gap:18px;margin:4px 0 2px}
-.brand .emblem{display:block;height:84px;width:84px;flex:none}
+/* ---------- menu: the Hub ----------
+   A phone: a top bar, the Play card, the Daily and a glance at packs and the market, with a tab bar fixed to the bottom of
+   the screen (the menu leaves room for it). A PC: the same top bar over a grid of widgets, one for each place. */
+#scr-menu{justify-content:center;--tabh:calc(66px + env(safe-area-inset-bottom))}
+.menu{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;margin:auto 0;padding-bottom:var(--tabh)}
+.hub-top{display:flex;align-items:center;gap:10px;flex:none}
+.brand{display:flex;align-items:center;gap:12px;margin:0;flex:1;min-width:0}
+.brand .emblem{display:block;height:44px;width:44px;flex:none}
+.brand>div{min-width:0}
+.hub-tools{display:flex;align-items:center;gap:6px;flex:none}
+.hub-ib{position:relative;width:38px;height:38px;border-radius:12px;color:var(--accent-ink)}
+.hub-dot{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;display:grid;place-items:center;
+  background:var(--cta);color:var(--on-cta);font:800 11px/1 var(--display);box-shadow:0 0 0 2px var(--bg1)}
+.hub-dot[hidden]{display:none}
+.hub-tools .pcard{display:none}
+.hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs mkt";gap:10px;align-content:start}
+.hub-grid>.hero{grid-area:play;min-width:0}
+.hw-daily{grid-area:daily}.hw-coll{grid-area:coll}.hw-mkt{grid-area:mkt}.hw-packs{grid-area:packs}.hw-fr{grid-area:fr}.hw-lb{grid-area:lb}.hw-how{grid-area:how}
+/* on a phone the Collection, Friends and You are tabs, How to play is in the top bar and the Leaderboard is in Friends */
+.hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hub-grid>.hw-how,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
 /* version tag to the right of the title */
 .title-row{display:flex;align-items:center;gap:10px}
 .ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap;
@@ -214,61 +226,170 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-row .seg{flex:1 1 210px}
 .hero-row .seg.full{flex-basis:100%}
 .hero-row .btn.full:not(.primary){min-height:48px}
-/* six tiles, all one size: an icon beside a name and a line of news, two to a row */
-.tiles{flex:1 1 auto;min-height:188px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(56px,1fr);gap:10px}
-.tile{position:relative;text-align:left;border-radius:18px;padding:10px 12px;min-height:0;background:var(--surf);border:1px solid var(--line);color:var(--text);cursor:pointer;
-  display:flex;align-items:center;gap:12px;transition:transform .22s var(--spring),border-color .18s,box-shadow .18s}
+/* a widget: its place's tile on top (a button that opens the place), what's inside under it */
+.hw{position:relative;min-width:0;display:flex;flex-direction:column;gap:10px;padding:10px 12px;border-radius:18px;background:var(--surf);border:1px solid var(--line);transition:border-color .18s}
+.hub-grid>.hw[hidden]{display:none}
+.hw:hover{border-color:var(--line2)}
+/* packs to open: the ring packs.css gives the Packs tile goes round its whole widget */
+.hw>.tile.ptile.hot{box-shadow:none}
+.hw-packs.hot{border-color:var(--cta);box-shadow:0 0 0 1px var(--cta) inset,0 10px 30px -14px var(--cta-glow)}
+.tile{position:relative;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:0;width:100%;padding:0;border:0;border-radius:10px;background:none;color:var(--text);
+  transition:transform .22s var(--spring)}
 .tile>div{flex:1;min-width:0}
 .tile small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* the Packs line (the daily pack, packs to open) may take two lines where the tile has the height */
+/* the Packs line (the daily pack, packs to open) may take two lines */
 .tile.ptile small{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
-.tile:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 12px 24px -12px rgba(var(--sh),calc(.8*var(--shk)))}
 .tile:active{transform:scale(.98)}
-.tile>svg{flex:none;width:26px;height:26px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tile:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+.tile>svg{flex:none;width:24px;height:24px;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tile b{display:block;font:700 16px/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile b em{font-style:normal;font-weight:700;color:var(--accent-ink)}
 .tile small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
 .bar{height:4px;border-radius:2px;background:rgba(var(--tint),.1);margin-top:5px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;transition:width .6s var(--ease)}
-.mstats{display:flex;gap:8px}
-.stat{flex:1;border-radius:14px;padding:10px 12px;background:rgba(var(--tint),.03);border:1px solid var(--line)}
-.stat b{display:block;font:800 20px/1 var(--display)}
-.stat small{color:var(--muted);font-size:11.5px}
-.mstats .iconbtn{height:auto;width:54px;border-radius:14px}
+.hw-x{display:flex;flex-direction:column;gap:8px;min-width:0}
+.hw-note{display:block;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.hw-x .btn.small{align-self:flex-start}
+/* the Daily: its three challenges, a little lower than on the Play card */
+.hw-daily .dly{min-height:58px;padding:6px 4px}
+.hw-daily .dly b{font-size:15px}
+/* the Collection: the cards found last */
+.hw-cards{display:flex;gap:8px;padding:0;border:0;background:none;cursor:pointer;font-size:9px;align-self:flex-start}
+/* the market's four stops, in their own colours (store.css) */
+.hw-stops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hst{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 10px;border-radius:12px;border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);text-align:left;cursor:pointer;font:inherit}
+.hst.soon{border-style:dashed;opacity:.85}
+.hst-n{width:20px;height:20px;flex:none;display:grid;place-items:center;transform:rotate(45deg);border:1.5px solid var(--sc);border-radius:4px}
+.hst-n span{transform:rotate(-45deg);font:800 10px/1 var(--display);color:var(--sc)}
+.hst-t{min-width:0}
+.hst b{display:block;font:700 13px/1.15 var(--display)}
+.hst small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root[data-theme="light"] .hst.s-merchant{--sc:#6a2bae}:root[data-theme="light"] .hst.s-forge{--sc:#c2255c}:root[data-theme="light"] .hst.s-packs{--sc:#0b7285}:root[data-theme="light"] .hst.s-atelier{--sc:#2b8a3e}
+@supports (color:color-mix(in srgb,red 50%,transparent)){.hst{border-color:color-mix(in srgb,var(--sc) 38%,transparent);background:color-mix(in srgb,var(--sc) 8%,transparent)}}
+/* packs waiting, as a little stack */
+.hw-packs .hw-x{flex-direction:row;align-items:flex-end;justify-content:space-between}
+.hw-pk{display:flex;align-items:flex-end;padding-left:8px}
+.hpk{position:relative;width:34px;height:46px;margin-left:-8px;border-radius:7px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);
+  box-shadow:0 8px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
+.hpk::after{content:"";width:12px;height:12px;transform:rotate(45deg);border-radius:2px;background:rgba(255,255,255,.85)}
+.hpk:nth-child(2){transform:rotate(-5deg)}.hpk:nth-child(3){transform:rotate(5deg)}.hpk:nth-child(4){transform:rotate(-3deg)}
+.hpk.sp{background:linear-gradient(160deg,#5a8dff,#2a4fb8)}.hpk.ar{background:linear-gradient(160deg,#a26bff,#5b2399)}
+.hpk.ly{background:linear-gradient(160deg,#ffcf6a,#b86a10)}.hpk.my{background:linear-gradient(160deg,#ff8fd0,#7fe0ff)}.hpk.dy{background:linear-gradient(160deg,#ff86c4,#c2469a)}
+/* friends free to play, with Invite */
+.hw-fl{display:flex;flex-direction:column;gap:8px}
+.hw-fr{display:flex;align-items:center;gap:10px;min-width:0}
+.hw-fr .pc-av{width:30px;height:30px;font-size:16px}
+.hw-fr .rt{flex:1;min-width:0}
+.hw-fr b{display:block;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-fr small{display:block;font-size:11.5px;color:var(--muted)}
+.hw-req{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 10px;border-radius:12px;border:1px solid var(--cta);background:rgba(var(--tint),.03);color:var(--text);cursor:pointer;text-align:left;font:inherit}
+.hw-req b{font:700 13px/1.2 var(--display)}.hw-req small{font-size:11px;color:var(--muted)}
+/* the leaderboard as last seen */
+.hw-lb{display:flex;flex-direction:column}
+.hw-lr{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.hw-lr:first-child{border-top:0;padding-top:0}
+.hw-lr i{font:800 12px/1 var(--display);font-style:normal;width:20px;color:var(--muted)}
+.hw-lr span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-lr em{font:700 12px/1 var(--display);font-style:normal;color:var(--accent-ink);white-space:nowrap}
+.hw-lr.me{color:var(--text);font-weight:600}.hw-lr.me i{color:var(--cta)}
+/* the inbox (menu.js openInbox) */
+.ibx{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px;text-align:left}
+.ibx-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(var(--tint),.03);color:var(--text);cursor:pointer;text-align:left;font:inherit}
+.ibx-row:hover{border-color:var(--line2)}
+.ibx-row svg{width:22px;height:22px;flex:none;color:var(--accent-ink);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ibx-row svg:last-child{width:16px;height:16px;color:var(--muted)}
+.ibx-row .rt{flex:1;min-width:0}
+.ibx-row b{display:block;font:700 15px/1.2 var(--display)}.ibx-row small{display:block;font-size:12.5px;color:var(--muted)}
+/* a phone's tab bar */
+.hub-tabs{position:fixed;left:0;right:0;bottom:0;z-index:4;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);justify-content:center;
+  padding:6px max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  background:var(--bg1);border-top:1px solid var(--line);box-shadow:0 -12px 30px -18px rgba(var(--sh),calc(.9*var(--shk)))}
+.hub-tabs button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:2px 0 0;border:0;background:none;color:var(--muted);font:600 11px/1.1 var(--body);cursor:pointer}
+.hub-tabs button[hidden]{display:none}
+.hub-tabs button>span:last-of-type{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-tabs>button>svg{width:22px;height:22px;padding:4px 14px;box-sizing:content-box;border-radius:99px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:background .18s}
+.hub-tabs .on{color:var(--text)}
+.hub-tabs .on>svg{background:var(--seg-on);box-shadow:inset 0 0 0 1px var(--line2)}
+.hub-tabs .tab-av{display:grid;place-items:center;height:30px}
+.hub-tabs .tab-av .pc-av{width:28px;height:28px;font-size:15px}
+.hub-tabs .tab-av .pc-av svg{width:16px;height:16px}
+.hub-tabs .td{position:absolute;top:1px;left:calc(50% + 9px);min-width:9px;height:9px;border-radius:99px;background:var(--cta);color:var(--on-cta);box-shadow:0 0 0 2px var(--bg1);
+  font:800 10px/16px var(--display);font-style:normal;text-align:center}
+.hub-tabs .td:not(:empty){min-width:16px;height:16px;padding:0 4px;top:-2px}
+.hub-tabs .td[hidden]{display:none}
+@media (min-width:600px){.hub-tabs{grid-auto-columns:minmax(0,104px)}}
+#scr-menu .a2hs{bottom:calc(var(--tabh) + 8px)}
 /* alpha notice: a pill under the title on phones (tap for the full text), a box under the tiles on PC */
-.alpha-pill{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font:700 10.5px/1 var(--body);letter-spacing:.08em;color:var(--warn);cursor:pointer;
+.alpha-pill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font:700 10.5px/1 var(--body);letter-spacing:.08em;color:var(--warn);cursor:pointer;
   border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 12%,transparent);border-radius:999px;padding:5px 9px}
 .alpha-pill i{font-style:normal;letter-spacing:0;font-weight:500;color:var(--muted)}
-.alpha-bar{display:none;gap:10px;align-items:flex-start;margin:0;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.4;color:var(--muted);
-  border:1px dashed color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
-.alpha-bar b{color:var(--warn);font:700 11px/1.5 var(--body);letter-spacing:.08em;margin-right:6px}
-.alpha-bar svg{width:18px;height:18px;flex:none;color:var(--warn);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-/* short phones (an iPhone SE): the emblem shrinks, so the tiles still fit */
-@media (max-height:800px){.tile.ptile small{display:block;white-space:nowrap}}
-@media (max-height:760px){.brand .emblem{height:64px;width:64px}.alpha-pill{margin-top:8px}.hero{padding:14px}.hero-top{padding:6px 0 4px}}
-/* very short phones (iPhone SE): a little less room between and inside everything */
-@media (max-height:700px){#scr-menu{padding-bottom:max(12px,env(safe-area-inset-bottom))}.menu,.m-right{gap:10px}.brand .emblem{height:52px;width:52px}.hero{padding:12px}#scr-menu .seg button{min-height:32px;padding:4px 8px}.hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.pcard{padding:6px 10px}.tiles{grid-auto-rows:minmax(50px,1fr);min-height:166px;gap:8px}.tile{padding-top:7px;padding-bottom:7px}}
-/* narrow phones: smaller icons and names, so "Leaderboard" and "Night Market" fit whole */
-@media (max-width:400px){.tile{padding:10px 9px;gap:9px}.tile>svg{width:22px;height:22px}.tile b{font-size:15px;font-stretch:84%}.tile.ptile .ptdot{display:none}}
+/* short phones (an iPhone SE): a little less room inside the Play card */
+@media (max-height:760px){.hero{padding:14px}.hero-top{padding:6px 0 4px}}
+/* very short phones: less room between and inside everything */
+@media (max-height:700px){#scr-menu{padding-bottom:max(12px,env(safe-area-inset-bottom))}.menu,.hub-grid{gap:10px}.hero{padding:12px}#scr-menu .seg button{min-height:32px;padding:4px 8px}
+  .hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.hw{padding:9px 11px}.hw-daily .dly{min-height:52px}}
+/* the top bar on a phone: the title narrows with the screen, so the inbox, How to play and Settings always fit beside it */
+.hub-top .title .logo-word{height:19px}
+/* on a phone the version tag and the alpha pill share the line under the title; narrow phones keep just ALPHA (tap it for the notice) */
+.hub-top .brand>div{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:6px;row-gap:5px}
+.hub-top .title-row{display:contents}
+.hub-top .title{grid-column:1/-1}
+.hub-top .ver,.hub-top .alpha-pill{grid-row:2;justify-self:start;margin-top:0}
+@media (max-width:419px){.hub-top .alpha-pill i{display:none}}
+@media (max-width:379px){.hub-top .title .logo-word{height:16px}.brand{gap:9px}.brand .emblem{height:38px;width:38px}.hub-tools{gap:4px}.hub-ib{width:34px;height:34px}}
+@media (max-width:339px){.hub-top .title .logo-word{height:13px}.brand .emblem{height:32px;width:32px}.hub-ib{width:30px;height:30px}.hub-ib svg{width:17px;height:17px}}
+/* narrow phones: smaller icons and names, so "Night Market" fits whole */
+@media (max-width:400px){.tile{gap:9px}.tile>svg{width:22px;height:22px}.tile b{font-size:15px;font-stretch:84%}.tile.ptile .ptdot{display:none}}
+/* a phone held sideways: the tab bar becomes a rail down the left, the Play card sits beside the Daily */
+@media (orientation:landscape) and (max-height:519px){
+  #scr-menu{--tabh:0px;padding-left:calc(76px + env(safe-area-inset-left))}
+  .menu{max-width:none;gap:10px}
+  .hub-tabs{right:auto;top:0;width:calc(66px + env(safe-area-inset-left));grid-auto-flow:row;grid-auto-rows:minmax(0,62px);grid-auto-columns:auto;align-content:center;
+    padding:max(8px,env(safe-area-inset-top)) 4px max(8px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));border-top:0;border-right:1px solid var(--line)}
+  .hub-tabs>button>svg{padding:4px 10px}
+  .brand .emblem{height:34px;width:34px}.hub-top .title .logo-word{height:15px}
+  .hub-top .brand>div{display:flex;align-items:center;gap:8px}.hub-top .title{margin-right:2px}
+  .hub-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"play daily" "play packs" "play mkt";align-items:start}
+  .hero{padding:10px 12px}.hero-top{padding:2px 0}.hero .fan{font-size:6.5px}.hero-h{font-size:20px}.hero-stats div{padding:3px 4px}
+  .hero-row{padding-top:6px}.hero-row .btn.primary{min-height:40px;font-size:16px}#scr-menu .seg button{min-height:30px}.hw-daily .dly{min-height:46px}
+}
 @media (min-width:920px) and (min-height:560px){
-  /* title across the top; Play card and tiles share one top and bottom edge */
-  .menu{max-width:1180px;height:auto;display:grid;grid-template-columns:1.15fr 1fr;align-items:stretch;column-gap:40px;row-gap:28px}
-  .brand{grid-column:1/-1;gap:26px;margin:0}
-  .brand .emblem{height:132px;width:132px}
-  .title .logo-word{height:38px}
+  /* the top bar across, then the Play card beside the widgets: three rows of places */
+  #scr-menu{--tabh:0px}
+  .menu{max-width:1240px;gap:20px;padding-bottom:0}
+  .hub-top{gap:18px}
+  .brand{gap:18px}
+  .brand .emblem{height:68px;width:68px}
+  .hub-top .title .logo-word{height:28px}
+  .hub-top .brand>div{display:block}.hub-top .title-row{display:flex}.hub-top .alpha-pill{margin-top:8px}
+  .hub-tools{gap:8px}
+  .hub-ib{width:44px;height:44px}
+  .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:320px;padding:6px 14px 6px 6px;border-radius:999px}
+  .hub-tools .pcard .pc-st{display:none}
+  .hub-tabs{display:none}
+  .hub-grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(3,minmax(168px,auto));gap:14px;grid-template-areas:
+    "play play play play play daily daily daily daily coll coll coll"
+    "play play play play play mkt mkt mkt mkt packs packs packs"
+    "play play play play play fr fr fr lb lb how how"}
+  /* a copy opened without the server has no friends or leaderboard: How to play takes their row */
+  .hub-grid.no-srv{grid-template-areas:
+    "play play play play play daily daily daily daily coll coll coll"
+    "play play play play play mkt mkt mkt mkt packs packs packs"
+    "play play play play play how how how how how how how"}
+  .hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hub-grid>.hw-how{display:flex}
+  .hw-mkt .hw-x,.hw-packs .hw-x{display:flex}
+  .hw{padding:14px 16px}
+  .tile b{font-size:17px}
+  .tile>svg{width:26px;height:26px}
+  .hw-packs .hw-x,.hw-coll .hw-x{margin-top:auto}
+  .hw-daily .dly-row{flex:1}
+  .hw-daily .dly{min-height:0}
   .hero{padding:24px;display:flex;flex-direction:column}
   .hero-body{flex:1}
   .hero-row{padding-top:18px}
   .hero-h{font-size:30px}
   .fan{font-size:16px}
   .vsfan .fan{font-size:12px}
-  /* three rows of exactly one height, whatever the tiles hold (and stronger than any older rule for the tiles) */
-  .menu .m-right .tiles{flex:1;grid-template-rows:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr)}
-  .tile{min-height:0;padding:16px 18px;gap:14px}
-  .tile b{font-size:19px}
-  .tile small{font-size:12.5px}
-  .tile>svg{width:30px;height:30px}
-  .alpha-pill{display:none}
-  .alpha-bar{display:flex;grid-column:1/-1;align-items:center;justify-content:center;margin-top:-8px}
 }
 .note.warn b{color:var(--warn)}
 /* ---------- a menu that moves ----------
@@ -299,12 +420,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
    with var() inside, a browser without it (before Chrome 111 or iOS 16.2) would drop the background and leave them clear */
 @supports (color:color-mix(in srgb,red 50%,transparent)){
 .drift-on .hero{background:linear-gradient(160deg,color-mix(in srgb,var(--surf2) 84%,transparent),color-mix(in srgb,var(--surf) 84%,transparent))}
-.drift-on .tile{background:color-mix(in srgb,var(--surf) 82%,transparent)}
+.drift-on .hw{background:color-mix(in srgb,var(--surf) 84%,transparent)}
+.drift-on .hub-tabs{background:color-mix(in srgb,var(--bg1) 92%,transparent)}
 /* the player card and the settings button are see-through on a plain page; over the drift they're filled like the tiles */
-#scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:color-mix(in srgb,var(--surf) 82%,transparent)}
-#scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .mstats .iconbtn:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}
+#scr-menu.drift-on .pcard,#scr-menu.drift-on .hub-ib{background:color-mix(in srgb,var(--surf) 82%,transparent)}
+#scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .hub-ib:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}
 }
-@supports not (color:color-mix(in srgb,red 50%,transparent)){#scr-menu.drift-on .pcard,#scr-menu.drift-on .mstats .iconbtn{background:var(--surf)}}
+@supports not (color:color-mix(in srgb,red 50%,transparent)){#scr-menu.drift-on .pcard,#scr-menu.drift-on .hub-ib{background:var(--surf)}}
 @media (min-width:920px) and (min-height:560px){.drift{font-size:22px}}
 /* the hand breathes: the cards on the Play card float, one after the other, and a glint crosses each */
 .fan .card:nth-child(2){--i:1}.fan .card:nth-child(3){--i:2}.fan .card:nth-child(4){--i:3}.fan .card:nth-child(5){--i:4}
