@@ -154,11 +154,11 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   background:var(--cta);color:var(--on-cta);font:800 11px/1 var(--display);box-shadow:0 0 0 2px var(--bg1)}
 .hub-dot[hidden]{display:none}
 .hub-tools .pcard{display:none}
-.hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs mkt";gap:10px;align-content:start}
+.hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs packs";gap:10px;align-content:start}
 .hub-grid>.hero{grid-area:play;min-width:0}
 .hw-daily{grid-area:daily}.hw-coll{grid-area:coll}.hw-mkt{grid-area:mkt}.hw-packs{grid-area:packs}.hw-fr{grid-area:fr}.hw-lb{grid-area:lb}
-/* on a phone the Collection, Friends and You are tabs, How to play is in the top bar and the Leaderboard is in Friends */
-.hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
+/* on a phone the Collection, the market, Friends and You are tabs, How to play is in the top bar and the Leaderboard is in Friends */
+.hub-grid>.hw-coll,.hub-grid>.hw-mkt,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
 /* version tag to the right of the title */
 .title-row{display:flex;align-items:center;gap:10px}
 .ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap;
@@ -350,7 +350,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-tabs>button>svg{padding:4px 10px}
   .brand .emblem{height:34px;width:34px}.hub-top .title .logo-word{height:15px}
   .hub-top .brand>div{display:flex;align-items:center;gap:8px}.hub-top .title{margin-right:2px}
-  .hub-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"play daily" "play packs" "play mkt";align-items:start}
+  .hub-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"play daily" "play packs";align-items:start}
   .hero{padding:10px 12px}.hero-top{padding:2px 0}.hero .fan{font-size:6.5px}.hero-h{font-size:20px}.hero-stats div{padding:3px 4px}
   .hero-row{padding-top:6px}.hero-row .btn.primary{min-height:40px;font-size:16px}#scr-menu .seg button{min-height:30px}.hw-daily .dly{min-height:46px}
 }
@@ -379,7 +379,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-grid.no-srv{grid-template-rows:repeat(2,minmax(168px,auto));grid-template-areas:
     "play play play play play daily daily daily daily coll coll coll"
     "play play play play play mkt mkt mkt mkt packs packs packs"}
-  .hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb{display:flex}
+  .hub-grid>.hw-coll,.hub-grid>.hw-mkt,.hub-grid>.hw-fr,.hub-grid>.hw-lb{display:flex}
   .hw-mkt .hw-x,.hw-packs .hw-x{display:flex}
   .hw{padding:14px 16px}
   .tile b{font-size:17px}

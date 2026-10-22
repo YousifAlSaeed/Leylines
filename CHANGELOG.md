@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.29.2 (2026-10-22)
+- On a phone the menu no longer shows the Night Market, since it has its own tab at the bottom. Packs takes its place
+
 ## 0.29.1 (2026-10-22)
 - The Daily lives in its own box on the menu, so the Play card is just Solo, Online and Couch. Tapping the Daily's title (or its line in the Inbox) opens the next challenge
 - How to play is the ? button at the top, and it shows a badge until you finish the tutorial and get its free pack
