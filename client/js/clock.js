@@ -1,7 +1,7 @@
 'use strict';
 /* =====================================================================
    CLOCK  (the game day, from the server's clock)
-   The daily pack, the Daily tab and spares go by the server's time, so
+   The daily pack, the Daily and spares go by the server's time, so
    moving the device's clock doesn't give extra dailies. The game day
    starts at midnight Arabia time (UTC+3) for every player. Until the
    server has answered (offline, or Render still waking up) there's no
@@ -16,7 +16,7 @@ const clockNow=()=>CLK.base+performance.now()-CLK.at;
 const gameDay=(off=0)=>CLK.ok?new Date(clockNow()+DAY_TZ+off*864e5).toISOString().slice(0,10):null;
 const today=()=>gameDay();
 const yesterday=()=>gameDay(-1);
-// whole game days since 1970; the Daily tab numbers its challenges by this
+// whole game days since 1970; the Daily numbers its challenges by this
 const gameDayNo=()=>Math.floor((clockNow()+DAY_TZ)/864e5);
 // how far through the game day it is, 0 to 1 (only once the server has answered)
 const dayFrac=()=>(clockNow()+DAY_TZ)%864e5/864e5;

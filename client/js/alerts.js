@@ -163,11 +163,11 @@ async function alertsPaint(box){
 }
 
 /* ---------- tapping an alert ---------- */
-// ./?friends=1 opens Friends; ./?invite=1 brings up the invite (or says it ended); ./?daily=1 the Daily tab
+// ./?friends=1 opens Friends; ./?invite=1 brings up the invite (or says it ended); ./?daily=1 the next Daily challenge
 function alertOpen(url){
   let q;try{q=new URL(url,location.href).searchParams}catch(e){return}
   if(q.get('friends')&&!G)openFriends();
-  if(q.get('daily')&&!G){SAVE.menuMode='daily';save();if($('#scr-menu').classList.contains('on'))renderHero(true)}
+  if(q.get('daily')&&!G&&$('#scr-menu').classList.contains('on'))dailyNext();
   if(q.get('invite')){ALERTS.fromInvite=true;INV.done.clear();pulseSoon()}
 }
 // the game was open already: the service worker hands the alert over

@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.29.1 (2026-10-22)
+- The Daily lives in its own box on the menu, so the Play card is just Solo, Online and Couch. Tapping the Daily's title (or its line in the Inbox) opens the next challenge
+- How to play is the ? button at the top, and it shows a badge until you finish the tutorial and get its free pack
+- The buttons at the top are round and as tall as your profile box
+
 ## 0.29.0 (2026-10-22)
 - A new main menu, the Hub: every place shows what's inside it. On a computer the Play card sits beside the Daily's three challenges, your newest cards, the market's four stops, packs waiting to open, friends free to play (with Invite) and the leaderboard as you last saw it. On a phone a tab bar at the bottom opens the Collection, the market, Friends and your profile; held sideways it becomes a rail down the left. A new Inbox (the bell) gathers friend requests, badges to claim, packs to open and Daily rewards left. The Leaderboard is also in Friends
 

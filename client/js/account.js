@@ -274,7 +274,7 @@ function acctStatus(){
 function renderProfile(){
   const el=$('#pcard');if(!el)return;
   const u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up,lv=levelOf(SAVE.xp),name=u?u.displayName:profName();
-  // a dot in the corner, like the Daily tab's: badges with shards waiting on your profile
+  // a dot in the corner: badges with shards waiting on your profile
   const wait=toClaim().length;
   el.innerHTML=(wait?'<span class="pc-dot" aria-hidden="true"></span>':'')+avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+

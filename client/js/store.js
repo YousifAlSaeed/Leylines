@@ -2,7 +2,7 @@
 /* =====================================================================
    STORE  (Ley Shards, the Wandering Merchant and the Pack Counter)
    Shards are earned by playing. CPU and online matches pay up to
-   SHARD_CAP a game day (clock.js); the Daily tab's rewards come on top.
+   SHARD_CAP a game day (clock.js); the Daily's rewards come on top.
    The Merchant's stock changes at the game's midnight: 3 cards and a
    discounted pack are the same for every player that day, plus 1 card
    you haven't found yet. The Pack Counter sells every pack tier, and a
@@ -235,9 +235,9 @@ function renderStore(){
     <dl class="st-rates">
       <div><dt>Solo win</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
-      <div><dt>Daily tab</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
+      <div><dt>Daily</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
     </dl>
-    <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily tab pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
+    <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
   // both tabs are drawn, and switching only shows one or the other (the market isn't drawn again)
   const tab=(k,html)=>`<div class="st-pane" data-pane="${k}"${stPkTab===k?'':' hidden'}>${html}</div>`;
   const packs=`<div class="seg st-seg" role="group" aria-label="Pack counter">${[['packs','Packs'],['shards','Shards']].map(([k,l])=>

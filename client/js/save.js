@@ -20,7 +20,7 @@ function defSave(){
     packs:[],packLv:1,daily:null,dailyRoll:null,pity:0,
     // ids of the packs a developer gave you that were added already (packs.js)
     gifts:[],
-    // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
+    // the Daily (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
     // a Solo match the app closed on (match.js), online matches you may still lose cards from,
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)

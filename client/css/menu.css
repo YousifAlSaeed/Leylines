@@ -148,16 +148,17 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .brand .emblem{display:block;height:44px;width:44px;flex:none}
 .brand>div{min-width:0}
 .hub-tools{display:flex;align-items:center;gap:6px;flex:none}
-.hub-ib{position:relative;width:38px;height:38px;border-radius:12px;color:var(--accent-ink)}
-.hub-dot{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;display:grid;place-items:center;
+/* round, like the profile chip beside them on a PC */
+.hub-ib{position:relative;width:38px;height:38px;border-radius:50%;color:var(--accent-ink)}
+.hub-dot{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;display:grid;place-items:center;
   background:var(--cta);color:var(--on-cta);font:800 11px/1 var(--display);box-shadow:0 0 0 2px var(--bg1)}
 .hub-dot[hidden]{display:none}
 .hub-tools .pcard{display:none}
 .hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs mkt";gap:10px;align-content:start}
 .hub-grid>.hero{grid-area:play;min-width:0}
-.hw-daily{grid-area:daily}.hw-coll{grid-area:coll}.hw-mkt{grid-area:mkt}.hw-packs{grid-area:packs}.hw-fr{grid-area:fr}.hw-lb{grid-area:lb}.hw-how{grid-area:how}
+.hw-daily{grid-area:daily}.hw-coll{grid-area:coll}.hw-mkt{grid-area:mkt}.hw-packs{grid-area:packs}.hw-fr{grid-area:fr}.hw-lb{grid-area:lb}
 /* on a phone the Collection, Friends and You are tabs, How to play is in the top bar and the Leaderboard is in Friends */
-.hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hub-grid>.hw-how,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
+.hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
 /* version tag to the right of the title */
 .title-row{display:flex;align-items:center;gap:10px}
 .ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap;
@@ -363,20 +364,22 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-top .title .logo-word{height:28px}
   .hub-top .brand>div{display:block}.hub-top .title-row{display:flex}.hub-top .alpha-pill{margin-top:8px}
   .hub-tools{gap:8px}
-  .hub-ib{width:44px;height:44px}
-  .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:320px;padding:6px 14px 6px 6px;border-radius:999px}
+  .hub-ib{width:48px;height:48px}
+  /* the profile chip is as tall as the icon buttons beside it: shards and sign-up side by side, not stacked */
+  .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:340px;height:48px;padding:0 6px;gap:8px;border-radius:999px}
   .hub-tools .pcard .pc-st{display:none}
+  .hub-tools .pcard .pc-side{flex-direction:row;align-items:center;gap:6px}
+  .hub-tools .pcard .pc-cta{border-radius:999px}
   .hub-tabs{display:none}
   .hub-grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(3,minmax(168px,auto));gap:14px;grid-template-areas:
     "play play play play play daily daily daily daily coll coll coll"
     "play play play play play mkt mkt mkt mkt packs packs packs"
-    "play play play play play fr fr fr lb lb how how"}
-  /* a copy opened without the server has no friends or leaderboard: How to play takes their row */
-  .hub-grid.no-srv{grid-template-areas:
+    "play play play play play fr fr fr fr lb lb lb"}
+  /* a copy opened without the server has no friends or leaderboard: two rows, not three */
+  .hub-grid.no-srv{grid-template-rows:repeat(2,minmax(168px,auto));grid-template-areas:
     "play play play play play daily daily daily daily coll coll coll"
-    "play play play play play mkt mkt mkt mkt packs packs packs"
-    "play play play play play how how how how how how how"}
-  .hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hub-grid>.hw-how{display:flex}
+    "play play play play play mkt mkt mkt mkt packs packs packs"}
+  .hub-grid>.hw-coll,.hub-grid>.hw-fr,.hub-grid>.hw-lb{display:flex}
   .hw-mkt .hw-x,.hw-packs .hw-x{display:flex}
   .hw{padding:14px 16px}
   .tile b{font-size:17px}
@@ -451,7 +454,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   box-shadow:0 0 0 4px color-mix(in srgb,var(--cta) 22%,transparent),0 10px 30px -4px var(--cta-glow);animation:playBeat 2.6s ease-in-out infinite}
 @keyframes playBeat{50%{opacity:1}}
 /* a tile moves only when it has news (.hot: packs to open, new stock at the market, a friend request, new cards in
-   the collection, the tutorial's free pack still waiting):
+   the collection):
    its icon shakes, a glint crosses it and its count pulses. The other tiles keep still */
 .tile.hot{overflow:hidden}
 .tile.hot::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;

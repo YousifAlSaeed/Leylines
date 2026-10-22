@@ -32,7 +32,7 @@ function negamax(s,R,depth,a,b,ctx){
   }
   return best;
 }
-// the Daily tab's opponents (daily.js): a fixed look-ahead that sometimes takes its second-best move,
+// the Daily's opponents (daily.js): a fixed look-ahead that sometimes takes its second-best move,
 // so a well-planned game can beat them. Hard searches to the end, which with open hands is perfect play
 // (with hidden hands it plays perfectly against stand-in cards, like the fair Boss).
 const AI_SEARCH={challenger:{depth:2,slip:.4},boss:{depth:3,slip:.1,fair:true}};

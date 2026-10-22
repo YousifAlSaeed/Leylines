@@ -33,13 +33,13 @@ function collNew(){
 }
 function collNewSeen(){try{localStorage.setItem(COLL_KEY,String(SAVE.seen.length))}catch(e){}}
 function renderNewsTiles(){
-  const nw=collNew(),ct=$('.tile[data-go="coll"]'),ht=$('.tile[data-go="howto"]');
+  const nw=collNew(),ct=$('.tile[data-go="coll"]');
   $('#collSub').textContent=unlocked()?'All cards unlocked':`${SAVE.seen.length} of ${CARDS.length} found`+(nw?` · ${nw} new`:'');
   ct.classList.toggle('hot',nw>0);
-  // How to play: until the tutorial is finished, its free pack is waiting (tutorial.js)
-  const tut=SAVE.tut<2;
-  ht.querySelector('small').textContent=tut?'Tutorial: free pack':'Rules in 2 minutes';
-  ht.classList.toggle('hot',tut);
+  // How to play: a badge on its button, like the Inbox's, until the tutorial is finished and its free pack is yours (tutorial.js)
+  const tut=SAVE.tut<2,hd=$('#helpDot');
+  hd.hidden=!tut;hd.textContent=tut?'1':'';
+  hd.parentNode.setAttribute('aria-label',tut?'How to play (a free pack is waiting)':'How to play');
 }
 // your colour changed (Settings): the menu's cards are drawn again in it
 function recolour(){driftDim=null;renderMenu()}
@@ -72,14 +72,14 @@ function renderHub(){
   $('.hub-grid').classList.toggle('no-srv',API==null); // no friends or leaderboard without the server (menu.css)
   hubDaily();hubColl();hubMarket();hubPacks();hubFriends();hubLb();hubDots();
 }
-// the Daily: its three challenges, always in view. The header turns the Play card to the Daily tab
+// the Daily: its three challenges, always in view. The header opens the next one still to play
 function hubDaily(){
   const el=$('#hwDaily');if(!el)return;
   const ok=clockOk(),ks=['duel','puzzle','gauntlet'],s=ok?dailyStatus():null,done=ok?ks.filter(k=>s[k].done).length:0,next=ok?ks.find(k=>!s[k].done):'';
   el.innerHTML=`<button class="tile hw-dh" type="button">${MODE_ICON.daily}<div><b>Daily${ok?` <em>#${dayNo()}</em>`:''}</b><small>${ok?`${done} of 3 done · new in ${untilMidnight()}`:'Checking the time with the server…'}</small></div></button>`+
     (ok?`<div class="dly-row">${ks.map(k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''} ${k===next?'next':''}" type="button" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`).join('')}</div>`:'');
   el.classList.toggle('hot',dailyOpen());
-  el.querySelector('.hw-dh').onclick=()=>{sfx('click');if(SAVE.menuMode==='daily')return;SAVE.menuMode='daily';save();renderHero(true)};
+  el.querySelector('.hw-dh').onclick=()=>{sfx('click');dailyNext()};
   el.querySelectorAll('.dly').forEach(b=>b.onclick=()=>{sfx('click');dailyBrief(b.dataset.k)});
 }
 // the Collection: the cards you found last, newest first
@@ -139,7 +139,7 @@ function inboxItems(){
   if(ACCT.token&&FR.incoming.length)it.push(['friends',plural(FR.incoming.length,'friend request'),FR.incoming.slice(0,3).map(u=>u.displayName).join(', '),()=>openFriends()]);
   const b=toClaim().length;if(b)it.push(['badge',`${plural(b,'badge')} to claim`,'Shards are waiting on your profile',()=>openProfile()]);
   const d=dailyState(),p=SAVE.packs.length+(d.ready?1:0);if(p)it.push(['pack',`${plural(p,'pack')} to open`,d.ready?'Your daily pack is ready':'From levels, the Daily and the market',()=>openPacks()]);
-  if(dailyOpen())it.push(['daily','Daily rewards left today',`${plural(dailyStatus().left,'challenge')} can still pay out`,()=>{SAVE.menuMode='daily';save();renderHero(true)}]);
+  if(dailyOpen())it.push(['daily','Daily rewards left today',`${plural(dailyStatus().left,'challenge')} can still pay out`,()=>dailyNext()]);
   if(OWES.news.length)it.push(['news','News about a match you left','What happened to your cards',()=>setTimeout(oweNews,50)]);
   return it;
 }
@@ -191,8 +191,8 @@ function heroDeck(random){
     :d?d.map(id=>cardHTML(id,myCol(),{name:false})):Array(5).fill(back);
   return {sub,fan:`<div class="fan" aria-hidden="true">${cards.join('')}</div>`};
 }
-// on your own first (Solo, Daily), then with other people (Online, Couch)
-const MODES=[['ai','Solo'],['daily','Daily'],['online','Online'],['local','Couch']];
+// on your own first (Solo), then with other people (Online, Couch). The Daily has its own box on the menu
+const MODES=[['ai','Solo'],['online','Online'],['local','Couch']];
 // a small fan for Couch: two of your colour's cards (or backs) vs two of Red's
 function localFan(d){
   const two=(i,col)=>d?d[i].slice(0,2).map(id=>cardHTML(id,col,{name:false})).join(''):Array(2).fill(cardHTML(0,null,{back:true})).join('');
@@ -220,9 +220,6 @@ function heroPane(m){
     // no XP or shards here, so the bar says what kind of game it is
     stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
     row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;
-  }else if(m==='daily'){
-    // daily.js: today's three challenges
-    ({h,sub,side,stats,row}=dailyPane());
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
     const dk=heroDeck(false),rj=readRejoin(),drj=rj?null:duoResumeInfo();
@@ -237,11 +234,10 @@ function heroPane(m){
   return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div>`+
     (stats.length?`<div class="hero-stats">${stats.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>`:'')+`<div class="hero-row">${row}</div>`;
 }
-// the Play card: a 4-way mode switch, then what that mode needs
+// the Play card: a 3-way mode switch, then what that mode needs
 function renderHero(anim){
   const m=MODES.some(x=>x[0]===SAVE.menuMode)?SAVE.menuMode:'ai';
-  // the Daily tab gets a dot while a challenge can still pay out today
-  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}${k==='daily'&&dailyOpen()?'<i class="mdot" aria-label="(rewards left)"></i>':''}</button>`).join('');
+  $('#modeSeg').innerHTML=MODES.map(([k,l])=>`<button data-k="${k}" class="${m===k?'on':''}" aria-pressed="${m===k}">${MODE_ICON[k]}${l}</button>`).join('');
   $$('#modeSeg button').forEach(b=>b.onclick=()=>{if(SAVE.menuMode===b.dataset.k)return;SAVE.menuMode=b.dataset.k;save();sfx('click');renderHero(true);refocus('#modeSeg',b)});
   // the other modes sit invisibly in the same spot, so the card is always as tall as the tallest one
   // and the menu doesn't jump when you switch
@@ -249,7 +245,6 @@ function renderHero(anim){
   const body=$('#heroBody');
   body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
-  if(m==='daily'){bindDaily();return}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
   const dr=$('#heroDuoRejoin');if(dr)dr.onclick=()=>{sfx('click');duoRejoin()};
   const qp=$('#heroQuick');if(qp)qp.onclick=()=>{sfx('click');quickLocal()};
