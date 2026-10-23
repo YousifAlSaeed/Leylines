@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.28.12 (2026-10-23)
+- Leylines moved to new servers. Your account, cards, friends and progress all came along
+
 ## 0.28.11 (2026-10-22)
 - Music: arriving somewhere starts its song from the beginning. Back from a quick look elsewhere, a song picks up again at the start of the phrase it was in, never in the middle of one. Songs hand over faster, so each one's first beat is heard
 
