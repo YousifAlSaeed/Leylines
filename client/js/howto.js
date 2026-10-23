@@ -159,6 +159,10 @@ function renderHow(){
   // plays the lesson on the real board; not from inside a match, which it would end
   const tr=$('#hTry');tr.hidden=h.tut==null||$('#scr-game').classList.contains('on');
   tr.textContent='▶ '+(h.try||`Try ${h.tab} yourself`);
+  // the whole tutorial's button says what finishing it gives, until it's been given (tutorial.js)
+  const gift=h.tut===0&&SAVE.tut<2&&!tr.hidden;
+  if(gift)tr.insertAdjacentHTML('beforeend','<span class="htry-gift">🎁 Finish the tutorial to get a free pack!</span>');
+  tr.parentNode.classList.toggle('gift',gift);
   $('#hDots').innerHTML=HOW.map((_,i)=>`<i class="${i===HI?'on':''}"></i>`).join('');
   $('#hNext').textContent=HI===HOW.length-1?'Got it':'Next';
   $('#hBack').disabled=$('#hPrev').disabled=HI===0;

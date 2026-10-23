@@ -30,6 +30,16 @@
 .htry{white-space:nowrap;padding-left:12px;padding-right:12px}
 .htry:not([hidden])~.dots{display:none}
 @media (max-width:899px),(max-height:559px){.hfoot .htry{flex:1}}
+/* until the tutorial's free pack is yours, a bubble over its button says so (howto.js). On a phone it sits
+   over the button's left end, with room made for it so it never covers the text */
+.htry{position:relative}
+.htry-gift{position:absolute;left:0;bottom:calc(100% + 10px);padding:6px 11px;border-radius:10px;background:var(--cta);color:var(--on-cta);
+  font:700 12.5px/1.2 var(--body);white-space:nowrap;pointer-events:none;box-shadow:0 8px 18px -8px var(--cta-glow);animation:giftBob 2.6s ease-in-out infinite}
+.htry-gift::after{content:"";position:absolute;left:22px;top:100%;border:6px solid transparent;border-top-color:var(--cta)}
+@keyframes giftBob{0%,100%{translate:0 0}50%{translate:0 -3px}}
+@media (prefers-reduced-motion:reduce){.htry-gift{animation:none}}
+@media (max-width:899px),(max-height:559px){.hfoot.gift{margin-top:38px}}
+@media (min-width:900px) and (min-height:560px){.htry-gift{left:50%;transform:translateX(-50%)}.htry-gift::after{left:50%;margin-left:-6px}}
 /* the other rules: a name, then a line or two */
 #hList.more{padding:0;list-style:none}
 #hList.more li{margin:0;padding:10px 2px;border-bottom:1px solid var(--line)}
