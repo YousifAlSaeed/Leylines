@@ -254,8 +254,20 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* the Daily: its three challenges, a little lower than on the Play card */
 .hw-daily .dly{min-height:58px;padding:6px 4px}
 .hw-daily .dly b{font-size:15px}
-/* the Collection: the cards found last */
-.hw-cards{display:flex;gap:8px;padding:0;border:0;background:none;cursor:pointer;font-size:9px;align-self:flex-start}
+/* the Collection: found per rarity, each opening the binder there (menu.js hubColl) */
+.hw-rars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.hw-rar{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:7px 4px 6px;border-radius:12px;border:1px solid var(--line2);
+  background:rgba(var(--tint),.03);color:var(--text);cursor:pointer;font:inherit;transition:transform .2s var(--spring),border-color .15s,background .15s}
+.hw-rar b{font:800 13px/1 var(--display);color:var(--rt)}
+.hw-rar i{display:block;width:100%;height:4px;border-radius:2px;background:rgba(var(--tint),.1);overflow:hidden}
+.hw-rar s{display:block;height:100%;border-radius:2px;background:var(--rc);text-decoration:none}
+.hw-rar small{font-size:11px;color:var(--muted);white-space:nowrap}
+.hw-rar.done small{color:var(--rt);font-weight:700}
+.hw-rar:hover{transform:translateY(-1px);background:rgba(var(--tint),.06)}
+.hw-rar:active{transform:scale(.96)}
+.hw-rar:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+@supports (color:color-mix(in srgb,red 50%,transparent)){.hw-rar:hover{border-color:color-mix(in srgb,var(--rc) 70%,transparent)}}
+.hw-new{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--surf)}
 /* the market's four stops, in their own colours (store.css) */
 .hw-stops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .hst{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 10px;border-radius:12px;border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);text-align:left;cursor:pointer;font:inherit;

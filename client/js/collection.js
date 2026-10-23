@@ -23,7 +23,8 @@ function collMode(h,title,meta){
 $('#collBack').onclick=()=>{if(picking()){sfx('click');BH.onBack&&BH.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
 // a match needs 5 cards; the Forge takes any number (min)
 $('#collGo').onclick=()=>{if(picking()&&BH.sel.length>=(BH.min??5)){sfx('click');BH.onDone(BH.sel.slice())}};
-function openCollection(){
+// r: a rarity (1–5) to open the binder at, from the menu's Collection box; called from a click it's an event, so it's ignored
+function openCollection(r){
   collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
@@ -32,6 +33,7 @@ function openCollection(){
   const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
   CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
+  if(Number.isInteger(r))BD.p=Math.max(0,bdFirst(r)); // bdRender keeps the rarity if the book changes between one page and two
   bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
   bdCoverOpen(); // plays the open sound as the cover swings
 }
