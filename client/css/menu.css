@@ -378,11 +378,10 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-top .title .logo-word{height:28px}
   .hub-top .brand>div{display:block}.hub-top .title-row{display:flex}.hub-top .alpha-pill{margin-top:8px}
   .hub-tools{gap:8px}
-  /* a circle looks smaller than a pill of the same height, so the round buttons are 4px bigger than the profile chip
-     to look as tall as it */
+  /* the round buttons and the profile chip are the same height */
   .hub-ib{width:52px;height:52px}
   /* the profile chip: shards and sign-up side by side, not stacked */
-  .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:340px;height:48px;padding:0 6px;gap:8px;border-radius:999px}
+  .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:340px;height:52px;padding:0 6px;gap:8px;border-radius:999px}
   .hub-tools .pcard .pc-st{display:none}
   .hub-tools .pcard .pc-side{flex-direction:row;align-items:center;gap:6px}
   .hub-tools .pcard .pc-cta{border-radius:999px}
