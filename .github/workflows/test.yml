@@ -1,11 +1,13 @@
 # Runs the tests (npm test) on every push to dev or main and on every pull
 # request; a red ✗ on GitHub means something broke.
 #
-# After a push passes, it also tells Render to deploy that branch: dev goes to
-# the test site (Leylines-dev), main to the live site (leylines). Render can't
-# see pushes on its own here, so this calls each service's Deploy Hook (Render →
-# service → Settings → Deploy Hook), saved as repo secrets RENDER_HOOK_DEV and
-# RENDER_HOOK_MAIN. Without the secret the deploy step just skips.
+# After a push passes, it also deploys that branch to Railway: dev goes to the
+# test site (service leylines-dev), main to the live site (service leylines).
+# Both services sit in the project's production environment, so one Project
+# Token (Railway → project Settings → Tokens, environment: production), saved
+# as the repo secret RAILWAY_TOKEN, deploys either. Without the secret the
+# deploy step just skips. Don't also connect the repo in Railway's service
+# settings, or every push deploys twice.
 name: Tests
 on:
   push:
@@ -27,14 +29,38 @@ jobs:
     needs: test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    # a bad token makes the CLI wait for a sign-in that never comes
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    # one deploy per branch at a time
+    concurrency:
+      group: railway-${{ github.ref_name }}
+      cancel-in-progress: false
     steps:
-      - name: Tell Render to deploy
+      - uses: actions/checkout@v4
+      # its own step, so nothing it installs can see the token
+      - run: npm install -g @railway/cli@5.63.4
+      - name: Deploy to Railway
         env:
-          HOOK: ${{ github.ref_name == 'main' && secrets.RENDER_HOOK_MAIN || secrets.RENDER_HOOK_DEV }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          SERVICE: ${{ github.ref_name == 'main' && 'leylines' || 'leylines-dev' }}
+          MESSAGE: ${{ github.ref_name }} ${{ github.sha }}
         run: |
-          if [ -z "$HOOK" ]; then
-            echo "No Render deploy hook secret for ${{ github.ref_name }}, skipping."
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "No RAILWAY_TOKEN secret, skipping the deploy of $GITHUB_REF_NAME."
             exit 0
           fi
-          curl -fsS -X POST "$HOOK" > /dev/null
-          echo "Render deploy started for ${{ github.ref_name }}."
+          # this uploads the commit this run tested, not the branch's latest. When a newer push (or a re-run
+          # of an old run) gets here after it, the older one must not go live over it
+          head=$(git ls-remote origin "refs/heads/$GITHUB_REF_NAME" | cut -f1)
+          if [ -z "$head" ]; then
+            echo "Couldn't read $GITHUB_REF_NAME from GitHub."
+            exit 1
+          fi
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "$GITHUB_REF_NAME is now at $head, so the older $GITHUB_SHA isn't deployed."
+            exit 0
+          fi
+          # --ci streams the build log and fails this step if the deploy fails
+          railway up --ci --service "$SERVICE" --message "$MESSAGE"

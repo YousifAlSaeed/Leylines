@@ -22,6 +22,9 @@ Versions before 0.6.0 were worked out afterwards from the commit history.
 ## 0.29.0 (2026-10-22)
 - A new main menu, the Hub: every place shows what's inside it. On a computer the Play card sits beside the Daily's three challenges, your newest cards, the market's four stops, packs waiting to open, friends free to play (with Invite) and the leaderboard as you last saw it. On a phone a tab bar at the bottom opens the Collection, the market, Friends and your profile; held sideways it becomes a rail down the left. A new Inbox (the bell) gathers friend requests, badges to claim, packs to open and Daily rewards left. The Leaderboard is also in Friends
 
+## 0.28.12 (2026-10-23)
+- Leylines moved to new servers. Your account, cards, friends and progress all came along
+
 ## 0.28.11 (2026-10-22)
 - Music: arriving somewhere starts its song from the beginning. Back from a quick look elsewhere, a song picks up again at the start of the phrase it was in, never in the middle of one. Songs hand over faster, so each one's first beat is heard
 

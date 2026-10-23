@@ -19,6 +19,10 @@ const app = createApp({ db, clientDir: config.clientDir, corsOrigins: config.cor
 const server = app.listen(config.port, config.host, () => {
   console.log(`Leylines running at http://${config.host}:${config.port} (database: ${db.kind})`);
 });
+// keep idle connections open longer than the host's proxy does (Railway: about 15-60 s), or it
+// sometimes sends a request down a connection Node just closed and the player gets a 502
+server.keepAliveTimeout = 65_000;
+server.headersTimeout = 66_000;
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
   process.on(sig, async () => {
