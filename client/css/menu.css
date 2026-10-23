@@ -139,8 +139,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 
 
 /* ---------- menu: the Hub ----------
-   A phone: a top bar, the Play card, the Daily and a glance at packs and the market, with a tab bar fixed to the bottom of
-   the screen (the menu leaves room for it). A PC: the same top bar over a grid of widgets, one for each place. */
+   A phone: a top bar, the Play card, the Daily, then Packs and the Leaderboard side by side, with a tab bar fixed to the
+   bottom of the screen (the menu leaves room for it). A PC: the same top bar over a grid of widgets, one for each place. */
 #scr-menu{justify-content:center;--tabh:calc(66px + env(safe-area-inset-bottom))}
 .menu{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;margin:auto 0;padding-bottom:var(--tabh)}
 .hub-top{display:flex;align-items:center;gap:10px;flex:none}
@@ -154,11 +154,13 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   background:var(--cta);color:var(--on-cta);font:800 11px/1 var(--display);box-shadow:0 0 0 2px var(--bg1)}
 .hub-dot[hidden]{display:none}
 .hub-tools .pcard{display:none}
-.hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs packs";gap:10px;align-content:start}
+.hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"play play" "daily daily" "packs lb";gap:10px;align-content:start}
+/* no server, no leaderboard: Packs takes the whole row */
+.hub-grid.no-srv{grid-template-areas:"play play" "daily daily" "packs packs"}
 .hub-grid>.hero{grid-area:play;min-width:0}
 .hw-daily{grid-area:daily}.hw-coll{grid-area:coll}.hw-mkt{grid-area:mkt}.hw-packs{grid-area:packs}.hw-fr{grid-area:fr}.hw-lb{grid-area:lb}
-/* on a phone the Collection, the market, Friends and You are tabs, How to play is in the top bar and the Leaderboard is in Friends */
-.hub-grid>.hw-coll,.hub-grid>.hw-mkt,.hub-grid>.hw-fr,.hub-grid>.hw-lb,.hw-mkt .hw-x,.hw-packs .hw-x{display:none}
+/* on a phone the Collection, the market, Friends and You are tabs and How to play is in the top bar */
+.hub-grid>.hw-coll,.hub-grid>.hw-mkt,.hub-grid>.hw-fr,.hw-mkt .hw-x{display:none}
 /* version tag to the right of the title */
 .title-row{display:flex;align-items:center;gap:10px}
 .ver{font:700 11px/1 var(--body);letter-spacing:.04em;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:4px 8px;white-space:nowrap;
@@ -290,8 +292,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-mdots button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.hw-mk.in{animation:none}}
 /* packs waiting, fanned out like a hand, with Open under them */
-.hw-packs .hw-x{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:10px}
-.hw-pk{display:flex;align-items:center;padding:4px 10px 0 0}
+.hw-packs .hw-x{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:10px;margin-top:auto}
+/* a phone's fan is a little smaller */
+.hw-pk{display:flex;align-items:center;padding:4px 10px 0 0;zoom:.75}
 .hw-packs .hw-x .btn.small{align-self:stretch}
 .hpk{position:relative;width:40px;height:54px;margin-left:-16px;border-radius:8px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);
   box-shadow:0 8px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
@@ -324,6 +327,19 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-lr span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hw-lr em{font:700 12px/1 var(--display);font-style:normal;color:var(--accent-ink);white-space:nowrap}
 .hw-lr.me{color:var(--text);font-weight:600}.hw-lr.me i{color:var(--cta)}
+/* a phone shows the whole Hub without scrolling: when it doesn't all fit, the Packs and Leaderboard row gives up a
+   little at a time (menu.js hubFit). fit1: the fan beside Open, closer names; fit2: a smaller fan, and two names (the
+   top one and you); fit3: just the two tiles */
+.fit1 .hw-packs .hw-x{flex-direction:row;align-items:center}
+.fit1 .hw-pk{padding:4px 0 0}
+.fit1 .hw-packs .hw-x .btn.small{flex:1;align-self:center}
+.fit1 .hw-lr{padding:4px 0;line-height:1.3}
+.fit2 .hw-pk{zoom:.55}
+.fit2 .hw-packs .hw-x .btn.small{min-height:38px}
+.fit2 .hw-lr{padding:3px 0;line-height:1.25}
+.fit1 .hw-lr:first-child{padding-top:0}
+.fit2 .hw-lr.x{display:none}
+.fit3 .hw-packs .hw-x,.fit3 .hw-lb .hw-x{display:none}
 /* the inbox (menu.js openInbox) */
 .ibx{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px;text-align:left}
 .ibx-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(var(--tint),.03);color:var(--text);cursor:pointer;text-align:left;font:inherit}
@@ -381,7 +397,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-tabs>button>svg{padding:4px 10px}
   .brand .emblem{height:34px;width:34px}.hub-top .title .logo-word{height:15px}
   .hub-top .brand>div{display:flex;align-items:center;gap:8px}.hub-top .title{margin-right:2px}
-  .hub-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"play daily" "play packs";align-items:start}
+  .hub-grid{grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,.5fr));grid-template-rows:auto 1fr;grid-template-areas:"play daily daily" "play packs lb";align-items:start}
+  .hub-grid.no-srv{grid-template-areas:"play daily daily" "play packs packs"}
+  .hw-packs,.hw-lb{align-self:stretch}
   .hero{padding:10px 12px}.hero-top{padding:2px 0}.hero .fan{font-size:6.5px}.hero-h{font-size:20px}.hero-stats div{padding:3px 4px}
   .hero-row{padding-top:6px}.hero-row .btn.primary{min-height:40px;font-size:16px}#scr-menu .seg button{min-height:30px}.hw-daily .dly{min-height:46px}
 }
@@ -416,7 +434,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hw{padding:14px 16px}
   .tile b{font-size:17px}
   .tile>svg{width:26px;height:26px}
-  .hw-packs .hw-x,.hw-coll .hw-x{margin-top:auto}
+  .hw-coll .hw-x{margin-top:auto}
+  .hw-pk{zoom:1}
   .hw-daily .dly-row{flex:1}
   .hw-daily .dly{min-height:0}
   .hero{padding:24px;display:flex;flex-direction:column}

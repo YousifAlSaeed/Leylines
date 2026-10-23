@@ -57,7 +57,7 @@ function renderMenu(){
 /* ---------- the Hub ----------
    Each place on the menu is a widget: its tile is the widget's header (the other scripts keep the tile's line and dot up
    to date, as before) and under it the widget shows what's inside. A PC shows every widget in a grid; a phone shows the
-   Play card, the Daily and a glance at packs and the market, and reaches the rest from the tab bar and the top bar.
+   Play card, the Daily, then Packs and the Leaderboard side by side, and reaches the rest from the tab bar and the top bar.
    Nothing here asks the server for anything: it draws what this device already knows, so the database can sleep. */
 const HUB_PK={spark:'sp',arcane:'ar',ley:'ly',mythic:'my'};
 const hubSvg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -69,8 +69,20 @@ const HUB_IC={
   news:hubSvg('<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/>')};
 function renderHub(){
   $('.hub-grid').classList.toggle('no-srv',API==null); // no friends or leaderboard without the server (menu.css)
-  hubDaily();hubColl();hubMarket();hubPacks();hubFriends();hubLb();hubDots();
+  hubDaily();hubColl();hubMarket();hubPacks();hubFriends();hubLb();hubDots();hubFit();
 }
+// a phone shows the whole Hub without scrolling: if it doesn't fit, the Packs and Leaderboard row gives up its insides a
+// step at a time (menu.css .fit1 to .fit3). Checked again when the screen or the Play card changes size
+const HUB_PC=matchMedia('(min-width:920px) and (min-height:560px)');
+function hubFit(){
+  const s=$('#scr-menu'),g=$('.hub-grid');
+  g.classList.remove('fit1','fit2','fit3');
+  if(!s.classList.contains('on')||HUB_PC.matches)return;
+  const cs=getComputedStyle(s),room=s.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),m=$('.menu');
+  for(const c of ['fit1','fit2','fit3']){if(m.getBoundingClientRect().height<=room)break;g.classList.add(c)}
+}
+if(window.ResizeObserver){const ro=new ResizeObserver(()=>hubFit());ro.observe($('#scr-menu'));ro.observe($('.hero'))}else addEventListener('resize',hubFit);
+document.fonts?.ready.then(hubFit);
 // the Daily: its three challenges, always in view. The header opens the next one still to play
 function hubDaily(){
   const el=$('#hwDaily');if(!el)return;
@@ -158,9 +170,11 @@ function hubLb(){
   const sub=by?`${by[1]} · last look`:"See who's on top";if($('#lbSub').textContent!==sub)$('#lbSub').textContent=sub;
   if(!by||!d.rows.length){el.innerHTML='';return}
   const val=p=>{const [v,unit]=lbStat(p,d.by);return d.by==='level'?`Lv ${v}`:d.by==='cards'?`${v}/${CARDS.length}`:`${v} ${unit}`};
-  // the top two and you, or the top three when you're one of them
+  // the top two and you, or the top three when you're one of them. x: the one a short phone leaves out (menu.css .fit1),
+  // so it keeps the top one and you
   const rows=d.rows.slice(0,d.me&&!d.rows.slice(0,3).some(lbIsMe)?2:3);if(d.me&&!rows.some(lbIsMe))rows.push(d.me);
-  el.innerHTML=`<div class="hw-lbl">${rows.map(p=>`<span class="hw-lr${lbIsMe(p)?' me':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
+  const x=rows.length<3?-1:rows.findIndex(lbIsMe)===2?1:2;
+  el.innerHTML=`<div class="hw-lbl">${rows.map((p,k)=>`<span class="hw-lr${lbIsMe(p)?' me':''}${k===x?' x':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
 }
 // what's waiting for you, gathered in one place
 function inboxItems(){
