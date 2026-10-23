@@ -289,17 +289,15 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-mdots button.on{width:18px;background:var(--accent)}
 .hw-mdots button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.hw-mk.in{animation:none}}
-/* packs waiting, fanned out like a hand, with Open under them */
+/* packs waiting, fanned out like a hand, with Open under them (the padding keeps the tilted ends off it) */
 .hw-packs .hw-x{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:10px}
-.hw-pk{display:flex;align-items:center;padding:4px 10px 0 0}
+.hw-pk{display:flex;align-items:center;max-width:100%;padding:4px 10px 14px 0}
 .hw-packs .hw-x .btn.small{align-self:stretch}
-.hpk{position:relative;width:40px;height:54px;margin-left:-16px;border-radius:8px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);
-  box-shadow:0 8px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
-.hpk:first-child{margin-left:0}
-.hpk::after{content:"";width:13px;height:13px;transform:rotate(45deg);border-radius:2px;background:rgba(255,255,255,.85)}
-.hpk:nth-child(1){transform:rotate(-9deg) translateY(3px)}.hpk:nth-child(2){transform:translateY(-2px);z-index:1}.hpk:nth-child(3){transform:rotate(9deg) translateY(3px);z-index:2}
-.hpk.sp{background:linear-gradient(160deg,#5a8dff,#2a4fb8)}.hpk.ar{background:linear-gradient(160deg,#a26bff,#5b2399)}
-.hpk.ly{background:linear-gradient(160deg,#ffcf6a,#b86a10)}.hpk.my{background:linear-gradient(160deg,#ff8fd0,#7fe0ff)}.hpk.dy{background:linear-gradient(160deg,#ff86c4,#c2469a)}
+/* each pack but the last takes a narrow slot and its art spills over the next, so the fan squeezes to fit the box */
+.hpk{flex:0 1 18px;min-width:4px}
+.hpk:last-of-type{flex:none}
+.hpk .pk-mini{--w:38px;transform:rotate(calc(var(--o)*6deg)) translateY(calc(var(--o)*var(--o)*1.2px))}
+.hpk-more{align-self:center;margin-left:8px;padding:3px 7px;border-radius:999px;background:rgba(var(--tint),.1);border:1px solid var(--line2);font:700 12px/1 var(--body);color:var(--text)}
 /* friends free to play, with Invite: each in its own outlined row */
 .hw-fl{display:flex;flex-direction:column;gap:8px}
 .hw-on{display:flex;align-items:center;gap:10px;min-width:0;padding:6px 6px 6px 8px;border:1px solid var(--line2);border-radius:14px;background:rgba(var(--tint),.03)}

@@ -59,7 +59,6 @@ function renderMenu(){
    to date, as before) and under it the widget shows what's inside. A PC shows every widget in a grid; a phone shows the
    Play card, the Daily and a glance at packs and the market, and reaches the rest from the tab bar and the top bar.
    Nothing here asks the server for anything: it draws what this device already knows, so the database can sleep. */
-const HUB_PK={spark:'sp',arcane:'ar',ley:'ly',mythic:'my'};
 const hubSvg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 const HUB_IC={
   friends:hubSvg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/>'),
@@ -117,11 +116,14 @@ function hubMarket(){
     HUB_MK.i++;hubMarket();
   },4000);
 }
-// packs waiting to be opened, the daily one first
+// packs waiting to be opened, the daily one first, each in its own colours and art (packs.js miniPack);
+// seven at most, then a count of the rest
+const HUB_PKMAX=7;
 function hubPacks(){
   const el=$('#hwPacks');if(!el)return;
-  const d=dailyState(),list=SAVE.packs.map(p=>HUB_PK[p.t]||'sp');if(d.ready)list.unshift('dy');
-  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,3).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button" aria-label="Open a pack">Open</button>`
+  const d=dailyState(),list=SAVE.packs.map(p=>PACKS[p.t]?p.t:'spark');if(d.ready)list.unshift(d.t);
+  const fan=list.slice(0,HUB_PKMAX),more=list.length-fan.length,mid=(fan.length-1)/2;
+  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${fan.map((t,i)=>`<span class="hpk" style="--o:${(i-mid).toFixed(1)}">${miniPack(t)}</span>`).join('')}${more?`<b class="hpk-more">+${more}</b>`:''}</span><button class="btn small primary" type="button" aria-label="Open a pack">Open</button>`
     // nothing to open: the tile's line already counts down to the next daily pack (packs.js)
     :'';
   // Open tears the first one open right here (packs.js openPack), the daily first; its summary offers the next
