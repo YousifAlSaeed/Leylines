@@ -66,7 +66,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, 
   // the game's clock: daily packs and the Daily tab go by this, not the device's clock
   api.get('/time', (req, res) => { res.set('Cache-Control', 'no-store'); res.json({ now: Date.now() }); });
   api.use('/auth', authRouter(db));
-  api.use('/me', meRouter(db));
+  api.use('/me', meRouter(db, hub));
   api.use('/users', usersRouter(db));
   api.use('/friends', friendsRouter(db, hub));
   api.use('/forfeits', forfeitsRouter(db, hub));

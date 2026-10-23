@@ -6,8 +6,9 @@ import { deleteOtherSessions, forgetUser, requireAuth } from '../lib/sessions.js
 import { checkEmail, checkPassword, checkSave, cleanName, privateUser } from '../lib/users.js';
 import { emailHash, sealEmail } from '../lib/emailCrypto.js';
 import { syncBoard } from '../lib/board.js';
+import { addMoments } from '../lib/moments.js';
 
-export function meRouter(db) {
+export function meRouter(db, hub) {
   const r = Router();
   r.use(requireAuth(db));
   // the routes that check your password get the same limit as signing in
@@ -71,7 +72,7 @@ export function meRouter(db) {
     const bad = checkSave(data);
     if (bad) return res.status(400).json({ error: bad });
 
-    const cur = await db.get('SELECT rev, updated_at FROM user_saves WHERE user_id = $u', { $u: req.user.id });
+    const cur = await db.get('SELECT rev, updated_at, data FROM user_saves WHERE user_id = $u', { $u: req.user.id });
     if (cur && !force && cur.rev !== baseRev)
       return res.status(409).json({ error: 'Your account was updated on another device.', rev: cur.rev, updatedAt: cur.updated_at });
 
@@ -83,6 +84,10 @@ export function meRouter(db) {
       { $u: req.user.id, $d: JSON.stringify(data), $now: now() },
     );
     await syncBoard(db, req.user.id, data);
+    // what's new since the last save becomes news for their friends (lib/moments.js)
+    let prev = null;
+    try { prev = cur && JSON.parse(cur.data); } catch { /* a broken old save makes no moments */ }
+    await addMoments(db, hub, req.user.id, prev, data);
     res.json({ rev: s.rev, updatedAt: s.updated_at });
   });
 

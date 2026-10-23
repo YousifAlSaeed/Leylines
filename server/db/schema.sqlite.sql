@@ -140,3 +140,25 @@ CREATE TABLE IF NOT EXISTS daily_alerts (
   day     TEXT    NOT NULL,
   PRIMARY KEY (user_id, site)
 );
+
+-- Moments: news about a player that their friends see on the menu, made from the difference between two
+-- of their saves (lib/moments.js). mkey keeps the same moment from being made twice. Kept two weeks.
+CREATE TABLE IF NOT EXISTS moments (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind       TEXT    NOT NULL,
+  mkey       TEXT    NOT NULL,
+  data       TEXT    NOT NULL,
+  created_at TEXT    NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS moments_key ON moments (user_id, kind, mkey);
+CREATE INDEX IF NOT EXISTS moments_at ON moments (created_at);
+
+-- A friend's emoji on a moment, one each.
+CREATE TABLE IF NOT EXISTS moment_reactions (
+  moment_id  INTEGER NOT NULL REFERENCES moments(id) ON DELETE CASCADE,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  emoji      TEXT    NOT NULL,
+  created_at TEXT    NOT NULL,
+  PRIMARY KEY (moment_id, user_id)
+);

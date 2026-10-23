@@ -272,26 +272,35 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 :root[data-theme="light"] .hst.s-merchant{--sc:#6a2bae}:root[data-theme="light"] .hst.s-forge{--sc:#c2255c}:root[data-theme="light"] .hst.s-packs{--sc:#0b7285}:root[data-theme="light"] .hst.s-atelier{--sc:#2b8a3e}
 @supports (color:color-mix(in srgb,red 50%,transparent)){.hst{border-color:color-mix(in srgb,var(--sc) 38%,transparent);background:color-mix(in srgb,var(--sc) 8%,transparent)}
   .hst:hover{border-color:color-mix(in srgb,var(--sc) 75%,transparent);background:color-mix(in srgb,var(--sc) 15%,transparent)}}
-/* packs waiting, as a little stack */
-.hw-packs .hw-x{flex-direction:row;align-items:flex-end;justify-content:space-between}
-.hw-pk{display:flex;align-items:flex-end;padding-left:8px}
-.hpk{position:relative;width:34px;height:46px;margin-left:-8px;border-radius:7px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);
+/* packs waiting, fanned out like a hand, with Open under them */
+.hw-packs .hw-x{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:10px}
+.hw-pk{display:flex;align-items:center;padding:4px 10px 0 0}
+.hw-packs .hw-x .btn.small{align-self:stretch}
+.hpk{position:relative;width:40px;height:54px;margin-left:-16px;border-radius:8px;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.35);
   box-shadow:0 8px 16px -8px rgba(var(--sh),calc(.8*var(--shk)))}
-.hpk::after{content:"";width:12px;height:12px;transform:rotate(45deg);border-radius:2px;background:rgba(255,255,255,.85)}
-.hpk:nth-child(2){transform:rotate(-5deg)}.hpk:nth-child(3){transform:rotate(5deg)}.hpk:nth-child(4){transform:rotate(-3deg)}
+.hpk:first-child{margin-left:0}
+.hpk::after{content:"";width:13px;height:13px;transform:rotate(45deg);border-radius:2px;background:rgba(255,255,255,.85)}
+.hpk:nth-child(1){transform:rotate(-9deg) translateY(3px)}.hpk:nth-child(2){transform:translateY(-2px);z-index:1}.hpk:nth-child(3){transform:rotate(9deg) translateY(3px);z-index:2}
 .hpk.sp{background:linear-gradient(160deg,#5a8dff,#2a4fb8)}.hpk.ar{background:linear-gradient(160deg,#a26bff,#5b2399)}
 .hpk.ly{background:linear-gradient(160deg,#ffcf6a,#b86a10)}.hpk.my{background:linear-gradient(160deg,#ff8fd0,#7fe0ff)}.hpk.dy{background:linear-gradient(160deg,#ff86c4,#c2469a)}
-/* friends free to play, with Invite */
+/* friends free to play, with Invite: each in its own outlined row */
 .hw-fl{display:flex;flex-direction:column;gap:8px}
-.hw-fr{display:flex;align-items:center;gap:10px;min-width:0}
-.hw-fr .pc-av{width:30px;height:30px;font-size:16px}
-.hw-fr .rt{flex:1;min-width:0}
-.hw-fr b{display:block;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hw-fr small{display:block;font-size:11.5px;color:var(--muted)}
+.hw-on{display:flex;align-items:center;gap:10px;min-width:0;padding:6px 6px 6px 8px;border:1px solid var(--line2);border-radius:14px;background:rgba(var(--tint),.03)}
+.hw-on .pc-av{width:30px;height:30px;font-size:16px}
+.hw-on .rt{flex:1;min-width:0}
+.hw-on b{display:block;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-on small{display:block;font-size:11.5px;color:var(--muted)}
+/* "See all" on the Friends widget's header */
+.hw-more{margin-left:auto;flex:none;font:600 12px/1 var(--body);color:var(--accent-ink);white-space:nowrap}
+/* the news under them: as many as fit (three at most, menu.js), the rest are in Friends */
+.hw-fr .hw-x{flex:1;min-height:0;overflow:hidden}
+.hw-fr .mo-list{min-height:0}
+.hw-fr .mo{padding:8px 0}.hw-fr .mo:first-child{padding-top:2px}
+.hw-fr .mo-t{font-size:13px}.hw-fr .mo-b>small{font-size:11.5px}
 .hw-req{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 10px;border-radius:12px;border:1px solid var(--cta);background:rgba(var(--tint),.03);color:var(--text);cursor:pointer;text-align:left;font:inherit}
 .hw-req b{font:700 13px/1.2 var(--display)}.hw-req small{font-size:11px;color:var(--muted)}
 /* the leaderboard as last seen */
-.hw-lb{display:flex;flex-direction:column}
+.hw-lbl{display:flex;flex-direction:column}
 .hw-lr{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .hw-lr:first-child{border-top:0;padding-top:0}
 .hw-lr i{font:800 12px/1 var(--display);font-style:normal;width:20px;color:var(--muted)}
@@ -369,8 +378,10 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-top .title .logo-word{height:28px}
   .hub-top .brand>div{display:block}.hub-top .title-row{display:flex}.hub-top .alpha-pill{margin-top:8px}
   .hub-tools{gap:8px}
-  .hub-ib{width:48px;height:48px}
-  /* the profile chip is as tall as the icon buttons beside it: shards and sign-up side by side, not stacked */
+  /* a circle looks smaller than a pill of the same height, so the round buttons are 4px bigger than the profile chip
+     to look as tall as it */
+  .hub-ib{width:52px;height:52px}
+  /* the profile chip: shards and sign-up side by side, not stacked */
   .hub-tools .pcard{display:flex;flex:none;width:auto;max-width:340px;height:48px;padding:0 6px;gap:8px;border-radius:999px}
   .hub-tools .pcard .pc-st{display:none}
   .hub-tools .pcard .pc-side{flex-direction:row;align-items:center;gap:6px}
@@ -378,8 +389,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-tabs{display:none}
   .hub-grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(3,minmax(168px,auto));gap:14px;grid-template-areas:
     "play play play play play daily daily daily daily coll coll coll"
-    "play play play play play mkt mkt mkt mkt packs packs packs"
-    "play play play play play fr fr fr fr lb lb lb"}
+    "play play play play play mkt mkt mkt mkt fr fr fr"
+    "play play play play play packs packs lb lb fr fr fr"}
   /* a copy opened without the server has no friends or leaderboard: two rows, not three */
   .hub-grid.no-srv{grid-template-rows:repeat(2,minmax(168px,auto));grid-template-areas:
     "play play play play play daily daily daily daily coll coll coll"

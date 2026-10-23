@@ -22,6 +22,7 @@ async function lbLoad(){
     const j=await api('/leaderboard?'+qs,{timeout:60000});
     if(n!==LB.seq)return;
     LB.data=j;
+    if(!LB.q)lbKeep(j);
     // keep the player you picked if they're still on screen, otherwise pick the top one
     if(!lbFind(LB.sel))LB.sel=j.rows.length?j.rows[0].username:'';
   }catch(e){
@@ -33,6 +34,11 @@ async function lbLoad(){
 }
 const lbFind=name=>{const d=LB.data;if(!d||!name)return null;return [...d.rows,d.me].find(p=>p&&p.username===name)||null};
 const lbIsMe=p=>!!(p&&ACCT.user&&frKey(p.username)===frKey(ACCT.user.username));
+// the top of the board as you last saw it, kept on this device for the menu's widget (menu.js hubLb), for whoever was signed in
+const LB_LAST='leylines.lbLast';
+const lbWho=()=>ACCT.user?frKey(ACCT.user.username):'';
+function lbKeep(j){try{localStorage.setItem(LB_LAST,JSON.stringify({who:lbWho(),by:LB.by,rows:j.rows.slice(0,3),me:j.me||null}))}catch(e){}}
+function lbSeen(){try{const d=JSON.parse(localStorage.getItem(LB_LAST));return d&&d.who===lbWho()&&Array.isArray(d.rows)?d:null}catch(e){return null}}
 
 /* ---------- the screen ---------- */
 function openLeaderboard(){
@@ -98,10 +104,10 @@ const lbTier=lv=>`<span class="lb-tier t${TITLES.filter(t=>lv>=t[0]).length-1}">
 const lbLast=(r,n=5)=>{const l=[...(r||'')].slice(-n);return l.length?`<span class="lb-l5" role="img" aria-label="Last ${plural(l.length,'online result')}: ${l.map(x=>({w:'win',l:'loss',d:'draw'})[x]).join(', ')}">${l.map(x=>`<i class="${x}"></i>`).join('')}</span>`:'<span class="lb-none">—</span>'};
 const lbRate=(w,l,d)=>{const n=w+l+d;return n?Math.round(w/n*100)+'%':'—'};
 // the number the board is ranked by, and what it counts
-function lbStat(p){
-  if(LB.by==='level')return [levelOf(p.xp),`${p.xp.toLocaleString()} XP`];
-  if(LB.by==='wins')return [p.wins,p.wins===1?'win':'wins'];
-  if(LB.by==='streak')return [p.best,'wins in a row'];
+function lbStat(p,by=LB.by){
+  if(by==='level')return [levelOf(p.xp),`${p.xp.toLocaleString()} XP`];
+  if(by==='wins')return [p.wins,p.wins===1?'win':'wins'];
+  if(by==='streak')return [p.best,'wins in a row'];
   return [p.cards,`of ${CARDS.length}`];
 }
 const lbRankCls=r=>r===1?' g':r===2?' s':r===3?' b':'';

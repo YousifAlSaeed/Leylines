@@ -101,12 +101,12 @@ function hubMarket(){
 function hubPacks(){
   const el=$('#hwPacks');if(!el)return;
   const d=dailyState(),list=SAVE.packs.map(p=>HUB_PK[p.t]||'sp');if(d.ready)list.unshift('dy');
-  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,4).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button">Open</button>`
+  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,3).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button">Open</button>`
     // nothing to open: the tile's line already counts down to the next daily pack (packs.js)
     :'';
   const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openPacks()};
 }
-// friends: requests to answer, and who's free to play right now, with Invite (pulse.js)
+// friends: requests to answer, who's free to play right now (with Invite, pulse.js), then their news this week (friends.js)
 function hubFriends(){
   const el=$('#hwFr');if(!el)return;
   $('#frWidget').hidden=API==null;
@@ -117,22 +117,28 @@ function hubFriends(){
     return;
   }
   if(!FR.loaded){el.innerHTML='<small class="hw-note">Loading friends…</small>';return}
-  const on=[...FR.friends.filter(u=>frFree(u.username)),...FR.friends.filter(u=>!frFree(u.username)&&frAlerted(u.username))].slice(0,3),req=FR.incoming.length;
+  // with news to show, one friend to invite is enough; the rest are in Friends
+  const news=FR.moments.slice(0,3),req=FR.incoming.length;
+  const on=[...FR.friends.filter(u=>frFree(u.username)),...FR.friends.filter(u=>!frFree(u.username)&&frAlerted(u.username))].slice(0,news.length?1:3);
   el.innerHTML=(req?`<button class="hw-req" type="button"><b>${plural(req,'friend request')}</b><small>Answer in Friends</small></button>`:'')+
-    (on.length?`<div class="hw-fl">${on.map(u=>`<div class="hw-fr">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${frFree(u.username)?'Free to play':'Gets alerts'}</small></span><button class="btn small primary" type="button" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)} to a match">Invite</button></div>`).join('')}</div>`
-      :`<small class="hw-note">${FR.friends.length?'No friends online right now.':'No friends yet. Add someone by their username.'}</small>`);
+    (on.length?`<div class="hw-fl">${on.map(u=>`<div class="hw-on">${frAvatar(u)}<span class="rt"><b>${esc(u.displayName)}</b><small>${frFree(u.username)?'Free to play':'Gets alerts'}</small></span><button class="btn small primary" type="button" data-inv="${esc(u.username)}" aria-label="Invite ${esc(u.displayName)} to a match">Invite</button></div>`).join('')}</div>`
+      :news.length?'':`<small class="hw-note">${FR.friends.length?'No friends online right now.':'No friends yet. Add someone by their username.'}</small>`)+
+    (news.length?momentsHTML(news):'');
   el.querySelectorAll('[data-inv]').forEach(b=>b.onclick=()=>{sfx('click');inviteFriend(b.dataset.inv)});
+  bindMoments(el);
   const r=el.querySelector('.hw-req');if(r)r.onclick=()=>{sfx('click');openFriends()};
 }
-// the leaderboard as you saw it last: it's only fetched when you open it (leaderboard.js)
+// the leaderboard as you saw it last, kept on this device: it's only fetched when you open it (leaderboard.js lbKeep)
 function hubLb(){
   const el=$('#hwLb');if(!el)return;
   $('#lbWidget').hidden=API==null;$$('.fr-lb').forEach(b=>b.hidden=API==null);
-  const d=LB.data;
-  if(!d||!d.rows||!d.rows.length){el.innerHTML='<small class="hw-note">Ranked by level, online wins, streaks and cards found.</small>';return}
-  const val=p=>{const [v,unit]=lbStat(p);return LB.by==='level'?`Lv ${v}`:`${v} ${unit}`};
-  const rows=d.rows.slice(0,3);if(d.me&&!rows.some(lbIsMe))rows.push(d.me);
-  el.innerHTML=`<div class="hw-lb">${rows.map(p=>`<span class="hw-lr${lbIsMe(p)?' me':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
+  const d=lbSeen(),by=d&&LB_BY.find(b=>b[0]===d.by);
+  $('#lbSub').textContent=by?`${by[1]} · last look`:"See who's on top";
+  if(!by||!d.rows.length){el.innerHTML='';return}
+  const val=p=>{const [v,unit]=lbStat(p,d.by);return d.by==='level'?`Lv ${v}`:d.by==='cards'?`${v}/${CARDS.length}`:`${v} ${unit}`};
+  // the top two and you, or the top three when you're one of them
+  const rows=d.rows.slice(0,d.me&&!d.rows.slice(0,3).some(lbIsMe)?2:3);if(d.me&&!rows.some(lbIsMe))rows.push(d.me);
+  el.innerHTML=`<div class="hw-lbl">${rows.map(p=>`<span class="hw-lr${lbIsMe(p)?' me':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
 }
 // what's waiting for you, gathered in one place
 function inboxItems(){
