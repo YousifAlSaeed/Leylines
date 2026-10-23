@@ -101,10 +101,11 @@ function hubMarket(){
 function hubPacks(){
   const el=$('#hwPacks');if(!el)return;
   const d=dailyState(),list=SAVE.packs.map(p=>HUB_PK[p.t]||'sp');if(d.ready)list.unshift('dy');
-  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,3).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button">Open</button>`
+  el.innerHTML=list.length?`<span class="hw-pk" aria-hidden="true">${list.slice(0,3).map(c=>`<i class="hpk ${c}"></i>`).join('')}</span><button class="btn small primary" type="button" aria-label="Open a pack">Open</button>`
     // nothing to open: the tile's line already counts down to the next daily pack (packs.js)
     :'';
-  const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openPacks()};
+  // Open tears the first one open right here (packs.js openPack), the daily first; its summary offers the next
+  const b=el.querySelector('.btn');if(b)b.onclick=()=>{sfx('click');openPack(dailyState().ready?'daily':0)};
 }
 // friends: requests to answer, who's free to play right now (with Invite, pulse.js), then their news this week (friends.js)
 function hubFriends(){
