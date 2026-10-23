@@ -61,7 +61,8 @@ function musicPlace(){
 // newest change asked for (an older one that finishes loading later is dropped). preview: a song the jukebox's player
 // is playing; paused: its pause button is down (both end when the jukebox closes); last: the song playing before a pause.
 // left: when each song was left for another place. held: songs stopped by a pause, mute or seek, which carry on exactly
-const MUS={want:false,cur:null,pos:{},data:{},buf:{},gen:0,preview:null,paused:false,last:null,left:{},held:{}};
+// all: every song started and not yet ended (a safety net: see musicSweep)
+const MUS={want:false,cur:null,pos:{},data:{},buf:{},gen:0,preview:null,paused:false,last:null,left:{},held:{},all:new Set()};
 function musicOn(){return !!(!SAVE.musicMute&&SAVE.musicVol)}
 const musicGain=()=>.5*SAVE.musicVol/100;
 function musicFetch(id){
@@ -118,30 +119,51 @@ function musicStart(id,L,top,wait=0){
   if(!(off>=0&&off<L.le))off=L.first;
   delete MUS.held[id];
   src.buffer=L.b;src.loop=true;src.loopStart=L.ls;src.loopEnd=L.le;
-  g.gain.value=0;g.gain.setValueAtTime(0,AC.currentTime); // a gain starts at 1: silent until its fade in
+  const now=AC.currentTime;
+  g.gain.value=0;g.gain.setValueAtTime(0,now); // a gain starts at 1: silent until its fade in
   src.connect(g).connect(AC.destination);src.start(t,off);
-  return {id,src,g,t0:t,off,ls:L.ls,le:L.le};
+  // pts: its volume as planned, [time, volume] points joined by straight lines. stopAt: when it's set to stop
+  const c={id,src,g,t0:t,off,ls:L.ls,le:L.le,pts:[[now,0]],stopAt:0};
+  MUS.all.add(c);src.onended=()=>MUS.all.delete(c);
+  return c;
 }
-// from wherever the volume is now to `to`, after wait seconds, over dur seconds. The change follows an S-curve: it
-// starts gently and settles gently, which the ear hears as an even fade (a straight line seems to hold, then drop)
-function musicRamp(c,to,dur,wait=0){
-  const g=c.g.gain,t=AC.currentTime;
-  let v;
-  if(g.cancelAndHoldAtTime){g.cancelAndHoldAtTime(t);v=g.value}else{v=g.value;g.cancelScheduledValues(t)}
-  g.setValueAtTime(v,t);
-  const n=64,curve=new Float32Array(n);
-  for(let i=0;i<n;i++)curve[i]=v+(to-v)*(.5-.5*Math.cos(Math.PI*i/(n-1)));
-  // the curve starts a moment after the value is pinned, so the two never fall on the same instant
-  try{g.setValueCurveAtTime(curve,t+wait+.01,dur)}catch(e){g.setValueAtTime(v,t+wait+.01);g.linearRampToValueAtTime(to,t+wait+.01+dur)}
+// song c's volume at time t, from its plan (browsers don't all report a volume that is changing, so it's kept here)
+function volAt(c,t){
+  const p=c.pts;
+  if(t<=p[0][0])return p[0][1];
+  for(let i=1;i<p.length;i++)if(t<=p[i][0]){const[a,va]=p[i-1],[b,vb]=p[i];return b>a?va+(vb-va)*(t-a)/(b-a):vb}
+  return p[p.length-1][1];
+}
+// From where the volume is now to `to`, after wait seconds, over dur seconds, following an S-curve: it starts gently
+// and settles gently, which the ear hears as an even fade (a straight line seems to hold, then drop). The curve is
+// made of short straight steps: unlike one curve, steps can always be added and cancelled, in every browser.
+// after: start once everything already planned is done, instead of replacing the plan from now on
+function musicRamp(c,to,dur,wait=0,after=false){
+  const g=c.g.gain,now=AC.currentTime,n=12;
+  let t0,v;
+  if(after){[t0,v]=c.pts[c.pts.length-1];t0=Math.max(t0,now)}
+  else{
+    v=volAt(c,now);t0=now;
+    try{g.cancelScheduledValues(now)}catch(e){}
+    try{g.setValueAtTime(v,now)}catch(e){}
+    c.pts=c.pts.filter(p=>p[0]<now);c.pts.push([now,v]);
+  }
+  const start=t0+wait,steps=[[start,v]];
+  for(let i=1;i<=n;i++)steps.push([start+dur*i/n,v+(to-v)*(.5-.5*Math.cos(Math.PI*i/n))]);
+  for(const[t,x]of steps)try{g.linearRampToValueAtTime(x,t)}catch(e){}
+  c.pts.push(...steps);
 }
 const musicFadeIn=(c,dur,wait)=>musicRamp(c,document.hidden?0:musicGain(),dur,wait);
-// a song going away: remember where it was, fade it out (after wait seconds) and stop it. held: a pause, a mute or a
-// seek, so it carries on exactly (otherwise it was left for another place)
+// a song going away: remember where it was, then (stop first, so nothing can leave it playing) fade it out after wait
+// seconds. held: a pause, a mute or a seek, so it carries on exactly (otherwise it was left for another place)
 function musicFadeOut(c,dur,held,wait=0){
   musicLeft(c,held);
-  musicRamp(c,0,dur,wait);
-  try{c.src.stop(AC.currentTime+wait+dur+.06)}catch(e){}
+  musicStop(c,AC.currentTime+wait+dur+.06);
+  try{musicRamp(c,0,dur,wait)}catch(e){}
 }
+function musicStop(c,at){c.stopAt=at;try{c.src.stop(at)}catch(e){}}
+// the safety net: a song that isn't the current one and isn't set to stop is faded out and stopped
+function musicSweep(){for(const c of MUS.all)if(c!==MUS.cur&&!c.stopAt)musicFadeOut(c,.4)}
 // where a song going away was, and why it went (see musicStart)
 function musicLeft(c,held){
   MUS.pos[c.id]=musicAt(c);
@@ -152,25 +174,24 @@ function musicLeft(c,held){
 // it has stepped back, coming up over FADE_IN, while the old one goes on down to nothing over FADE_OUT: the new
 // song's first seconds are heard clearly, with the old one only faint behind them
 const DUCK=.25,DUCK_T=.3,FADE_OUT=.6,FADE_IN=.25;
+// coming home to the main menu is gentler: the place's song fades away more slowly and the menu's song eases back in,
+// rather than starting on a beat the way a new place does
+const HOME_OUT=1.1,HOME_IN=1.5;
 // the song playing steps back, or (the change it made room for didn't happen) comes forward again
 function musicDuck(c,on){
   if(!c||!!c.duck===on)return;
   // a song still coming in (or quieter already) steps back no further up than where it is
-  c.duck=on;c.duckLevel=document.hidden?0:on?Math.min(c.g.gain.value,musicGain()*DUCK):musicGain();
+  c.duck=on;c.duckLevel=document.hidden?0:on?Math.min(volAt(c,AC.currentTime),musicGain()*DUCK):musicGain();
   musicRamp(c,c.duckLevel,on?DUCK_T:.4);
   c.duckEnd=on?AC.currentTime+.01+DUCK_T:0; // when it has finished stepping back
 }
 // the song stepping back for the next one: once it has stepped back (and not before at), on down to nothing, then stop.
 // Added after the step back rather than replacing it, so a next song that was ready at once can't cut it short
-function musicBowOut(c,at){
+function musicBowOut(c,at,dur=FADE_OUT){
   musicLeft(c,false);
-  const g=c.g.gain,from=Math.max(at,c.duckEnd+.005),v=c.duckLevel||0;
-  if(c.duckEnd>AC.currentTime+.005){
-    const n=64,curve=new Float32Array(n);
-    for(let i=0;i<n;i++)curve[i]=v*(.5+.5*Math.cos(Math.PI*i/(n-1)));
-    try{g.setValueCurveAtTime(curve,from,FADE_OUT)}catch(e){g.setValueAtTime(v,from);g.linearRampToValueAtTime(0,from+FADE_OUT)}
-    try{c.src.stop(from+FADE_OUT+.06)}catch(e){}
-  }else{musicRamp(c,0,FADE_OUT,Math.max(0,at-AC.currentTime));try{c.src.stop(at+FADE_OUT+.06)}catch(e){}}
+  const now=AC.currentTime,stepping=c.duckEnd>now,from=Math.max(at,stepping?c.duckEnd:now);
+  musicStop(c,from+dur+.06);
+  try{musicRamp(c,0,dur,from-(stepping?Math.max(c.pts[c.pts.length-1][0],now):now),stepping)}catch(e){}
 }
 // the song to play now {id, top: from its start}, or null to leave things as they are
 function musicWanted(){
@@ -178,8 +199,8 @@ function musicWanted(){
   const pl=musicPlace(),j=jb();
   if(!pl)return MUS.cur?null:{id:j.main};
   const id=jbTrack(j,pl[0],pl[1]);
-  // a Sudden Death starts its song from the top
-  return {id,top:pl[0]==='sd'};
+  // a Sudden Death starts its song from the top; home: back to the main menu's song
+  return {id,top:pl[0]==='sd',home:pl[0]==='main'};
 }
 // play the song this place should have, crossfading from the one playing (it keeps going until the new one is ready)
 function musicUpdate(){
@@ -198,8 +219,9 @@ function musicUpdate(){
     // the new song waits until the old one has stepped back (no wait if loading took that long already)
     const wait=old?Math.max(0,DUCK_T-(AC.currentTime-asked)):0;
     MUS.cur=musicStart(w.id,L,w.top,wait);
-    if(old){musicBowOut(old,AC.currentTime+wait);musicFadeIn(MUS.cur,FADE_IN,wait)}
+    if(old){musicBowOut(old,AC.currentTime+wait,w.home?HOME_OUT:FADE_OUT);musicFadeIn(MUS.cur,w.home?HOME_IN:FADE_IN,wait)}
     else musicFadeIn(MUS.cur,.3);
+    musicSweep();
     // the song before stays decoded too, for going straight back
     musicPrune(w.id,old&&old.id);
     jbNowPaint();
@@ -209,6 +231,7 @@ function musicUpdate(){
 function musicHalt(){
   MUS.gen++;
   if(MUS.cur){MUS.last=MUS.cur.id;musicFadeOut(MUS.cur,.8,true);MUS.cur=null;jbNowPaint()}
+  musicSweep();
 }
 function musicPlay(){MUS.want=true;musicUpdate()}
 // after a change to the music's volume or mute

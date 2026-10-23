@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.2 (2026-10-24)
+- Fixed: changing songs (in the Jukebox or by moving around) could leave the old song playing underneath the new one in some browsers
+- Coming back to the main menu, its song now eases back in while the other one fades away, instead of starting suddenly
+
 ## 0.30.1 (2026-10-23)
 - Fixed: buttons on the menu did nothing when clicked and didn't light up when you pointed at them, like Open on the Packs box, the market's four stops and the Daily's three challenges
 
