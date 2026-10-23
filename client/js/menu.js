@@ -133,7 +133,8 @@ function hubLb(){
   const el=$('#hwLb');if(!el)return;
   $('#lbWidget').hidden=API==null;$$('.fr-lb').forEach(b=>b.hidden=API==null);
   const d=lbSeen(),by=d&&LB_BY.find(b=>b[0]===d.by);
-  $('#lbSub').textContent=by?`${by[1]} · last look`:"See who's on top";
+  // only when it changes: the line is in the tile, and a write there redraws the widgets (hubSoon), which would loop
+  const sub=by?`${by[1]} · last look`:"See who's on top";if($('#lbSub').textContent!==sub)$('#lbSub').textContent=sub;
   if(!by||!d.rows.length){el.innerHTML='';return}
   const val=p=>{const [v,unit]=lbStat(p,d.by);return d.by==='level'?`Lv ${v}`:d.by==='cards'?`${v}/${CARDS.length}`:`${v} ${unit}`};
   // the top two and you, or the top three when you're one of them

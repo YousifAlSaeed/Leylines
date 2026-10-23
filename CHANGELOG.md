@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.1 (2026-10-23)
+- Fixed: buttons on the menu did nothing when clicked and didn't light up when you pointed at them, like Open on the Packs box, the market's four stops and the Daily's three challenges
+
 ## 0.30.0 (2026-10-23)
 - Friends' news: see when a friend finds a 5★ card, reaches a new title, clears the Gauntlet or wins 5 online in a row, and react with an emoji. It's in the Friends box on the menu and under This week in Friends. Players who hide their match history don't share news
 - On a computer the menu has a new layout: Friends runs down the right, with Packs and the Leaderboard side by side under the Night Market
