@@ -480,18 +480,19 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;opacity:0;
   box-shadow:0 0 0 4px color-mix(in srgb,var(--cta) 22%,transparent),0 10px 30px -4px var(--cta-glow);animation:playBeat 2.6s ease-in-out infinite}
 @keyframes playBeat{50%{opacity:1}}
-/* a widget moves only when it has news (.hot: Daily challenges left, packs to open, new stock at the market, a friend
-   request, new cards in the collection): a glint crosses the whole box, its tile's icon shakes and its count pulses.
-   The other widgets keep still */
+/* a widget with news (.hot: Daily challenges left, packs to open, new stock at the market, a friend request, new cards
+   in the collection) shines: a glint crosses the whole box and its count pulses. The other widgets keep still */
 .hw.hot{overflow:hidden}
 .hw.hot::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;
   background:linear-gradient(100deg,transparent,rgba(var(--tint),.1),transparent);transform:translateX(-110%);animation:tileGlint 6s ease-in-out infinite}
 @keyframes tileGlint{0%,70%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
-.tile.hot>svg{transform-origin:50% 90%;animation:tileWig 2.6s ease-in-out infinite}
-@keyframes tileWig{0%,60%,100%{transform:none}68%{transform:rotate(-11deg)}76%{transform:rotate(9deg)}84%{transform:rotate(-6deg)}92%{transform:rotate(3deg)}}
-/* the market's moon (or sun) rocks instead, and glows */
-.tile.stile.hot>svg{transform-origin:center;animation:tileRock 5s ease-in-out infinite;filter:drop-shadow(0 0 6px var(--accent-glow))}
-@keyframes tileRock{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(12deg)}}
+/* a widget's icon shakes only while the mouse is over its box: at once, then again every 2.6 s (not on touch screens) */
+@media (hover:hover){
+  .hw:hover>.tile>svg{transform-origin:50% 90%;animation:tileWig 2.6s ease-in-out infinite}
+}
+@keyframes tileWig{0%,40%,100%{transform:none}8%{transform:rotate(-11deg)}16%{transform:rotate(9deg)}24%{transform:rotate(-6deg)}32%{transform:rotate(3deg)}}
+/* the market's moon (or sun) glows while there's new stock */
+.tile.stile.hot>svg{filter:drop-shadow(0 0 6px var(--accent-glow))}
 .tile.hot .ptdot{animation:tilePing 1.8s ease-out infinite}
 /* the collection's bar: a light runs along the part that's filled */
 .tile.hot .bar i{position:relative;overflow:hidden}
@@ -500,7 +501,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 @keyframes tilePing{from{box-shadow:0 0 0 0 var(--cta-glow)}to{box-shadow:0 0 0 9px transparent}}
 @media (prefers-reduced-motion:reduce){
   .em-turn,#scr-menu.on .em-core,.hero-pane:not(.hero-ghost) .fan .card,.hero-pane:not(.hero-ghost) .fan .card:not(.back)::after,
-  .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before,.hw.hot::after,.tile.hot>svg,.tile.hot .ptdot,.tile.hot .bar i::after{animation:none}
+  .hero-pane:not(.hero-ghost) .btn.primary:not(:disabled)::before,.hw.hot::after,.hw:hover>.tile>svg,.tile.hot .ptdot,.tile.hot .bar i::after{animation:none}
 }
 /* add to home screen (a2hs.js): a card at the bottom of the menu, iPhone Safari only */
 .a2hs{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:5;width:min(420px,calc(100% - 24px));
