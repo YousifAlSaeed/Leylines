@@ -59,7 +59,6 @@ function renderMenu(){
    to date, as before) and under it the widget shows what's inside. A PC shows every widget in a grid; a phone shows the
    Play card, the Daily and a glance at packs and the market, and reaches the rest from the tab bar and the top bar.
    Nothing here asks the server for anything: it draws what this device already knows, so the database can sleep. */
-const HUB_STOP={merchant:'Four cards, one picked for you',forge:'Melt spares, forge five',atelier:'Coming soon'};
 const HUB_PK={spark:'sp',arcane:'ar',ley:'ly',mythic:'my'};
 const hubSvg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 const HUB_IC={
@@ -94,10 +93,29 @@ function hubColl(){
   el.querySelectorAll('.hw-rar').forEach(b=>b.onclick=()=>openCollection(+b.dataset.r));
 }
 // the market: its four stops, each opening the market there
+// the market: tonight's Merchant cards not sold yet, one at a time (the one picked for you first). The card opens the
+// market; Buy asks first (store.js buyCard). Dots pick one
+const HUB_MK={i:0,id:null,t:0};
 function hubMarket(){
   const el=$('#hwMkt');if(!el)return;
-  el.innerHTML=`<div class="hw-stops">${ST_STOPS.map(([k,n,name])=>`<button class="hst s-${k}${k==='atelier'?' soon':''}" type="button" data-stop="${k}"><span class="hst-n"><span>${n}</span></span><span class="hst-t"><b>${name}</b><small>${k==='packs'?`Pack of the day −${DEAL_OFF*100}%`:HUB_STOP[k]}</small></span></button>`).join('')}</div>`;
-  el.querySelectorAll('.hst').forEach(b=>b.onclick=()=>{sfx('click');stStop=b.dataset.stop;openStore()});
+  if(!clockOk()){el.innerHTML='<small class="hw-note">Checking the time with the server…</small>';return}
+  const got=shopDay(true).got,left=merchStock(dayNo(),true).cards.map((it,i)=>({...it,i})).filter(it=>got[it.i]==null);
+  if(!left.length){el.innerHTML='<small class="hw-note">All sold. New cards at midnight.</small>';return}
+  HUB_MK.i%=left.length;
+  const it=left[HUB_MK.i],c=CARDS[it.id],moved=HUB_MK.id!==it.id;HUB_MK.id=it.id;
+  el.innerHTML=`<div class="hw-mk${moved?' in':''}"><button class="hw-mc" type="button" aria-label="${esc(c.name)}. Open the market">${cardHTML(it.id,myCol(),{name:false})}`+
+    `<span class="hw-mt"><em>${it.mine?'For you':'Merchant'}</em><b>${esc(c.name)}</b><small>${rarName(c.rar)}${owned(it.id)?'':' · <i>New</i>'}</small></span></button>`+
+    `<button class="btn small primary hw-buy${SAVE.shards<it.price?' short':''}" type="button" aria-label="Buy ${esc(c.name)} for ${shardsTxt(it.price)}">Buy ${shd()}${fmtSh(it.price)}</button></div>`+
+    (left.length>1?`<div class="hw-mdots">${left.map((x,k)=>`<button type="button" class="${k===HUB_MK.i?'on':''}" data-k="${k}" aria-label="Show ${esc(CARDS[x.id].name)}" aria-pressed="${k===HUB_MK.i}"></button>`).join('')}</div>`:'');
+  el.querySelector('.hw-mc').onclick=()=>{sfx('click');stStop='merchant';openStore()};
+  el.querySelector('.hw-buy').onclick=()=>{sfx('click');buyCard(it.i)};
+  el.querySelectorAll('.hw-mdots button').forEach(b=>b.onclick=()=>{HUB_MK.i=+b.dataset.k;hubMarket();const d=$(`#hwMkt .hw-mdots [data-k="${HUB_MK.i}"]`);if(d)d.focus()});
+  // the next card every 4 s while the box is in view, held while the mouse or the keyboard is on it
+  if(!HUB_MK.t)HUB_MK.t=setInterval(()=>{
+    const w=$('#hwMkt');if(!w||document.hidden||!$('#scr-menu').classList.contains('on')||!w.offsetParent)return;
+    if(w.parentNode.matches(':hover')||w.contains(document.activeElement))return;
+    HUB_MK.i++;hubMarket();
+  },4000);
 }
 // packs waiting to be opened, the daily one first
 function hubPacks(){

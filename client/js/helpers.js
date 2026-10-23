@@ -88,12 +88,13 @@ function toast(msg,ms=2200){const t=$('#toast');t.textContent=msg;t.classList.ad
 
 let modalReturn=null;
 // important popups (a choice that costs something, or news of a loss): a button with wait:true counts down
-// READ_WAIT seconds before it works, so there's time to read first. Cancel / Stay / Escape never wait.
+// READ_WAIT seconds before it works, so there's time to read first. wait:1 (buying in the market) only holds it
+// for a second, with no count. Cancel / Stay / Escape never wait.
 const READ_WAIT=3;
-function readWait(e,label){
-  let n=READ_WAIT;e.classList.add('waiting');e.setAttribute('aria-disabled','true');
+function readWait(e,label,s=READ_WAIT){
+  let n=s;e.classList.add('waiting');e.setAttribute('aria-disabled','true');
   const tick=()=>{if(!e.isConnected)return;
-    if(n>0){e.textContent=`${label} (${n--})`;setTimeout(tick,1000)}
+    if(n>0){if(s>1)e.textContent=`${label} (${n})`;n--;setTimeout(tick,1000)}
     else{e.textContent=label;e.classList.remove('waiting');e.removeAttribute('aria-disabled')}};
   tick();
 }
@@ -104,7 +105,7 @@ function modal(html,btns=[]){
   const bx=bg.querySelector('.mbtns');
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'');e.textContent=b.label;if(b.esc)e.dataset.esc='';
     e.onclick=()=>{if(e.classList.contains('waiting'))return;if(!bg.querySelector('.cd-box'))sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e);
-    if(b.wait)readWait(e,b.label)});
+    if(b.wait)readWait(e,b.label,b.wait===true?READ_WAIT:b.wait)});
   const h=bg.querySelector('h2');
   if(h){h.id='mTitle';bg.setAttribute('aria-labelledby','mTitle')}else bg.removeAttribute('aria-labelledby');
   bg.classList.add('on');

@@ -268,22 +268,27 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-rar:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 @supports (color:color-mix(in srgb,red 50%,transparent)){.hw-rar:hover{border-color:color-mix(in srgb,var(--rc) 70%,transparent)}}
 .hw-new{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--surf)}
-/* the market's four stops, in their own colours (store.css) */
-.hw-stops{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.hst{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 10px;border-radius:12px;border:1px solid var(--line2);background:rgba(var(--tint),.03);color:var(--text);text-align:left;cursor:pointer;font:inherit;
-  transition:transform .2s var(--spring),border-color .15s,background .15s}
-/* like the Daily's buttons: a small lift, and the stop's colour comes up */
-.hst:hover{transform:translateY(-1px);background:rgba(var(--tint),.06)}
-.hst:active{transform:scale(.97)}
-.hst.soon{border-style:dashed;opacity:.85}
-.hst-n{width:20px;height:20px;flex:none;display:grid;place-items:center;transform:rotate(45deg);border:1.5px solid var(--sc);border-radius:4px}
-.hst-n span{transform:rotate(-45deg);font:800 10px/1 var(--display);color:var(--sc)}
-.hst-t{min-width:0}
-.hst b{display:block;font:700 13px/1.15 var(--display)}
-.hst small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-:root[data-theme="light"] .hst.s-merchant{--sc:#6a2bae}:root[data-theme="light"] .hst.s-forge{--sc:#c2255c}:root[data-theme="light"] .hst.s-packs{--sc:#0b7285}:root[data-theme="light"] .hst.s-atelier{--sc:#2b8a3e}
-@supports (color:color-mix(in srgb,red 50%,transparent)){.hst{border-color:color-mix(in srgb,var(--sc) 38%,transparent);background:color-mix(in srgb,var(--sc) 8%,transparent)}
-  .hst:hover{border-color:color-mix(in srgb,var(--sc) 75%,transparent);background:color-mix(in srgb,var(--sc) 15%,transparent)}}
+/* the market: tonight's Merchant cards, one at a time (menu.js hubMarket) */
+.hw-mk{display:flex;align-items:center;gap:10px;min-width:0}
+.hw-mk.in{animation:mkIn .35s var(--ease)}
+@keyframes mkIn{from{opacity:0;transform:translateX(12px)}}
+.hw-mc{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:0;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.hw-mc .card{font-size:10px;transition:transform .2s var(--spring)}
+.hw-mc:hover .card{transform:translateY(-2px) rotate(-2deg)}
+.hw-mc:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px;border-radius:10px}
+.hw-mt{min-width:0;display:flex;flex-direction:column;gap:3px}
+.hw-mt em{font:700 10.5px/1 var(--body);font-style:normal;color:var(--accent-ink);text-transform:uppercase;letter-spacing:.07em}
+.hw-mt b{font:700 15px/1.15 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-mt small{font-size:12px;color:var(--muted);white-space:nowrap}
+.hw-mt small i{font-style:normal;font-weight:700;color:var(--cta)}
+.hw-mk .btn.small{align-self:center;flex:none;gap:4px}
+.hw-buy.short{opacity:.7}
+.hw-mdots{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.hw-mdots button{position:relative;width:6px;height:6px;padding:0;border:0;border-radius:3px;background:var(--line2);cursor:pointer;transition:width .25s var(--ease),background .25s}
+.hw-mdots button::after{content:"";position:absolute;inset:-8px -3px}
+.hw-mdots button.on{width:18px;background:var(--accent)}
+.hw-mdots button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.hw-mk.in{animation:none}}
 /* packs waiting, fanned out like a hand, with Open under them */
 .hw-packs .hw-x{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:10px}
 .hw-pk{display:flex;align-items:center;padding:4px 10px 0 0}

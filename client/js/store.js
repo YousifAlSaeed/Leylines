@@ -48,15 +48,16 @@ function matchShards(res,o={}){
 // weeks start on Monday (game day 0, 1 Jan 1970, was a Thursday)
 const weekNo=()=>Math.floor((gameDayNo()+3)/7);
 // today's purchases: got {slot: card id, deal: 1}, mine = today's not-found-yet card, myth = Mythic packs bought this week.
-// Only called once the server's time is known.
-function shopDay(){
+// Only called once the server's time is known. peek: a new day's record isn't kept (the menu's market box looks without
+// starting the day, which would mark the new stock as seen: renderStoreTile)
+function shopDay(peek){
   const t=today(),wk=weekNo();let s=SAVE.shop;
-  if(!s||s.at!==t)s=SAVE.shop={at:t,got:{},mine:null,wk:s?s.wk:wk,myth:s?s.myth:0};
+  if(!s||s.at!==t){const n={at:t,got:{},mine:null,wk:s?s.wk:wk,myth:s?s.myth:0};if(peek)return n;s=SAVE.shop=n}
   if(s.wk!==wk){s.wk=wk;s.myth=0}
   return s;
 }
 // the stock: the shared part comes from the game day alone, so every player sees the same
-function merchStock(n=dayNo()){
+function merchStock(n=dayNo(),peek=false){
   const rng=mulberry32(daySeed(20,n)),ids=[];
   const pick=(lo,hi)=>{const id=pickOne(CARDS.filter(c=>c.rar>=lo&&c.rar<=hi&&!ids.includes(c.id)),rng).id;ids.push(id);return id};
   const cards=MERCH_RAR.map(([lo,hi])=>({id:pick(lo,hi)}));
@@ -64,7 +65,7 @@ function merchStock(n=dayNo()){
   rng();cards.push({id:pick(4,4)});
   const deal=pickOne(['spark','arcane','arcane','ley'],rng);
   // the card for you, kept for the day once picked: one you haven't found (up to 3★), or any 1★–3★ once you've found them all
-  const s=shopDay();
+  const s=shopDay(peek);
   if(s.mine==null||ids.includes(s.mine)){
     const r2=mulberry32(daySeed(21,n)^hashStr(SAVE.cid)),pool=CARDS.filter(c=>c.rar<=3&&!ids.includes(c.id));
     const fresh=pool.filter(c=>!SAVE.seen.includes(c.id));
@@ -88,12 +89,12 @@ function buyCard(i){
   const c=CARDS[it.id];
   modal(`<div class="kick">Wandering Merchant</div><h2>Buy ${esc(c.name)}?</h2><div class="st-one">${cardHTML(it.id,myCol())}</div>
     <p class="st-cost">${shd()}<b>${fmtSh(it.price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy',cls:'primary',wait:true,fn:()=>{
+    [{label:'Buy',cls:'primary',wait:1,fn:()=>{
       const s2=shopDay();
       if(s2.at!==s.at||s2.got[i]!=null||SAVE.shards<it.price){renderStore();return}
       const fresh=!SAVE.seen.includes(it.id);
       SAVE.shards-=it.price;s2.got[i]=it.id;collAdd(it.id);profCheck();save();earnNow('shop');
-      sfx('buy');renderStore();renderStoreTile();
+      sfx('buy');renderStore();renderStoreTile();if(typeof hubMarket==='function')hubMarket();
       toast(`${c.name} added to your collection${fresh?' (new!)':''}.`);freshToast();
     }},{label:'Cancel',esc:true}]);
 }
@@ -108,7 +109,7 @@ function buyPack(t,deal){
   modal(`<div class="kick">Pack Counter</div><h2>Buy ${aPack(t)}?</h2>
     <div class="st-one">${miniPack(t,'big ready')}</div><p>${T.n} cards${pitySure(t)?', the last one a sure 5★ (guarantee)':T.min>1?`, the last one ${T.min}★ or better`:''}. It opens right away.</p>
     <p class="st-cost">${shd()}<b>${fmtSh(price)}</b> · you have ${fmtSh(SAVE.shards)}</p>`,
-    [{label:'Buy and open',cls:'primary',wait:true,fn:()=>{
+    [{label:'Buy and open',cls:'primary',wait:1,fn:()=>{
       if(SAVE.shards<price)return;
       if(s){const s2=shopDay();if(s2.at!==s.at||deal&&s2.got.deal||myth&&s2.myth>=MYTHIC_WEEK){renderStore();return}
         if(deal)s2.got.deal=1;if(myth)s2.myth++}
