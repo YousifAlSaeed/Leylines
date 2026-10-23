@@ -71,16 +71,21 @@ function renderHub(){
   hubDaily();hubColl();hubMarket();hubPacks();hubFriends();hubLb();hubDots();hubFit();
 }
 // a phone shows the whole Hub without scrolling: if it doesn't fit, the Packs and Leaderboard row gives up its insides a
-// step at a time (menu.css .fit1 to .fit3). Checked again when the screen or the Play card changes size
-const HUB_PC=matchMedia('(min-width:920px) and (min-height:560px)');
+// step at a time (menu.css .fit1 to .fit3). Checked again when the screen or the Play card changes size (a frame later:
+// a scrollbar the check takes away would change the screen's size again inside the observer)
+const HUB_PC=matchMedia('(min-width:920px) and (min-height:560px)'),HUB_SIDE=matchMedia('(orientation:landscape) and (max-height:519px)');
 function hubFit(){
-  const s=$('#scr-menu'),g=$('.hub-grid');
-  g.classList.remove('fit1','fit2','fit3');
-  if(!s.classList.contains('on')||HUB_PC.matches)return;
-  const cs=getComputedStyle(s),room=s.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),m=$('.menu');
-  for(const c of ['fit1','fit2','fit3']){if(m.getBoundingClientRect().height<=room)break;g.classList.add(c)}
+  const s=$('#scr-menu'),g=$('.hub-grid'),lv=['fit1','fit2','fit3'];
+  g.classList.remove(...lv);
+  // a PC has the room, and a phone held sideways shows only the Packs tile there
+  if(!s.classList.contains('on')||HUB_PC.matches||HUB_SIDE.matches)return;
+  const cs=getComputedStyle(s),room=s.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),m=$('.menu'),h=[m.getBoundingClientRect().height];
+  for(const c of lv){if(h[h.length-1]<=room)return;g.classList.add(c);h.push(m.getBoundingClientRect().height)}
+  if(h[h.length-1]<=room)return;
+  // still too tall (a very small phone, which scrolls a little anyway): keep the first step that got it as short as it goes
+  lv.slice(h.indexOf(Math.min(...h))).forEach(c=>g.classList.remove(c));
 }
-if(window.ResizeObserver){const ro=new ResizeObserver(()=>hubFit());ro.observe($('#scr-menu'));ro.observe($('.hero'))}else addEventListener('resize',hubFit);
+if(window.ResizeObserver){const ro=new ResizeObserver(()=>requestAnimationFrame(hubFit));ro.observe($('#scr-menu'));ro.observe($('.hero'))}else addEventListener('resize',hubFit);
 document.fonts?.ready.then(hubFit);
 // the Daily: its three challenges, always in view. The header opens the next one still to play
 function hubDaily(){

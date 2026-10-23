@@ -251,6 +251,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .bar{height:4px;border-radius:2px;background:rgba(var(--tint),.1);margin-top:5px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;transition:width .6s var(--ease)}
 .hw-x{display:flex;flex-direction:column;gap:8px;min-width:0}
+.hw-x:empty{display:none}
 .hw-note{display:block;font-size:12.5px;line-height:1.4;color:var(--muted)}
 .hw-x .btn.small{align-self:flex-start}
 /* the Daily: its three challenges, a little lower than on the Play card */
@@ -330,8 +331,10 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
    top one and you); fit3: just the two tiles */
 .fit1 .hw-packs .hw-x{flex-direction:row;align-items:center}
 .fit1 .hw-pk{padding:4px 0 0;min-width:0}
-/* Open keeps room to read; a long fan squeezes instead */
-.fit1 .hw-packs .hw-x .btn.small{flex:1 0 84px;align-self:center}
+/* Open keeps room to read; a long fan squeezes into a pile instead (the count is on the tile) */
+.fit1 .hw-packs .hw-x .btn.small{flex:1 0 72px;align-self:center}
+.fit1 .hpk{min-width:0}
+.fit1 .hpk-more{display:none}
 .fit1 .hw-lr{padding:4px 0;line-height:1.3}
 .fit2 .hw-pk{zoom:.65}
 .fit2 .hw-packs .hw-x .btn.small{min-height:38px}
@@ -396,9 +399,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
   .hub-tabs>button>svg{padding:4px 10px}
   .brand .emblem{height:34px;width:34px}.hub-top .title .logo-word{height:15px}
   .hub-top .brand>div{display:flex;align-items:center;gap:8px}.hub-top .title{margin-right:2px}
-  .hub-grid{grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,.5fr));grid-template-rows:auto 1fr;grid-template-areas:"play daily daily" "play packs lb";align-items:start}
-  .hub-grid.no-srv{grid-template-areas:"play daily daily" "play packs packs"}
-  .hw-packs,.hw-lb{align-self:stretch}
+  .hub-grid,.hub-grid.no-srv{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"play daily" "play packs";align-items:start}
+  /* no room beside the Packs tile for the Leaderboard or the packs themselves (menu.js hubFit leaves it alone) */
+  .hub-grid>.hw-lb,.hw-packs .hw-x{display:none}
   .hero{padding:10px 12px}.hero-top{padding:2px 0}.hero .fan{font-size:6.5px}.hero-h{font-size:20px}.hero-stats div{padding:3px 4px}
   .hero-row{padding-top:6px}.hero-row .btn.primary{min-height:40px;font-size:16px}#scr-menu .seg button{min-height:30px}.hw-daily .dly{min-height:46px}
 }
