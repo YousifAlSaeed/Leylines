@@ -141,7 +141,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* ---------- menu: the Hub ----------
    A phone: a top bar, the Play card, the Daily, then Packs and the Leaderboard side by side, with a tab bar fixed to the
    bottom of the screen (the menu leaves room for it). A PC: the same top bar over a grid of widgets, one for each place. */
-#scr-menu{justify-content:center;--tabh:calc(66px + env(safe-area-inset-bottom))}
+:root{--tabh:calc(66px + env(safe-area-inset-bottom))}
+#scr-menu{justify-content:center}
 .menu{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;margin:auto 0;padding-bottom:var(--tabh)}
 .hub-top{display:flex;align-items:center;gap:10px;flex:none}
 .brand{display:flex;align-items:center;gap:12px;margin:0;flex:1;min-width:0}
@@ -350,7 +351,17 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .ibx-row svg:last-child{width:16px;height:16px;color:var(--muted)}
 .ibx-row .rt{flex:1;min-width:0}
 .ibx-row b{display:block;font:700 15px/1.2 var(--display)}.ibx-row small{display:block;font-size:12.5px;color:var(--muted)}
-/* a phone's tab bar */
+/* a phone's tab bar (index.html, after the menu): only on a screen that has a tab (menu.js tabsSync sets body[data-tab]).
+   Friends and your profile leave room for it under their page, and the bar takes the place of their Back button.
+   Friends' Leaderboard button is only for a phone held sideways, whose menu has no Leaderboard tile */
+body:not([data-tab]) .hub-tabs{display:none}
+body[data-tab=friends] #frBody,body[data-tab=you] #pfBody{padding-bottom:var(--tabh)}
+body[data-tab=friends] #scr-friends .topbar>[data-back],body[data-tab=friends] .fr-lb,.fr-lb[hidden],body[data-tab=you] #scr-profile .topbar>[data-back],body[data-tab=coll] #collBack{display:none}
+@media (min-width:920px) and (min-height:560px){.fr-lb{display:none}}
+/* the Collection fits the screen without scrolling: it stops above the bar (its loadouts go slim, collection.css) */
+body[data-tab=coll] #scr-coll{padding-bottom:calc(var(--tabh) + 10px);scroll-padding-bottom:calc(var(--tabh) + 10px)}
+/* a message pops up above the bar, not over it */
+body[data-tab=coll] #toast,body[data-tab=friends] #toast,body[data-tab=you] #toast{bottom:calc(var(--tabh) + 8px)}
 .hub-tabs{position:fixed;left:0;right:0;bottom:0;z-index:4;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);justify-content:center;
   padding:6px max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
   background:var(--bg1);border-top:1px solid var(--line);box-shadow:0 -12px 30px -18px rgba(var(--sh),calc(.9*var(--shk)))}
@@ -391,7 +402,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* narrow phones: smaller icons and names, so "Night Market" fits whole */
 @media (max-width:400px){.tile{gap:9px}.tile>svg{width:22px;height:22px}.tile b{font-size:15px;font-stretch:84%}.tile.ptile .ptdot{display:none}}
 /* a phone held sideways: the tab bar becomes a rail down the left, the Play card sits beside the Daily */
-@media (orientation:landscape) and (max-height:519px){
+@media (orientation:landscape) and (max-height:520px){
   #scr-menu{--tabh:0px;padding-left:calc(76px + env(safe-area-inset-left))}
   .menu{max-width:none;gap:10px}
   .hub-tabs{right:auto;top:0;width:calc(66px + env(safe-area-inset-left));grid-auto-flow:row;grid-auto-rows:minmax(0,62px);grid-auto-columns:auto;align-content:center;
@@ -477,7 +488,7 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 @supports (color:color-mix(in srgb,red 50%,transparent)){
 .drift-on .hero{background:linear-gradient(160deg,color-mix(in srgb,var(--surf2) 84%,transparent),color-mix(in srgb,var(--surf) 84%,transparent))}
 .drift-on .hw{background:color-mix(in srgb,var(--surf) 84%,transparent)}
-.drift-on .hub-tabs{background:color-mix(in srgb,var(--bg1) 92%,transparent)}
+#scr-menu.on.drift-on~.hub-tabs{background:color-mix(in srgb,var(--bg1) 92%,transparent)}
 /* the player card and the settings button are see-through on a plain page; over the drift they're filled like the tiles */
 #scr-menu.drift-on .pcard,#scr-menu.drift-on .hub-ib{background:color-mix(in srgb,var(--surf) 82%,transparent)}
 #scr-menu.drift-on .pcard:hover,#scr-menu.drift-on .hub-ib:hover{background:color-mix(in srgb,var(--surf2) 90%,transparent)}

@@ -34,7 +34,7 @@ function handAdd(h,id,from){
   const tray=$(`#${h.pfx}Slots`).closest('.dk-tray');
   if(h.sel.length>=5||handRemaining(h,id)<=0){sfx('coll_deny');shakeNo(tray);return false}
   const why=h.anyRar?'':rarBlock(h.sel,id); // the Forge (forge.js) has no deck rarity limits
-  if(why){h.note=`<span class="bad">${why}</span>`;sfx('coll_deny');shakeNo(tray);h.render();return false}
+  if(why){h.note=`<span class="bad">${why}</span>`;h.told=null;sfx('coll_deny');shakeNo(tray);h.render();return false}
   h.sel.push(id);const k=h.sel.length-1,full=k===4;h.note='';sfx('coll_hand_add');
   if(from&&!noMotion()){
     // the card flies in an arc from where it was and lands in its slot
@@ -111,11 +111,14 @@ function renderLoadouts(h){
   }).join('');
   $$(`#${P}LoRow .dk-loslot`).forEach(b=>b.onclick=()=>pickLoadout(h,+b.dataset.i));
   $$(`#${P}LoRow .dk-loedit`).forEach(b=>b.onclick=()=>renameLoadout(h,+b.dataset.edit));
-  $(`#${P}LoCancel`).classList.toggle('hidden',!h.saving);
-  $(`#${P}LoNote`).innerHTML=h.saving?'Pick a slot to save your hand in.':h.note||'';
+  $(`#${P}LoCancel`).classList.toggle('hidden',!h.saving);lo.classList.toggle('saving',!!h.saving);
+  const msg=h.saving?'Pick a slot to save your hand in.':h.note||'';
+  $(`#${P}LoNote`).innerHTML=msg;
+  // the Collection's slim row on a phone (collection.css body[data-tab=coll]) has no line for the note: it pops up instead
+  if(msg!==h.told){h.told=msg;if(msg&&P==='coll'&&document.body.dataset.tab==='coll'&&!$(`#${P}LoNote`).offsetParent){const t=document.createElement('div');t.innerHTML=msg;toast(t.textContent)}}
 }
 function pickLoadout(h,i){
-  const l=SAVE.loadouts[i];sfx('click');
+  const l=SAVE.loadouts[i];sfx('click');h.told=null; // a tap is news, even with the same note as last time
   if(h.saving||!l){
     if(h.sel.length!==5){h.saving=false;h.note='Pick 5 cards first, then save them here.';h.render();return}
     SAVE.loadouts[i]={name:l?l.name:`Loadout ${i+1}`,ids:h.sel.slice()};fixMain();save();
@@ -136,7 +139,7 @@ function renameLoadout(h,i){
     const v=$('#loName').value.trim().replace(/\s+/g,' ').slice(0,24);
     closeModal();
     l.name=v||`Loadout ${i+1}`;save();
-    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.render();
+    h.note=`Renamed to <b>${esc(l.name)}</b>.`;h.told=null;h.render();
   };
   const box=modal(`<h2 class="nm2">Edit loadout</h2><p>Give this hand a name you'll recognise, like "Ice wall" or "All-out attack".</p>
     <input class="namein" id="loName" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Loadout name" value="${esc(l.name)}">
@@ -161,8 +164,10 @@ function deleteLoadout(h,i){
 // Save hand / Cancel / Best 5 / Clear for one screen; get() returns that screen's current hand context
 function wireHand(P,get){
   $(`#${P}Save`).onclick=()=>{const h=get();if(h.sel.length!==5)return;sfx('click');h.saving=!h.saving;h.note='';h.render();
-    // on a short phone the loadouts can sit below the hand, out of sight: bring the slots up to pick from
-    if(h.saving){const lo=$(`#${P}Lo`);if(lo.getBoundingClientRect().bottom>innerHeight)lo.scrollIntoView({block:'end',behavior:noMotion()?'auto':'smooth'})}};
+    // on a short phone the loadouts can sit below the hand, out of sight or behind the tab bar: bring the slots up to pick
+    // from (the screen's scroll-padding keeps them above the bar, menu.css)
+    if(h.saving){const lo=$(`#${P}Lo`),lim=document.body.dataset.tab?$('#hubTabs').getBoundingClientRect().top:innerHeight;
+      if(lo.getBoundingClientRect().bottom>lim)lo.scrollIntoView({block:'end',behavior:noMotion()?'auto':'smooth'})}};
   $(`#${P}LoCancel`).onclick=()=>{const h=get();sfx('click');h.saving=false;h.render()};
   $(`#${P}Best`).onclick=()=>{
     const h=get();sfx('click');

@@ -368,13 +368,13 @@ function renderAway(){
   const bx=el.querySelector('.mbtns');
   for(const[label,cls,fn] of btns){const b=document.createElement('button');b.className='btn '+cls;b.textContent=label;b.onclick=()=>{sfx('click');fn()};bx.append(b)}
   el.querySelector('h2').id='awTitle';el.setAttribute('aria-labelledby','awTitle');
-  el.classList.add('on');$('#modal').inert=true;$$('.screen').forEach(s=>s.inert=true);
+  el.classList.add('on');$('#modal').inert=true;$$('.screen,#hubTabs').forEach(s=>s.inert=true);
   el.querySelector('.btn').focus({preventScroll:true});
 }
 function hideAway(){
   const el=$('#away');if(!el.classList.contains('on'))return;
   el.classList.remove('on');el.innerHTML='';$('#modal').inert=false;
-  if(!$('#modal').classList.contains('on'))$$('.screen').forEach(s=>s.inert=false);
+  if(!$('#modal').classList.contains('on'))$$('.screen,#hubTabs').forEach(s=>s.inert=false);
 }
 // they're back (or we are): hand over what they missed and carry on
 function comeBack(){

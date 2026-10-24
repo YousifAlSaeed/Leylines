@@ -111,7 +111,7 @@ function pkStart(p,ids,fresh){
   Object.assign(PK,{src:p,ids,fresh,i:0,state:'idle'});
   if(!stg.classList.contains('on'))PK.ret=document.activeElement;
   stg.className='pk-stage on t-'+p.t+(best===5?' best5':'');stg.style.setProperty('--leak',rarCol(best));
-  $$('.screen').forEach(s=>s.inert=true);fxFit();
+  $$('.screen,#hubTabs').forEach(s=>s.inert=true);fxFit();
   $('#pkTitle').textContent=p.daily?`Daily pack · day ${p.daily}`:p.lv?`Level ${p.lv} pack`:T.name+' pack';
   $('#pkName').textContent=T.name;$('#pkSub').textContent=`${T.n} cards`+(p.mile?' · 4★ inside':'');
   pk.setAttribute('aria-label',`${T.name} pack, ${T.n} cards. Drag across the top to tear it open, or press Enter.`);
@@ -126,7 +126,7 @@ function pkStart(p,ids,fresh){
 }
 function pkClose(){
   stg.className='pk-stage';FX.p=[];PK.state='';
-  $$('.screen').forEach(s=>s.inert=false);
+  $$('.screen,#hubTabs').forEach(s=>s.inert=false);
   if($('#scr-packs').classList.contains('on'))renderPacks();
   if($('#scr-store').classList.contains('on'))renderStore();
   if($('#scr-menu').classList.contains('on'))renderMenu();

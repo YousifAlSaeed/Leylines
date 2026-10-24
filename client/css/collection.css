@@ -108,9 +108,9 @@
 .binder.has-next{--ear:22px}
 .binder:not(.single).has-prev{--earl:22px}
 .binder.single.has-prev{--earl1:22px}
-.binder.has-next:has(#bdNextEar:hover,#bdNextEar:focus-visible){--ear:34px}
+/* a corner grows under the pointer (two pages only: a phone keeps the last tap as :hover, and one page's footer sits by its corners) */
+.binder:not(.single).has-next:has(#bdNextEar:hover,#bdNextEar:focus-visible){--ear:34px}
 .binder:not(.single).has-prev:has(#bdPrevEar:hover,#bdPrevEar:focus-visible){--earl:34px}
-.binder.single.has-prev:has(#bdPrevEar:hover,#bdPrevEar:focus-visible){--earl1:34px}
 .bd-ear{position:relative;z-index:8;grid-row:1;align-self:end;width:var(--ear);height:var(--ear);border:0;padding:0;background:none;cursor:pointer;
   filter:drop-shadow(-1px -1px 2px rgba(var(--sh),calc(.4*var(--shk))));transition:width .3s var(--spring),height .3s var(--spring)}
 .bd-ear i{position:absolute;top:0;right:0;bottom:0;left:0;clip-path:polygon(0 0,100% 0,0 100%);
@@ -131,12 +131,24 @@
 .bd-chap em{font-style:normal;letter-spacing:0;margin-right:.5em}
 .bd-chap .done{color:var(--accent-ink)}
 /* 2×2 cards, as big as the page allows */
-/* --res: the page's height that isn't cards (the chapter line and the page number) */
+/* --res: the page's height that isn't cards (the chapter line and the page number); --hr: the cards' height in em, with room under
+   each row for the copies tab */
 .bd-grid{flex:1;min-height:0;align-self:stretch;display:grid;grid-template-columns:repeat(2,auto);grid-template-rows:repeat(2,auto);align-content:center;justify-content:center;gap:1.65em 2.1em;padding-top:4px;
-  --res:46px;font-size:min(44px,calc((100cqw - 34px) / 13.4),calc((100cqh - var(--res)) / 16.1))}
+  --res:46px;font-size:min(44px,calc((100cqw - 34px) / 13.4),calc((100cqh - var(--res)) / var(--hr,16.1)))}
 .bd-grid.big .pocket::before{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--rc) 55%,transparent),0 0 1.1em -.4em var(--rc)}
 .bd-num{flex:none;font:500 10.5px var(--body);color:var(--muted);opacity:.6;font-variant-numeric:tabular-nums}
 @container bdpage (max-height:260px){.bd-num{display:none}.bd-grid{--res:27px}}
+/* one page (a phone): a footer line under the cards instead of the chapter line and page number (collection.js bdPage).
+   Its ends keep clear of the folded corners */
+.bd-grid.ft{--res:30px;--hr:15.5}
+.bd-foot{flex:none;align-self:stretch;display:flex;align-items:center;gap:.6em;padding:0 12px 0 6px;white-space:nowrap;
+  font:500 11px/1 var(--body);color:color-mix(in srgb,var(--text) 55%,transparent);font-variant-numeric:tabular-nums}
+.bd-foot em{font-style:normal}
+.bd-foot .sep{flex:none;width:1px;height:1em;background:var(--line2)}
+.bd-foot .fill{flex:1;min-width:1em}
+.bd-foot .done{color:var(--accent-ink)}
+/* a narrow page (a small or folding phone): the found count gives way first, so the page number stays clear of the corner */
+.bd-foot span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* a wide, short page (a short browser window, a phone held sideways): the 4 cards in one row, so they can be bigger */
 @container bdpage (min-aspect-ratio:3/2){
   .bd-grid{grid-template-columns:repeat(4,auto);grid-template-rows:auto;font-size:min(44px,calc((100cqw - 34px) / 27.6),calc((100cqh - var(--res)) / 8.2))}}
@@ -174,8 +186,11 @@
 .bd-face.back{transform:rotateY(180deg)}
 .bd-face>.bd-page{position:absolute;top:0}
 .bd-dim{position:absolute;top:0;right:0;bottom:0;left:0;background:#000;opacity:0;pointer-events:none;z-index:4}
-/* one page: the sheet swings inside a box the size of the page, seen from the spine */
-.bd-clip{position:absolute;z-index:20;overflow:hidden;border-radius:4px;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
+/* one page: the sheet swings from the spine in a box the size of the page, and lifts out of the book toward you, over the
+   ribbons and the loadouts (the book stays on top while it turns: .coll-book.lift, collection.js bdBuildTurn) */
+.bd-clip{position:absolute;z-index:20;perspective:1400px;perspective-origin:0 50%;pointer-events:none}
+.coll-book.lift{position:relative;z-index:3}
+.coll-book.lift .binder.single{overflow:visible}
 /* the shadow on the page under a lifting sheet (or the cover as it opens) */
 .bd-under{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:4px;pointer-events:none;z-index:5;opacity:0}
 .bd-under.to-r{background:linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.14) 55%,transparent)}
@@ -457,9 +472,10 @@
 /* older phones without container queries: the same sizes from the box each thing sits in (cq.js) */
 .cq-poly .dk-fan{font-size:min(16px,calc(var(--cqw) / 28.5))}
 .cq-poly #scr-coll .dk-fan{font-size:min(14px,calc((var(--cqw) - 24px) / 29.6))}
-.cq-poly .bd-grid{font-size:min(44px,calc((var(--cqw) - 34px) / 13.4),calc((var(--cqh) - var(--res)) / 16.1))}
+.cq-poly .bd-grid{font-size:min(44px,calc((var(--cqw) - 34px) / 13.4),calc((var(--cqh) - var(--res)) / var(--hr,16.1)))}
 .cq-poly .bd-page.cq-h261 .bd-num{display:none}
 .cq-poly .bd-page.cq-h261 .bd-grid{--res:27px}
+.cq-poly .bd-page.cq-h261 .bd-grid.ft{--res:30px}
 .cq-poly .bd-page.cq-wide .bd-grid{grid-template-columns:repeat(4,auto);grid-template-rows:auto;font-size:min(44px,calc((var(--cqw) - 34px) / 27.6),calc((var(--cqh) - var(--res)) / 8.2))}
 .cq-poly .bd-rib{--w:clamp(34px,calc(var(--cqw) * .054),54px)}
 .cq-poly .bd-cover .cv-sigil{width:clamp(110px,calc(var(--cqw) * .44),240px)}
@@ -517,4 +533,25 @@
   #scr-coll .coll-sides{display:none}
   :root:not(.ios-short) #scr-coll{padding-bottom:max(12px,env(safe-area-inset-bottom))}
   .coll-panel{gap:6px}
+}
+/* an upright phone with the tab bar under the Collection (menu.js tabsSync): the loadouts become one slim row, so the
+   bar fits and the book keeps its size. No "Loadouts" label or note line (a note pops up instead, deck.js
+   renderLoadouts); while saving, Cancel sits at the start of the row. Not in the wide layout (loadouts beside the hand, a
+   tablet held sideways), which has room for the full ones */
+@media (max-width:699px),(orientation:portrait),(max-height:520px){
+  body[data-tab=coll] #collLo{flex-direction:row;align-items:stretch;gap:8px}
+  body[data-tab=coll] #collLo:not(.saving) .dk-lohead,body[data-tab=coll] #collLo .dk-lohead .lbl,body[data-tab=coll] #collLoNote{display:none}
+  body[data-tab=coll] #collLo .dk-lohead{min-height:0}
+  body[data-tab=coll] #collLo .dk-lohead .btn.text{min-height:0;height:100%;padding:0 10px}
+  body[data-tab=coll] #collLoRow{flex:1;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  body[data-tab=coll] #collLoRow .dk-loslot{width:auto;height:44px;padding:5px 26px 5px 10px;justify-content:center;gap:1px}
+  body[data-tab=coll] #collLoRow .dk-loslot::before{display:none}
+  body[data-tab=coll] #collLoRow .dk-loslot b{display:block;white-space:nowrap;text-overflow:ellipsis;padding-right:0}
+  body[data-tab=coll] #collLoRow .dk-star{position:static;margin-right:3px;line-height:inherit}
+  body[data-tab=coll] #collLoRow .dk-loedit{top:50%;bottom:auto;right:2px;width:24px;height:28px;transform:translateY(-50%)}
+  body[data-tab=coll] #collLoRow .dk-loslot.empty{padding:4px 6px}
+  /* while saving there's no pencil, so the name gets its room; a long line under it ends in … instead of pushing it out */
+  body[data-tab=coll] #collLo.saving #collLoRow .dk-loslot:not(.empty){padding-right:10px}
+  body[data-tab=coll] #collLoRow .dk-loslot>b{flex:none}
+  body[data-tab=coll] #collLoRow .dk-loslot>span:not(.tagx){max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }

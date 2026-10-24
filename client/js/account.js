@@ -286,6 +286,8 @@ function renderProfile(){
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
   renderGuestNote();
+  // the tab bar's avatar and dots, when it's up off the menu (a badge claimed or a sign-in on Friends, the Collection or You)
+  if(document.body.dataset.tab&&typeof hubDots==='function')hubDots();
 }
 // the guest popup: after a guest's first match, back on the menu, a reminder that their progress lives on this device only.
 // It shows once, then again after GNOTE_EVERY more matches. It waits for any other popup to close first.

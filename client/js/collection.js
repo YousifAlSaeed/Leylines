@@ -19,6 +19,7 @@ function collMode(h,title,meta){
   const sv=$('#collSave');
   sv.className=pick?'dk-act':'btn primary';
   sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Save hand</span>':'Save hand';
+  tabsSync(); // no tab bar while picking (menu.js)
 }
 $('#collBack').onclick=()=>{if(picking()){sfx('click');BH.onBack&&BH.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
 // a match needs 5 cards; the Forge takes any number (min)
@@ -198,6 +199,9 @@ function bdPage(k){
     const left=n?handRemaining(BH,c.id):0,seal=left>1?`<span class="seal" aria-hidden="true">×${left}</span>`:'';
     pk+=`<div class="pk-cell${no&&picking()||kept?' used':''}"><button class="pocket${n||kept||seen?' rar'+c.rar:''}${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
   }
+  // one page (a phone): no chapter line over the cards, so they get its room; a footer under them has the rarity, how
+  // many you've found and the page number in one line
+  if(!BD.sp)return `<div class="bd-grid ft${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-foot rar${pg.r}"><em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}<i class="sep"></i><span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span><i class="fill"></i>${k+1}</div>`;
   // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
   const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;
   return `<div class="bd-chap rar${pg.r}">${head}</div><div class="bd-grid${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-num">${k+1}</div>`;
@@ -243,9 +247,10 @@ function cubicBez(x1,y1,x2,y2){
   return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<8;i++){const d=dX(t);if(Math.abs(d)<1e-6)break;t-=(X(t)-x)/d}return Y(Math.max(0,Math.min(1,t)))};
 }
 const BD_EASE=cubicBez(.45,.05,.2,1),BD_AWAY=cubicBez(.45,0,.8,.55),BD_IN=cubicBez(.2,.45,.55,1);
-// s=1: hinge on the sheet's left edge; s=-1: on its right. gap: how far outside the sheet the hinge sits.
+// s=1: hinge on the sheet's left edge; s=-1: on its right. gap: how far outside the sheet the hinge sits. shade: how dark the
+// sheet gets edge-on (a phone's one page stays lighter: its sheet fills the page, and on the dark theme it went nearly black)
 function bdLeaf(host,o){
-  const {w,h,s}=o,sw=w/BD_STRIPS;
+  const {w,h,s}=o,sw=w/BD_STRIPS,shade=o.shade??.5;
   const el=document.createElement('div');el.className='bd-leaf';el.setAttribute('aria-hidden','true');
   Object.assign(el.style,{left:o.x+'px',top:o.y+'px',width:w+'px',height:h+'px',zIndex:o.z,transformOrigin:s>0?`${-o.gap}px 50%`:`${w+o.gap}px 50%`});
   let par=el;const sl=[],sh=[];
@@ -267,8 +272,8 @@ function bdLeaf(host,o){
       const e=k?b*(.6+k*.12):0;a+=e; // the bend grows toward the free edge
       if(k)sl[k].style.transform=`rotateY(${(-s*e).toFixed(2)}deg)`;
       const c=Math.max(0,Math.min(180,a));
-      sh[2*k].style.opacity=(.5*Math.pow(Math.min(1,c/90),1.5)).toFixed(3);
-      sh[2*k+1].style.opacity=(.5*Math.pow(Math.min(1,(180-c)/90),1.5)).toFixed(3);
+      sh[2*k].style.opacity=(shade*Math.pow(Math.min(1,c/90),1.5)).toFixed(3);
+      sh[2*k+1].style.opacity=(shade*Math.pow(Math.min(1,(180-c)/90),1.5)).toFixed(3);
     }
   };
   return {el,set};
@@ -294,12 +299,17 @@ function bdBuildTurn(from,to){
     const r=src.getBoundingClientRect(),g=gap*r.width/b.w;
     T.hinge=fwd?r.left-g:r.right+g;T.W=r.width+g;T.edge0=fwd?r.right:r.left;T.dirE=fwd?1:-1;T.minCos=-1;
   }else{
-    const clip=document.createElement('div');clip.className='bd-clip';const b=box(R);
-    Object.assign(clip.style,{left:b.x+'px',top:b.y+'px',width:b.w+'px',height:b.h+'px'});binder.append(clip);T.clip=clip;
+    const clip=document.createElement('div');clip.className='bd-clip';const b=box(R);$('#collBook').classList.add('lift');
+    // lifting toward you, the sheet grows past the page. On a short screen (a phone held sideways) the view is a little
+    // flatter, so the sheet stops at the bottom of the screen instead of making it scroll mid-turn
+    const sc=$('#scr-coll'),sr=sc.getBoundingClientRect(),z=sr.height/sc.offsetHeight||1,
+      room=((sc.scrollHeight-sc.scrollTop)*z+sr.top-R.getBoundingClientRect().bottom)/z;
+    Object.assign(clip.style,{left:b.x+'px',top:b.y+'px',width:b.w+'px',height:b.h+'px',perspective:Math.max(1400,b.w+b.h/2*b.w/Math.max(8,room))+'px'});
+    binder.append(clip);T.clip=clip;
     T.src=R;T.srcHTML=R.innerHTML;
     // forward: the page lifts away to edge-on, the next waits underneath. Back: the earlier page swings in over it.
     if(fwd)R.innerHTML=bdPage(to);
-    for(let i=0;i<n;i++)T.leaves.push({...bdLeaf(clip,{x:0,y:0,w:b.w,h:b.h,s:1,gap:0,z:fwd?30-i:30+i,front:bdPage(fwd?list[i]:list[i+1]),back:'',fSide:'r',bSide:'r'}),t0:fwd?0:90,t1:fwd?90:0});
+    for(let i=0;i<n;i++)T.leaves.push({...bdLeaf(clip,{x:0,y:0,w:b.w,h:b.h,s:1,gap:0,shade:.15,z:fwd?30-i:30+i,front:bdPage(fwd?list[i]:list[i+1]),back:'',fSide:'r',bSide:'r'}),t0:fwd?0:90,t1:fwd?90:0});
     T.under=document.createElement('i');T.under.className='bd-under to-r';R.append(T.under);
     T.underOp=fwd?p=>.45*(1-p):p=>.3*p;
     const r=R.getBoundingClientRect();
@@ -312,7 +322,7 @@ function bdBuildTurn(from,to){
     T.leaves.forEach(l=>l.el.remove());T.under.remove();if(T.clip)T.clip.remove();
     if(commit){if(sp)T.land.innerHTML=T.landHTML;else R.innerHTML=bdPage(to);BD.p=to}
     else T.src.innerHTML=T.srcHTML;
-    binder.classList.remove('grabbing');bdChrome(BD.p);
+    binder.classList.remove('grabbing');$('#collBook').classList.remove('lift');bdChrome(BD.p);
   };
   BD_TURN=T;BD.done=()=>T.end(true);
   return T;

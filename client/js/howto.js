@@ -173,14 +173,14 @@ function goHow(i,focusTab){HI=Math.max(0,Math.min(HOW.length-1,i));renderHow();i
 function openHow(i=0){
   const d=$('#how');
   if(!d.classList.contains('on'))howReturn=document.activeElement;
-  d.classList.add('on');$$('.screen').forEach(s=>s.inert=true);
+  d.classList.add('on');$$('.screen,#hubTabs').forEach(s=>s.inert=true);
   goHow(i,true);
 }
 function closeHow(){
   const d=$('#how');if(!d.classList.contains('on'))return;
   if(hStop){hStop();hStop=null}
   d.classList.remove('on');
-  if(!$('#modal').classList.contains('on'))$$('.screen').forEach(s=>s.inert=false);
+  if(!$('#modal').classList.contains('on'))$$('.screen,#hubTabs').forEach(s=>s.inert=false);
   if(howReturn&&howReturn.isConnected&&howReturn.offsetParent)howReturn.focus({preventScroll:true});
   howReturn=null;
 }

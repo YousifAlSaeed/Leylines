@@ -16,6 +16,17 @@ function show(id){
   pulseSoon(); // friends see whether you're free to play (pulse.js)
   musicUpdate(); // each place has its song (music.js)
   const h=$(`#scr-${id} .topbar h2`);if(h){h.tabIndex=-1;h.focus({preventScroll:true})}
+  tabsSync();
+}
+// the phone's tab bar (index.html): the menu always has it (a PC hides it, a phone held sideways makes it a rail down the
+// left, menu.css). The Collection (not while picking cards for a match), Friends and your own profile have it on an
+// upright phone, in place of their Back button. body[data-tab] is the lit tab, and no tab means no bar
+function tabsSync(){
+  const id=($('.screen.on')||{}).id,side=HUB_PC.matches||HUB_SIDE.matches;
+  const k=id==='scr-menu'?'menu':side?'':id==='scr-coll'&&!picking()?'coll':id==='scr-friends'?'friends':id==='scr-profile'&&!PROF.view&&$('#scr-profile [data-back]').dataset.back==='menu'?'you':'';
+  if(k)document.body.dataset.tab=k;else delete document.body.dataset.tab;
+  $$('#hubTabs [data-tab]').forEach(b=>{const on=b.dataset.tab===k;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(k&&k!=='menu')hubDots(); // the menu redraws its own (renderHub)
 }
 // the last deck is only "ready" if every card in it is still owned
 function lastDeckReady(){
@@ -73,7 +84,8 @@ function renderHub(){
 // a phone shows the whole Hub without scrolling: if it doesn't fit, the Packs and Leaderboard row gives up its insides a
 // step at a time (menu.css .fit1 to .fit3). Checked again when the screen or the Play card changes size (a frame later:
 // a scrollbar the check takes away would change the screen's size again inside the observer)
-const HUB_PC=matchMedia('(min-width:920px) and (min-height:560px)'),HUB_SIDE=matchMedia('(orientation:landscape) and (max-height:519px)');
+const HUB_PC=matchMedia('(min-width:920px) and (min-height:560px)'),HUB_SIDE=matchMedia('(orientation:landscape) and (max-height:520px)');
+HUB_PC.addEventListener('change',tabsSync);HUB_SIDE.addEventListener('change',tabsSync);
 function hubFit(){
   const s=$('#scr-menu'),g=$('.hub-grid'),lv=['fit1','fit2','fit3'];
   g.classList.remove(...lv);
@@ -215,14 +227,16 @@ function hubDots(){
 }
 // redraw the widgets whenever another script changes a tile (its line, its dot, news); the tiles' own 30-second timers keep the countdowns fresh
 let hubT=0;
-const hubSoon=()=>{if(!hubT)hubT=requestAnimationFrame(()=>{hubT=0;if($('#scr-menu').classList.contains('on'))renderHub()})};
+const hubSoon=()=>{if(!hubT)hubT=requestAnimationFrame(()=>{hubT=0;if($('#scr-menu').classList.contains('on'))renderHub();else if(document.body.dataset.tab)hubDots()})};
 if(window.MutationObserver){const mo=new MutationObserver(hubSoon);$$('.hw>.tile').forEach(t=>mo.observe(t,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden']}))}
 $$('#hubTabs [data-tab]').forEach(b=>b.onclick=()=>{
   const t=b.dataset.tab;
-  if(t==='menu'){$('#scr-menu').scrollTop=0;return}
+  // the lit tab takes its page back to the top
+  if(b.classList.contains('on')){const s=$('.screen.on');if(s)s.scrollTop=0;return}
+  if(BD.done)BD.done(); // a page of the binder still turning lands first (collection.js)
   if(t==='coll'){openCollection();return}
   sfx('click');
-  if(t==='store')openStore();else if(t==='friends')openFriends();else openProfile();
+  if(t==='menu')show('menu');else if(t==='store')openStore();else if(t==='friends')openFriends();else openProfile();
 });
 $('#btnInbox').onclick=()=>{sfx('click');openInbox()};
 const MODE_ICON={

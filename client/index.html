@@ -59,7 +59,7 @@
 <link rel="stylesheet" href="css/draft.css">
 <link rel="stylesheet" href="css/aero.css"><!-- last: a developer's look over both themes -->
 </head>
-<body>
+<body data-tab="menu">
 <!-- shared by the menu logo and the small one in a match; outside the screens, so the glow still works when the menu is hidden -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="logoGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg>
 <div id="safe" aria-hidden="true"></div>
@@ -119,17 +119,19 @@
     <section class="hw hw-lb" id="lbWidget"><button class="tile" data-go="leaders" id="lbTile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/></svg><div><b>Leaderboard</b><small id="lbSub">See who's on top</small></div></button><div class="hw-x" id="hwLb"></div></section>
     </div>
   </div>
-  <!-- a phone's tab bar: Play is the menu itself; the others open their screens (menu.js) -->
-  <nav class="hub-tabs" id="hubTabs" aria-label="Places">
-    <button class="on" type="button" data-tab="menu" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8l4 4-4 4-4-4z"/></svg><span>Play</span></button>
-    <button type="button" data-tab="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><span>Collection</span><i class="td" hidden></i></button>
-    <button type="button" data-tab="store"><svg class="tab-mkt" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span>Market</span><i class="td" hidden></i></button>
-    <button type="button" data-tab="friends" id="tabFriends"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/></svg><span>Friends</span><i class="td" hidden></i></button>
-    <button type="button" data-tab="you"><span class="tab-av" id="tabAv"></span><span>You</span><i class="td" hidden></i></button>
-  </nav>
   <!-- add to home screen: a guide for iPhone Safari; a2hs.js decides when it shows -->
   <div class="a2hs" id="a2hs" role="dialog" aria-labelledby="a2hsTitle" hidden></div>
 </section>
+
+<!-- a phone's tab bar, outside the screens so it stays put: the menu has it, and so do the Collection, Friends and your
+   profile on an upright phone (menu.js tabsSync). Play is the menu itself; the others open their screens -->
+<nav class="hub-tabs" id="hubTabs" aria-label="Places">
+  <button class="on" type="button" data-tab="menu" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8l4 4-4 4-4-4z"/></svg><span>Play</span></button>
+  <button type="button" data-tab="coll"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 002-2V7"/></svg><span>Collection</span><i class="td" hidden></i></button>
+  <button type="button" data-tab="store"><svg class="tab-mkt" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span>Market</span><i class="td" hidden></i></button>
+  <button type="button" data-tab="friends" id="tabFriends"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/></svg><span>Friends</span><i class="td" hidden></i></button>
+  <button type="button" data-tab="you"><span class="tab-av" id="tabAv"></span><span>You</span><i class="td" hidden></i></button>
+</nav>
 
 <!-- SETUP -->
 <section id="scr-setup" class="screen">

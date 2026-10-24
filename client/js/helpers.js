@@ -109,7 +109,7 @@ function modal(html,btns=[]){
   const h=bg.querySelector('h2');
   if(h){h.id='mTitle';bg.setAttribute('aria-labelledby','mTitle')}else bg.removeAttribute('aria-labelledby');
   bg.classList.add('on');
-  $$('.screen').forEach(s=>s.inert=true);
+  $$('.screen,#hubTabs').forEach(s=>s.inert=true);
   const box=bg.querySelector('.mbox');
   (box.querySelector('.pk,.btn.primary:not(:disabled)')||box.querySelector('.btn')||box).focus({preventScroll:true});
   return box;
@@ -119,7 +119,7 @@ function closeModal(){
   if(collectionCard)collCardBack(m); // the card flies back into its sleeve (collection.js); needs the popup still on screen
   m.classList.remove('on');m.innerHTML='';
   // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
-  const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
+  const away=$('#away').classList.contains('on');$$('.screen,#hubTabs').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
   modalReturn=null;
   // news about a match you left waits for the popup in front of it to close (spare.js)

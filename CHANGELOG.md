@@ -6,6 +6,12 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.3 (2026-10-24)
+- On a phone, the bar along the bottom now stays on the Collection, Friends and your profile too, so you can hop between them without going back to the menu
+- On a phone, the cards in the Collection book are bigger: the rarity, how many you've found and the page number sit in a small line under them
+- On a phone, pages turn up out of the book like a real page, instead of inside a box
+- On a phone, Loadouts take less room, and tapping Save brings them into view
+
 ## 0.30.2 (2026-10-24)
 - Fixed: changing songs (in the Jukebox or by moving around) could leave the old song playing underneath the new one in some browsers
 - Coming back to the main menu, its song now eases back in while the other one fades away, instead of starting suddenly
