@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.4 (2026-10-24)
+- The Leaderboard box on the menu now shows the top players by itself, without opening the Leaderboard first. It checks for changes when you come back to the menu
+
 ## 0.30.3 (2026-10-24)
 - On a phone, the bar along the bottom now stays on the Collection, Friends and your profile too, so you can hop between them without going back to the menu
 - On a phone, the cards in the Collection book are bigger: the rarity, how many you've found and the page number sit in a small line under them

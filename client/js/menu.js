@@ -11,7 +11,7 @@ function show(id){
   keepAwake(id==='game');closeEmotes();ghostSweep(); // no dragged card follows you to another screen (helpers.js)
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
   if(id!=='menu')emReset(); // the small logo in a match is the same drawing, so it goes back to the real logo
-  if(id==='game')layout();if(id==='menu')renderMenu();
+  if(id==='game')layout();if(id==='menu'){renderMenu();lbHubFetch()}
   document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
   musicUpdate(); // each place has its song (music.js)
@@ -69,7 +69,9 @@ function renderMenu(){
    Each place on the menu is a widget: its tile is the widget's header (the other scripts keep the tile's line and dot up
    to date, as before) and under it the widget shows what's inside. A PC shows every widget in a grid; a phone shows the
    Play card, the Daily, then Packs and the Leaderboard side by side, and reaches the rest from the tab bar and the top bar.
-   Nothing here asks the server for anything: it draws what this device already knows, so the database can sleep. */
+   It draws what this device already knows, so the database can sleep. The one exception is the Leaderboard box: it asks
+   for the top three when you come to the menu, at most every 5 minutes, never while the menu just sits there
+   (leaderboard.js lbHubFetch). */
 const hubSvg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 const HUB_IC={
   friends:hubSvg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.2a6.5 6.5 0 013.5 5.8"/>'),
@@ -180,13 +182,15 @@ function hubFriends(){
   bindMoments(el);
   const r=el.querySelector('.hw-req');if(r)r.onclick=()=>{sfx('click');openFriends()};
 }
-// the leaderboard as you saw it last, kept on this device: it's only fetched when you open it (leaderboard.js lbKeep)
+// the top of the leaderboard: from when you last opened it, or fetched when you came to the menu (leaderboard.js lbSeen)
 function hubLb(){
   const el=$('#hwLb');if(!el)return;
   $('#lbWidget').hidden=API==null;$$('.fr-lb').forEach(b=>b.hidden=API==null);
   const d=lbSeen(),by=d&&LB_BY.find(b=>b[0]===d.by);
+  // nothing to show for whoever is signed in now (someone signed in on the menu): one try, not one on every redraw
+  if(!d&&LB_HUB.who!==lbWho()&&$('#scr-menu').classList.contains('on'))lbHubFetch();
   // only when it changes: the line is in the tile, and a write there redraws the widgets (hubSoon), which would loop
-  const sub=by?`${by[1]} · last look`:"See who's on top";if($('#lbSub').textContent!==sub)$('#lbSub').textContent=sub;
+  const sub=by?(d.show==='friends'?'Friends, by ':'By ')+by[1].toLowerCase():"See who's on top";if($('#lbSub').textContent!==sub)$('#lbSub').textContent=sub;
   if(!by||!d.rows.length){el.innerHTML='';return}
   const val=p=>{const [v,unit]=lbStat(p,d.by);return d.by==='level'?`Lv ${v}`:d.by==='cards'?`${v}/${CARDS.length}`:`${v} ${unit}`};
   // the top two and you, or the top three when you're one of them. x: the one a short phone leaves out (menu.css .fit1),

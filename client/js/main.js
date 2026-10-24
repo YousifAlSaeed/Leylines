@@ -2,7 +2,7 @@
 /* =====================================================================
    BOOT
    ===================================================================== */
-applyTheme();updSnd();renderMenu();layout();acctBoot();
+applyTheme();updSnd();renderMenu();layout();acctBoot();lbHubFetch(); // the menu's Leaderboard box (leaderboard.js)
 // offline support (sw.js); service workers only run on https and localhost
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 (function(){

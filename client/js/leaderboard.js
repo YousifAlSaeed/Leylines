@@ -34,11 +34,32 @@ async function lbLoad(){
 }
 const lbFind=name=>{const d=LB.data;if(!d||!name)return null;return [...d.rows,d.me].find(p=>p&&p.username===name)||null};
 const lbIsMe=p=>!!(p&&ACCT.user&&frKey(p.username)===frKey(ACCT.user.username));
-// the top of the board as you last saw it, kept on this device for the menu's widget (menu.js hubLb), for whoever was signed in
+// the top of the board for the menu's widget (menu.js hubLb), for whoever was signed in: what you saw when you last opened
+// it, or what the menu fetched itself. Kept on this device, and in LB_HUB.copy too for a device that can't store anything
 const LB_LAST='leylines.lbLast';
 const lbWho=()=>ACCT.user?frKey(ACCT.user.username):'';
-function lbKeep(j){try{localStorage.setItem(LB_LAST,JSON.stringify({who:lbWho(),by:LB.by,rows:j.rows.slice(0,3),me:j.me||null}))}catch(e){}}
-function lbSeen(){try{const d=JSON.parse(localStorage.getItem(LB_LAST));return d&&d.who===lbWho()&&Array.isArray(d.rows)?d:null}catch(e){return null}}
+// at: when the menu last asked (a failed try waits its turn too, instead of going again on every redraw); copy: the last kept
+const LB_HUB={who:null,at:0,busy:false,copy:null},LB_HUB_EVERY=5*60e3;
+function lbKeep(j){const d={who:lbWho(),by:j.by,show:j.show,at:Date.now(),rows:j.rows.slice(0,3),me:j.me||null};LB_HUB.copy=d;
+  try{localStorage.setItem(LB_LAST,JSON.stringify(d))}catch(e){}}
+// the newer of the two (another tab may have stored a newer one)
+function lbSeen(){
+  const ok=d=>d&&d.who===lbWho()&&Array.isArray(d.rows)?d:null,m=ok(LB_HUB.copy);
+  let s=null;try{s=ok(JSON.parse(localStorage.getItem(LB_LAST)))}catch(e){}
+  return m&&s?((m.at||0)>=(s.at||0)?m:s):m||s;
+}
+// the menu asks for just the top three and you when its copy is 5 minutes old (or there's none), for the tab and the
+// everyone-or-friends you looked at last. Only when you come to it (the game opening, show('menu'), coming back to the
+// tab): a menu left open doesn't keep asking, so the database can sleep
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('#scr-menu').classList.contains('on'))lbHubFetch()});
+function lbHubFetch(){
+  if(API==null||LB_HUB.busy||document.hidden)return;
+  const who=lbWho(),d=lbSeen(),now=Date.now(),recent=t=>t>0&&now-t>=0&&now-t<LB_HUB_EVERY;
+  if(recent(d&&d.at)||LB_HUB.who===who&&recent(LB_HUB.at))return;
+  Object.assign(LB_HUB,{who,at:now,busy:true});
+  const qs=new URLSearchParams({by:d?d.by:'level',show:d&&d.show==='friends'&&ACCT.token?'friends':'all',limit:3});
+  api('/leaderboard?'+qs,{timeout:60000}).then(j=>{if(lbWho()===who)lbKeep(j)},()=>{}).finally(()=>{LB_HUB.busy=false;hubSoon()});
+}
 
 /* ---------- the screen ---------- */
 function openLeaderboard(){
