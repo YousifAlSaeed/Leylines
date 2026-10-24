@@ -93,6 +93,10 @@
   --cta:#FF5FA8;--cta-hi:#FF86C4;--on-cta:#1e0b2a;--blue1:#2F5FD0;--blue2:#142a6e;--tint:255,255,255;--sh:4,2,14;--shk:1;
   position:fixed;top:0;right:0;bottom:0;left:0;z-index:88;display:none;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--text);color-scheme:dark;
   background:radial-gradient(60% 50% at 50% 45%,#1d1250,#07040f 75%)}
+/* --g1 … --g5: each rarity's light (the tear, the glow before a flip, sparks, rays); 5★'s is white, with rainbow sparks (packs.js rarCol).
+   The light room gets deeper ones, so silver, violet and the prism still show on it */
+.pk-stage{--g1:var(--r1);--g2:var(--r2);--g3:var(--r3);--g4:var(--r4);--g5:#fff}
+:root[data-theme="light"] .pk-stage{--g1:#a8611f;--g2:#4d6f94;--g3:#d08f00;--g4:#6a2fe8;--g5:#e0338f}
 /* light mode: the theme's own colours on a light background; the packs and cards keep theirs */
 :root[data-theme="light"] .pk-stage{--text:#1a1238;--muted:#54497a;--surf:#ffffff;--surf2:#f0ebff;--line:rgba(40,20,90,.12);--line2:rgba(40,20,90,.22);
   --cta:var(--ley-pink-700);--cta-hi:#dc5aad;--on-cta:#fff;--blue1:#3a6bdb;--blue2:#1e3f99;--tint:0,0,0;--sh:40,20,90;--shk:.3;
@@ -118,6 +122,7 @@
   background:repeating-conic-gradient(from 0deg,var(--ray,#fff) 0 4deg,transparent 4deg 15deg);
   -webkit-mask:radial-gradient(circle,#000 0,transparent 45%);mask:radial-gradient(circle,#000 0,transparent 45%);animation:pkSpin 18s linear infinite}
 .pk-rays.r5{background:repeating-conic-gradient(from 0deg,#ff8fd0 0 4deg,transparent 4deg 10deg,#7fe0ff 10deg 14deg,transparent 14deg 20deg,#ffd76a 20deg 24deg,transparent 24deg 30deg)}
+:root[data-theme="light"] .pk-rays.r5{background:repeating-conic-gradient(from 0deg,#e0338f 0 4deg,transparent 4deg 10deg,#0a9fd0 10deg 14deg,transparent 14deg 20deg,#d08f00 20deg 24deg,transparent 24deg 30deg)}
 .pk-stage.focus .pk-rays{opacity:.5}
 
 /* the pack */
@@ -175,6 +180,7 @@
 .pk-leak{position:absolute;left:5%;right:5%;top:calc(var(--cap) - 30px);height:60px;border-radius:50%;background:var(--leak,#fff);filter:blur(24px);opacity:0}
 /* a 5★ inside: the light from the tear is the prism */
 .pk-stage.best5 .pk-leak{background:var(--prism)}
+:root[data-theme="light"] .pk-stage.best5 .pk-leak{background:linear-gradient(90deg,#e0338f,#d08f00,#0a9fd0,#6a2fe8)}
 .pk-pack.shake{animation:pkShake .35s linear}
 @keyframes pkShake{20%{transform:translate(-4px,2px) rotate(-1.5deg)}40%{transform:translate(4px,-2px) rotate(1.5deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(3px,0)}}
 

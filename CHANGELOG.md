@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.5 (2026-10-24)
+- In the light theme, the glow when you open a pack now shows clearly for every rarity, so a 2★ no longer looks like a 1★, and 4★ and 5★ cards shine brighter
+
 ## 0.30.4 (2026-10-24)
 - The Leaderboard box on the menu now shows the top players by itself, without opening the Leaderboard first. It checks for changes when you come back to the menu
 

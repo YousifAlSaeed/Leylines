@@ -9,8 +9,8 @@
    ===================================================================== */
 // the rarity colours, from cards.css (--r1 … --r5), so they're set in one place
 const RC=[1,2,3,4,5].map(r=>getComputedStyle(document.documentElement).getPropertyValue('--r'+r).trim());
-// one colour for a rarity's light: 5★ is the prism, so its light is white and its sparks and rays are rainbow
-const rarCol=r=>r===5?'#ffffff':RC[r-1];
+// one colour for a rarity's light (packs.css --g1 … --g5, deeper in the light theme): 5★ is the prism, so its sparks and rays are rainbow
+const rarCol=r=>getComputedStyle($('#pkStage')).getPropertyValue('--g'+r).trim()||RC[r-1];
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const PK={src:null,ids:[],fresh:[],i:0,state:'',ret:null,tear:{on:false}};
 
@@ -99,7 +99,8 @@ function fxTick(){
   for(const p of FX.p){p.vy+=p.g;p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;cx.globalAlpha=Math.max(0,p.l/p.m);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.s,0,7);cx.fill()}
   cx.globalAlpha=1;FX.raf=FX.p.length?requestAnimationFrame(fxTick):0;
 }
-const rainbow=()=>['#ff8fd0','#ffd76a','#7fe0ff','#b98cff','#fff'][Math.floor(Math.random()*5)];
+const RAINBOW={dark:['#ff8fd0','#ffd76a','#7fe0ff','#b98cff','#fff'],light:['#e0338f','#d08f00','#0a9fd0','#6a2fe8']};
+const rainbow=()=>{const c=RAINBOW[document.documentElement.dataset.theme==='light'?'light':'dark'];return c[Math.floor(Math.random()*c.length)]};
 
 /* ---------- the stage ---------- */
 const stg=$('#pkStage'),pk=$('#pkPack'),pkBody=$('#pkStage .pk-body'),strip=$('#pkStrip'),lipw=$('#pkStage .pk-lipw'),lip=$('#pkStage .pk-lip'),seam=$('#pkStage .pk-seam'),leak=$('#pkStage .pk-leak');
@@ -321,7 +322,7 @@ function reveal(s){
     setTimeout(()=>{
       s.revealed=true;s.busy=false;s.classList.add('shown');PSND.reveal(c.rar);buzz(c.rar>=4?[30,40,60]:10);
       const r=s.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
-      if(c.rar>=3)spark(x,y,c.rar===5?rainbow:RC[c.rar-1],c.rar===5?90:c.rar===4?50:18,c.rar>=4?9:5,c.rar>=4?80:50,.1);
+      if(c.rar>=3)spark(x,y,c.rar===5?rainbow:rarCol(c.rar),c.rar===5?90:c.rar===4?50:18,c.rar>=4?9:5,c.rar>=4?80:50,.1);
       if(c.rar===5)for(let k=1;k<5;k++)setTimeout(()=>spark(x,y,rainbow,30,7,70,.1),k*160);
       $('#pkStage .pk-live').textContent=`${c.name}, ${rarName(c.rar)}${PK.fresh[i]?', new':''}`;
       setTimeout(()=>{stg.classList.remove('focus');$('#pkRays').className='pk-rays'},c.rar>=4?1400:0);
@@ -329,7 +330,7 @@ function reveal(s){
   };
   if(!td)return go();
   f.style.setProperty('--td',td+'ms');f.classList.add('tease');
-  if(c.rar>=4){stg.classList.add('focus');const R=$('#pkRays');R.style.setProperty('--ray',RC[c.rar-1]);R.className='pk-rays'+(c.rar===5?' r5':'');PSND.build(c.rar)}
+  if(c.rar>=4){stg.classList.add('focus');const R=$('#pkRays');R.style.setProperty('--ray',rarCol(c.rar));R.className='pk-rays'+(c.rar===5?' r5':'');PSND.build(c.rar)}
   setTimeout(go,td);
 }
 function fling(s,d){
