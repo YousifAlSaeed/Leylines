@@ -143,11 +143,11 @@
 .liquid #scr-menu .hero-stats div+div{border-left-color:var(--lq-well-line)}
 :root.liquid[data-theme="light"] #scr-menu .hero-stats{box-shadow:inset 0 1px 2px rgba(40,20,90,.08)}
 /* pink glass, coloured with a bright edge: the Play card's main button (Play, Quick play, Rejoin), the Daily's challenges
-   still to play, and Open on the Packs */
-.liquid #scr-menu :is(.hero .btn.primary,.hw-packs .btn.primary,.dly:not(.done)){background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);
+   still to play, Open on the Packs and Buy on the Merchant */
+.liquid #scr-menu :is(.hero .btn.primary,.hw-packs .btn.primary,.hw-buy,.dly:not(.done)){background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);
   text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
-/* the rest (Buy, Invite): clear glass with pink writing */
-.liquid #scr-menu .btn.primary:not(.hero .btn,.hw-packs .btn){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);
+/* the rest (Invite): clear glass with pink writing */
+.liquid #scr-menu .btn.primary:not(.hero .btn,.hw-packs .btn,.hw-buy){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);
   transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
 .liquid #scr-menu .btn.primary{border-radius:999px}
 .liquid #scr-menu .dly{border-radius:20px}
