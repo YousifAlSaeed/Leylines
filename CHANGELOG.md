@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.7 (2026-10-24)
+- On a phone, a message that pops up on the main menu now shows above the bar at the bottom, not on top of it
+
 ## 0.30.6 (2026-10-24)
 - Tap anywhere on the Collection, Night Market, Packs, Friends or Leaderboard box to open it, not just its title
 - The Play button's glow and your hand of cards no longer start over when you pick Easy, Normal or Hard
