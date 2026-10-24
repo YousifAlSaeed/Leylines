@@ -1,0 +1,231 @@
+/* =====================================================================
+   LIQUID GLASS: the main menu and the tab bar, made of glass like iOS 26.
+   :root.liquid turns it on (glass.js, for everyone but a developer's look,
+   aero.css, which has glass of its own). glass.js adds what CSS alone
+   can't: the lens that slides along the tab bar and the switches, and
+   (Chrome and Edge only, .lq-bend) edges that bend what's behind them.
+   Safari and Firefox get the same glass without the bending.
+   ===================================================================== */
+:root.liquid{
+  /* the glass: frosted, a little tinted so text stays easy to read over the drifting cards */
+  --lq-fill:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.03) 60%,rgba(255,255,255,.045));
+  --lq-tint:rgba(20,11,52,.28);
+  /* the bright edge: strongest top left (the light) and bottom right (where it comes out) */
+  --lq-rim:linear-gradient(140deg,rgba(255,255,255,.62),rgba(255,255,255,.14) 24%,rgba(255,255,255,.03) 50%,rgba(255,255,255,.1) 76%,rgba(255,255,255,.4));
+  --lq-shadow:0 22px 44px -22px rgba(0,0,0,.8),0 3px 10px -4px rgba(0,0,0,.45);
+  --lq-inner:inset 0 1px 1px rgba(255,255,255,.18),inset 0 -1px 1px rgba(255,255,255,.05),inset 0 0 24px rgba(255,255,255,.035);
+  /* the shine on the glass (top left, where the light comes from: it stays put, like the sun on a window), the edge glow
+     near it, and a soft shade at the bottom, where less light gets through */
+  --lq-glow:rgba(255,255,255,.07); --lq-rim-glow:rgba(255,255,255,.4); --lq-shade:rgba(0,0,0,.2);
+  /* a well inside the glass (the switches' track, the bar of numbers) */
+  --lq-well:rgba(4,2,16,.28); --lq-well-line:rgba(255,255,255,.07);
+  /* the lens: the lighter piece of glass under the picked tab or option */
+  --lq-lens:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.1));
+  --lq-lens-sh:0 4px 14px -4px rgba(0,0,0,.55),inset 0 1px 1px rgba(255,255,255,.35),inset 0 -1px 1px rgba(255,255,255,.08),inset 0 0 0 .5px rgba(255,255,255,.22);
+  /* the Play card's pink button: glass with the colour in it, the box's glass showing through. Pink writing on the rest */
+  --lq-pink:linear-gradient(180deg,color-mix(in srgb,var(--cta) 66%,transparent),color-mix(in srgb,var(--cta) 50%,transparent));
+  --lq-pink-sh:0 10px 28px -12px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(255,255,255,.12),
+    inset 0 0 0 1px color-mix(in srgb,var(--cta-hi) 55%,transparent),inset 0 0 18px color-mix(in srgb,var(--cta-hi) 22%,transparent);
+  --lq-pink-ink:var(--cta-hi);
+  /* clear glass inside the glass: the other buttons and the Daily's challenges */
+  --lq-clear:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
+  --lq-clear-sh:0 6px 16px -8px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.28),inset 0 0 0 1px rgba(255,255,255,.12);
+  /* iOS springs, where CSS can play them (linear()): lift is quick and doesn't bounce (0.25s), slide overshoots by about
+     3% and settles, bouncy is for letting go (0.5s, bounce 0.3) */
+  --lq-lift:cubic-bezier(.2,.8,.2,1); --lq-slide:cubic-bezier(.3,1.25,.5,1); --lq-bouncy:cubic-bezier(.34,1.45,.5,1);
+  /* the floating tab bar: 62px tall, about 21px in from the sides and the bottom, as on an iPhone */
+  --lq-tabgap:max(12px,calc(env(safe-area-inset-bottom) - 13px));
+  --tabh:calc(62px + var(--lq-tabgap) + 10px);
+}
+@supports (transition-timing-function:linear(0,1)){:root.liquid{
+  --lq-lift:linear(0,.101,.289,.476,.63,.746,.829,.887,.926,.953,.97,.981,.988,.992,.995,.997,1);
+  --lq-slide:linear(0,.034,.118,.23,.352,.474,.587,.688,.774,.845,.901,.945,.977,.999,1.014,1.023,1.027,1.028,1.027,1.025,1.022,1.018,1.015,1.012,1.009,1.006,1.004,1.003,1);
+  --lq-bouncy:linear(0,.036,.125,.243,.373,.502,.622,.728,.817,.889,.945,.986,1.014,1.032,1.042,1.046,1.045,1.042,1.037,1.031,1.025,1.019,1.014,1.01,1.006,1.003,1.001,1,.999,.998,.998,.998,1)}}
+@property --lq-glow{syntax:'<color>';inherits:true;initial-value:transparent}
+@property --lq-rim-glow{syntax:'<color>';inherits:true;initial-value:transparent}
+:root.liquid[data-theme="light"]{
+  --lq-fill:linear-gradient(180deg,rgba(255,255,255,.66),rgba(255,255,255,.4) 60%,rgba(255,255,255,.5));
+  --lq-tint:rgba(240,235,255,.2);
+  --lq-rim:linear-gradient(140deg,#fff,rgba(255,255,255,.6) 26%,rgba(255,255,255,.25) 52%,rgba(255,255,255,.5) 78%,#fff);
+  --lq-shadow:0 22px 44px -24px rgba(40,20,90,.42),0 3px 10px -4px rgba(40,20,90,.14);
+  --lq-inner:inset 0 1px 1px #fff,inset 0 -1px 1px rgba(255,255,255,.6),inset 0 0 24px rgba(255,255,255,.4);
+  --lq-glow:rgba(255,255,255,.35); --lq-rim-glow:rgba(255,255,255,.8); --lq-shade:rgba(40,20,90,.06);
+  --lq-well:rgba(40,20,90,.06); --lq-well-line:rgba(40,20,90,.07);
+  --lq-lens:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.75));
+  --lq-lens-sh:0 4px 14px -4px rgba(40,20,90,.3),inset 0 1px 1px #fff,inset 0 0 0 .5px rgba(40,20,90,.08);
+  /* nearly solid here: white writing needs a strong pink behind it on a bright page */
+  --lq-pink:linear-gradient(180deg,color-mix(in srgb,var(--cta) 90%,transparent),color-mix(in srgb,var(--cta) 84%,transparent));
+  --lq-pink-sh:0 10px 26px -12px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.15),
+    inset 0 0 0 1px color-mix(in srgb,var(--cta-hi) 60%,transparent),inset 0 0 18px color-mix(in srgb,var(--cta-hi) 30%,transparent);
+  --lq-pink-ink:color-mix(in srgb,var(--cta) 80%,#000);
+  --lq-clear:linear-gradient(180deg,#fff,rgba(255,255,255,.7));
+  --lq-clear-sh:0 6px 16px -10px rgba(40,20,90,.3),inset 0 1px 1px #fff,inset 0 0 0 1px rgba(40,20,90,.08);
+}
+/* browsers without color-mix (iOS before 16.2, Chrome before 111): the pink button solid, as before the glass */
+@supports not (color:color-mix(in srgb,red 50%,transparent)){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pink:linear-gradient(180deg,var(--cta-hi),var(--cta));--lq-pink-sh:0 8px 24px -8px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.35);--lq-on-pink:var(--on-cta)}
+  :root.liquid[data-theme="light"]{--lq-pink-ink:var(--cta)}
+}
+
+/* ---------- the glass: the Play card, the boxes, the round buttons, the profile chip and the tab bar ---------- */
+/* Safari wants the blur written out (no var() in -webkit-backdrop-filter) */
+.liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid .hub-tabs,.liquid #scr-menu.drift-on :is(.hub-ib,.pcard):hover,.liquid #scr-menu.on.drift-on~.hub-tabs{
+  background:radial-gradient(var(--lq-r,260px) circle at 30% 28%,var(--lq-glow),transparent 70%),
+    linear-gradient(180deg,transparent 48%,var(--lq-shade)),var(--lq-fill),var(--lq-tint)}
+.liquid #scr-menu .hub-ib{--lq-r:60px}
+.liquid #scr-menu .pcard{--lq-r:140px}
+.liquid .hub-tabs{--lq-r:180px;--lq-shade:transparent}
+/* clear glass, only a little frosted: the cards drifting behind show through, lifted and brighter (they're dim on the
+   page). The light theme's page is bright already, so it only gets more colour */
+.liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid .hub-tabs{border-color:transparent;box-shadow:var(--lq-shadow),var(--lq-inner);
+  -webkit-backdrop-filter:blur(5px) saturate(2) brightness(1.7);backdrop-filter:blur(5px) saturate(2) brightness(1.7);transition:transform .5s var(--lq-bouncy),box-shadow .3s,border-color .2s,--lq-glow .35s,--lq-rim-glow .35s}
+:root.liquid[data-theme="light"] #scr-menu :is(.hero,.hw,.hub-ib,.pcard),:root.liquid[data-theme="light"] .hub-tabs{
+  -webkit-backdrop-filter:blur(5px) saturate(1.7);backdrop-filter:blur(5px) saturate(1.7)}
+/* the bending edges (glass.js, Chrome and Edge): the frost and the bend are one filter */
+.liquid.lq-bend #scr-menu :is(.hero,.hw,.hub-ib,.pcard)[style*="--lq-f"],.liquid.lq-bend .hub-tabs[style*="--lq-f"]{
+  -webkit-backdrop-filter:var(--lq-f) saturate(2) brightness(1.7);backdrop-filter:var(--lq-f) saturate(2) brightness(1.7)}
+:root.liquid.lq-bend[data-theme="light"] #scr-menu :is(.hero,.hw,.hub-ib,.pcard)[style*="--lq-f"],:root.liquid.lq-bend[data-theme="light"] .hub-tabs[style*="--lq-f"]{
+  -webkit-backdrop-filter:var(--lq-f) saturate(1.7);backdrop-filter:var(--lq-f) saturate(1.7)}
+/* the bright edge, drawn as a 1px ring (a gradient border that leaves the middle clear). It brightens near your finger */
+.liquid #scr-menu :is(.hw,.hub-ib,.pcard)::before,.liquid #scr-menu .hero::after,.liquid .hub-tabs::before{
+  content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;
+  background:radial-gradient(var(--lq-rr,120px) circle at 30% 28%,var(--lq-rim-glow),transparent 70%),var(--lq-rim);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.liquid #scr-menu :is(.hw,.hub-ib):hover{border-color:transparent}
+.liquid #scr-menu .hub-dot{z-index:4}
+/* rounder, like iOS's: the inner pieces follow (their corner = the box's minus the space around them) */
+.liquid #scr-menu .hero{border-radius:30px}
+.liquid #scr-menu .hw{border-radius:24px}
+/* the glow in the Play card's corner stays, softer: it's light inside the glass now */
+.liquid #scr-menu .hero::before{opacity:.7}
+/* the menu rises in by moving only: fading the boxes' parents would hide what's behind the glass until it ended */
+.liquid #scr-menu.on .menu>*{animation-name:lqRise}
+.liquid #scr-menu.on :is(.hero,.hw,.hub-ib,.pcard){animation:lqFade .4s var(--ease) both}
+@keyframes lqRise{from{transform:translateY(10px)}}
+@keyframes lqFade{from{opacity:0}}
+/* the glass brightens a little under the mouse (glass.js: .lq-lit), a little more while you press it (.lq-touch) */
+.liquid #scr-menu .lq-lit,.liquid .hub-tabs.lq-lit{--lq-glow:rgba(255,255,255,.12);--lq-rim-glow:rgba(255,255,255,.7)}
+:root.liquid[data-theme="light"] #scr-menu .lq-lit,:root.liquid[data-theme="light"] .hub-tabs.lq-lit{--lq-glow:rgba(255,255,255,.7);--lq-rim-glow:#fff}
+.liquid #scr-menu .lq-touch,.liquid .hub-tabs.lq-touch{--lq-glow:rgba(255,255,255,.2)}
+:root.liquid[data-theme="light"] #scr-menu .lq-touch,:root.liquid[data-theme="light"] .hub-tabs.lq-touch{--lq-glow:rgba(255,255,255,.9)}
+
+/* with a mouse, a box lifts a little while it's under it */
+@media (hover:hover) and (pointer:fine){
+  .liquid #scr-menu :is(.hero,.hw).lq-lit{transform:translateY(-3px) scale(1.006);
+    transition:transform .3s var(--lq-lift),box-shadow .3s,border-color .2s,--lq-glow .35s,--lq-rim-glow .35s}
+}
+/* no glint sweeping across the boxes with news: the glass has its own light. Their counts still pulse */
+.liquid #scr-menu .hw.hot::after{content:none}
+
+/* pressing: a box sinks a little when you press its tile; buttons swell and brighten, like iOS's glass */
+.liquid #scr-menu .hw.lq-press{transform:scale(.975);transition:transform .2s var(--lq-lift)}
+.liquid #scr-menu .tile:active{transform:none}
+.liquid #scr-menu :is(.hub-ib,.pcard,.btn,.dly).lq-press{transition:transform .3s var(--lq-lift),filter .15s,box-shadow .3s}
+.liquid #scr-menu .hub-ib.lq-press{transform:scale(1.14);--lq-glow:rgba(255,255,255,.24)}
+.liquid #scr-menu .pcard.lq-press{transform:scale(1.04)}
+.liquid #scr-menu :is(.btn,.dly).lq-press{transform:scale(1.05);filter:brightness(1.12)}
+.liquid #scr-menu .btn.full.lq-press{transform:scale(1.025)}
+.liquid #scr-menu :is(.btn,.dly):active:not(.lq-press){transform:none}
+
+/* ---------- inside the glass: fills only (glass inside glass would only see the box it sits in) ---------- */
+/* the switches: a well, with the lens (glass.js) under the picked option instead of a filled button */
+.liquid #scr-menu .seg{position:relative;background:var(--lq-well);border-color:var(--lq-well-line);box-shadow:inset 0 1px 3px rgba(0,0,0,.22);border-radius:999px;padding:3px}
+:root.liquid[data-theme="light"] #scr-menu .seg{box-shadow:inset 0 1px 2px rgba(40,20,90,.1)}
+.liquid #scr-menu .seg button{position:relative;z-index:1;border-radius:999px;transition:color .25s,transform .3s var(--lq-lift)}
+.liquid #scr-menu .seg button.on{background:none;box-shadow:none}
+.liquid #scr-menu .seg:not(.lq-has-lens) button.on{background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+.liquid #scr-menu .seg button:active{transform:scale(.95)}
+.lq-lens{position:absolute;z-index:0;border-radius:999px;pointer-events:none;background:var(--lq-lens);box-shadow:var(--lq-lens-sh);
+  transition:var(--lq-move,left 0s,right 0s,top 0s,bottom 0s),transform .34s var(--lq-lift),background .25s,box-shadow .25s,opacity .2s}
+/* the bar of numbers: a shallow well */
+.liquid #scr-menu .hero-stats{background:var(--lq-well);border-color:var(--lq-well-line);border-radius:18px;box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
+.liquid #scr-menu .hero-stats div+div{border-left-color:var(--lq-well-line)}
+:root.liquid[data-theme="light"] #scr-menu .hero-stats{box-shadow:inset 0 1px 2px rgba(40,20,90,.08)}
+/* one pink button: the Play card's (Play, Quick play, Rejoin), coloured glass with a bright edge */
+.liquid #scr-menu .hero .btn.primary{background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);
+  border-radius:999px;transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
+/* the Daily's challenges, Buy and Open: clear glass with pink writing */
+.liquid #scr-menu .dly:not(.done),.liquid #scr-menu .btn.primary:not(.hero .btn){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);
+  transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
+.liquid #scr-menu .dly:not(.done){color:var(--text)}
+.liquid #scr-menu .dly:not(.done)>:is(svg,b),.liquid #scr-menu .btn.primary:not(.hero .btn){color:var(--lq-pink-ink)}
+.liquid #scr-menu .btn.primary:not(.hero .btn){border-radius:999px}
+.liquid #scr-menu .dly{border-radius:20px}
+.liquid #scr-menu :is(.btn.primary,.dly):not(:disabled,.lq-press):hover{filter:brightness(1.07);transform:translateY(-1px)}
+/* a Daily challenge that's done: sunk into the box */
+.liquid #scr-menu .dly.done{background:var(--lq-well);border-color:var(--lq-well-line);box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
+/* the other buttons in the menu (Host a game, Join, the small ones): clear glass */
+.liquid #scr-menu .btn:not(.primary,.text,.danger){background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.05));border-color:transparent;
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.25),inset 0 0 0 1px rgba(255,255,255,.12);border-radius:999px}
+:root.liquid[data-theme="light"] #scr-menu .btn:not(.primary,.text,.danger){background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.6));
+  box-shadow:0 6px 16px -10px rgba(40,20,90,.35),inset 0 1px 1px #fff,inset 0 0 0 1px rgba(40,20,90,.08)}
+.liquid #scr-menu .joinrow .codein{background:var(--lq-well);border-color:var(--lq-well-line);border-radius:999px}
+/* the pills by the title, the friends' rows, the collection's rarities */
+.liquid #scr-menu .ver{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:inset 0 1px 1px rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+:root.liquid[data-theme="light"] #scr-menu .ver{background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.9);box-shadow:0 2px 6px -2px rgba(40,20,90,.15)}
+.liquid #scr-menu :is(.hw-on,.hw-rar,.hw-req){background:var(--lq-well);border-color:var(--lq-well-line);border-radius:16px}
+.liquid #scr-menu .hw-lr{border-top-color:var(--lq-well-line)}
+/* packs to open: the box glows pink through the glass, its edge lit pink */
+@supports (color:color-mix(in srgb,red 50%,transparent)){
+  .liquid #scr-menu .hw-packs.hot{box-shadow:var(--lq-shadow),var(--lq-inner),0 0 0 1px color-mix(in srgb,var(--cta) 50%,transparent),0 12px 34px -14px var(--cta-glow)}
+  .liquid #scr-menu .hw-packs.hot::before{background:radial-gradient(var(--lq-rr,120px) circle at 30% 28%,var(--lq-rim-glow),transparent 70%),
+    linear-gradient(140deg,var(--cta-hi),color-mix(in srgb,var(--cta) 30%,transparent) 40%,color-mix(in srgb,var(--cta) 20%,transparent) 60%,var(--cta-hi))}
+}
+
+/* ---------- the tab bar: a capsule of glass floating over the bottom of the screen ---------- */
+.liquid .hub-tabs{left:max(12px,min(21px,5vw),env(safe-area-inset-left));right:max(12px,min(21px,5vw),env(safe-area-inset-right));bottom:var(--lq-tabgap);
+  max-width:480px;margin:0 auto;height:62px;padding:4px;border:0;border-radius:31px;align-items:stretch;touch-action:none;-webkit-user-select:none;user-select:none}
+.liquid .hub-tabs button{z-index:1;justify-content:center;gap:2px;padding:0;border-radius:27px;font:600 10px/1.1 var(--body);transition:color .25s}
+.liquid .hub-tabs>button>svg{padding:0;width:25px;height:25px;background:none;box-shadow:none;transition:transform .34s var(--lq-lift)}
+.liquid .hub-tabs .on>svg{background:none;box-shadow:none}
+/* the picked tab takes the accent colour, like an iPhone's */
+.liquid .hub-tabs .on{color:var(--accent-ink)}
+.liquid .hub-tabs .tab-av{height:25px;transition:transform .34s var(--lq-lift)}
+.liquid .hub-tabs .tab-av .pc-av{width:25px;height:25px;font-size:13px}
+.liquid .hub-tabs .td{top:5px}
+@supports (color:color-mix(in srgb,red 50%,transparent)){.liquid .hub-tabs .td{box-shadow:0 0 0 2px color-mix(in srgb,var(--bg1) 70%,transparent)}}
+.liquid .hub-tabs .td:not(:empty){top:3px}
+.liquid .hub-tabs .lq-lens{border-radius:27px}
+/* pressing the bar: the lens lifts off it, grows by a sixth and goes clear, and the tab under it grows with it */
+.liquid .hub-tabs.lq-drag .lq-lens{transform:scale(1.16);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.6),inset 1px 1px 0 rgba(255,255,255,.6),inset -1px -1px 0 rgba(255,255,255,.22),inset 0 0 14px rgba(255,255,255,.1)}
+:root.liquid[data-theme="light"] .hub-tabs.lq-drag .lq-lens{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));
+  box-shadow:0 10px 26px -10px rgba(40,20,90,.35),inset 1px 1px 0 #fff,inset -1px -1px 0 rgba(255,255,255,.7),inset 0 0 14px rgba(255,255,255,.6)}
+.liquid .hub-tabs.lq-drag button.lq-under{color:var(--text)}
+.liquid .hub-tabs.lq-drag button.lq-under>:is(svg,.tab-av){transform:scale(1.16)}
+/* on the Collection, Friends and You the bar floats over a page at full brightness (not the dim cards): thicker glass,
+   that doesn't brighten what's behind it, so the tab names stay easy to read */
+:root.liquid body:not([data-tab=menu]) .hub-tabs{--lq-tint:rgba(14,10,31,.72);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4)}
+:root.liquid.lq-bend body:not([data-tab=menu]) .hub-tabs[style*="--lq-f"]{-webkit-backdrop-filter:var(--lq-f) saturate(1.4);backdrop-filter:var(--lq-f) saturate(1.4)}
+:root.liquid[data-theme="light"] body:not([data-tab=menu]) .hub-tabs{--lq-tint:rgba(246,243,255,.78)}
+/* wide phones and tablets: only as wide as its tabs need */
+@media (min-width:600px){.liquid .hub-tabs{grid-auto-columns:minmax(0,90px);max-width:max-content}}
+/* a phone held sideways: a glass rail floating down the left, its lens sliding up and down */
+@media (orientation:landscape) and (max-height:520px){
+  .liquid .hub-tabs{left:max(10px,env(safe-area-inset-left));right:auto;top:50%;bottom:auto;transform:translateY(-50%);width:62px;height:auto;max-width:none;margin:0;
+    padding:4px;border:0;border-radius:31px;grid-auto-rows:54px;grid-auto-columns:auto;align-content:stretch}
+  .liquid #scr-menu{padding-left:calc(84px + env(safe-area-inset-left))}
+}
+
+/* ---------- comfort settings ---------- */
+/* Reduce Transparency (Chrome and Edge read it, and Windows' "Transparency effects: off"): solid panels, as before */
+@media (prefers-reduced-transparency:reduce){
+  .liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid .hub-tabs,.liquid #scr-menu.on.drift-on~.hub-tabs{background:var(--surf);-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .liquid #scr-menu.drift-on :is(.hub-ib,.pcard):hover{background:var(--surf2)}
+  .liquid #scr-menu .hero{background:linear-gradient(160deg,var(--surf2),var(--surf))}
+}
+/* Increase Contrast: a clear edge on every piece of glass, and much less see-through */
+@media (prefers-contrast:more){
+  .liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid #scr-menu :is(.hw,.hub-ib):hover,.liquid .hub-tabs{border-color:var(--line2);--lq-tint:rgba(10,6,30,.78)}
+  .liquid .hub-tabs{border:1px solid var(--line2)}
+  :root.liquid[data-theme="light"] #scr-menu :is(.hero,.hw,.hub-ib,.pcard),:root.liquid[data-theme="light"] .hub-tabs{--lq-tint:rgba(255,255,255,.8)}
+}
+/* a browser without frosted glass: nearly solid panels instead, so text stays readable */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid .hub-tabs{--lq-tint:var(--surf)}
+}
+@media (prefers-reduced-motion:reduce){
+  .liquid #scr-menu :is(.hw,.hub-ib,.pcard,.btn,.dly),.liquid .hub-tabs>button>:is(svg,.tab-av),.lq-lens{transition:none}
+  .liquid .hub-tabs.lq-drag .lq-lens,.liquid .hub-tabs.lq-drag button.lq-under>:is(svg,.tab-av),.liquid #scr-menu :is(.hero,.hw).lq-lit{transform:none}
+}

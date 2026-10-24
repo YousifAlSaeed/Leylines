@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.6 (2026-10-24)
+- The main menu is made of glass now: see-through boxes that pick up the colours behind them, and a tab bar that floats at the bottom of your phone. The picked tab and option sit in a lens that glides over when you choose another, and you can press the tab bar and slide along it
+
 ## 0.30.5 (2026-10-24)
 - In the light theme, the glow when you open a pack now shows clearly for every rarity, so a 2★ no longer looks like a 1★, and 4★ and 5★ cards shine brighter
 
