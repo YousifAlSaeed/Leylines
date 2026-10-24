@@ -122,7 +122,7 @@ fixMain();
 // Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
 function resetSave(){
   const d=defSave();
-  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','jb','theme','aero','cid'])d[k]=SAVE[k];
+  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','jb','theme','aero','liquid','cid'])d[k]=SAVE[k];
   d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
   SAVE=d;fixMain();save();
 }
@@ -155,6 +155,9 @@ const unlocked=()=>!!SAVE.unlockAll&&isDev();
 // "Frutiger Aero" (a developer tool): glossy glass and a summer sky over the light theme (settings.js applyTheme, aero.css).
 // Ignored for everyone else in the same way.
 const aeroOn=()=>!!SAVE.aero&&isDev();
+// "Liquid glass" (a developer tool): the menu and the phone's tab bar made of glass, like iOS 26 (settings.js applyTheme,
+// glass.css, glass.js). Ignored for everyone else too. Settings → Themes picks one of the two (an old save may have both: Aero wins)
+const liquidOn=()=>!!SAVE.liquid&&isDev()&&!aeroOn();
 // your colour (Settings → Your colour): your cards and your side everywhere, blue to start with. Red is always
 // the other side's, so it's never one of them. Free for now; it moves to the Atelier (store.js) as a cosmetic later.
 const MY_COLS=['blue','teal','green','gold','purple','grey'];

@@ -312,6 +312,7 @@ function renderHero(anim){
   // and the menu doesn't jump when you switch
   const ghosts=MODES.filter(x=>x[0]!==m).map(([k])=>`<div class="hero-pane hero-ghost" aria-hidden="true" inert>${heroPane(k).replace(/ id="[^"]*"/g,'')}</div>`).join('');
   const body=$('#heroBody');
+  body.style.setProperty('--ph',-Math.round(performance.now())+'ms'); // the hand and the heartbeat carry on where they were (menu.css)
   body.innerHTML=`<div class="hero-pane">${heroPane(m)}</div>`+ghosts;
   if(anim){body.classList.remove('fade');void body.offsetWidth;body.classList.add('fade')}
   $('#heroGo').onclick=()=>{sfx('click');m==='online'?heroHost():openSetup(m)};
@@ -347,6 +348,12 @@ $$('[data-go]').forEach(b=>b.onclick=()=>{
   else if(g==='friends')openFriends();
   else if(g==='leaders')openLeaderboard();
 });
+// a box opens its place wherever you tap it, not only on its title. What's inside with a job of its own (Open, Buy,
+// Invite, a rarity, a reaction) keeps it. The Daily only has its challenges to tap, and the Play card its buttons
+$$('.hub-grid>.hw:not(.hw-daily)').forEach(w=>w.addEventListener('click',e=>{
+  const t=w.querySelector(':scope>.tile');
+  if(t&&!e.target.closest('button,a,input,select,textarea,[tabindex]'))t.click();
+}));
 $$('[data-back]').forEach(b=>b.onclick=()=>{sfx('click');show(b.dataset.back)});
 $('#alphaPill').onclick=()=>{sfx('click');modal(`<h2 class="nm2">Alpha version</h2><p>Leylines is still being built. Your record, XP, shards and collection could be reset at any time.</p>`,[{label:'Got it',cls:'primary',esc:true}])};
 

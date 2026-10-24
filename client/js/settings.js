@@ -8,6 +8,7 @@ function applyTheme(){
   document.documentElement.dataset.theme=dark?'dark':'light';
   document.documentElement.dataset.me=myCol(); // your colour, for what isn't a card (cards.css --me1)
   document.documentElement.classList.toggle('aero',aero); // a developer's Frutiger Aero look: a summer day, or an aurora night in the dark theme (save.js, aero.css)
+  document.documentElement.classList.toggle('liquid',liquidOn()); // a developer's Liquid glass menu (save.js, glass.css)
   stSky(); // the market's sky goes by the theme, and gives the page its top colour while it's open (store.js)
   // the browser's bar, and on an iPhone app the strip behind the clock: the colour at the top of the page (--bar, base.css)
   $('#themeColor').setAttribute('content',getComputedStyle(document.documentElement).getPropertyValue('--bar').trim()||(dark?'#0E0A1F':'#f6f3ff'));
@@ -15,13 +16,15 @@ function applyTheme(){
 lightMQ.addEventListener('change',()=>{if((SAVE.theme||'system')==='system')applyTheme()});
 function openSettings(){
   const th=SAVE.theme||'system';
-  // Frutiger Aero: a row only developers get (save.js aeroOn); the theme picks its day or its night
+  // the developers' themes, Frutiger Aero and Liquid glass: a row only developers get (save.js aeroOn, liquidOn).
+  // Under Aero the theme picks its day or its night
   const themeSub=()=>aeroOn()?'Frutiger Aero: Light is day, Dark is night':'System follows your device';
+  const look=SAVE.aero?'aero':SAVE.liquid?'glass':'off';
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
     <div class="setrow"><span class="rt"><b>Theme</b><small id="setThemeSub">${themeSub()}</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
-    ${isDev()?`<div class="setrow"><span class="rt"><b>Frutiger Aero</b><small>Glass, bubbles, a summer sky or an aurora night. Only developers see this</small></span><div class="seg" id="setAero" role="group" aria-label="Frutiger Aero">${
-      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${!!SAVE.aero==!!k?'on':''}" aria-pressed="${!!SAVE.aero==!!k}">${l}</button>`).join('')}</div></div>`:''}
+    ${isDev()?`<div class="setrow"><span class="rt"><b>Themes</b><small>Frutiger Aero, or a menu of liquid glass. Only developers see this</small></span><div class="seg" id="setLook" role="group" aria-label="Themes">${
+      [['aero','Aero'],['glass','Glass'],['off','Off']].map(([k,l])=>`<button data-k="${k}" class="${look===k?'on':''}" aria-pressed="${look===k}">${l}</button>`).join('')}</div></div>`:''}
     <div class="setrow setcol"><span class="rt"><b>Your colour</b><small id="setColSub">${COL_NAME[myCol()]}: your cards everywhere. Red is always the other side</small></span><div class="colpick" id="setCol" role="group" aria-label="Your colour">${
       MY_COLS.map(c=>`<button class="dc-${c}${c===myCol()?' on':''}" data-col="${c}" aria-pressed="${c===myCol()}" aria-label="${COL_NAME[c]}" title="${COL_NAME[c]}"></button>`).join('')}</div></div>
     <div class="setrow"><span class="rt"><b>Menu background</b><small>${noMotion()?'Cards behind the menu, kept still: your device reduces motion':'Cards drifting behind the menu'}</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
@@ -33,10 +36,10 @@ function openSettings(){
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
-  box.querySelectorAll('#setAero button').forEach(b=>b.onclick=()=>{
-    SAVE.aero=b.dataset.k==='1';save();applyTheme();sfx('click');
+  box.querySelectorAll('#setLook button').forEach(b=>b.onclick=()=>{
+    SAVE.aero=b.dataset.k==='aero';SAVE.liquid=b.dataset.k==='glass';save();applyTheme();sfx('click');
     box.querySelector('#setThemeSub').textContent=themeSub();
-    box.querySelectorAll('#setAero button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
+    box.querySelectorAll('#setLook button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
   box.querySelectorAll('#setCol button').forEach(b=>b.onclick=()=>{
     if(SAVE.col===b.dataset.col)return;

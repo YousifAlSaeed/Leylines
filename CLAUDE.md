@@ -44,6 +44,18 @@ What's new. So:
   with (Yousif or Jawad) of this rule**, and check the new changelog line says
   only "Small fixes".
 
+### Liquid glass (developers only, kept secret too)
+
+A second hidden look: the main menu and the phone's tab bar made of glass, like
+iOS 26. Developers pick it in the same Settings row as Aero (**Themes: Aero /
+Glass / Off**). It lives in `client/css/glass.css`, `client/js/glass.js` and
+`liquidOn()` (`client/js/save.js`).
+
+- **Never put it in `CHANGELOG.md`**, not even as "Small fixes", and **don't
+  bump the version** for a change that only touches it (the owners' choice).
+  A commit that also changes the game for players bumps and logs only that part.
+- Commit messages and pull requests on GitHub can describe it normally.
+
 ## Pulling
 
 Two people push to this repo, so always pull `dev` (`git pull origin dev`):

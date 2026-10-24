@@ -1,9 +1,9 @@
 'use strict';
 /* =====================================================================
-   LIQUID GLASS (glass.css): the menu's glass is turned on here, for
-   everyone but a developer's look (aero.css), which has its own. Then: the
-   lens under the picked tab and switch option, which slides there with
-   its front edge first so it stretches like a drop of water; pressing and
+   LIQUID GLASS (glass.css): a developer's look, switched on in Settings
+   (settings.js applyTheme sets :root.liquid; save.js liquidOn). Here: the
+   lens under the picked tab and switch option, which slides there and
+   stretches on the way like a drop of water; pressing and
    sliding along the tab bar; the glass brightening under the mouse; and,
    in Chrome and Edge, glass edges that bend what's behind them (.lq-bend).
    ===================================================================== */
@@ -22,17 +22,34 @@ const lensOf=el=>{
 // where a button sits in its bar (offsets aren't changed by the big screens' zoom, so no sums are needed)
 const spot=b=>({x:b.offsetLeft,y:b.offsetTop,w:b.offsetWidth,h:b.offsetHeight});
 const same=(a,b)=>a&&b&&Math.abs(a.x-b.x)<.5&&Math.abs(a.y-b.y)<.5&&Math.abs(a.w-b.w)<.5&&Math.abs(a.h-b.h)<.5;
-// put the lens l (in bar c) on `to`. From `from` it slides there: the edge in front on a quick spring, the one behind
-// on a slower one, so it stretches on the way and gathers up when it lands
-function place(l,c,to,from){
-  const set=s=>{l.style.left=s.x+'px';l.style.top=s.y+'px';l.style.right=c.clientWidth-s.x-s.w+'px';l.style.bottom=c.clientHeight-s.y-s.h+'px'};
-  if(!from||same(from,to)||still.matches){if(!same(from,to))l.style.setProperty('--lq-move','left 0s,right 0s,top 0s,bottom 0s');set(to);return}
-  l.style.setProperty('--lq-move','left 0s,right 0s,top 0s,bottom 0s');set(from);void l.offsetWidth;
-  const down=Math.abs(to.y-from.y)>Math.abs(to.x-from.x),fwd=down?to.y>from.y:to.x>from.x;
-  const fast='.4s var(--lq-slide)',slow='.62s var(--lq-slide)',side='.3s var(--lq-slide)';
-  l.style.setProperty('--lq-move',down?`top ${fwd?slow:fast},bottom ${fwd?fast:slow},left ${side},right ${side}`
-    :`left ${fwd?slow:fast},right ${fwd?fast:slow},top ${side},bottom ${side}`);
-  set(to);
+// the lens stands on `to` straight away, and stops sliding
+function put(l,to){
+  if(l._slide){l._slide.cancel();l._slide=null}
+  l._to=to;l.style.left=to.x+'px';l.style.top=to.y+'px';l.style.width=to.w+'px';l.style.height=to.h+'px';
+}
+// where the lens is right now, partway through a slide too: its translate and scale say how far it still has to go
+function now(l){
+  const t=l._to;if(!t||!l._slide)return t;
+  const cs=getComputedStyle(l),tr=cs.translate.split(' ').map(parseFloat),sc=cs.scale.split(' ').map(parseFloat);
+  const sx=isNaN(sc[0])?1:sc[0],sy=isNaN(sc[1])?sx:sc[1],w=t.w*sx,h=t.h*sy;
+  return {x:t.x+t.w/2+(tr[0]||0)-w/2,y:t.y+t.h/2+(tr[1]||0)-h/2,w,h};
+}
+// the slide's spring, the one glass.css has (--lq-slide); read when it's first needed, while the glass is on
+let spring='';
+// put the lens l on `to`, sliding there from `from` (or from where it is, if it's sliding already). It stretches on the
+// way, more the further it goes, and gathers up as it lands. Only its translate and scale move, which the browser plays
+// apart from the page's own work, so the slide stays smooth while a tab's page is being drawn
+function place(l,to,from){
+  if(l._slide&&same(l._to,to))return;
+  const at=l._slide?now(l):from;put(l,to);
+  if(!at||same(at,to)||still.matches||!l.animate)return;
+  const dx=at.x+at.w/2-to.x-to.w/2,dy=at.y+at.h/2-to.y-to.h/2,down=Math.abs(dy)>Math.abs(dx);
+  const k=Math.min(.45,.2*Math.abs(down?dy/to.h:dx/to.w)),mid=down?`${1-k/4} ${1+k}`:`${1+k} ${1-k/4}`;
+  const keys=[{translate:`${dx}px ${dy}px`,scale:`${at.w/to.w} ${at.h/to.h}`},{translate:`${dx*.45}px ${dy*.45}px`,scale:mid,offset:.35},{translate:'0px 0px',scale:'1 1'}];
+  if(!spring)spring=getComputedStyle(root).getPropertyValue('--lq-slide').trim()||'ease-out';
+  let a;
+  try{a=l.animate(keys,{duration:560,easing:spring})}catch(_){spring='cubic-bezier(.3,1.25,.5,1)';a=l.animate(keys,{duration:560,easing:spring})}
+  l._slide=a;a.onfinish=a.oncancel=()=>{if(l._slide===a)l._slide=null};
 }
 
 // the switches on the Play card (modes, difficulty): the lens follows the picked option. menu.js draws the buttons
@@ -42,7 +59,7 @@ function segs(){
   $$('#scr-menu .seg[id]').forEach(s=>{
     const b=s.querySelector('button.on');
     if(!live()||!b||!s.offsetWidth){const l=s.querySelector(':scope>.lq-lens');if(l)l.remove();s.classList.remove('lq-has-lens');return}
-    const to=spot(b);place(lensOf(s),s,to,segAt.get(s.id));segAt.set(s.id,to);s.classList.add('lq-has-lens');
+    const to=spot(b);place(lensOf(s),to,segAt.get(s.id));segAt.set(s.id,to);s.classList.add('lq-has-lens');
   });
 }
 
@@ -54,7 +71,7 @@ function tabSync(){
   const b=tabs.querySelector('button.on:not([hidden])'),l=lensOf(tabs);
   if(!live()||!b||!tabs.offsetWidth){l.style.opacity=0;tabAt=null;return}
   l.style.opacity='';
-  const to=spot(b);place(l,tabs,to,tabAt);tabAt=to;
+  const to=spot(b);place(l,to,tabAt);tabAt=to;
 }
 // press anywhere on the bar: the lens lifts off it and grows, and follows your finger; let go over a tab to open it
 const side=()=>tabs.offsetHeight>tabs.offsetWidth; // a phone held sideways: the bar is a rail down the left
@@ -70,8 +87,7 @@ function follow(e){
   const min=side()?first.offsetTop:first.offsetLeft,max=side()?last.offsetTop:last.offsetLeft;
   const p=Math.max(min,Math.min(max,(side()?e.clientY-r.top:e.clientX-r.left)-v/2));
   drag.at=side()?{x:b.offsetLeft,y:p,w:b.offsetWidth,h:b.offsetHeight}:{x:p,y:b.offsetTop,w:b.offsetWidth,h:b.offsetHeight};
-  const l=lensOf(tabs);l.style.setProperty('--lq-move','left 0s,right 0s,top 0s,bottom 0s');
-  l.style.left=drag.at.x+'px';l.style.top=drag.at.y+'px';l.style.right=tabs.clientWidth-drag.at.x-drag.at.w+'px';l.style.bottom=tabs.clientHeight-drag.at.y-drag.at.h+'px';
+  put(lensOf(tabs),drag.at);
   drag.u=tabNear(p+v/2);under(drag.u);
 }
 if(tabs){
@@ -84,7 +100,7 @@ if(tabs){
     const l=lensOf(tabs);l.style.opacity='';
     drag={id:e.pointerId,b0:b,x:e.clientX,y:e.clientY,moved:false,at:spot(b),u:b};
     // a tap slides the lens to the tab and lifts it there; holding still keeps it up
-    place(l,tabs,spot(b),tabAt);tabAt=spot(b);
+    place(l,spot(b),tabAt);tabAt=spot(b);
     tabs.classList.add('lq-drag');under(b);
   });
   tabs.addEventListener('pointermove',e=>{
@@ -103,7 +119,7 @@ if(tabs){
     const off=e.clientX<r.left-m||e.clientX>r.right+m||e.clientY<r.top-m||e.clientY>r.bottom+m;
     const cancel=e.type!=='pointerup'||off;
     const b=cancel?tabs.querySelector('button.on:not([hidden])'):d.u||d.b0;
-    if(b){const to=spot(b);place(lensOf(tabs),tabs,to,d.at);tabAt=to}
+    if(b){const to=spot(b);place(lensOf(tabs),to,d.at);tabAt=to}
     // the lens stays up a moment after a quick tap, then settles into the bar, back on the lit tab if the tab didn't open
     dropT=setTimeout(()=>{tabs.classList.remove('lq-drag');under(null);tabSync()},d.moved?0:160);
     // after a slide the bar clicks the tab itself, and swallows the click the browser may still send for the gesture
@@ -136,9 +152,13 @@ let touched=null,pressed=null;
 document.addEventListener('pointerdown',e=>{
   if(!live()||!e.isPrimary)return;
   release();
-  touched=glassAt(e.target);if(touched)touched.classList.add('lq-touch');
-  // a box sinks when you press its tile (the part that opens its place); a round button or the profile chip swells
-  pressed=e.target.closest('#scr-menu .hw>.tile')?e.target.closest('.hw'):e.target.closest('#scr-menu .hub-ib,#scr-menu .pcard,#scr-menu .btn:not(:disabled),#scr-menu .dly');
+  // (not the tab bar: its lens lifting is how it answers, and the brightening would repaint the bar while a page opens)
+  touched=glassAt(e.target);if(touched===tabs)touched=null;if(touched)touched.classList.add('lq-touch');
+  // a box sinks when you press the part that opens its place (all of it but its own buttons; only the Daily's title);
+  // a button or the profile chip swells
+  const box=e.target.closest('#scr-menu .hw'),ctl=e.target.closest('button,a,input,select,textarea,[tabindex]');
+  pressed=box&&(ctl?ctl.matches('.hw>.tile'):!box.matches('.hw-daily'))?box
+    :e.target.closest('#scr-menu .hub-ib,#scr-menu .pcard,#scr-menu .btn:not(:disabled),#scr-menu .dly');
   if(pressed)pressed.classList.add('lq-press');
 },{passive:true});
 const release=e=>{
@@ -208,7 +228,7 @@ function build(el){
 }
 let ro=null;
 function bendAll(){
-  if(!BEND)return;
+  if(!BEND||!live())return;
   if(!defs){defs=document.createElementNS(NS,'svg');defs.setAttribute('aria-hidden','true');defs.style.cssText='position:absolute;width:0;height:0;overflow:hidden';document.body.append(defs)}
   if(!ro)ro=new ResizeObserver(es=>requestAnimationFrame(()=>es.forEach(e=>e.target._lq&&build(e.target))));
   KIND.forEach(([sel,opt])=>$$(sel).forEach(el=>{
@@ -221,11 +241,11 @@ function bendAll(){
 
 // ---------- keeping it all in place ----------
 function sync(){segs();tabSync();bendAll()}
-// the glass is on unless a developer's look is (settings.js applyTheme sets <html class="aero">)
+// a developer switches the glass on and off in Settings (settings.js applyTheme sets <html class="liquid">, save.js liquidOn)
+let was=null;
 function own(){
-  const on=!root.classList.contains('aero');
-  if(live()===on)return;
-  root.classList.toggle('liquid',on);hover(null);requestAnimationFrame(sync);
+  const on=live();if(on===was)return;was=on;
+  hover(null);requestAnimationFrame(sync);
 }
 root.classList.toggle('lq-bend',BEND);own();
 new MutationObserver(own).observe(root,{attributes:true,attributeFilter:['class']});

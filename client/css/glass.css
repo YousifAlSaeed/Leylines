@@ -1,7 +1,8 @@
 /* =====================================================================
    LIQUID GLASS: the main menu and the tab bar, made of glass like iOS 26.
-   :root.liquid turns it on (glass.js, for everyone but a developer's look,
-   aero.css, which has glass of its own). glass.js adds what CSS alone
+   A developer's look, kept secret like Frutiger Aero: :root.liquid turns it
+   on (Settings, settings.js applyTheme; never with aero.css, which has
+   glass of its own). glass.js adds what CSS alone
    can't: the lens that slides along the tab bar and the switches, and
    (Chrome and Edge only, .lq-bend) edges that bend what's behind them.
    Safari and Firefox get the same glass without the bending.
@@ -136,20 +137,19 @@
 .liquid #scr-menu .seg:not(.lq-has-lens) button.on{background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
 .liquid #scr-menu .seg button:active{transform:scale(.95)}
 .lq-lens{position:absolute;z-index:0;border-radius:999px;pointer-events:none;background:var(--lq-lens);box-shadow:var(--lq-lens-sh);
-  transition:var(--lq-move,left 0s,right 0s,top 0s,bottom 0s),transform .34s var(--lq-lift),background .25s,box-shadow .25s,opacity .2s}
+  transition:transform .34s var(--lq-lift),background .25s,box-shadow .25s,opacity .2s}
 /* the bar of numbers: a shallow well */
 .liquid #scr-menu .hero-stats{background:var(--lq-well);border-color:var(--lq-well-line);border-radius:18px;box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
 .liquid #scr-menu .hero-stats div+div{border-left-color:var(--lq-well-line)}
 :root.liquid[data-theme="light"] #scr-menu .hero-stats{box-shadow:inset 0 1px 2px rgba(40,20,90,.08)}
-/* one pink button: the Play card's (Play, Quick play, Rejoin), coloured glass with a bright edge */
-.liquid #scr-menu .hero .btn.primary{background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);
-  border-radius:999px;transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
-/* the Daily's challenges, Buy and Open: clear glass with pink writing */
-.liquid #scr-menu .dly:not(.done),.liquid #scr-menu .btn.primary:not(.hero .btn){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);
+/* pink glass, coloured with a bright edge: the Play card's main button (Play, Quick play, Rejoin), the Daily's challenges
+   still to play, and Open on the Packs */
+.liquid #scr-menu :is(.hero .btn.primary,.hw-packs .btn.primary,.dly:not(.done)){background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);
+  text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
+/* the rest (Buy, Invite): clear glass with pink writing */
+.liquid #scr-menu .btn.primary:not(.hero .btn,.hw-packs .btn){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);
   transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
-.liquid #scr-menu .dly:not(.done){color:var(--text)}
-.liquid #scr-menu .dly:not(.done)>:is(svg,b),.liquid #scr-menu .btn.primary:not(.hero .btn){color:var(--lq-pink-ink)}
-.liquid #scr-menu .btn.primary:not(.hero .btn){border-radius:999px}
+.liquid #scr-menu .btn.primary{border-radius:999px}
 .liquid #scr-menu .dly{border-radius:20px}
 .liquid #scr-menu :is(.btn.primary,.dly):not(:disabled,.lq-press):hover{filter:brightness(1.07);transform:translateY(-1px)}
 /* a Daily challenge that's done: sunk into the box */
@@ -186,12 +186,19 @@
 .liquid .hub-tabs .td{top:5px}
 @supports (color:color-mix(in srgb,red 50%,transparent)){.liquid .hub-tabs .td{box-shadow:0 0 0 2px color-mix(in srgb,var(--bg1) 70%,transparent)}}
 .liquid .hub-tabs .td:not(:empty){top:3px}
-.liquid .hub-tabs .lq-lens{border-radius:27px}
-/* pressing the bar: the lens lifts off it, grows by a sixth and goes clear, and the tab under it grows with it */
-.liquid .hub-tabs.lq-drag .lq-lens{transform:scale(1.16);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
+.liquid .hub-tabs .lq-lens{border-radius:27px;background:none;box-shadow:none;will-change:transform}
+/* pressing the bar: the lens lifts off it, grows by a sixth and goes clear, and the tab under it grows with it. Its two
+   looks are two layers that fade into each other: only opacity and transform change, which the phone plays apart from
+   the page's work, so nothing stutters while the tab's page is drawn */
+.liquid .hub-tabs .lq-lens::before,.liquid .hub-tabs .lq-lens::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;transition:opacity .25s}
+.liquid .hub-tabs .lq-lens::before{background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+.liquid .hub-tabs .lq-lens::after{opacity:0;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
   box-shadow:0 10px 26px -8px rgba(0,0,0,.6),inset 1px 1px 0 rgba(255,255,255,.6),inset -1px -1px 0 rgba(255,255,255,.22),inset 0 0 14px rgba(255,255,255,.1)}
-:root.liquid[data-theme="light"] .hub-tabs.lq-drag .lq-lens{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));
+:root.liquid[data-theme="light"] .hub-tabs .lq-lens::after{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.25));
   box-shadow:0 10px 26px -10px rgba(40,20,90,.35),inset 1px 1px 0 #fff,inset -1px -1px 0 rgba(255,255,255,.7),inset 0 0 14px rgba(255,255,255,.6)}
+.liquid .hub-tabs.lq-drag .lq-lens{transform:scale(1.16)}
+.liquid .hub-tabs.lq-drag .lq-lens::before{opacity:0}
+.liquid .hub-tabs.lq-drag .lq-lens::after{opacity:1}
 .liquid .hub-tabs.lq-drag button.lq-under{color:var(--text)}
 .liquid .hub-tabs.lq-drag button.lq-under>:is(svg,.tab-av){transform:scale(1.16)}
 /* on the Collection, Friends and You the bar floats over a page at full brightness (not the dim cards): thicker glass,
@@ -226,6 +233,6 @@
   .liquid #scr-menu :is(.hero,.hw,.hub-ib,.pcard),.liquid .hub-tabs{--lq-tint:var(--surf)}
 }
 @media (prefers-reduced-motion:reduce){
-  .liquid #scr-menu :is(.hw,.hub-ib,.pcard,.btn,.dly),.liquid .hub-tabs>button>:is(svg,.tab-av),.lq-lens{transition:none}
+  .liquid #scr-menu :is(.hw,.hub-ib,.pcard,.btn,.dly),.liquid .hub-tabs>button>:is(svg,.tab-av),.lq-lens,.lq-lens::before,.lq-lens::after{transition:none}
   .liquid .hub-tabs.lq-drag .lq-lens,.liquid .hub-tabs.lq-drag button.lq-under>:is(svg,.tab-av),.liquid #scr-menu :is(.hero,.hw).lq-lit{transform:none}
 }
