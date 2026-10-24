@@ -164,4 +164,14 @@ describe('push alerts', () => {
     await settle();
     assert.equal(sent.length, 0);
   });
+
+  test('a device saved by another copy of the server (a deploy starting up) still gets alerts', async () => {
+    const { id } = await db.get('SELECT id FROM users WHERE username = $n', { $n: 'ana' });
+    const s = sub(9);
+    await db.run('INSERT INTO push_subs (user_id, site, endpoint, p256dh, auth, created_at) VALUES ($u, $s, $e, $p, $a, $now)',
+      { $u: id, $s: 'https://game.test', $e: s.endpoint, $p: s.keys.p256dh, $a: s.keys.auth, $now: new Date().toISOString() });
+    const r = await api('/push/test', { method: 'POST', token: T.ana });
+    assert.equal(r.body.devices, 1);
+    assert.equal(sent.at(-1).endpoint, s.endpoint);
+  });
 });

@@ -54,9 +54,10 @@ export function createPusher(db, { send } = {}) {
     // → { devices, sent, failed: [reasons] }
     async notify(id, { ttl = 24 * 3600, ...msg }) {
       const out = { devices: 0, sent: 0, failed: [] };
-      if (!users.has(id)) return out;
       try {
+        // always the database, not the list in memory: another copy of the server (a deploy starting up) may have added the device
         const rows = await db.all('SELECT * FROM push_subs WHERE user_id = $u AND site = $s', { $u: id, $s: site });
+        if (rows.length) users.add(id); else users.delete(id);
         const body = JSON.stringify(msg);
         let gone = false;
         out.devices = rows.length;

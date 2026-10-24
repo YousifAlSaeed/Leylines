@@ -29,6 +29,14 @@ async function alertsSub(){
   catch(e){return null}
 }
 function b64bytes(s){const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+// made with another server key (the server moved, or got new keys): the push service would refuse every alert to it
+function alertsStale(sub,key){
+  const k=sub.options&&sub.options.applicationServerKey;if(!k)return false; // older browsers don't say
+  const a=new Uint8Array(k),b=b64bytes(key);
+  return a.length!==b.length||a.some((v,i)=>v!==b[i]);
+}
+// tells the server this device has alerts on, for the account using it now
+const alertsSend=sub=>api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}});
 // remembered on this device, so Settings can show the switch straight away
 const AL_KEY='leylines.alerts';
 const alertsMark=on=>{try{on?localStorage.setItem(AL_KEY,'1'):localStorage.removeItem(AL_KEY)}catch(e){}};
@@ -61,9 +69,10 @@ async function alertsOn(){
   if(perm!=='granted')throw new Error(perm==='denied'?'Alerts are blocked. Allow notifications for this site in your browser settings.':'Alerts stay off.');
   const reg=await alertsReg();
   let sub=await alertsWithin(reg.pushManager.getSubscription(),4000,'This browser didn\'t answer. Try again, or try another browser.');
+  if(sub&&alertsStale(sub,key)){await sub.unsubscribe().catch(()=>{});sub=null}
   if(!sub)sub=await alertsWithin(reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64bytes(key)}),15000,'This browser didn\'t answer. Try again, or try another browser.')
     .catch(e=>{throw new Error(alertsWhy(e))});
-  await api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}});
+  await alertsSend(sub);
   alertsMark(true);
 }
 async function alertsOff(token=ACCT.token){
@@ -79,13 +88,24 @@ async function alertsSync(){
   if(!ACCT.token||!alertsCan()||Notification.permission!=='granted')return;
   const sub=await alertsSub();
   alertsMark(!!sub);
-  if(sub)api('/push/subscribe',{method:'POST',body:{sub:sub.toJSON()}}).catch(()=>{});
+  if(!sub)return;
+  const key=await alertsKey();
+  if(key&&alertsStale(sub,key))alertsOn().catch(()=>{}); // a new one with the server's key (no question: alerts are allowed already)
+  else alertsSend(sub).catch(()=>{});
 }
-// Settings → Alerts → Test (developer accounts only): the server sends one to each of your devices and says how it went
-async function alertsTest(){
-  const r=await api('/push/test',{method:'POST'});
+// a test alert (Settings, developer accounts only). When the server has lost this device (moved to new hosting,
+// a restart at the wrong moment), it's told about it again and asked once more
+async function alertsTry(path){
+  let r=await api(path,{method:'POST'});
+  const sub=!r.devices&&await alertsSub();
+  if(sub){await alertsSend(sub);r=await api(path,{method:'POST'})}
   if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
   if(r.failed.length)throw new Error(`The alert didn't go through (${r.failed[0]}).`);
+  return r;
+}
+// Settings → Alerts → Test: the server sends one to each of your devices and says how it went
+async function alertsTest(){
+  const r=await alertsTry('/push/test');
   toast(r.devices>1?`Test alert sent to your ${r.devices} devices`:'Test alert sent. It should show up in a moment.',3500);
 }
 
@@ -117,9 +137,7 @@ function dailyAlertWire(box){
 }
 // Settings → Daily reminder → Test: the server sends this account's reminder now (a sample when nothing's waiting)
 async function dailyAlertTest(){
-  const r=await api('/push/test-daily',{method:'POST'});
-  if(!r.devices)throw new Error('The server has no device of yours. Turn alerts off and on again.');
-  if(r.failed.length)throw new Error(`The alert didn't go through (${r.failed[0]}).`);
+  const r=await alertsTry('/push/test-daily');
   toast(r.waiting?'Daily reminder sent. It should show up in a moment.':'Nothing is waiting today, so you got a sample. It should show up in a moment.',4000);
 }
 async function alertsPaint(box){
