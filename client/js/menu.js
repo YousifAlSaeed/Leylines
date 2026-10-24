@@ -119,7 +119,7 @@ function hubColl(){
   const nw=collNew(),fresh=new Set(nw?SAVE.seen.slice(-nw).map(id=>CARDS[id].rar):[]);
   el.innerHTML=`<div class="hw-rars">${[1,2,3,4,5].map(r=>{const [f,t]=rarFound(r),n=fresh.has(r);
     return `<button class="hw-rar${f===t?' done':''}" type="button" style="--rc:var(--r${r});--rt:var(--r${r}t)" data-r="${r}" aria-label="${RARITY[r-1]}: ${f} of ${t} found${n?', new cards':''}">`+
-      `<b>${r}★</b><i><s style="width:${Math.round(f/t*100)}%"></s></i><small>${f===t?'✓ ':''}${f}/${t}</small>${n?'<span class="hw-new" aria-hidden="true"></span>':''}</button>`}).join('')}</div>`;
+      `<b>${r}★</b><i><s style="width:${Math.round(f/t*100)}%"></s></i><small>${f}/${t}</small>${n?'<span class="hw-new" aria-hidden="true"></span>':''}</button>`}).join('')}</div>`;
   el.querySelectorAll('.hw-rar').forEach(b=>b.onclick=()=>openCollection(+b.dataset.r));
 }
 // the market: its four stops, each opening the market there

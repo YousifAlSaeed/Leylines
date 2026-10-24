@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.8 (2026-10-24)
+- The collection counts on the main menu no longer show a tick when a rarity is complete
+
 ## 0.30.7 (2026-10-24)
 - On a phone, a message that pops up on the main menu now shows above the bar at the bottom, not on top of it
 
