@@ -166,12 +166,7 @@
 :root.liquid[data-theme="light"] #scr-menu .ver{background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.9);box-shadow:0 2px 6px -2px rgba(40,20,90,.15)}
 .liquid #scr-menu :is(.hw-on,.hw-rar,.hw-req){background:var(--lq-well);border-color:var(--lq-well-line);border-radius:16px}
 .liquid #scr-menu .hw-lr{border-top-color:var(--lq-well-line)}
-/* packs to open: the box glows pink through the glass, its edge lit pink */
-@supports (color:color-mix(in srgb,red 50%,transparent)){
-  .liquid #scr-menu .hw-packs.hot{box-shadow:var(--lq-shadow),var(--lq-inner),0 0 0 1px color-mix(in srgb,var(--cta) 50%,transparent),0 12px 34px -14px var(--cta-glow)}
-  .liquid #scr-menu .hw-packs.hot::before{background:radial-gradient(var(--lq-rr,120px) circle at 30% 28%,var(--lq-rim-glow),transparent 70%),
-    linear-gradient(140deg,var(--cta-hi),color-mix(in srgb,var(--cta) 30%,transparent) 40%,color-mix(in srgb,var(--cta) 20%,transparent) 60%,var(--cta-hi))}
-}
+/* packs to open: no pink edge on the box (the glass's own covers menu.css's), the count's pink dot says it */
 
 /* ---------- the tab bar: a capsule of glass floating over the bottom of the screen ---------- */
 .liquid .hub-tabs{left:max(12px,min(21px,5vw),env(safe-area-inset-left));right:max(12px,min(21px,5vw),env(safe-area-inset-right));bottom:var(--lq-tabgap);
