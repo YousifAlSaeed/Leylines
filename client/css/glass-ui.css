@@ -1,0 +1,220 @@
+/* =====================================================================
+   LIQUID GLASS (ui): pop-ups, toasts and the controls every screen shares.
+   A developer's look (glass.css), only under :root.liquid. Apple's rule:
+   glass only for what floats over the page (a pop-up, the How to play
+   sheet, a toast, the add-to-home-screen card, a screen's back button).
+   Inside the glass everything is a fill, never glass again: a well when
+   it's sunk (switches, fields, sliders), clear when it's raised (buttons,
+   grouped rows). The view's main button is pink glass, the rest clear,
+   all of them pills. The light stays put: no glints, no sheen bands.
+   The menu (#scr-menu) and the tab bar are glass.css's: the shared rules
+   here leave them alone (:where(:not(#scr-menu *)) adds no weight).
+   ===================================================================== */
+:root.liquid{
+  /* a pop-up's glass: thicker than the menu's (it can sit over the board, or text), tinted so its words read */
+  --lq-ui-tint:rgba(22,14,54,.6);
+  /* a toast or a card that slides in has no dimming behind it: thicker still */
+  --lq-ui-toast:rgba(24,16,58,.72);
+  /* the back buttons: small glass, lightly tinted */
+  --lq-ui-chip:rgba(30,20,72,.34);
+  /* the rim, as the border's four colours: lit at the top and left (where the light is), dim at the bottom and right */
+  --lq-ui-edge:rgba(255,255,255,.24) rgba(255,255,255,.1) rgba(255,255,255,.06) rgba(255,255,255,.16);
+  --lq-ui-sh:0 34px 80px -30px rgba(0,0,0,.85),0 10px 26px -14px rgba(0,0,0,.5),inset 0 0 30px rgba(255,255,255,.035);
+  --lq-ui-float:0 18px 44px -18px rgba(0,0,0,.75),0 4px 12px -6px rgba(0,0,0,.4),inset 0 0 20px rgba(255,255,255,.03);
+  --lq-ui-chip-sh:0 8px 20px -10px rgba(0,0,0,.6),inset 0 0 12px rgba(255,255,255,.04);
+  /* what's left of the page behind a pop-up: dimmed, not blurred (the pop-up's own glass blurs it) */
+  --lq-ui-scrim:rgba(4,2,14,.48);
+  /* rows grouped inside the glass (Settings, the jukebox, the inbox, What's new): a soft raised fill */
+  --lq-ui-group:rgba(255,255,255,.055); --lq-ui-group-hi:rgba(255,255,255,.1);
+  --lq-ui-group-sh:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.05);
+  /* about the glass's own colour at its foot, solid: a pinned footer hides the list scrolling under it */
+  --lq-ui-solid:rgba(22,17,44,.94);
+  /* sunk: a well's inner shade, a slider's empty track; the white knob's shadow */
+  --lq-ui-sunk:inset 0 1px 3px rgba(0,0,0,.22); --lq-ui-track:rgba(255,255,255,.14);
+  --lq-ui-knob:0 2px 6px rgba(0,0,0,.45),0 0 0 .5px rgba(0,0,0,.2);
+  --lq-ui-scroll:rgba(255,255,255,.2);
+  /* red stays red: clear glass with red writing and a red rim */
+  --lq-ui-danger-sh:0 6px 16px -8px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.18),inset 0 0 0 1px color-mix(in srgb,var(--danger) 50%,transparent);
+  --lq-ui-danger-hi:color-mix(in srgb,var(--danger) 14%,transparent);
+  /* the jukebox's play button: violet glass */
+  --lq-ui-accent:linear-gradient(180deg,color-mix(in srgb,var(--accent) 80%,transparent),color-mix(in srgb,var(--accent) 64%,transparent));
+  --lq-ui-accent-sh:0 10px 24px -10px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 1px color-mix(in srgb,var(--accent-hi) 50%,transparent);
+}
+:root.liquid[data-theme="light"]{
+  --lq-ui-tint:rgba(250,248,255,.62);
+  --lq-ui-toast:rgba(252,250,255,.78);
+  --lq-ui-chip:rgba(255,255,255,.5);
+  --lq-ui-edge:#fff rgba(255,255,255,.75) rgba(255,255,255,.55) rgba(255,255,255,.9);
+  --lq-ui-sh:0 34px 70px -30px rgba(40,20,90,.42),0 10px 24px -14px rgba(40,20,90,.16),0 0 0 .5px rgba(40,20,90,.1),inset 0 0 30px rgba(255,255,255,.5);
+  --lq-ui-float:0 18px 40px -18px rgba(40,20,90,.35),0 4px 12px -6px rgba(40,20,90,.12),0 0 0 .5px rgba(40,20,90,.1),inset 0 0 20px rgba(255,255,255,.5);
+  --lq-ui-chip-sh:0 8px 18px -10px rgba(40,20,90,.3),0 0 0 .5px rgba(40,20,90,.08),inset 0 0 12px rgba(255,255,255,.5);
+  --lq-ui-scrim:rgba(40,20,90,.24);
+  --lq-ui-group:rgba(255,255,255,.62); --lq-ui-group-hi:rgba(255,255,255,.92);
+  --lq-ui-group-sh:inset 0 0 0 1px rgba(255,255,255,.9),0 1px 3px rgba(40,20,90,.07);
+  --lq-ui-solid:rgba(236,233,245,.95);
+  --lq-ui-sunk:inset 0 1px 2px rgba(40,20,90,.1); --lq-ui-track:rgba(40,20,90,.12);
+  --lq-ui-knob:0 2px 6px rgba(40,20,90,.25),0 0 0 .5px rgba(40,20,90,.12);
+  --lq-ui-scroll:rgba(40,20,90,.2);
+  --lq-ui-danger-sh:0 6px 16px -10px rgba(40,20,90,.3),inset 0 1px 1px #fff,inset 0 0 0 1px color-mix(in srgb,var(--danger) 40%,transparent);
+  --lq-ui-danger-hi:color-mix(in srgb,var(--danger) 9%,transparent);
+  /* nearly solid here: white on a bright page needs a strong violet behind it */
+  --lq-ui-accent:linear-gradient(180deg,color-mix(in srgb,var(--accent) 92%,transparent),color-mix(in srgb,var(--accent) 86%,transparent));
+  --lq-ui-accent-sh:0 10px 22px -10px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.45),inset 0 0 0 1px color-mix(in srgb,var(--accent-hi) 55%,transparent);
+}
+/* browsers without color-mix (iOS before 16.2, Chrome before 111): a plain red rim, the play button solid */
+@supports not (color:color-mix(in srgb,red 50%,transparent)){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-ui-danger-sh:0 6px 16px -10px rgba(var(--sh),.4),inset 0 0 0 1px var(--danger);--lq-ui-danger-hi:rgba(var(--tint),.06);
+    --lq-ui-accent:linear-gradient(160deg,var(--accent-hi),var(--accent));--lq-ui-accent-sh:0 6px 16px -6px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.3)}
+}
+
+/* ---------- pop-ups: a sheet of glass over the dimmed page ---------- */
+/* the dim behind (pop-ups, How to play, waiting for the other player): no blur of its own, or the sheet's glass would
+   only see it. It fades in by its colour alone, so the glass sees the page the whole time */
+.liquid :is(#modal,#how,#away){background-color:var(--lq-ui-scrim);-webkit-backdrop-filter:none;backdrop-filter:none}
+.liquid :is(#modal,#how,#away).on{animation:lqScrim .3s ease-out}
+@keyframes lqScrim{from{background-color:transparent}}
+/* the sheet: frosted and tinted, the light top left, a little shade at the foot, the rim in its border */
+.liquid :is(.mbox,.hbox){border-color:var(--lq-ui-edge);border-radius:30px;box-shadow:var(--lq-ui-sh);
+  background:radial-gradient(360px circle at 18% 0%,var(--lq-glow),transparent 70%),linear-gradient(180deg,transparent 55%,var(--lq-shade)),var(--lq-fill),var(--lq-ui-tint);
+  -webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);
+  animation:lqPop .45s var(--lq-slide) both,lqFade .2s ease-out both}
+/* it rises and settles (a spring, like iOS's sheets), fading only itself: a fading parent would hide what's behind */
+@keyframes lqPop{from{transform:translateY(10px) scale(.94)}}
+.liquid .mbox{scrollbar-width:thin;scrollbar-color:var(--lq-ui-scroll) transparent}
+
+/* ---------- inside a pop-up: fills only ---------- */
+/* grouped rows: Settings and the jukebox's lists, its player, the inbox, What's new */
+.liquid :is(.setlist,.jbplayer,.jblist,.ibx-row,.nw-ver){background:var(--lq-ui-group);border-color:transparent;box-shadow:var(--lq-ui-group-sh)}
+.liquid :is(.setlist,.jbplayer,.jblist){border-radius:20px}
+.liquid :is(.ibx-row,.nw-ver){border-radius:18px}
+.liquid :is(.setrow,.jblist button){border-top-color:var(--lq-well-line)}
+.liquid .ibx-row{transition:background .2s,transform .3s var(--lq-lift)}
+.liquid .ibx-row:hover{background:var(--lq-ui-group-hi)}
+.liquid .ibx-row:active{transform:scale(.985)}
+/* What's new: the version you have keeps its violet ring; Close stays pinned at the foot, over the list scrolling under it */
+.liquid .nw-ver.top{box-shadow:var(--lq-ui-group-sh),inset 0 0 0 1.5px var(--accent),0 10px 24px -14px var(--accent-glow)}
+.liquid .nw-tag{border-radius:999px;padding:2px 8px}
+.liquid .nw-box .mbtns{background:linear-gradient(180deg,transparent,var(--lq-ui-solid) 18px);border-top:0;padding-top:22px}
+/* the sign-in sheet's fields (and the code and name fields elsewhere): wells */
+.liquid :is(.authf input,.codein,.namein,.linkin):where(:not(#scr-menu *)){background:var(--lq-well);border-color:var(--lq-well-line);border-radius:999px;box-shadow:var(--lq-ui-sunk)}
+.liquid .authf input{padding:10px 16px}
+
+/* ---------- a toast, and the add-to-home-screen card: glass floating over the page, with nothing dimmed behind ---------- */
+.liquid #toast{border-color:var(--lq-ui-edge);border-radius:22px;padding:11px 18px;box-shadow:var(--lq-ui-float);
+  background:radial-gradient(200px circle at 20% 0%,var(--lq-glow),transparent 70%),var(--lq-fill),var(--lq-ui-toast);
+  -webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5)}
+.liquid .a2hs{border-color:var(--lq-ui-edge);border-radius:28px;box-shadow:var(--lq-ui-float);
+  background:radial-gradient(300px circle at 18% 0%,var(--lq-glow),transparent 70%),linear-gradient(180deg,transparent 55%,var(--lq-shade)),var(--lq-fill),var(--lq-ui-toast);
+  -webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5)}
+.liquid .a2hs ol{border-radius:16px;background:var(--lq-well);box-shadow:var(--lq-ui-sunk)}
+.liquid .a2hs-x{border-radius:50%;transition:background .2s,box-shadow .2s}
+.liquid .a2hs-x:hover{background:var(--lq-clear);box-shadow:var(--lq-clear-sh)}
+
+/* ---------- buttons: pills ---------- */
+/* clear glass: every button but the view's main one */
+.liquid .btn:where(:not(#scr-menu *)){border-color:transparent;border-radius:999px;background:var(--lq-clear);box-shadow:var(--lq-clear-sh);
+  transition:transform .3s var(--lq-lift),filter .2s,box-shadow .3s,background .2s,opacity .2s}
+/* the view's main action: pink glass with white writing, like the menu's Play */
+.liquid .btn.primary:where(:not(#scr-menu *)){background:var(--lq-pink);color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh)}
+/* writing only (Not now): a soft fill under the mouse */
+.liquid .btn.text:where(:not(#scr-menu *)){background:none;box-shadow:none}
+.liquid .btn.text:where(:not(#scr-menu *)):hover{background:rgba(var(--tint),.06)}
+/* danger keeps its red: clear glass, red writing, a red rim, a red wash under the mouse */
+.liquid .btn.danger:where(:not(#scr-menu *)){color:var(--danger);box-shadow:var(--lq-ui-danger-sh)}
+.liquid .btn.danger:where(:not(#scr-menu *)):hover{background:linear-gradient(var(--lq-ui-danger-hi),var(--lq-ui-danger-hi)),var(--lq-clear)}
+/* a red word-only button (Delete loadout) keeps its red wash too */
+.liquid .btn.text.dk-lodel:hover{background:var(--lq-ui-danger-hi)}
+/* pressing swells and brightens it, like iOS's glass (not a sink) */
+.liquid .btn:where(:not(#scr-menu *)):active:not(:disabled,.waiting){transform:scale(1.03);filter:brightness(1.1);transition-duration:.2s}
+/* but not on the buttons that are glass themselves (pinned over a page or the pack stage): a filter on glass can lose its
+   frost in Safari, so they only swell */
+.liquid :is(.setup-foot .btn.primary,.btn.primary.tut-next,.pk-stage .pk-foot .btn):is(:hover,:active){filter:none}
+
+/* round buttons (a pop-up's close, a card's ×): clear glass circles */
+.liquid .iconbtn:where(:not(#scr-menu *)){border-color:transparent;border-radius:50%;background:var(--lq-clear);box-shadow:var(--lq-clear-sh);
+  transition:transform .3s var(--lq-lift),filter .2s,box-shadow .3s,background .2s}
+.liquid .iconbtn:where(:not(#scr-menu *)):hover{filter:brightness(1.1)}
+.liquid .iconbtn:where(:not(#scr-menu *)):active{transform:scale(1.08)}
+/* a screen's back button sits at the top of the page, over it: a round piece of glass, as on an iPhone */
+.liquid .topbar>.iconbtn{border-color:var(--lq-ui-edge);box-shadow:var(--lq-ui-chip-sh);
+  background:radial-gradient(36px circle at 30% 25%,var(--lq-glow),transparent 70%),var(--lq-fill),var(--lq-ui-chip);
+  -webkit-backdrop-filter:blur(8px) saturate(1.6);backdrop-filter:blur(8px) saturate(1.6);transition:transform .3s var(--lq-lift),box-shadow .3s,--lq-glow .25s}
+/* under the mouse and pressed its own light grows (no brightness filter: a filter on glass can lose its frost in Safari) */
+.liquid .topbar>.iconbtn:hover{filter:none;--lq-glow:rgba(255,255,255,.16)}
+.liquid .topbar>.iconbtn:active{filter:none;--lq-glow:rgba(255,255,255,.24)}
+:root.liquid[data-theme="light"] .topbar>.iconbtn:hover{--lq-glow:rgba(255,255,255,.8)}
+:root.liquid[data-theme="light"] .topbar>.iconbtn:active{--lq-glow:#fff}
+/* the bar rises in by moving only (fading it would hide what's behind the glass until it ended): what's in it fades by
+   itself (not the Draft's clock, which keeps its own pulse) */
+.liquid .screen.on .topbar{animation-name:lqRise}
+.liquid .screen.on .topbar>:not(.dr-clock){animation:lqFade .4s var(--ease) both}
+
+/* ---------- switches: a well, with the lens (glass.js) under the picked option ---------- */
+.liquid .seg{position:relative;background:var(--lq-well);border-color:var(--lq-well-line);box-shadow:var(--lq-ui-sunk);border-radius:999px;padding:3px}
+.liquid .seg button{position:relative;z-index:1;border-radius:999px;transition:color .25s,transform .3s var(--lq-lift)}
+.liquid .seg button.on{background:none;box-shadow:none}
+/* a switch the lens hasn't reached (no id, or not drawn yet): the picked option is the lens itself */
+.liquid .seg:not(.lq-has-lens) button.on{background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+/* with the lens there, the picked option never draws one of its own (the id no element has lifts this over a page's own
+   .seg rules) */
+.liquid .seg.lq-has-lens:not(#lq-none)>button.on{background:none;box-shadow:none}
+.liquid .seg button:active{transform:scale(.95)}
+
+/* sliders (the volume, the jukebox's song, a match's settings): a thin sunk track, the filled part violet, a white
+   knob that grows while it's held, like iOS's */
+.liquid input.rng::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),var(--lq-ui-track) var(--f));box-shadow:var(--lq-ui-sunk)}
+.liquid input.rng::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) var(--f),var(--lq-ui-track) var(--f));box-shadow:var(--lq-ui-sunk)}
+.liquid input.rng::-webkit-slider-thumb{width:22px;height:22px;margin-top:-8px;border:0;background:#fff;box-shadow:var(--lq-ui-knob);transition:transform .3s var(--lq-lift),box-shadow .2s}
+.liquid input.rng::-moz-range-thumb{width:22px;height:22px;border:0;background:#fff;box-shadow:var(--lq-ui-knob);transition:transform .3s var(--lq-lift),box-shadow .2s}
+.liquid input.rng:active::-webkit-slider-thumb{transform:scale(1.18)}
+.liquid input.rng:active::-moz-range-thumb{transform:scale(1.18)}
+.liquid input.rng:focus-visible::-webkit-slider-thumb{box-shadow:var(--lq-ui-knob),0 0 0 4px var(--accent-glow)}
+.liquid input.rng:focus-visible::-moz-range-thumb{box-shadow:var(--lq-ui-knob),0 0 0 4px var(--accent-glow)}
+/* mute: a clear circle, sunk while muted */
+.liquid .vmute{border-color:transparent;border-radius:50%;background:var(--lq-clear);box-shadow:var(--lq-clear-sh);transition:transform .3s var(--lq-lift),filter .2s,box-shadow .2s,background .2s}
+.liquid .vmute[aria-pressed="true"]{background:var(--lq-well);box-shadow:var(--lq-ui-sunk)}
+/* its focus ring (menu.css draws it as a shadow, which the glass's own shadow would hide) */
+.liquid .vmute:focus-visible{box-shadow:var(--lq-clear-sh),0 0 0 3px var(--accent-glow)}
+.liquid .vmute[aria-pressed="true"]:focus-visible{box-shadow:var(--lq-ui-sunk),0 0 0 3px var(--accent-glow)}
+@media (hover:hover){.liquid .vmute:hover{filter:brightness(1.1)}}
+.liquid .vmute:active{transform:scale(1.08)}
+/* the jukebox: its song pickers are wells, its buttons clear glass under the mouse, Play violet glass */
+.liquid .jbsel select{border-color:var(--lq-well-line);border-radius:999px;background:var(--lq-well);box-shadow:var(--lq-ui-sunk);padding-left:14px}
+.liquid .jbctl button{transition:background .2s,box-shadow .2s,transform .3s var(--lq-lift)}
+.liquid .jbctl button:not(.jbplay):hover{background:var(--lq-clear);box-shadow:var(--lq-clear-sh)}
+.liquid .jbctl .jbplay{background:var(--lq-ui-accent);color:#fff;box-shadow:var(--lq-ui-accent-sh)}
+.liquid .jbctl button:active{transform:scale(1.08)}
+
+/* ---------- comfort settings ---------- */
+/* Reduce Transparency (Chrome and Edge read it, and Windows' "Transparency effects: off"): solid sheets, the page dimmed
+   as before */
+@media (prefers-reduced-transparency:reduce){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-ui-tint:var(--surf);--lq-ui-toast:var(--surf2);--lq-ui-chip:var(--surf2);--lq-ui-solid:var(--surf)}
+  .liquid :is(.mbox,.hbox),.liquid .a2hs,.liquid .topbar>.iconbtn{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .liquid #toast{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .liquid :is(#modal,#how,#away){background-color:rgba(var(--sh),var(--dim))}
+}
+/* Increase Contrast: a clear edge on every piece of glass and every button, and much less see-through */
+@media (prefers-contrast:more){
+  :root.liquid{--lq-ui-tint:rgba(14,9,34,.92);--lq-ui-toast:rgba(14,9,34,.94);--lq-ui-chip:rgba(14,9,34,.82);--lq-ui-solid:rgb(14,9,34);--lq-ui-edge:var(--line2);--lq-ui-scrim:rgba(4,2,14,.7)}
+  :root.liquid[data-theme="light"]{--lq-ui-tint:rgba(255,255,255,.94);--lq-ui-toast:rgba(255,255,255,.95);--lq-ui-chip:rgba(255,255,255,.88);--lq-ui-solid:#fff;--lq-ui-edge:var(--line2);--lq-ui-scrim:rgba(40,20,90,.45)}
+  .liquid .btn:where(:not(#scr-menu *)):not(.primary,.text,.danger),.liquid .iconbtn:where(:not(#scr-menu *)),.liquid .vmute{box-shadow:var(--lq-clear-sh),inset 0 0 0 1px var(--line2)}
+  .liquid :is(.setlist,.jbplayer,.jblist,.ibx-row,.nw-ver){box-shadow:inset 0 0 0 1px var(--line2)}
+  .liquid .nw-ver.top{box-shadow:inset 0 0 0 2px var(--accent)}
+  .liquid .seg,.liquid .jbsel select,.liquid :is(.authf input,.codein,.namein,.linkin):where(:not(#scr-menu *)){border-color:var(--line2)}
+  .liquid .seg:where(:not(#scr-menu *))>.lq-lens,.liquid .seg:where(:not(#scr-menu *)):not(.lq-has-lens) button.on{box-shadow:var(--lq-lens-sh),inset 0 0 0 1.5px var(--accent)}
+}
+/* a browser without frosted glass: nearly solid sheets instead, so their words stay readable */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-ui-tint:var(--surf);--lq-ui-toast:var(--surf2);--lq-ui-chip:var(--surf2);--lq-ui-solid:var(--surf)}
+}
+@media (prefers-reduced-motion:reduce){
+  .liquid :is(#modal,#how,#away).on,.liquid :is(.mbox,.hbox){animation:none}
+  .liquid .btn:where(:not(#scr-menu *)),.liquid .iconbtn:where(:not(#scr-menu *)),.liquid .topbar>.iconbtn,.liquid .seg:where(:not(#scr-menu *)) button,.liquid :is(.vmute,.ibx-row,.jbctl button){transition:none}
+  .liquid .btn:where(:not(#scr-menu *)):active:not(:disabled,.waiting),.liquid .iconbtn:where(:not(#scr-menu *)):active,.liquid .seg:where(:not(#scr-menu *)) button:active,
+  .liquid :is(.vmute,.ibx-row,.jbctl button):active{transform:none}
+  .liquid input.rng::-webkit-slider-thumb{transition:none}
+  .liquid input.rng::-moz-range-thumb{transition:none}
+  .liquid input.rng:active::-webkit-slider-thumb{transform:none}
+  .liquid input.rng:active::-moz-range-thumb{transform:none}
+}

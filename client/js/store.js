@@ -241,7 +241,7 @@ function renderStore(){
     <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
   // both tabs are drawn, and switching only shows one or the other (the market isn't drawn again)
   const tab=(k,html)=>`<div class="st-pane" data-pane="${k}"${stPkTab===k?'':' hidden'}>${html}</div>`;
-  const packs=`<div class="seg st-seg" role="group" aria-label="Pack counter">${[['packs','Packs'],['shards','Shards']].map(([k,l])=>
+  const packs=`<div class="seg st-seg" id="stSeg" role="group" aria-label="Pack counter">${[['packs','Packs'],['shards','Shards']].map(([k,l])=>
     `<button data-pt="${k}" class="${stPkTab===k?'on':''}" aria-pressed="${stPkTab===k}">${l}</button>`).join('')}</div>${tab('packs',tiers)}${tab('shards',earned)}`;
   const atelier=`<div class="st-closed">${ST_BREW}<b>Atelier</b><span class="st-soon">Coming soon</span><small>Come back another ${day?'day':'night'}.</small></div>`;
 

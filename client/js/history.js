@@ -53,7 +53,7 @@ function histInner(list,mine,owner){
   const shown=all.filter(x=>HIST.f==='all'||x.h.m===HIST.f);
   const head=`<h3>Match history ${list.length?`<em>last ${list.length}</em>`:''}</h3>`;
   if(!list.length)return head+priv+`<p class="pf-hint left">${mine?'Your online and Solo games will show up here, with both hands, the rules and any cards traded.':'No matches yet.'}</p>`;
-  const seg=`<div class="seg mh-seg" role="group" aria-label="Show">${[['all','All'],['online','Online'],['ai','Solo']].map(([k,l])=>
+  const seg=`<div class="seg mh-seg" id="mhSeg" role="group" aria-label="Show">${[['all','All'],['online','Online'],['ai','Solo']].map(([k,l])=>
     `<button data-f="${k}" class="${HIST.f===k?'on':''}" aria-pressed="${HIST.f===k}">${l}</button>`).join('')}</div>`;
   const rows=shown.slice(0,HIST.n).map(x=>histRow(x.h,x.i,mine,owner)).join('');
   const more=shown.length>HIST.n?`<button class="mh-more" data-h="more">Show more</button>`:'';

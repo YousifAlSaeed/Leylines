@@ -1,0 +1,178 @@
+/* =====================================================================
+   LIQUID GLASS (play): a match, its Review, Crossroads and Draft. A developer's look (glass.css), only under :root.liquid.
+   Glass only for what floats over the match: the top bar's round buttons and turn pill, the emote button, its tray and
+   bubbles, the sound panel and the Review's bar. The board, the name rows, Draft's hands and the match history are
+   content: fills and soft rims, rounder corners, no blur. The cards never change (cards.css), nor the players' colours.
+   ===================================================================== */
+:root.liquid{
+  /* the panels that open over the board and its cards (sound, emotes, the Review): thicker than the menu's glass, so
+     their words stay easy to read over a busy board */
+  --lq-play-tint:rgba(18,11,44,.62);
+  /* a glass button lighting up: under the mouse, then pressed */
+  --lq-play-hi:rgba(255,255,255,.07); --lq-play-hi2:rgba(255,255,255,.14);
+  /* an emote's bubble: milky glass with dark writing in both themes, so it still reads as a speech bubble */
+  --lq-play-bub:rgba(255,255,255,.88);
+  /* content, no blur: the board's soft rim and shadow, and Draft's two hands */
+  --lq-play-rim:rgba(255,255,255,.1);
+  --lq-play-board-sh:0 24px 60px -18px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.07);
+  --lq-play-panel:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));
+  --lq-play-panel-sh:0 14px 32px -20px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(255,255,255,.07);
+}
+:root.liquid[data-theme="light"]{
+  --lq-play-tint:rgba(250,248,255,.7);
+  --lq-play-hi:rgba(255,255,255,.4); --lq-play-hi2:rgba(255,255,255,.7);
+  --lq-play-bub:rgba(255,255,255,.9);
+  --lq-play-rim:rgba(255,255,255,.95);
+  --lq-play-board-sh:0 24px 50px -22px rgba(40,20,90,.4),0 0 0 .5px rgba(40,20,90,.1),inset 0 1px 0 rgba(255,255,255,.7);
+  --lq-play-panel:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.64));
+  --lq-play-panel-sh:0 14px 32px -20px rgba(40,20,90,.3),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(40,20,90,.06);
+}
+
+/* ---------- the glass: the top bar's round buttons (menu, How to play, sound), the turn pill, the emote button ---------- */
+/* small and still, over the page beside the board: a light frost (Safari wants the blur written out). The tutorial's
+   Skip sits in the same bar, so it's the same glass. No brightness filter (glass-ui.css's hover and press): the glass
+   lights itself, and a filter on glass can lose its frost in Safari */
+.liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game .turn .pill,.liquid #scr-game #btnEmote{
+  background:linear-gradient(var(--lq-play-lit,transparent),var(--lq-play-lit,transparent)),var(--lq-fill),var(--lq-tint);border-color:transparent;box-shadow:var(--lq-clear-sh);
+  filter:none;-webkit-backdrop-filter:blur(8px) saturate(1.6);backdrop-filter:blur(8px) saturate(1.6)}
+.liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game #btnEmote{border-radius:999px;transition:transform .3s var(--lq-lift),background .2s,box-shadow .2s}
+.liquid #scr-game .hud #tutSkip{color:var(--text)}
+/* it brightens under the mouse; pressed, it swells a little and brightens more, like iOS's glass buttons */
+@media (hover:hover){.liquid :is(#scr-game,#scr-duo) .hud .iconbtn:hover,.liquid #scr-game .hud #tutSkip:hover,.liquid #scr-game #btnEmote:hover{--lq-play-lit:var(--lq-play-hi)}}
+.liquid :is(#scr-game,#scr-duo) .hud .iconbtn:active,.liquid #scr-game .hud #tutSkip:active,.liquid #scr-game #btnEmote:active{--lq-play-lit:var(--lq-play-hi2);transform:scale(1.07);transition-duration:.15s}
+/* open (the sound panel, the emote tray): the lens, the lighter glass under a picked tab */
+.liquid #scr-game :is(#btnSnd,#btnEmote).on{background:var(--lq-lens),var(--lq-tint);box-shadow:var(--lq-lens-sh);color:var(--accent-ink)}
+/* the emote button emptying after a burst: its ring round, like the button */
+.liquid #scr-game #btnEmote.cool::after{border-radius:50%}
+
+/* ---------- the glass panels that open over the board: sound, emotes, and the Review's buttons ---------- */
+/* thicker glass (--lq-play-tint), the menu's light top left and soft shade at the bottom */
+.liquid #scr-game :is(.sndpop,.etray),.liquid #revBar{
+  background:radial-gradient(180px circle at 30% 18%,var(--lq-glow),transparent 70%),linear-gradient(180deg,transparent 50%,var(--lq-shade)),var(--lq-fill),var(--lq-play-tint);
+  border-color:transparent;box-shadow:var(--lq-shadow),var(--lq-inner);-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5)}
+/* the bright edge, as on the menu's glass: a 1px ring, brightest top left where the light comes from */
+.liquid #scr-game :is(.sndpop,.etray)::before,.liquid #revBar::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;
+  background:var(--lq-rim);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+/* rounder, and the pieces inside follow (their corner = the panel's minus the space around them) */
+.liquid #scr-game .sndpop{border-radius:22px}
+.liquid #scr-game .etray{border-radius:24px}
+.liquid #revBar{border-radius:26px}
+
+/* inside them: fills, never more glass */
+/* the rows sit straight on the panel (not glass-ui.css's grouped fill); the mute buttons are glass-ui.css's clear
+   circles, as in Settings, with the keyboard's focus ring kept (their shadow covers menu.css's) */
+.liquid #scr-game .sndpop .setlist{background:none;border:0;box-shadow:none}
+.liquid #scr-game .sndpop .vmute:focus-visible{box-shadow:var(--lq-clear-sh),0 0 0 3px var(--accent-glow)}
+.liquid #scr-game .sndpop .vmute[aria-pressed="true"]:focus-visible{box-shadow:var(--lq-ui-sunk,inset 0 1px 2px rgba(0,0,0,.2)),0 0 0 3px var(--accent-glow)}
+/* the emotes: clear keys; Mute a clear pill, ringed in the accent while it's on */
+.liquid #scr-game .etray .em{background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .25s var(--lq-lift),box-shadow .2s}
+@media (hover:hover){.liquid #scr-game .etray .em:hover{box-shadow:var(--lq-clear-sh),inset 0 0 0 1.5px var(--accent)}}
+.liquid #scr-game .etray .emute{background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);-webkit-backdrop-filter:none;backdrop-filter:none}
+.liquid #scr-game .etray .emute[aria-pressed="true"]{color:var(--accent-ink);box-shadow:var(--lq-clear-sh),inset 0 0 0 1px var(--accent)}
+/* the Review's bar (review.js): round clear buttons and a clear Back pill; the picked match (or Your move / The answer)
+   sits on the lens, the others in small wells */
+.liquid #revBar :is(.iconbtn,.btn){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);border-radius:999px;color:var(--text);filter:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none}
+.liquid #revBar :is(.iconbtn,.btn):disabled{background:var(--lq-well);box-shadow:none}
+@media (hover:hover){.liquid #revBar :is(.iconbtn,.btn):not(:disabled):hover{background:var(--lq-lens)}}
+.liquid #revBar .rv-tabs button{background:var(--lq-well);border-color:var(--lq-well-line);border-radius:999px}
+.liquid #revBar .rv-tabs button.on{background:var(--lq-lens);border-color:transparent;box-shadow:var(--lq-lens-sh);color:var(--text)}
+
+/* ---------- an emote's bubble: milky glass, its tail the same white ---------- */
+/* no border (a 1px more of padding instead): the see-through tail would paint over it, a bright line where they meet */
+.liquid #scr-game .ebub{background:var(--lq-play-bub);border:0;padding:7px 14px 7px 10px;
+  box-shadow:0 10px 26px -10px rgba(var(--sh),calc(.7*var(--shk) + .2)),0 0 0 .5px rgba(var(--sh),calc(.15*var(--shk))),inset 0 1px 1px #fff;
+  -webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
+.liquid #scr-game .ebub::before{border-top-color:var(--lq-play-bub);border-bottom-color:var(--lq-play-bub)}
+
+/* ---------- around the board: content, so fills ---------- */
+/* whose turn: your tag keeps the accent, the other player's is clear */
+.liquid #scr-game .side.me .ttag{box-shadow:0 4px 12px -6px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.25)}
+.liquid #scr-game .side.opp .ttag{background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh)}
+/* HOST / GUEST, the rules in play and the timer's bar: soft pills and wells (Sudden death keeps its red, a series its accent) */
+.liquid :is(#scr-game .pname,#scr-draft .dr-who) .tag{border-radius:999px}
+.liquid :is(#scr-game,#scr-duo) .rulebar span{border-radius:999px}
+.liquid :is(#scr-game,#scr-duo) .rulebar span:not(.tut-on){background:var(--lq-well)}
+.liquid :is(#scr-game,#scr-duo) .rulebar span:not(.sd,.ser,.tut-on){border-color:var(--lq-well-line)}
+.liquid :is(#scr-game,#scr-duo) .tbar{background:var(--lq-well);border-radius:999px}
+/* the board: solid as it was, with a soft bright rim; a board running out of time keeps its red edge (game.css .crit) */
+.liquid .board:not(.crit){border-color:var(--lq-play-rim);box-shadow:var(--lq-play-board-sh)}
+/* Crossroads' connection note */
+.liquid #scr-duo .dnet{border-radius:16px}
+/* Draft: each hand on a soft panel (the one picking ringed), the table like the board, empty places as wells */
+.liquid #scr-draft .dr-side{background:var(--lq-play-panel);border-color:transparent;box-shadow:var(--lq-play-panel-sh);border-radius:20px}
+.liquid #scr-draft .dr-side.active{box-shadow:var(--lq-play-panel-sh),inset 0 0 0 1.5px var(--line2)}
+.liquid #scr-draft .dr-mid{border-color:var(--lq-play-rim);box-shadow:var(--lq-play-board-sh);border-radius:24px}
+.liquid #scr-draft .dr-slot{background:var(--lq-well)}
+
+/* ---------- the result (the pop-up itself is glass-ui.css's glass): what's inside it ---------- */
+/* a series' matches: small wells, edged in the winner's colour */
+.liquid #modal .serlog span{background:var(--lq-well);border-radius:999px}
+.liquid #modal .serlog span:not(.b,.r){border-color:var(--lq-well-line)}
+/* the cards to take: a picked one rises onto the lens */
+.liquid #modal .cardrow .pk{border-radius:14px;transition:transform .3s var(--lq-lift),border-color .15s,background .2s,box-shadow .2s}
+.liquid #modal .cardrow .pk.on{background:var(--lq-lens);box-shadow:var(--lq-lens-sh),0 10px 20px -8px var(--hot-glow)}
+/* the spares' bar */
+.liquid #modal .spare-bar .bar,.liquid #modal .spare-bar .bar i{border-radius:999px}
+.liquid #modal .spare-bar .bar{background:var(--lq-well)}
+/* Free-for-all's places: clear rows, each with its player's colour down the side; yours on the lens */
+.liquid #modal .dplaces li{background:var(--lq-clear);border-color:transparent;border-left-color:var(--dc1);box-shadow:var(--lq-clear-sh);border-radius:16px}
+.liquid #modal .dplaces li.dme{background:var(--lq-lens);box-shadow:var(--lq-lens-sh),inset 0 0 0 1px var(--line2)}
+/* Host a game (duo.js hostPick): clear cards, ringed in the accent under the mouse (glass-pregame.css adds the press) */
+.liquid #modal .hostpick .hp{background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);border-radius:20px}
+.liquid #modal .hostpick .hp:is(:hover,:focus-visible){box-shadow:var(--lq-clear-sh),0 0 0 1.5px var(--accent),0 8px 22px -10px var(--accent-glow)}
+/* the "Testing" tags (duo.css): the same pill wherever they are, the 1v1 Draft room's title too */
+.liquid .dbeta{border-radius:999px;background:var(--lq-well)}
+
+/* ---------- the Crossroads room (its rows, rule cards and switches are the 1v1 room's: glass-pregame.css) ---------- */
+.liquid #scr-duoroom .dtag{border-radius:999px;background:var(--lq-well)}
+.liquid #scr-duoroom .dtag:not(.ok){border-color:var(--lq-well-line)}
+.liquid #scr-duoroom .dsel{border-radius:12px}
+.liquid #scr-duoroom .dsel:is(:hover,:focus-visible){background-color:var(--lq-well);border-color:var(--lq-well-line)}
+.liquid #scr-duoroom .room-pl li.empty .av{background:var(--lq-well)}
+/* Invite: not the room's main button (Start is), so clear glass with pink writing, like the menu's Invite */
+.liquid #scr-duoroom .dctl .btn.primary{background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);text-shadow:none}
+
+/* ---------- match history (on a profile, history.js): rows and boxes as fills ---------- */
+.liquid .mh-row{border-radius:16px}
+.liquid .mh-row:hover,.liquid .mh.open .mh-row,.liquid .mh-more:hover{background:var(--lq-well)}
+.liquid .mh-res{border-radius:50%}
+.liquid .mh-res.d,.liquid .mh-log span{background:var(--lq-well)}
+.liquid .mh-log span,.liquid .mh-more{border-radius:999px}
+.liquid .mh-rules span{background:var(--lq-well);border-color:var(--lq-well-line)}
+.liquid .mh-facts div{background:var(--lq-well);border-color:var(--lq-well-line);border-radius:16px}
+
+/* ---------- comfort settings ---------- */
+/* Reduce Transparency: solid, as before */
+@media (prefers-reduced-transparency:reduce){
+  .liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game .turn .pill,.liquid #scr-game #btnEmote{
+    background:linear-gradient(var(--lq-play-lit,transparent),var(--lq-play-lit,transparent)),var(--surf2);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .liquid #scr-game :is(#btnSnd,#btnEmote).on{background:var(--lq-lens),var(--surf2)}
+  .liquid #scr-game :is(.sndpop,.etray),.liquid #revBar{background:var(--surf);-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-play-bub:#fff}
+  .liquid #scr-game .ebub{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+/* Increase Contrast: a clear edge on every piece of glass and fill, and much less see-through */
+@media (prefers-contrast:more){
+  .liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game .turn .pill,.liquid #scr-game #btnEmote{--lq-tint:rgba(10,6,30,.78);border-color:var(--line2)}
+  :root.liquid[data-theme="light"] :is(#scr-game,#scr-duo) .hud .iconbtn,:root.liquid[data-theme="light"] #scr-game .hud #tutSkip,
+    :root.liquid[data-theme="light"] #scr-game .turn .pill,:root.liquid[data-theme="light"] #scr-game #btnEmote{--lq-tint:rgba(255,255,255,.8)}
+  :root.liquid{--lq-play-tint:rgba(10,6,30,.88)}
+  :root.liquid[data-theme="light"]{--lq-play-tint:rgba(255,255,255,.92)}
+  .liquid #scr-game :is(.sndpop,.etray),.liquid #revBar,.liquid #scr-game .etray :is(.em,.emute),.liquid #revBar :is(.iconbtn,.btn),.liquid #modal .hostpick .hp,
+    .liquid #scr-game .side.opp .ttag{border-color:var(--line2)}
+  /* the bubble solid white, its edge a ring (it has no border, see above) */
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-play-bub:#fff}
+  .liquid #scr-game .ebub{box-shadow:0 8px 24px rgba(var(--sh),calc(.5*var(--shk))),0 0 0 1px var(--line2)}
+  .liquid #modal .dplaces li{border-color:var(--line2);border-left-color:var(--dc1)}
+  .liquid .board:not(.crit),.liquid #scr-draft :is(.dr-side,.dr-mid){border-color:var(--line2)}
+}
+/* a browser without frosted glass: nearly solid instead, so the words stay readable */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game .turn .pill,.liquid #scr-game #btnEmote{--lq-tint:var(--surf2)}
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-play-tint:var(--surf);--lq-play-bub:#fff}
+}
+@media (prefers-reduced-motion:reduce){
+  .liquid :is(#scr-game,#scr-duo) .hud .iconbtn,.liquid #scr-game .hud #tutSkip,.liquid #scr-game #btnEmote,.liquid #scr-game .etray .em,.liquid #modal .cardrow .pk{transition:none}
+  .liquid :is(#scr-game,#scr-duo) .hud .iconbtn:active,.liquid #scr-game .hud #tutSkip:active,.liquid #scr-game #btnEmote:active{transform:none}
+}

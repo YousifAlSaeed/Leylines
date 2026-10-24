@@ -73,7 +73,7 @@ function lbShell(){
     <div class="lb-left"><section class="pf-card lb-me" id="lbMe"></section><section class="pf-card lb-show" id="lbShow"></section>
       <p class="lb-note">Wins, streaks and results count online matches only. Ranks update each time a signed-in player's progress is saved.</p></div>
     <div class="lb-mid">
-      <div class="lb-tools"><div class="seg lb-by" role="group" aria-label="Rank by">${LB_BY.map(([k,n,sh])=>`<button data-by="${k}" aria-pressed="false" aria-label="${n}"><span class="lb-l">${n}</span><span class="lb-s" aria-hidden="true">${sh}</span></button>`).join('')}</div>
+      <div class="lb-tools"><div class="seg lb-by" id="lbBy" role="group" aria-label="Rank by">${LB_BY.map(([k,n,sh])=>`<button data-by="${k}" aria-pressed="false" aria-label="${n}"><span class="lb-l">${n}</span><span class="lb-s" aria-hidden="true">${sh}</span></button>`).join('')}</div>
         <label class="lb-find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
           <input id="lbQ" type="search" maxlength="20" placeholder="Find a player" aria-label="Find a player" autocomplete="off" autocapitalize="off" spellcheck="false"></label></div>
       <section class="pf-card lb-table" id="lbTable" aria-live="polite"></section>

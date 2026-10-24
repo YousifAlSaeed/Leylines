@@ -52,15 +52,32 @@ function place(l,to,from){
   l._slide=a;a.onfinish=a.oncancel=()=>{if(l._slide===a)l._slide=null};
 }
 
-// the switches on the Play card (modes, difficulty): the lens follows the picked option. menu.js draws the buttons
-// again on every tap, so a new lens starts where the old one was and slides from there
+// the switches, on every screen and in the pop-ups (the Play card's modes and difficulty, Settings, the sign-in sheet,
+// a room's mode): the lens follows the picked option. Some are drawn again on every tap (menu.js) or when the server
+// says so (duo.js), so a new lens starts where the old one was and slides from there. Only switches with an id: that's
+// how the lens remembers where it was. One out of sight forgets, so it doesn't slide in from long ago
 const segAt=new Map();
+// our own changes (a lens put in or taken out, a switch's lq-has-lens) aren't news
+const ours=m=>m.type==='attributes'?m.target.classList.contains('seg')||m.target.classList.contains('lq-lens')
+  :[...m.addedNodes,...m.removedNodes].every(n=>n.classList&&n.classList.contains('lq-lens'));
+// everything that can move a lens asks for one look in the next frame
+let segQ=0;
+const segSoon=()=>{if(!segQ&&live())segQ=requestAnimationFrame(()=>{segQ=0;segs()})};
+// a switch with a lens is watched: an option lit, or its buttons drawn again, moves the lens
+const segMO=new MutationObserver(ms=>{if(!ms.every(ours))segSoon()});
 function segs(){
-  $$('#scr-menu .seg[id]').forEach(s=>{
-    const b=s.querySelector('button.on');
-    if(!live()||!b||!s.offsetWidth){const l=s.querySelector(':scope>.lq-lens');if(l)l.remove();s.classList.remove('lq-has-lens');return}
-    const to=spot(b);place(lensOf(s),to,segAt.get(s.id));segAt.set(s.id,to);s.classList.add('lq-has-lens');
+  // every switch is measured first and only then moved, so the page is laid out once, not once a switch
+  const on=live(),keep=new Map(),drop=[];
+  $$('.seg[id]').forEach(s=>{const b=on&&s.offsetWidth&&s.querySelector('button.on');if(b)keep.set(s,spot(b));else drop.push(s)});
+  drop.forEach(s=>{const l=s.querySelector(':scope>.lq-lens');if(l)l.remove();if(s.classList.contains('lq-has-lens'))s.classList.remove('lq-has-lens')});
+  keep.forEach((to,s)=>{
+    place(lensOf(s),to,segAt.get(s.id));segAt.set(s.id,to);s.classList.add('lq-has-lens');
+    segMO.observe(s,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
   });
+  // a switch out of sight, or gone with its pop-up, forgets where its lens was
+  const ids=new Set([...keep.keys()].map(s=>s.id));
+  segAt.forEach((_,id)=>{if(!ids.has(id))segAt.delete(id)});
+  if(!on)segMO.disconnect();
 }
 
 // ---------- the tab bar ----------
@@ -251,8 +268,14 @@ root.classList.toggle('lq-bend',BEND);own();
 new MutationObserver(own).observe(root,{attributes:true,attributeFilter:['class']});
 const body=$('#heroBody'),mode=$('#modeSeg');
 const mine=m=>[...m.addedNodes,...m.removedNodes].every(n=>n.classList&&n.classList.contains('lq-lens'));
-const mo=new MutationObserver(ms=>{if(!ms.every(mine))requestAnimationFrame(segs)});
+const mo=new MutationObserver(ms=>{if(!ms.every(mine))segSoon()});
 if(body)mo.observe(body,{childList:true});if(mode)mo.observe(mode,{childList:true});
+// a switch coming into sight gets its lens: a pop-up drawn (helpers.js modal), a screen shown, or anything a tap opens
+// or draws again (a match setting's row, a page). Only these, not the whole page, so a match's own changes cost nothing
+const seen=new MutationObserver(segSoon),pop=$('#modal');
+if(pop)seen.observe(pop,{childList:true});
+$$('.screen').forEach(s=>seen.observe(s,{attributes:true,attributeFilter:['class']}));
+document.addEventListener('click',segSoon,{passive:true});
 addEventListener('resize',()=>{segAt.clear();tabAt=null;requestAnimationFrame(sync)});
 if(document.fonts)document.fonts.ready.then(sync);
 sync();

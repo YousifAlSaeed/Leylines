@@ -1,0 +1,237 @@
+/* =====================================================================
+   LIQUID GLASS (places): the Collection, Packs, the Night Market, Friends,
+   You and the Leaderboard. A developer's look (glass.css), only under
+   :root.liquid. Apple's rule: glass only for what floats over the page (a
+   friend's request, your own row pinned to the bottom of the Leaderboard,
+   the buttons over the pack you're opening). The pages' panels, the book,
+   the hand and the market's stops are content: soft fills, rounder corners,
+   a faint rim, no blur. Inside a pop-up (glass of its own, glass-ui.css)
+   everything is a fill: a well when it's sunk, clear when it's raised.
+   The cards themselves never change.
+   ===================================================================== */
+:root.liquid{
+  /* a page's panels: a soft violet fill, a little lighter than the page, with a faint rim (the same as the setup's) */
+  --lq-pl-panel:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025) 70%),rgba(20,12,51,.72);
+  --lq-pl-rim:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.075);
+  --lq-pl-sh:0 14px 30px -22px rgba(0,0,0,.85);
+  /* sunk into a panel (the search, the switches' track) */
+  --lq-pl-sunk:inset 0 1px 3px rgba(0,0,0,.22);
+  /* your own reaction to a friend's news */
+  --lq-pl-on:rgba(184,148,255,.18);
+  /* the glass that floats over a page at full brightness: thick, so its words stay easy to read */
+  --lq-pl-tint:rgba(18,11,44,.66);
+  /* the Night Market's stops: a thin tint the sky shows through, a bright top edge */
+  --lq-st-panel:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025) 70%),rgba(10,8,34,.4);
+  --lq-st-rim:inset 0 1px 0 rgba(255,255,255,.1);
+  --lq-st-sh:0 18px 40px -28px rgba(0,0,0,.8);
+  /* its buy buttons: clear glass with a shard-coloured edge */
+  --lq-st-buy:0 6px 14px -8px rgba(0,0,0,.55),inset 0 1px 1px rgba(255,255,255,.22),inset 0 0 0 1px rgba(111,227,240,.35);
+}
+:root.liquid[data-theme="light"]{
+  --lq-pl-panel:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.7));
+  --lq-pl-rim:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(40,20,90,.07);
+  --lq-pl-sh:0 14px 30px -22px rgba(40,20,90,.35);
+  --lq-pl-sunk:inset 0 1px 2px rgba(40,20,90,.1);
+  --lq-pl-on:rgba(106,43,174,.12);
+  --lq-pl-tint:rgba(250,248,255,.72);
+  /* the Day Market (the light theme's sky) */
+  --lq-st-panel:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.52));
+  --lq-st-rim:inset 0 1px 0 #fff;
+  --lq-st-sh:0 16px 34px -26px rgba(43,26,63,.32);
+  --lq-st-buy:0 6px 14px -10px rgba(43,26,63,.3),inset 0 1px 1px #fff,inset 0 0 0 1px rgba(34,166,184,.45);
+}
+
+/* ---------- what these pages share ---------- */
+/* the panels of Friends, You and the Leaderboard (Packs and the Collection have their own, below) */
+.liquid :is(#scr-profile,#scr-friends,#scr-leaders) .pf-card{border-color:transparent;border-radius:24px;background:var(--lq-pl-panel);box-shadow:var(--lq-pl-sh),var(--lq-pl-rim)}
+/* the buttons: the main one pink glass, the rest clear */
+.liquid :is(#scr-coll,#scr-packs,#scr-store,#scr-friends,#scr-profile,#scr-leaders) .btn.primary{background:var(--lq-pink);border-color:transparent;border-radius:999px;
+  color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh)}
+/* a small one in a row (Accept, Invite, Add friend, a guest's Create account): clear glass with pink writing, like the menu's */
+.liquid :is(#scr-coll,#scr-packs,#scr-store,#scr-friends,#scr-profile,#scr-leaders) .btn.primary.small{background:var(--lq-clear);box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);text-shadow:none}
+.liquid :is(#scr-coll,#scr-packs,#scr-store,#scr-friends,#scr-profile,#scr-leaders) .btn:not(.primary,.text,.danger){background:var(--lq-clear);border-color:transparent;border-radius:999px;box-shadow:var(--lq-clear-sh)}
+.liquid :is(#scr-coll,#scr-packs,#scr-store,#scr-friends,#scr-profile,#scr-leaders) .btn.danger{border-radius:999px}
+/* the switches (rank by, the Pack counter's tabs, your history's filter, Unlock all): a well, the picked option raised on
+   a lens. A switch with an id gets glass.js's lens, which slides; the others light the picked button itself */
+.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg{position:relative;background:var(--lq-well);border-color:var(--lq-well-line);border-radius:999px;padding:3px;box-shadow:var(--lq-pl-sunk)}
+.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg button{position:relative;z-index:1;border-radius:999px;transition:color .25s,background .25s,box-shadow .25s,transform .15s}
+.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg button.on{background:none;box-shadow:none}
+.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg:not(.lq-has-lens) button.on{background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+
+/* ---------- the Collection: the book stays a book (flat, solid pages); the table round it gets the glass's palette ---------- */
+/* the book: rounder, a faint rim instead of a hard edge; its pages round off to match */
+.liquid #scr-coll .binder{border-radius:24px;box-shadow:var(--lq-pl-rim),0 24px 48px -22px rgba(var(--sh),calc(.9*var(--shk)))}
+.liquid #scr-coll .bd-wrap.drop .binder{box-shadow:inset 0 0 0 2px var(--accent-hi),0 0 30px -6px var(--accent-glow),0 24px 48px -22px rgba(var(--sh),calc(.9*var(--shk)))}
+.liquid #scr-coll :is(.bd-page,.bd-sheet).l{border-radius:12px 3px 3px 12px}
+.liquid #scr-coll :is(.bd-page,.bd-sheet).r{border-radius:3px 12px 12px 3px}
+/* the cover that swings open lies over the book, so its outer corners match the book's */
+.liquid #scr-coll .bd-cover .cf.front{border-radius:6px 24px 24px 6px}
+.liquid #scr-coll .bd-cover .cf.back{border-radius:24px 6px 6px 24px}
+/* the sleeves' light stays put under the pointer (the glass's light never follows it); the card still slides up */
+.liquid #bdWrap .pk-cell::after{transition:none}
+@media (hover:hover){.liquid #bdWrap .pk-cell:hover::after{background-position:50% 0,0 0,100% 0,0 0,0 0,30% 0,0 0,0 0}}
+.liquid #bdWrap .pk-cell:has(>.pocket:focus-visible)::after{background-position:50% 0,0 0,100% 0,0 0,0 0,30% 0,0 0,0 0}
+/* the hand's mat and the panel beside it: soft panels */
+.liquid #scr-coll :is(.dk-fan,.coll-panel){border-radius:24px;background:var(--lq-pl-panel);box-shadow:var(--lq-pl-sh),var(--lq-pl-rim)}
+.liquid #scr-coll .coll-tray.over .dk-fan{box-shadow:inset 0 0 0 2px var(--accent-hi),0 0 22px -4px var(--accent-glow)}
+/* Best 5 and Clear (and Save hand while picking): clear glass */
+.liquid #scr-coll .dk-act{border-color:transparent;border-radius:999px;background:var(--lq-clear);box-shadow:var(--lq-clear-sh)}
+.liquid #scr-coll .dk-act:hover:not(:disabled){border-color:transparent;background:var(--lq-clear);filter:brightness(1.08)}
+/* the loadouts' deck boxes keep their colour: rounder, a soft seam for the lid, a bright rim instead of a hard edge */
+.liquid #scr-coll .dk-loslot{border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.1),0 10px 20px -12px rgba(var(--sh),calc(.8*var(--shk)))}
+.liquid #scr-coll .dk-loslot::before{background:rgba(0,0,0,.16);box-shadow:none}
+.liquid #scr-coll .dk-loslot:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(255,255,255,.32),0 10px 20px -12px rgba(var(--sh),calc(.8*var(--shk)))}
+.liquid #scr-coll .dk-loslot.on{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px var(--cta),0 10px 20px -12px rgba(var(--sh),calc(.8*var(--shk)))}
+/* an empty slot: sunk into the table */
+.liquid #scr-coll .dk-loslot.empty{background:var(--lq-well);box-shadow:var(--lq-pl-sunk),inset 0 0 0 1px var(--lq-well-line)}
+.liquid #scr-coll .dk-loslot.pick{box-shadow:inset 0 0 0 1.5px var(--accent-hi)}
+
+/* the card's pop-up (its glass is glass-ui.css's): the page inside is solid, flat (no stack of page edges), rounder */
+.liquid #modal .cd-sheet{border-radius:20px;box-shadow:var(--lq-pl-rim)}
+.liquid #modal .cd-sides div{border-color:var(--lq-well-line);border-radius:14px;background:var(--lq-well)}
+.liquid #modal .cd-own b{border-radius:999px;padding:1px 10px}
+/* naming a loadout (its pop-up): the name in a well */
+.liquid #modal #loName{border-color:var(--lq-well-line);border-radius:999px;background:var(--lq-well);box-shadow:var(--lq-pl-sunk)}
+
+/* ---------- Packs ---------- */
+.liquid #scr-packs .pk-card{border-color:transparent;border-radius:24px;background:var(--lq-pl-panel);box-shadow:var(--lq-pl-sh),var(--lq-pl-rim)}
+/* the daily pack's light stays put: a soft glow of its colour behind the pack, not a beam going round */
+.liquid #scr-packs .pk-daily::before{top:0;right:0;bottom:0;left:0;animation:none;background:radial-gradient(60% 90% at 14% 45%,color-mix(in srgb,var(--p3) 18%,transparent),transparent 70%)}
+/* a small phone stacks the pack over its words: the glow goes up with it */
+@media (max-width:420px){.liquid #scr-packs .pk-daily::before{background:radial-gradient(90% 50% at 50% 18%,color-mix(in srgb,var(--p3) 18%,transparent),transparent 70%)}}
+.liquid #scr-packs .pk-streak i{border-radius:10px}
+/* the 5-star guarantee: a shallow well */
+.liquid .pity-bar{border-color:var(--lq-well-line);background:var(--lq-well);box-shadow:var(--lq-pl-sunk)}
+
+/* opening a pack: the stage keeps its own light and the rarities' colours. Only its buttons are glass, floating over it */
+.liquid .pk-stage #pkClose,.liquid .pk-stage .pk-foot .btn:not(.primary){border-color:transparent;background:var(--lq-clear);box-shadow:var(--lq-clear-sh);
+  -webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+.liquid .pk-stage #pkClose{border-radius:50%}
+.liquid .pk-stage #pkClose:hover{filter:brightness(1.1)}
+.liquid .pk-stage .pk-foot .btn{border-radius:999px}
+.liquid .pk-stage .pk-foot .btn.primary{border-color:transparent;background:var(--lq-pink);color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);
+  -webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+:root.liquid[data-theme="light"] .pk-stage :is(#pkClose,.pk-foot .btn){-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
+
+/* ---------- the Night Market: its sky stays. Its stops are content, so a thin tint and a bright top edge, no frost ---------- */
+.liquid #scr-store .st-glass{border-radius:24px;background:var(--lq-st-panel);box-shadow:var(--lq-st-sh),var(--lq-st-rim);-webkit-backdrop-filter:none;backdrop-filter:none}
+/* the buy buttons: clear glass with the shard colour on the edge; a sold one is only an outline */
+.liquid #scr-store .st-buy{border-color:transparent;background:var(--lq-clear);box-shadow:var(--lq-st-buy)}
+.liquid #scr-store .st-buy:hover:not(:disabled){border-color:transparent;filter:brightness(1.08)}
+.liquid #scr-store .st-buy:disabled{background:none;box-shadow:inset 0 0 0 1px var(--line)}
+.liquid #scr-store .st-pk.deal{border-radius:16px}
+/* a phone: each stop of the carousel is the panel (the stop's inner box goes clear, as before) */
+@media (max-width:759px){
+  .liquid #scr-store .st-stop{border-radius:28px;background:var(--lq-st-panel);box-shadow:var(--lq-st-sh),var(--lq-st-rim)}
+  .liquid #scr-store .st-stop .st-glass{border-radius:0;background:none;box-shadow:none}
+}
+
+/* ---------- Friends ---------- */
+/* their username: a well in the panel */
+.liquid #scr-friends .fr-addf input{border-color:var(--lq-well-line);border-radius:999px;padding:10px 16px;background:var(--lq-well);box-shadow:var(--lq-pl-sunk)}
+/* friends' news: the reactions are clear glass pills; yours is lit in the accent colour */
+.liquid #scr-friends :is(.mo-re,.mo-add,.mo-pk){border-color:transparent;background:var(--lq-clear);box-shadow:var(--lq-clear-sh)}
+@media (hover:hover){.liquid #scr-friends :is(.mo-re,.mo-add,.mo-pk):hover{border-color:transparent;box-shadow:var(--lq-clear-sh),inset 0 0 0 1px var(--accent-ink)}}
+.liquid #scr-friends .mo-re.on{background:var(--lq-pl-on);box-shadow:inset 0 0 0 1px var(--accent-ink)}
+
+/* a friend's request (from the bottom) and a game invite (from the top): glass floating over whatever is open */
+.liquid .fr-pop{border-color:transparent;border-radius:24px;
+  background:radial-gradient(220px circle at 30% 28%,var(--lq-glow),transparent 70%),linear-gradient(180deg,transparent 48%,var(--lq-shade)),var(--lq-fill),var(--lq-pl-tint);
+  box-shadow:var(--lq-shadow),var(--lq-inner);-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5)}
+/* its bright edge, a 1px ring like the menu's glass (the light stays put) */
+.liquid .fr-pop::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:var(--lq-rim);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+/* inside it, fills only: Accept (Join, View) pink, the rest clear */
+.liquid .fr-pop :is(.btn,.iconbtn){border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+.liquid .fr-pop .btn{border-radius:999px}
+.liquid .fr-pop .btn.primary{background:var(--lq-pink);color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh)}
+.liquid .fr-pop .btn:not(.primary),.liquid .fr-pop .iconbtn{background:var(--lq-clear);box-shadow:var(--lq-clear-sh)}
+.liquid .fr-pop .iconbtn{border-radius:50%}
+
+/* ---------- the Leaderboard ---------- */
+/* Everyone / Friends: a well, the one shown raised on a lens. A phone has them side by side, with no panel round them */
+.liquid #scr-leaders .lb-opts{padding:3px;border-radius:24px;background:var(--lq-well);box-shadow:var(--lq-pl-sunk)}
+.liquid #scr-leaders .lb-opt{border-radius:999px;transition:background .25s,box-shadow .25s,color .2s}
+.liquid #scr-leaders .lb-opt.on{border-color:transparent;background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+@container (max-width:759px){
+  .liquid #scr-leaders .lb-show{padding:0;border-radius:999px;background:none;box-shadow:none}
+  .liquid #scr-leaders .lb-opts{border-radius:999px}
+}
+.liquid.cq-poly #scr-leaders .lb-wrap.cq-b760 .lb-show{padding:0;border-radius:999px;background:none;box-shadow:none}
+.liquid.cq-poly #scr-leaders .lb-wrap.cq-b760 .lb-opts{border-radius:999px}
+/* the search: a well */
+.liquid #scr-leaders .lb-find{border-color:var(--lq-well-line);border-radius:999px;padding:0 16px;background:var(--lq-well);box-shadow:var(--lq-pl-sunk)}
+.liquid #scr-leaders :is(.lb-row.sel,.lb-row.me){border-radius:14px}
+/* your own row, pinned to the bottom while the others scroll under it: glass, tinted pink like your row */
+.liquid #scr-leaders .lb-row.pin{border-color:transparent;border-radius:18px;
+  background:linear-gradient(color-mix(in srgb,var(--cta) 14%,transparent),color-mix(in srgb,var(--cta) 8%,transparent)),var(--lq-fill),var(--lq-pl-tint);
+  box-shadow:0 -12px 28px -16px rgba(var(--sh),calc(.9*var(--shk))),var(--lq-inner);-webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5)}
+/* a player's three numbers (the third column and their pop-up): wells */
+.liquid .lb-trio div{border-color:var(--lq-well-line);border-radius:16px;background:var(--lq-well)}
+
+/* ---------- You (your profile, or a player's) ---------- */
+.liquid #scr-profile .pf-hero{border-color:transparent;border-radius:28px;box-shadow:var(--lq-pl-sh),var(--lq-pl-rim)}
+.liquid #scr-profile .pf-edit{border-color:transparent;background:var(--lq-clear),var(--surf2);box-shadow:var(--lq-clear-sh)}
+/* the developer tools keep their dashed amber edge */
+.liquid #scr-profile .pf-dev{border-color:color-mix(in srgb,var(--warn) 55%,transparent)}
+/* the record, the rarities and the elements: wells */
+.liquid #scr-profile :is(.pf-wld div,.pf-rars div,.pf-els span){border-color:var(--lq-well-line);background:var(--lq-well)}
+.liquid #scr-profile .pf-wld div{border-radius:18px}
+.liquid #scr-profile .pf-rars div{border-radius:14px}
+.liquid #scr-profile .bg-card{border-radius:18px}
+.liquid #scr-profile .bg-card::before{border-radius:14px}
+/* match history */
+.liquid #scr-profile .mh-row{border-radius:16px}
+.liquid #scr-profile .mh-more{border-radius:999px}
+.liquid #scr-profile .mh-facts div{border-color:var(--lq-well-line);border-radius:16px;background:var(--lq-well)}
+.liquid #scr-profile .mh-log span{border-radius:999px}
+
+/* its pop-ups (their glass is glass-ui.css's): a group's badges, the avatar picker */
+.liquid #modal .bg-row{border-color:var(--lq-well-line);border-radius:18px;background:var(--lq-well)}
+.liquid #modal .bg-st{border-radius:999px}
+/* Claim keeps the shard colour (it says what you get), as a pill */
+:root.liquid #modal .bg-rows .btn.bg-claim{border-color:transparent;border-radius:999px;background:var(--shard);color:#05232b;text-shadow:none;
+  box-shadow:0 6px 14px -8px var(--shard),inset 0 1px 0 rgba(255,255,255,.45)}
+.liquid #modal .pf-avgrid button{border-color:var(--lq-well-line);background:var(--lq-well)}
+.liquid #modal .pf-avgrid button.on{border-color:transparent}
+/* the ring colours: a clear gap between the colour and the ring of the picked one */
+.liquid #modal .pf-rings button{border-color:transparent;background-clip:padding-box}
+
+/* ---------- comfort settings ---------- */
+/* browsers without color-mix: your pinned row without its pink */
+@supports not (color:color-mix(in srgb,red 50%,transparent)){
+  .liquid #scr-leaders .lb-row.pin{background:var(--lq-fill),var(--lq-pl-tint)}
+}
+/* Reduce Transparency: solid panels and buttons, no glass */
+@media (prefers-reduced-transparency:reduce){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pl-panel:var(--surf);--lq-st-panel:var(--surf);--lq-pl-tint:var(--surf2)}
+  .liquid .fr-pop,.liquid #scr-leaders .lb-row.pin,.liquid .pk-stage #pkClose,.liquid .pk-stage .pk-foot .btn{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .liquid .pk-stage #pkClose,.liquid .pk-stage .pk-foot .btn:not(.primary){background:var(--surf2)}
+  .liquid .pk-stage .pk-foot .btn.primary{background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);text-shadow:none}
+}
+/* Increase Contrast: clear edges, and the glass much less see-through */
+@media (prefers-contrast:more){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pl-rim:inset 0 0 0 1px var(--line2);--lq-st-rim:inset 0 0 0 1px var(--line2)}
+  :root.liquid{--lq-pl-tint:rgba(10,6,30,.9)}
+  :root.liquid[data-theme="light"]{--lq-pl-tint:rgba(255,255,255,.94)}
+  .liquid .fr-pop,.liquid #scr-leaders .lb-row.pin,.liquid .pk-stage #pkClose,.liquid .pk-stage .pk-foot .btn:not(.primary){border-color:var(--line2)}
+  .liquid #scr-friends :is(.mo-re,.mo-add,.mo-pk),.liquid #scr-store .st-buy:not(:disabled){border-color:var(--line2)}
+  .liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg,.liquid #scr-leaders .lb-find,.liquid #scr-friends .fr-addf input,.liquid #modal #loName{border-color:var(--line2)}
+  .liquid #scr-leaders .lb-opts{box-shadow:var(--lq-pl-sunk),inset 0 0 0 1px var(--line2)}
+  .liquid .pity-bar{border-color:var(--line2)}
+  /* the clear buttons (their rules here outweigh glass-ui.css's edge) */
+  .liquid :is(#scr-coll,#scr-packs,#scr-store,#scr-friends,#scr-profile,#scr-leaders) :is(.btn:not(.primary,.text,.danger),.btn.primary.small),.liquid #scr-coll .dk-act,
+  .liquid .fr-pop :is(.btn:not(.primary),.iconbtn){box-shadow:var(--lq-clear-sh),inset 0 0 0 1px var(--line2)}
+  .liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg:not(.lq-has-lens) button.on,.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg>.lq-lens,
+  .liquid #scr-leaders .lb-opt.on{box-shadow:var(--lq-lens-sh),inset 0 0 0 1.5px var(--accent)}
+}
+/* a browser without frosted glass: the floating pieces nearly solid, so their words stay readable */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  :root.liquid{--lq-pl-tint:rgba(18,11,44,.95)}
+  :root.liquid[data-theme="light"]{--lq-pl-tint:rgba(250,248,255,.96)}
+  .liquid .pk-stage #pkClose,.liquid .pk-stage .pk-foot .btn:not(.primary){background:var(--surf2)}
+  .liquid .pk-stage .pk-foot .btn.primary{background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);text-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .liquid #scr-leaders .lb-opt,.liquid :is(#scr-store,#scr-profile,#scr-leaders) .seg button{transition:none}
+}

@@ -94,7 +94,7 @@ function alertsRow(){
   if(API==null)return '';
   return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests, match news and a daily reminder, even with the game closed</small></span><span id="alertsCtl"></span></div>`+
     // the evening reminder (server/lib/dailyAlerts.js): on unless the player turns it off. It's in the save, so the server can read it
-    `<div class="setrow setalerts" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><span id="dailyAlertCtl"><div class="seg" role="group" aria-label="Daily reminder">${
+    `<div class="setrow setalerts" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><span id="dailyAlertCtl"><div class="seg" id="dailyAlertSeg" role="group" aria-label="Daily reminder">${
       [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div>`+
       // Test: developer accounts only (and a local copy of the game)
       `${isDev()?'<button class="btn small" id="dailyAlertTest">Test</button>':''}</span></div>`;
@@ -135,7 +135,7 @@ async function alertsPaint(box){
   const draw=on=>{
     if(daily)daily.hidden=!on; // only with alerts on for this device
     say(on?'On for this device. Invites, friend requests, match news and a daily reminder reach you even with the game closed.':'Invites, friend requests, match news and a daily reminder, even with the game closed',
-      `<div class="seg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
+      `<div class="seg" id="alertsSeg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
       // Test: developer accounts only (and a local copy of the game)
       (on&&isDev()?'<button class="btn small" id="alertsTest">Test</button>':''));
     ctl.querySelectorAll('.seg button').forEach(b=>b.onclick=async()=>{

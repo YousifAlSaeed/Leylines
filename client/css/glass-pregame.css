@@ -1,0 +1,200 @@
+/* =====================================================================
+   LIQUID GLASS (pregame): setting up a game, online, the Daily's briefings,
+   the tutorial and How to play. A developer's look (glass.css), only under
+   :root.liquid. Apple's rule: glass only for what floats over the page (the
+   tutorial's coach and its Next button, the setup's pinned Start button).
+   The page's own panels, rows and rule cards are content: soft fills,
+   rounder corners, a faint rim, no blur. Inside a pop-up (glass of its own,
+   glass-ui.css) everything is a fill: a well when it's sunk, clear when raised.
+   The setup layout (.setup) is shared with the Crossroads room (#scr-duoroom),
+   so both rooms look the same.
+   ===================================================================== */
+:root.liquid{
+  /* a page's panels: a soft violet fill, a little lighter than the page, with a faint rim */
+  --lq-pg-panel:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025) 70%),rgba(20,12,51,.72);
+  --lq-pg-rim:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.075);
+  --lq-pg-sh:0 14px 30px -22px rgba(0,0,0,.85);
+  /* an open row: lifted a little, its rim brighter */
+  --lq-pg-lift:0 18px 36px -20px var(--accent-glow),0 6px 14px -8px rgba(0,0,0,.5);
+  --lq-pg-rim-hi:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 1px rgba(255,255,255,.14);
+  /* sunk into a panel (inputs, the choices' track, the example stage) */
+  --lq-pg-sunk:inset 0 1px 3px rgba(0,0,0,.22);
+  /* a rule card that's on: violet glass colour ("Violet cards are on"), white writing */
+  --lq-pg-violet:linear-gradient(180deg,color-mix(in srgb,var(--accent-hi) 58%,transparent),color-mix(in srgb,var(--accent) 50%,transparent));
+  --lq-pg-violet-sh:0 12px 26px -14px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 1px color-mix(in srgb,var(--accent-hi) 60%,transparent),
+    inset 0 0 18px color-mix(in srgb,var(--accent-hi) 18%,transparent);
+  --lq-pg-on-violet:#fff;
+  /* small violet chips: a Daily's rules, How to play's tag */
+  --lq-pg-chip:rgba(139,108,255,.16); --lq-pg-chip-line:rgba(184,148,255,.3);
+  /* the tutorial's coach: thick glass over the board and the cards, so its words stay easy to read */
+  --lq-pg-coach:rgba(20,12,48,.74);
+}
+:root.liquid[data-theme="light"]{
+  --lq-pg-panel:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.7));
+  --lq-pg-rim:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(40,20,90,.07);
+  --lq-pg-sh:0 14px 30px -22px rgba(40,20,90,.35);
+  --lq-pg-lift:0 18px 36px -20px var(--accent-glow),0 6px 14px -8px rgba(40,20,90,.18);
+  --lq-pg-rim-hi:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(40,20,90,.12);
+  --lq-pg-sunk:inset 0 1px 2px rgba(40,20,90,.1);
+  /* deeper here: white writing needs a strong violet on a bright page */
+  --lq-pg-violet:linear-gradient(180deg,color-mix(in srgb,var(--accent) 90%,transparent),color-mix(in srgb,var(--accent) 82%,transparent));
+  --lq-pg-violet-sh:0 12px 24px -14px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.45),inset 0 0 0 1px color-mix(in srgb,var(--accent-hi) 60%,transparent),
+    inset 0 0 18px color-mix(in srgb,var(--accent-hi) 25%,transparent);
+  --lq-pg-chip:rgba(106,43,174,.1); --lq-pg-chip-line:rgba(106,43,174,.24);
+  --lq-pg-coach:rgba(246,243,255,.8);
+}
+/* browsers without color-mix: the rule cards that are on in solid violet, as before the glass */
+@supports not (color:color-mix(in srgb,red 50%,transparent)){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pg-violet:linear-gradient(160deg,var(--accent-hi),var(--accent));
+    --lq-pg-violet-sh:0 10px 22px -10px var(--accent-glow),inset 0 0 0 1px rgba(255,255,255,.35);--lq-pg-on-violet:var(--on-accent)}
+  :root.liquid .setup .rc.on{text-shadow:none}
+}
+
+/* ---------- setting up a match (Solo, Couch, the waiting room, a Draft room) ---------- */
+/* the match rows: soft panels, rounder; the open one lifts a little */
+.liquid .setup .srow{border-color:transparent;border-radius:22px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-sh),var(--lq-pg-rim);transition:box-shadow .3s}
+.liquid .setup .srow.open{border-color:transparent;box-shadow:var(--lq-pg-lift),var(--lq-pg-rim-hi)}
+.liquid .setup .srh{border-radius:22px}
+/* the choices in a row (difficulty, timer, out of time, match length, trade): a well, like the menu's switches, with the
+   picked one raised on a lens */
+.liquid .setup :is(.dgrid,.tgrid){gap:3px;padding:3px;border-radius:18px;background:var(--lq-well);border:1px solid var(--lq-well-line);box-shadow:var(--lq-pg-sunk)}
+.liquid .setup :is(.dc,.tc){border-color:transparent;border-radius:15px;background:none;box-shadow:none;transition:background .25s,box-shadow .25s,transform .3s var(--lq-lift)}
+.liquid .setup :is(.dc,.tc):hover{transform:none}
+.liquid .setup :is(.dc,.tc):not(.on):hover{background:rgba(255,255,255,.04)}
+:root.liquid[data-theme="light"] .setup :is(.dc,.tc):not(.on):hover{background:rgba(255,255,255,.55)}
+.liquid .setup :is(.dc,.tc):not([aria-disabled]):active{transform:scale(.97)}
+.liquid .setup :is(.dc,.tc).on{border-color:transparent;background:var(--lq-lens);box-shadow:var(--lq-lens-sh)}
+
+/* the rule cards: content, so soft fills with no blur. Off: a quiet panel. On: violet glass colour */
+.liquid .setup .rc{border-color:transparent;border-radius:18px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-rim)}
+.liquid .setup .rc .em{border-radius:11px;border-color:var(--line2);background:var(--lq-well)}
+.liquid .setup .rc.on{border-color:transparent;background:var(--lq-pg-violet);color:var(--lq-pg-on-violet);box-shadow:var(--lq-pg-violet-sh);text-shadow:0 1px 2px rgba(40,10,90,.3)}
+.liquid .setup .rc.on .em{border-color:rgba(255,255,255,.42);background:rgba(255,255,255,.2)}
+/* Sweep with no trade (can't be turned on): only its dashed outline */
+.liquid .setup .rc.off{border-color:var(--line2);background:none;box-shadow:none}
+/* what the last tapped card does (phones) */
+.liquid .setup .rinfo{border-color:transparent;border-radius:20px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-rim)}
+
+/* the room: the code, the invite link, the players */
+.liquid .setup .room-code{border-color:transparent;border-radius:22px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-sh),var(--lq-pg-rim)}
+/* (the invite link is glass-ui.css's well: here only room at its round ends) */
+.liquid .setup .linkin{padding:8px 14px}
+.liquid .setup .room-pl li{border-color:transparent;border-radius:18px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-rim)}
+/* the empty seat: sunk, with a dashed edge */
+.liquid .setup .room-pl li.empty{border-color:var(--line2);background:var(--lq-well);box-shadow:none}
+.liquid .setup .room-pl .rtag{border-radius:999px;padding:3px 7px}
+/* the Draft room's "Testing" tag by the title: a pill, like the Crossroads room's (glass-play.css) */
+.liquid #scr-setup .dbeta{border-radius:999px;background:var(--lq-well)}
+
+/* the main button (Choose cards, Start match, Ready) is pinned over the page on a phone, which scrolls under it: real
+   pink glass. Its row rises in without fading: a fading parent would hide what's behind the glass until it ended */
+.liquid .setup-foot .btn.primary{background:var(--lq-pink);border-color:transparent;border-radius:999px;color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);
+  box-shadow:var(--lq-pink-sh);-webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+:root.liquid[data-theme="light"] .setup-foot .btn.primary{-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
+.liquid .screen.on .setup-foot{animation-name:lqRise}
+/* the fade behind it (menu.css) is solid from its middle down, which left the glass only a flat colour to frost: here it
+   lets the page show a little behind the button's upper half, and still ends solid at the bottom */
+@supports (color:color-mix(in srgb,red 50%,transparent)){
+  .liquid .setup-foot{background:linear-gradient(transparent,color-mix(in srgb,var(--bg0) 60%,transparent) 45%,var(--bg0))}
+}
+/* a wide screen: the button sits still under the rules, with nothing scrolling under it, so a pink fill without the frost */
+@media (min-width:920px) and (min-height:560px){
+  .liquid .setup .setup-foot{background:none}
+  .liquid .setup-foot .btn.primary,:root.liquid[data-theme="light"] .setup-foot .btn.primary{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+
+/* ---------- the other buttons: glass-ui.css's pills (the main one pink, the rest clear) ---------- */
+/* the room's small buttons (Invite, add a friend) keep friends.css's square corners otherwise */
+.liquid #scr-setup .room-pl .btn{border-radius:999px}
+/* Invite (and Accept friend) in the players' rows: clear glass with pink writing, like the menu's Invite (the page's main
+   button is Start) */
+.liquid #scr-setup .room-pl .btn.primary{background:var(--lq-clear);box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);text-shadow:none}
+
+/* ---------- online: your name, Host a game, joining with a code (the fields are glass-ui.css's wells) ---------- */
+.liquid #scr-online .panel{border-color:transparent;border-radius:24px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-sh),var(--lq-pg-rim)}
+.liquid #scr-online .desc{border-color:transparent;border-radius:20px;background:var(--lq-pg-panel);box-shadow:var(--lq-pg-rim)}
+/* Host a game's pop-up (duo.js hostPick): its clear cards and their ring are glass-play.css's (#modal .hostpick); here
+   only the press */
+.liquid .hostpick .hp{transition:transform .3s var(--lq-lift),box-shadow .2s}
+.liquid .hostpick .hp:active{transform:scale(.98)}
+
+/* ---------- the Daily's briefings and results (in a pop-up: fills only) ---------- */
+.liquid .dly-rules span{border-color:var(--lq-pg-chip-line);background:var(--lq-pg-chip)}
+/* the Gauntlet's three stages: sunk rows; the one to play now raised, with a pink edge */
+.liquid .dly-st{border-color:var(--lq-well-line);border-radius:16px;background:var(--lq-well);box-shadow:var(--lq-pg-sunk)}
+.liquid .dly-st.now{border-color:transparent;background:var(--lq-clear);box-shadow:var(--lq-clear-sh),inset 0 0 0 1.5px var(--cta)}
+.liquid .dly-art{border-radius:12px}
+.liquid .dly-st b em{border-radius:999px;padding:1px 6px}
+
+/* ---------- the tutorial (also the Daily Puzzle's goal and a Review's notes, in the same bubble) ---------- */
+/* the coach floats over the board: glass, thick enough to read over the cards */
+.liquid .tut-coach{border-color:transparent;border-radius:22px;
+  background:radial-gradient(220px circle at 30% 28%,var(--lq-glow),transparent 70%),linear-gradient(180deg,transparent 48%,var(--lq-shade)),var(--lq-fill),var(--lq-pg-coach);
+  box-shadow:var(--lq-shadow),var(--lq-inner);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4)}
+/* its bright edge, a 1px ring like the menu's glass (the light stays put) */
+.liquid .tut-coach::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;
+  background:var(--lq-rim);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.liquid .tut-coach .tc-av{border-radius:14px}
+/* Next floats over your hand: pink glass */
+.liquid .btn.primary.tut-next{background:var(--lq-pink);border-color:transparent;border-radius:999px;color:var(--lq-on-pink,#fff);text-shadow:0 1px 2px rgba(70,0,40,.3);
+  box-shadow:var(--lq-pink-sh);-webkit-backdrop-filter:blur(10px) saturate(1.6);backdrop-filter:blur(10px) saturate(1.6)}
+:root.liquid[data-theme="light"] .btn.primary.tut-next{-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
+/* (Skip, in the match's top bar, is glass with the bar's other buttons: glass-play.css) */
+/* the tags where two cards touch (here and in How to play's examples): round pills, solid so they read over the cards */
+.liquid :is(.tut-tag,.ex-tag){border-radius:999px}
+/* the lesson you're on, in the rule bar: violet, like a rule card that's on */
+.liquid #scr-game .rulebar span.tut-on{border-color:transparent;background:var(--lq-pg-violet);color:var(--lq-pg-on-violet);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+
+/* ---------- How to play: what's inside its panel (the panel is glass: glass-ui.css), so fills only ---------- */
+/* Prev and Close are glass-ui.css's clear circles; Prev dims on the first tab */
+.liquid #how .hhead .iconbtn:disabled{opacity:.4;cursor:default;filter:none;transform:none}
+/* the tabs: the picked one on a lens, in the accent colour (a touch more room above and below for its shadow) */
+.liquid #how .htabs{padding-top:3px;padding-bottom:3px}
+.liquid #how .htabs button{transition:color .2s,background .25s,box-shadow .25s}
+.liquid #how .htabs button[aria-selected="true"]{background:var(--lq-lens);color:var(--accent-ink);font-weight:700;
+  box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 1px rgba(255,255,255,.3),inset 0 0 0 .5px rgba(255,255,255,.22)}
+:root.liquid[data-theme="light"] #how .htabs button[aria-selected="true"]{box-shadow:0 1px 3px rgba(40,20,90,.18),inset 0 1px 1px #fff,inset 0 0 0 .5px rgba(40,20,90,.1)}
+/* the example's stage: a well, its two soft glows kept */
+.liquid #how .hstage{border-color:var(--lq-well-line);border-radius:22px;box-shadow:var(--lq-pg-sunk);
+  background:radial-gradient(90% 90% at 0% 0%,var(--glow-a),transparent 60%),radial-gradient(90% 90% at 100% 100%,var(--glow-b),transparent 60%),var(--lq-well)}
+.liquid #how #hTag{border-color:var(--lq-pg-chip-line);border-radius:999px;padding:2px 10px;background:var(--lq-pg-chip)}
+.liquid #how #hList.more li{border-bottom-color:var(--lq-well-line)}
+/* the buttons at the bottom are glass-ui.css's (Next pink, Back clear); the tutorial's, clear too, has pink writing */
+.liquid #how .hfoot .htry{color:var(--lq-pink-ink)}
+.liquid #how .htry-gift{border-radius:999px;padding:6px 12px}
+
+/* ---------- comfort settings ---------- */
+/* Reduce Transparency: solid panels and buttons, no glass */
+@media (prefers-reduced-transparency:reduce){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pg-panel:var(--surf);--lq-pg-coach:var(--surf2)}
+  .liquid .tut-coach{background:var(--surf2);border-color:var(--line2);-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .liquid .btn.primary.tut-next,:root.liquid .setup-foot .btn.primary{
+    background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);text-shadow:none;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .liquid .setup-foot{background:linear-gradient(transparent,var(--bg0) 45%)}
+}
+/* Increase Contrast: clear edges, and the glass much less see-through */
+@media (prefers-contrast:more){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pg-rim:inset 0 0 0 1px var(--line2);--lq-pg-rim-hi:inset 0 0 0 1px var(--accent)}
+  :root.liquid{--lq-pg-coach:rgba(10,6,30,.92)}
+  :root.liquid[data-theme="light"]{--lq-pg-coach:rgba(255,255,255,.94)}
+  .liquid .tut-coach{border-color:var(--line2)}
+  .liquid .setup :is(.dgrid,.tgrid),.liquid .dly-st,.liquid #how .hstage{border-color:var(--line2)}
+  /* Invite, clear with pink writing: an edge like glass-ui.css gives the other clear buttons */
+  .liquid #scr-setup .room-pl .btn.primary{box-shadow:var(--lq-clear-sh),inset 0 0 0 1px var(--line2)}
+  .liquid .setup-foot{background:linear-gradient(transparent,var(--bg0) 45%)}
+  .liquid .setup :is(.dc,.tc).on{box-shadow:var(--lq-lens-sh),inset 0 0 0 1.5px var(--accent)}
+  .liquid #how .htabs button[aria-selected="true"],:root.liquid[data-theme="light"] #how .htabs button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--accent)}
+  .liquid .btn.primary.tut-next,:root.liquid .setup-foot .btn.primary{
+    background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);text-shadow:none}
+}
+/* a browser without frosted glass: the floating pieces nearly solid, so their words stay readable */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pg-coach:var(--surf2)}
+  .liquid .btn.primary.tut-next,:root.liquid .setup-foot .btn.primary{
+    background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);text-shadow:none}
+  .liquid .setup-foot{background:linear-gradient(transparent,var(--bg0) 45%)}
+}
+@media (prefers-reduced-motion:reduce){
+  .liquid .setup :is(.srow,.dc,.tc,.rc),.liquid .hostpick .hp,.liquid #how .htabs button{transition:none}
+  .liquid .setup .srb :is(.dc,.tc):active,.liquid .setup .rc:is(:hover,:active),.liquid .hostpick .hp:is(:hover,:active){transform:none}
+}
