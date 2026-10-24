@@ -10,6 +10,7 @@
   background:linear-gradient(160deg,var(--p1),var(--p2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 6px 14px rgba(var(--sh),calc(.5*var(--shk)))}
 .pk-mini::before{content:"";position:absolute;left:0;right:0;top:0;height:16%;background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,transparent 2px 5px);border-bottom:1px dashed rgba(255,255,255,.4)}
 .pk-mini::after{content:"";position:absolute;left:50%;top:54%;width:52%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--p3);-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
+@supports not (aspect-ratio:1){.pk-mini::after{height:36.4%}} /* browsers before Chrome 88: the same square (52% of a pack 1.43 times as tall as wide) */
 .t-mythic.pk-mini{background:linear-gradient(160deg,#2a1450,#06030f),conic-gradient(#ff8fd0,#ffd76a,#7fe0ff,#b98cff,#ff8fd0);background-blend-mode:screen}
 .pk-mini.big{--w:92px}
 .pk-mini.tiny{--w:12px;border-radius:3px;box-shadow:none;display:inline-block;vertical-align:-3px;margin-right:6px}
@@ -30,7 +31,7 @@
 .pk-card h3{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 12px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase}
 .pk-card h3 em{font-style:normal;letter-spacing:0;text-transform:none;color:var(--accent-ink);font-weight:600}
 .pk-daily{display:flex;gap:18px;align-items:center;position:relative;overflow:hidden}
-.pk-daily::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--p3) 14%,transparent),transparent 30%);animation:pkSpin 10s linear infinite;pointer-events:none}
+.pk-daily::before{content:"";position:absolute;top:-60%;right:-60%;bottom:-60%;left:-60%;background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--p3) 14%,transparent),transparent 30%);animation:pkSpin 10s linear infinite;pointer-events:none}
 .pk-daily>*{position:relative}
 .pk-dtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .pk-dtext h3{margin:0;font:800 20px/1.1 var(--display);letter-spacing:0;text-transform:none}
@@ -90,8 +91,12 @@
 /* ---------- the opening stage: a night sky in dark mode, a soft lilac room in light mode ---------- */
 .pk-stage{--text:#F1ECFF;--muted:#B9AEDD;--surf:#140C33;--surf2:#1E1450;--line:rgba(184,148,255,.13);--line2:rgba(184,148,255,.26);
   --cta:#FF5FA8;--cta-hi:#FF86C4;--on-cta:#1e0b2a;--blue1:#2F5FD0;--blue2:#142a6e;--tint:255,255,255;--sh:4,2,14;--shk:1;
-  position:fixed;inset:0;z-index:88;display:none;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--text);color-scheme:dark;
+  position:fixed;top:0;right:0;bottom:0;left:0;z-index:88;display:none;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--text);color-scheme:dark;
   background:radial-gradient(60% 50% at 50% 45%,#1d1250,#07040f 75%)}
+/* --g1 … --g5: each rarity's light (the tear, the glow before a flip, sparks, rays); 5★'s is white, with rainbow sparks (packs.js rarCol).
+   The light room gets deeper ones, so silver, violet and the prism still show on it */
+.pk-stage{--g1:var(--r1);--g2:var(--r2);--g3:var(--r3);--g4:var(--r4);--g5:#fff}
+:root[data-theme="light"] .pk-stage{--g1:#a8611f;--g2:#4d6f94;--g3:#d08f00;--g4:#6a2fe8;--g5:#e0338f}
 /* light mode: the theme's own colours on a light background; the packs and cards keep theirs */
 :root[data-theme="light"] .pk-stage{--text:#1a1238;--muted:#54497a;--surf:#ffffff;--surf2:#f0ebff;--line:rgba(40,20,90,.12);--line2:rgba(40,20,90,.22);
   --cta:var(--ley-pink-700);--cta-hi:#dc5aad;--on-cta:#fff;--blue1:#3a6bdb;--blue2:#1e3f99;--tint:0,0,0;--sh:40,20,90;--shk:.3;
@@ -102,9 +107,9 @@
 :root[data-theme="light"] .pk-pack:focus-visible{outline-color:var(--ley-violet-700)}
 .pk-stage.on{display:block}
 .pk-stage:focus{outline:none}
-.pk-dim{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .5s;pointer-events:none}
+.pk-dim{position:absolute;top:0;right:0;bottom:0;left:0;background:#000;opacity:0;transition:opacity .5s;pointer-events:none}
 .pk-stage.focus .pk-dim{opacity:.55}
-#pkFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
+#pkFx{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;pointer-events:none;z-index:6}
 .pk-topbar{position:absolute;left:0;right:0;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 0}
 .pk-topbar b{font:800 15px var(--display);letter-spacing:.06em;text-transform:uppercase;opacity:.85;text-align:center}
 .pk-sp{width:44px;flex:none}
@@ -117,6 +122,7 @@
   background:repeating-conic-gradient(from 0deg,var(--ray,#fff) 0 4deg,transparent 4deg 15deg);
   -webkit-mask:radial-gradient(circle,#000 0,transparent 45%);mask:radial-gradient(circle,#000 0,transparent 45%);animation:pkSpin 18s linear infinite}
 .pk-rays.r5{background:repeating-conic-gradient(from 0deg,#ff8fd0 0 4deg,transparent 4deg 10deg,#7fe0ff 10deg 14deg,transparent 14deg 20deg,#ffd76a 20deg 24deg,transparent 24deg 30deg)}
+:root[data-theme="light"] .pk-rays.r5{background:repeating-conic-gradient(from 0deg,#e0338f 0 4deg,transparent 4deg 10deg,#0a9fd0 10deg 14deg,transparent 14deg 20deg,#d08f00 20deg 24deg,transparent 24deg 30deg)}
 .pk-stage.focus .pk-rays{opacity:.5}
 
 /* the pack */
@@ -132,11 +138,11 @@
   background:linear-gradient(160deg,var(--p1),var(--p2) 75%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);
   -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%}
 .pk-body::after{content:"";position:absolute;left:8px;right:8px;bottom:7px;height:calc(var(--cap)*.32);background:repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 2px,transparent 2px 6px);border-radius:3px}
-.pk-foil{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.7;
+.pk-foil{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;mix-blend-mode:overlay;opacity:.7;
   background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.55) 42%,var(--p3) 50%,transparent 62%) var(--fx,50%) 0/260% 100%}
 .t-mythic .pk-foil{mix-blend-mode:color-dodge;opacity:.6;background:linear-gradient(115deg,transparent 20%,#ff8fd0 35%,#ffd76a 45%,#7fe0ff 55%,#b98cff 65%,transparent 80%) var(--fx,50%) 0/260% 100%}
 /* the Leylines emblem, kept simple: see-through squares, a small diamond in six, two left empty, the bright one in the middle */
-.pk-grid{position:absolute;inset:16% 24% auto;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8%}
+.pk-grid{position:absolute;top:16%;right:24%;bottom:auto;left:24%;aspect-ratio:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8%}
 .pk-grid i{position:relative;border-radius:14%;background:rgba(255,255,255,.07);border:1.5px solid color-mix(in srgb,var(--p3) 65%,transparent)}
 .pk-grid i::after{content:"";position:absolute;left:50%;top:50%;width:25%;aspect-ratio:1;transform:translate(-50%,-50%) rotate(45deg);border-radius:8%;background:color-mix(in srgb,var(--p3) 85%,transparent)}
 .pk-grid i:nth-child(3),.pk-grid i:nth-child(7){background:none;border-color:color-mix(in srgb,var(--p3) 28%,transparent)}
@@ -153,27 +159,28 @@
 .pk-sg{position:absolute;top:0;height:100%;overflow:hidden;visibility:hidden}
 .pk-sg.off{visibility:visible}
 /* the part not torn yet is one whole piece, so no hairlines show between the slices */
-.pk-whole,.pk-whole>div{position:absolute;inset:0}
+.pk-whole,.pk-whole>div{position:absolute;top:0;right:0;bottom:0;left:0}
 .pk-strip b{position:absolute;top:0;height:100%;background:linear-gradient(160deg,var(--p1),var(--p2) 400%);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25);
   -webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/8px 100%}
 .pk-strip b::before{content:"";position:absolute;left:8px;right:8px;top:7px;height:calc(var(--cap)*.42);background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 2px,transparent 2px 6px);border-radius:3px}
-.pk-strip b::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;opacity:.7;
+.pk-strip b::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;mix-blend-mode:overlay;opacity:.7;
   background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.55) 42%,var(--p3) 50%,transparent 62%) var(--fx,50%) 0/260% 100%}
 .t-mythic .pk-strip b::after{mix-blend-mode:color-dodge;opacity:.6;background:linear-gradient(115deg,transparent 20%,#ff8fd0 35%,#ffd76a 45%,#7fe0ff 55%,#b98cff 65%,transparent 80%) var(--fx,50%) 0/260% 100%}
 /* the inside of the foil, seen once a slice has turned past side-on */
-.pk-sg i{position:absolute;inset:0;display:none;background:linear-gradient(180deg,#eef0f6,#a9afbf 55%,#d9dce6)}
+.pk-sg i{position:absolute;top:0;right:0;bottom:0;left:0;display:none;background:linear-gradient(180deg,#eef0f6,#a9afbf 55%,#d9dce6)}
 .pk-sg.bk i{display:block}
 /* the torn white edge, and the shade a slice gets as it turns away from the light */
-.pk-sg u{position:absolute;inset:0;background:#f4f1ff;opacity:0}
+.pk-sg u{position:absolute;top:0;right:0;bottom:0;left:0;background:#f4f1ff;opacity:0}
 .pk-sg.off u{opacity:1}
-.pk-sg::after{content:"";position:absolute;inset:0;background:#000;opacity:var(--k,0);pointer-events:none}
+.pk-sg::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:#000;opacity:var(--k,0);pointer-events:none}
 /* the torn white edge on the pack: hidden until it tears */
-.pk-lipw{position:absolute;inset:0;z-index:2;pointer-events:none;clip-path:inset(0 100% 0 0)}
-.pk-lip{position:absolute;inset:0;background:linear-gradient(90deg,#fff,#e6dfff 50%,#fff)}
+.pk-lipw{position:absolute;top:0;right:0;bottom:0;left:0;z-index:2;pointer-events:none;clip-path:inset(0 100% 0 0)}
+.pk-lip{position:absolute;top:0;right:0;bottom:0;left:0;background:linear-gradient(90deg,#fff,#e6dfff 50%,#fff)}
 .pk-seam{position:absolute;left:var(--notch,3px);right:var(--notch,3px);top:var(--cap);height:0;z-index:4;border-top:1px dashed rgba(255,255,255,.35);pointer-events:none}
 .pk-leak{position:absolute;left:5%;right:5%;top:calc(var(--cap) - 30px);height:60px;border-radius:50%;background:var(--leak,#fff);filter:blur(24px);opacity:0}
 /* a 5★ inside: the light from the tear is the prism */
 .pk-stage.best5 .pk-leak{background:var(--prism)}
+:root[data-theme="light"] .pk-stage.best5 .pk-leak{background:linear-gradient(90deg,#e0338f,#d08f00,#0a9fd0,#6a2fe8)}
 .pk-pack.shake{animation:pkShake .35s linear}
 @keyframes pkShake{20%{transform:translate(-4px,2px) rotate(-1.5deg)}40%{transform:translate(4px,-2px) rotate(1.5deg)}60%{transform:translate(-3px,1px)}80%{transform:translate(3px,0)}}
 
@@ -182,10 +189,10 @@
 .pk-slot{position:absolute;left:0;top:0;font-size:min(5vh,8.4vw);transition:transform .55s var(--ease),opacity .4s;touch-action:none;cursor:pointer}
 .pk-flip{position:relative;width:5em;height:6em;transform-style:preserve-3d;transition:transform .55s var(--ease)}
 .pk-flip.open{transform:rotateY(180deg)}
-.pk-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:.6em}
+.pk-face{position:absolute;top:0;right:0;bottom:0;left:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:.6em}
 .pk-front{transform:rotateY(180deg)}
 .pk-back{overflow:hidden;background:radial-gradient(circle at 50% 45%,#3a2a8a,#140C33 70%);box-shadow:inset 0 0 0 .06em rgba(184,148,255,.5),0 .3em .8em rgba(0,0,0,.6)}
-.pk-back::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(184,148,255,.07) 0 .2em,transparent .2em .4em)}
+.pk-back::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:repeating-linear-gradient(45deg,rgba(184,148,255,.07) 0 .2em,transparent .2em .4em)}
 .pk-back::after{content:"";position:absolute;left:50%;top:50%;width:2.6em;height:2.6em;margin:-1.3em;background:#B894FF;-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
 /* the build-up: the back glows in the card's rarity colour, then it flips */
 .pk-flip.tease .pk-back{animation:pkTease var(--td,.6s) ease-in both}
@@ -193,7 +200,7 @@
 @keyframes pkTease{0%{box-shadow:inset 0 0 0 .06em rgba(184,148,255,.5),0 0 0 var(--g)}100%{box-shadow:inset 0 0 0 .12em var(--g),0 0 1.4em .4em var(--g),0 0 4em 1em var(--g)}}
 @keyframes pkWobble{0%,100%{transform:none}20%{transform:rotate(-2deg) scale(1.03)}40%{transform:rotate(2deg) scale(1.05)}60%{transform:rotate(-3deg) scale(1.07)}80%{transform:rotate(3deg) scale(1.1)}}
 /* a shine across 4★ and 5★ cards that follows your swipe */
-.pk-stage .card.rar4::after,.pk-stage .card.rar5::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;mix-blend-mode:color-dodge;opacity:.35;
+.pk-stage .card.rar4::after,.pk-stage .card.rar5::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;z-index:4;pointer-events:none;mix-blend-mode:color-dodge;opacity:.35;
   background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 45%,rgba(127,224,255,.5) 52%,transparent 66%) var(--hx,50%) 0/250% 100%}
 .pk-new{position:absolute;top:-.45em;left:50%;transform:translateX(-50%) scale(0);z-index:5;font:900 .4em/1 var(--display);letter-spacing:.08em;padding:.35em .6em;border-radius:99px;
   background:var(--cta);color:var(--on-cta);transition:transform .35s var(--spring) .25s}
@@ -205,7 +212,7 @@
 .pk-count{position:absolute;left:0;right:0;top:calc(50% - min(5vh,8.4vw)*3 - 40px);z-index:5;text-align:center;font:700 13px var(--body);color:var(--muted);opacity:0;transition:opacity .3s}
 
 /* the summary */
-.pk-sum{position:absolute;inset:0;z-index:7;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:70px 16px 100px;overflow-y:auto}
+.pk-sum{position:absolute;top:0;right:0;bottom:0;left:0;z-index:7;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:70px 16px 100px;overflow-y:auto}
 .pk-sum.on{display:flex}
 .pk-sum h3{margin:0;font:900 30px/1 var(--display);font-style:italic;text-transform:uppercase;background:linear-gradient(180deg,#fff,#B894FF);-webkit-background-clip:text;background-clip:text;color:transparent}
 .pk-row{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;font-size:min(3.2vh,4.4vw);max-width:min(900px,96vw)}

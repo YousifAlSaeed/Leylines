@@ -5,10 +5,23 @@
   --c1:#777;--c2:#333}
 .card.blue{--c1:var(--blue1);--c2:var(--blue2)}
 .card.red{--c1:var(--red1);--c2:var(--red2)}
-.card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 72% 68%,rgba(255,255,255,.2),transparent 55%);pointer-events:none}
+.card.grey{--c1:var(--grey1);--c2:var(--grey2)} /* a card in the collection, nobody's yet */
+.card.gold{--c1:var(--gold1);--c2:var(--gold2)} .card.green{--c1:var(--green1);--c2:var(--green2)}
+.card.purple{--c1:var(--purple1);--c2:var(--purple2)} .card.teal{--c1:var(--teal1);--c2:var(--teal2)}
+/* your colour (save.js myCol), for what isn't a card: your side, avatar and score. Blue sets nothing, so
+   these fall back to --blue1/2 and -ink, which some screens retune */
+:root[data-me="gold"]{--me1:var(--gold1);--me2:var(--gold2);--me-ink:var(--gold-ink)}
+:root[data-me="green"]{--me1:var(--green1);--me2:var(--green2);--me-ink:var(--green-ink)}
+:root[data-me="purple"]{--me1:var(--purple1);--me2:var(--purple2);--me-ink:var(--purple-ink)}
+:root[data-me="teal"]{--me1:var(--teal1);--me2:var(--teal2);--me-ink:var(--teal-ink)}
+:root[data-me="grey"]{--me1:var(--grey1);--me2:var(--grey2);--me-ink:var(--grey-ink)}
+/* registered so a flying card can fade from one colour to another */
+@property --c1{syntax:'<color>';inherits:true;initial-value:#777}
+@property --c2{syntax:'<color>';inherits:true;initial-value:#333}
+.card::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:radial-gradient(circle at 72% 68%,rgba(255,255,255,.2),transparent 55%);pointer-events:none}
 .card .art{position:absolute;right:.12em;bottom:.72em;font-size:2.5em;line-height:1;filter:drop-shadow(0 .04em .08em rgba(0,0,0,.55))}
 .card .nums{position:absolute;left:.12em;top:.12em;width:2.5em;height:2.5em}
-.card .nums::before{content:"";position:absolute;inset:.44em;transform:rotate(45deg);background:rgba(0,0,0,.4);border:.05em solid rgba(255,255,255,.4);border-radius:.14em}
+.card .nums::before{content:"";position:absolute;top:.44em;right:.44em;bottom:.44em;left:.44em;transform:rotate(45deg);background:rgba(0,0,0,.4);border:.05em solid rgba(255,255,255,.4);border-radius:.14em}
 .card .nums b{position:absolute;width:1em;text-align:center;font:900 .95em/1 var(--display);color:#fff;text-shadow:0 0 .12em #000,0 0 .12em #000,.05em .05em 0 #000}
 .card .n0{left:50%;top:0;transform:translateX(-50%)}
 .card .n2{left:50%;bottom:0;transform:translateX(-50%)}
@@ -31,9 +44,9 @@
 .rt{color:var(--rt)}
 /* 5★ words ("5★", "Legendary") are written in the prism */
 .rar5 .rt,.rt.rar5{background:var(--prism-t);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
-.card .rf{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
+.card .rf{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 .1em var(--rc),inset 0 0 .5em .05em color-mix(in srgb,var(--rc) 40%,transparent)}
 .card.rar5 .rf{box-shadow:inset 0 0 .55em .05em color-mix(in srgb,var(--r5) 45%,transparent)}
-.card.rar5 .rf::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:.1em;background:var(--prism-ring);
+.card.rar5 .rf::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;padding:.1em;background:var(--prism-ring);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 /* the tag sits above the name strip with a clear gap (the strip is ~.77em tall), so a long name is never covered.
    Offsets are in the tag's own em (its font is .5 of the card's): 2.05em = 1.03 card-em up, .5em = .25 card-em in. */
@@ -41,13 +54,18 @@
   background:rgba(0,0,0,.62);color:var(--rc);border:.08em solid var(--rc)}
 .card.rar5 .rchip{color:#fff;border-color:transparent;background:linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.62)) padding-box,var(--prism) border-box}
 .card.nn .rchip{bottom:.6em}
-.card.back .rf,.card.back .rchip{display:none}
+/* "New" (a card you don't own yet, e.g. at the Merchant): the rarity tag's twin, in the bottom-right corner */
+.card .nchip{position:absolute;right:.5em;bottom:2.05em;z-index:2;font:800 .5em/1 var(--display);padding:.18em .38em .2em;border-radius:.35em;white-space:nowrap;
+  letter-spacing:.04em;text-transform:uppercase;background:rgba(0,0,0,.62);color:#7DF5B4;border:.08em solid #7DF5B4}
+.card.nn .nchip{bottom:.6em}
+.card.back .rf,.card.back .rchip,.card.back .nchip{display:none}
 .card.back{background:repeating-linear-gradient(45deg,var(--surf2) 0 .3em,var(--surf) .3em .6em);box-shadow:inset 0 0 0 .05em var(--line2),0 .2em .5em rgba(var(--sh),calc(.5*var(--shk)))}
 /* the back: the Leylines emblem */
 .card.back::after{content:"";position:absolute;left:50%;top:50%;width:54%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--accent);-webkit-mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat;mask:url(../images/leylines-emblem-line.svg) center/contain no-repeat}
+@supports not (aspect-ratio:1){.card.back::after{height:45%}} /* browsers before Chrome 88: the same square (54% of a 5 by 6 card) */
 .card.back i{display:none}
 .card.unknown{background:var(--surf);box-shadow:inset 0 0 0 .05em var(--line2)}
-.card.unknown i{position:absolute;inset:0;display:grid;place-items:center;font:900 2em var(--display);color:var(--muted);opacity:.45;font-style:normal}
+.card.unknown i{position:absolute;top:0;right:0;bottom:0;left:0;display:grid;place-items:center;font:900 2em var(--display);color:var(--muted);opacity:.45;font-style:normal}
 .card.drop{animation:drop .3s var(--ease)}
 @keyframes drop{0%{transform:scale(1.3) translateY(-.6em);opacity:0}100%{transform:none;opacity:1}}
 .card.fy{animation:flipY .46s ease-in-out}

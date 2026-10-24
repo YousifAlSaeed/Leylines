@@ -14,13 +14,15 @@ export function leaderboardRouter(db) {
   r.use(optionalAuth(db));
   let filled = null; // saves from before the leaderboard get their rows once
 
-  // ?by=level|wins|streak|cards &show=all|friends &q=name
+  // ?by=level|wins|streak|cards &show=all|friends &q=name &limit=1-50 (the menu's widget asks for 3)
   // → { by, show, rows: [player], me: player | null, counts: { all, friends } }
-  // A player is { rank, username, displayName, avatar, xp, wins, losses, draws, best, cards, recent, hand }.
+  // A player is { rank, username, displayName, avatar, col, xp, wins, losses, draws, best, cards, recent, hand }.
   // Equal numbers share a rank. me is you, wherever you are on the board.
   r.get('/', async (req, res) => {
     const by = BY[req.query.by] ? req.query.by : 'level', col = BY[by];
     const show = req.query.show === 'friends' ? 'friends' : 'all';
+    // a whole number, so it can go in the SQL as it is
+    const limit = Math.min(BOARD_SIZE, Math.max(1, Number.parseInt(req.query.limit, 10) || BOARD_SIZE));
     const me = req.user?.id ?? null;
     if (show === 'friends' && !me) return res.status(401).json({ error: 'Sign in to see your friends.' });
     await (filled ??= fillBoard(db).catch((e) => { filled = null; throw e; }));
@@ -38,7 +40,7 @@ export function leaderboardRouter(db) {
     const params = { ...(me && { $me: me }), ...(q && { $q: like }) };
 
     const [rows, mine, all, friends] = await Promise.all([
-      db.all(`${ranked} ${find} ${order} LIMIT ${BOARD_SIZE}`, params),
+      db.all(`${ranked} ${find} ${order} LIMIT ${limit}`, params),
       me ? db.get(`${ranked} WHERE s.user_id = $me`, { $me: me }) : null,
       db.get('SELECT COUNT(*) AS n FROM leaderboard'),
       me ? db.get('SELECT COUNT(*) AS n FROM leaderboard b WHERE b.user_id = $me OR b.user_id IN (SELECT friend_id FROM friends WHERE user_id = $me)', { $me: me }) : null,
@@ -56,8 +58,9 @@ function player(row) {
   try { save = row.data && JSON.parse(row.data); } catch { /* a broken save just shows no avatar */ }
   let hand = null;
   try { hand = row.hand ? JSON.parse(row.hand) : null; } catch { /* written by board.js, so this can't happen */ }
+  const pub = publicProfile(save);
   return {
-    rank: Number(row.rank), ...publicUser(row), avatar: publicProfile(save).avatar,
+    rank: Number(row.rank), ...publicUser(row), avatar: pub.avatar, col: pub.col,
     xp: row.xp, wins: row.wins, losses: row.losses, draws: row.draws, best: row.best, cards: row.cards,
     recent: row.recent, hand,
   };

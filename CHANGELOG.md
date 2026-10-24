@@ -6,6 +6,173 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.6 (2026-10-24)
+- Tap anywhere on the Collection, Night Market, Packs, Friends or Leaderboard box to open it, not just its title
+- The Play button's glow and your hand of cards no longer start over when you pick Easy, Normal or Hard
+
+## 0.30.5 (2026-10-24)
+- In the light theme, the glow when you open a pack now shows clearly for every rarity, so a 2★ no longer looks like a 1★, and 4★ and 5★ cards shine brighter
+
+## 0.30.4 (2026-10-24)
+- The Leaderboard box on the menu now shows the top players by itself, without opening the Leaderboard first. It checks for changes when you come back to the menu
+
+## 0.30.3 (2026-10-24)
+- On a phone, the bar along the bottom now stays on the Collection, Friends and your profile too, so you can hop between them without going back to the menu
+- On a phone, the cards in the Collection book are bigger: the rarity, how many you've found and the page number sit in a small line under them
+- On a phone, pages turn up out of the book like a real page, instead of inside a box
+- On a phone, Loadouts take less room, and tapping Save brings them into view
+
+## 0.30.2 (2026-10-24)
+- Fixed: changing songs (in the Jukebox or by moving around) could leave the old song playing underneath the new one in some browsers
+- Coming back to the main menu, its song now eases back in while the other one fades away, instead of starting suddenly
+
+## 0.30.1 (2026-10-23)
+- Fixed: buttons on the menu did nothing when clicked and didn't light up when you pointed at them, like Open on the Packs box, the market's four stops and the Daily's three challenges
+
+## 0.30.0 (2026-10-23)
+- Friends' news: see when a friend finds a 5★ card, reaches a new title, clears the Gauntlet or wins 5 online in a row, and react with an emoji. It's in the Friends box on the menu and under This week in Friends. Players who hide their match history don't share news
+- On a computer the menu has a new layout: Friends runs down the right, with Packs and the Leaderboard side by side under the Night Market
+- Packs waiting to open fan out like a hand, and the Leaderboard box shows the top two and you, from your last look
+- The round buttons at the top now look as tall as your profile box
+
+## 0.29.3 (2026-10-22)
+- The market's four stops on the menu light up when you point at them
+- A box on the menu with something new (Daily challenges left, packs to open, new stock) shines across the whole box, not just its title
+- The Packs box no longer shows the daily countdown twice
+
+## 0.29.2 (2026-10-22)
+- On a phone the menu no longer shows the Night Market, since it has its own tab at the bottom. Packs takes its place
+
+## 0.29.1 (2026-10-22)
+- The Daily lives in its own box on the menu, so the Play card is just Solo, Online and Couch. Tapping the Daily's title (or its line in the Inbox) opens the next challenge
+- How to play is the ? button at the top, and it shows a badge until you finish the tutorial and get its free pack
+- The buttons at the top are round and as tall as your profile box
+
+## 0.29.0 (2026-10-22)
+- A new main menu, the Hub: every place shows what's inside it. On a computer the Play card sits beside the Daily's three challenges, your newest cards, the market's four stops, packs waiting to open, friends free to play (with Invite) and the leaderboard as you last saw it. On a phone a tab bar at the bottom opens the Collection, the market, Friends and your profile; held sideways it becomes a rail down the left. A new Inbox (the bell) gathers friend requests, badges to claim, packs to open and Daily rewards left. The Leaderboard is also in Friends
+
+## 0.28.12 (2026-10-23)
+- Leylines moved to new servers. Your account, cards, friends and progress all came along
+
+## 0.28.11 (2026-10-22)
+- Music: arriving somewhere starts its song from the beginning. Back from a quick look elsewhere, a song picks up again at the start of the phrase it was in, never in the middle of one. Songs hand over faster, so each one's first beat is heard
+
+## 0.28.10 (2026-10-19)
+- The shine on the cards of the Play card no longer flickers on iPhone
+
+## 0.28.9 (2026-10-19)
+- Buying a card from the Merchant plays a short coin clink instead of the long win tune
+
+## 0.28.8 (2026-10-18)
+- Crossroads fits tiny and zoomed-in phones, and a small phone held sideways gets the one-row layout
+
+## 0.28.7 (2026-10-17)
+- Every phone, big or small: on a short screen (an older phone, or a browser's bars taking room) the Collection keeps its cards big with your hand right under the book, and a match, the tutorial and card popups shrink to fit instead of running off the bottom
+- Phones held sideways: the Collection, Draft and Crossroads lay out side by side
+- Older phones and browsers (iOS 15, Samsung Internet and Chrome back to version 80) lay every screen out properly, and long popups scroll
+- A browser's own dark mode (Samsung Internet, Chrome) no longer recolours the game, and a zoomed-in or very small screen keeps every button on screen
+
+## 0.28.6 (2026-10-16)
+- Smoother music changes: the song playing eases out, and the next one eases in a moment later, instead of both playing loud at once
+
+## 0.28.5 (2026-10-16)
+- Settings: How to play is gone from the list. Find it on the menu instead
+
+## 0.28.4 (2026-10-16)
+- Jukebox: Listen is a player now. The song's name over a bar showing the time played and left (drag it to jump), Play and Pause, Previous and Next, Repeat (off: the next song plays when one ends) and Shuffle, with all the songs in a list to tap
+
+## 0.28.3 (2026-10-16)
+- Jukebox: Settings → Jukebox picks the music for each place. Six new songs: Ley Lines, Crossroads, Sudden Death, Market, Open Sky and Afterglow. The old theme is called Discovery and is still the main menu's song
+- The Leaderboard plays Afterglow, the Collection Open Sky, the Market its own song, Crossroads its own, and a Sudden Death in 1v1 or Crossroads plays Sudden Death
+- Each place can play any song, follow the main menu, or (for Sudden Death) keep the music playing; One song everywhere plays the main menu's song on every screen. Listen plays any song from the jukebox
+- Songs fade into each other, and one you come back to carries on where it was
+
+## 0.28.2 (2026-10-16)
+- New sounds for placing and flipping cards, winning, draws, rule banners, emotes, opening packs and the card book
+
+## 0.28.1 (2026-10-16)
+- A game left open checks in with the server more lightly, so accounts stay up all month
+
+## 0.28.0 (2026-10-15)
+- New online game: Draft. Tap Host a game, then Draft. Nobody brings cards: 10 go on the table, 2 of each rarity, and you take turns picking 5. Whoever plays second picks first, and each pick has 15 seconds
+- Drafted cards are borrowed, so no cards are traded. The winner gets XP and coins as usual
+- No friend around? Tap Play the CPU in the Draft room to draft against the computer
+- In a Draft, the Random rule makes the table a random mix: any 10 cards, so there might be three Legendaries or none
+
+## 0.27.4 (2026-10-15)
+- Crossroads on phones: names show in full in the corners instead of being cut short
+
+## 0.27.3 (2026-10-15)
+- The Night Market marks cards you don't own yet with a "New" tag
+
+## 0.27.2 (2026-10-15)
+- Crossroads on phones looks like PC now: a corner for each player with their clock, name and score, and the hands around the board
+
+## 0.27.1 (2026-10-15)
+- The cards drifting behind the menu show their rarity
+
+## 0.27.0 (2026-10-15)
+- Pick your colour in Settings: blue, teal, green, gold, purple or black. Your cards are that colour everywhere: your hand, your collection, new packs and the menu. The other side is always red
+- In Crossroads you play in your colour when nobody else at the table has it, otherwise you get a free one
+- Friends see your cards in your colour on your profile and the leaderboard
+
+## 0.26.5 (2026-10-15)
+- Developer accounts get a Test button on the Daily reminder setting, to send the reminder right away
+
+## 0.26.4 (2026-10-15)
+- With alerts on, you get one reminder in the evening if your daily pack or Daily challenges are still waiting. Tap it to go straight to the Daily tab. Don't want it? Turn off Daily reminder in Settings
+
+## 0.26.3 (2026-10-15)
+- Loadout messages ("Loaded …", "Saved to …") show beside the Loadouts title, so the collection no longer jumps when one appears
+
+## 0.26.2 (2026-10-15)
+- **Small** behind-the-scenes changes
+- In the waiting room the game code sits in the middle of its box, with Copy link, Share and the invite link lined up under it the full width of the box
+
+## 0.26.1 (2026-10-15)
+- The Shard well moved into the Pack counter: a Packs / Shards switch shows either the packs or your shards from matches today, the 5★ guarantee and how to earn more
+- The market's fourth stop is now the Atelier, a bubbling cauldron behind a closed door: coming soon
+
+## 0.26.0 (2026-10-15)
+- The Forge opens at the market: tap a place on the anvil and pick extra copies of your cards in your book. Dissolve any of them into shards, or forge five of one rarity into a random card of the next, one you haven't found yet while there are any. It makes cards up to 4★
+- The Forge never takes your last copy of a card, copies your saved loadouts use, or cards still at stake in a match you left. Rare cards wait a few seconds before you can confirm
+- Auto-fill puts five spares of one rarity on the anvil in one tap, and the anvil shows how many cards of the rarity you're forging toward are still to find
+- Two new badges: Smith (forge a card) and Master smith (forge a 4★)
+- Fixed: on a wide screen, the first click on a market stop other than the Merchant did nothing
+
+## 0.25.2 (2026-10-15)
+- Music and sound effects each get a mute button next to their slider in Settings, and keep their level while muted; in a match the speaker opens a small panel with both sliders
+
+## 0.25.1 (2026-10-15)
+- The cards behind the menu show on every phone. A phone set to reduce motion (Android's Battery Saver or Remove animations, an iPhone's Reduce Motion) used to get none; now they're there and keep still
+- The sheet of cards sits straight and centred on older browsers too, and the menu's panels stay filled where a browser can't make them see-through
+- The cards behind the menu update when you find new ones or sign in, and a phone's keyboard or address bar no longer shuffles them
+- The game no longer breaks after an update on a slow connection: the page and its scripts always come from the same version, online or offline
+
+## 0.25.0 (2026-10-15)
+- Crossroads: when the host leaves, closes the game or loses their connection, another player takes over hosting and the match goes on. The old host can rejoin from the menu and gets their seat back
+- The player who'd take over keeps a locked copy of the match, and the other players hold the key: they only hand it over once they've lost the host too, so nobody can peek at hidden hands
+- Taking over takes a moment, not a minute: everyone keeps a line open to the next host. The turn timer keeps the time it had, and the wait doesn't count
+- The room's code, its invite link and invites still lead to the match after the host changes, and a seat kept for an invited friend stays kept
+
+## 0.24.3 (2026-10-14)
+- Every card in the book sits in its own clear plastic sleeve, open at the top, with a soft shine that moves when you point at it
+- A card leaving your hand goes back to its spot in the book; if that page isn't open, the book turns to it first. You can also drag a hand card onto the book
+- Tap anywhere to put a card you're looking at back in the book
+- Best 5 deals your cards onto the mat and celebrates like finishing a hand; the glow around a full hand no longer shows a stray outline
+- Spare copies of a card stack up behind it in the book, with a small tab under it that says how many (×2, ×3)
+- Cards you put in your hand show it in the book: the copy count goes down, and a card with every copy in your hand fades and says "In hand"
+
+## 0.24.2 (2026-10-14)
+- The collection is a book: a violet cover with an elastic band that snaps off and a sigil that lights up before it opens
+- Bigger cards, four to a page; pages turn by tapping their folded corner, or drag them as before
+- Bookmarks work like real ones: the open rarity's ribbon is pulled out, the ones you've passed flip over to the left as the page turns, and the rest wait on the right
+- Under the book: your loadouts are deck boxes, your hand has its own mat, and Best 5, Clear and Save hand sit beside it; a pink dot shows how many copies you have
+- Opening the book has a real book sound now, made from the same recording as closing it
+
+## 0.24.1 (2026-10-14)
+- Cards in the collection are grey, nobody's yet; a card turns your blue as it flies into your hand (and grey again on the way back)
+
 ## 0.24.0 (2026-10-13)
 - The menu moves, on phones and PCs alike: the logo's squares turn over like a tiny match, the cards on the Play card float and open out, and Play has a slow heartbeat
 - Card drift: the cards you've found slide slowly past behind the menu, and now and then one turns over. Settings has a switch for it (Menu background)

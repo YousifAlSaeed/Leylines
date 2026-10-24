@@ -4,6 +4,8 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 .rv-bar{position:fixed;zoom:var(--ui);z-index:calc(var(--z-banner) - 2);translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:10px 12px;border-radius:16px;background:var(--surf2);border:1px solid var(--line2);box-shadow:0 14px 36px rgba(var(--sh),calc(.7*var(--shk)))}
 .rv-bar[hidden]{display:none}
+/* browsers without the translate property (Chrome before 104) */
+@supports not (translate:0 0){.rv-bar{transform:translateX(-50%)}}
 .rv-nav{display:flex;align-items:center;gap:6px}
 .rv-nav .iconbtn:disabled{opacity:.35;cursor:default}
 .rv-nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -20,6 +22,8 @@ body.rev #btnQuit,body.rev #btnHow,body.rev #btnEmote,body.rev #tagTop,body.rev 
 body.puz #sideTop{visibility:hidden}
 /* Crossroads (review.js): the hands make room for the words and the buttons; the names and scores stay */
 body.drev #scr-duo .dhand,body.drev #duoHand{visibility:hidden}
-body.drev #duoQuitBtn,body.drev #scr-duo.narrow #duoMe{visibility:hidden}
+body.drev #duoQuitBtn{visibility:hidden}
+/* phones: the buttons fit between the bottom corners, where your hand was */
+@media (max-width:559px){body.drev .rv-bar{padding:10px 6px}body.drev .rv-nav{gap:3px}}
 /* who played, in their seat's colour */
 .tut-coach b.rv-who{color:var(--dink)}

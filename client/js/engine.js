@@ -92,3 +92,18 @@ function genElements(R,rng){
   for(let k=0;k<n;k++)el[cells[k]]=ELEM_KEYS[Math.floor(rng()*ELEM_KEYS.length)];
   return el;
 }
+
+/* ---------- Draft (online 1v1, draft.js) ---------- */
+// 10 cards go on the table, dealt from the match seed so both players see the same ones: 2 of each rarity,
+// or with the Random rule on, any 10 cards (any mix of rarities), laid out from 1★ to 5★
+function draftPool(seed,mix){
+  const r=mulberry32((seed^0x5bd1e995)>>>0);
+  if(mix)return shuffle(CARDS.map(c=>c.id),r).slice(0,10).sort((a,b)=>CARDS[a].rar-CARDS[b].rar||a-b);
+  return[1,2,3,4,5].flatMap(k=>shuffle(CARDS.filter(c=>c.rar===k).map(c=>c.id),r).slice(0,2));
+}
+// who takes each of the 10 picks: 0 = the first picker. 1, 2, 2, 2, 2, 1, so 5 each
+const DRAFT_ORDER=[0,1,1,0,0,1,1,0,0,1];
+// the first picker is whoever plays second: startMatch flips its first coin on the same seed
+const draftFirst=seed=>mulberry32(seed)()<.5?1:0;
+// the seat (0 host, 1 guest) whose pick it is, or -1 once all 10 are taken
+const draftTurn=(seed,n)=>n>=DRAFT_ORDER.length?-1:DRAFT_ORDER[n]===0?draftFirst(seed):1-draftFirst(seed);

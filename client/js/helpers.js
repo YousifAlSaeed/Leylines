@@ -35,6 +35,7 @@ function cardHTML(id,color,o={}){
     (o.mod?`<div class="mod ${o.mod>0?'up':'dn'}">${o.mod>0?'+1':'−1'}</div>`:'')+
     (o.count>1?`<div class="cnt">×${o.count}</div>`:'')+
     `<div class="rchip" aria-hidden="true">${c.rar}★</div>`+
+    (o.isNew?'<div class="nchip" aria-hidden="true">New</div>':'')+
     (o.name===false?'':`<div class="nm">${esc(c.name)}</div>`)+
     '<i class="rf"></i>'+
   `</div>`;
@@ -50,6 +51,7 @@ function ghostSweep(keep){$$('body > .ghost').forEach(g=>{if(g!==keep)g.remove()
 /* ---------- flying cards (collection and hand) ----------
    A copy of the card on <body> (outside the zoomed screens) flies from one card to another in an arc,
    turning and resizing to match. The cards themselves stay put; hide them while the copy is in the air. */
+const CARD_COLS=['blue','red','grey','gold','green','purple','teal'];
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 // a card's font size in window pixels (cards are sized in em; screens and popups are zoomed by --ui)
 const cardPx=el=>parseFloat(getComputedStyle(el).fontSize)*(el.closest('.screen,#modal')?UI:1);
@@ -60,9 +62,12 @@ function fly(src,dst,o={}){
   const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect(),fa=cardPx(src),fb=cardPx(dst);
   if(noMotion()||!a.width||!b.width){o.done&&o.done();return}
   const g=src.cloneNode(true);g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer');if(o.shadow)g.classList.add('lifted');
+  // a card changing hands changes colour on the way (a lost red one coming back into your colour)
+  const col=e=>CARD_COLS.find(c=>e.classList.contains(c)),c0=col(g),c1=col(dst);
   const ax=a.left+a.width/2,ay=a.top+a.height/2,dx=b.left+b.width/2-ax,dy=b.top+b.height/2-ay;
   Object.assign(g.style,{fontSize:fa+'px',left:(ax-2.5*fa)+'px',top:(ay-3*fa)+'px',transform:'',visibility:''});
   document.body.append(g);
+  if(c0&&c1&&c0!==c1){getComputedStyle(g).getPropertyValue('--c1');g.style.transition=`--c1 ${o.ms||360}ms,--c2 ${o.ms||360}ms`;g.classList.replace(c0,c1)}
   const s0=o.s0||1,s=fb/fa,r0=o.r0||0,r1=o.r1||0,tf=(x,y,r,k)=>`translate(${x}px,${y}px) rotate(${r}deg) scale(${k})`;
   const kf=[{transform:tf(0,0,r0,s0)}];
   if(o.lift)kf.push({transform:tf(0,-o.lift*6*fa*s0,r0*.5,s0*(o.liftScale||1)),offset:o.liftAt||.25});
@@ -83,12 +88,13 @@ function toast(msg,ms=2200){const t=$('#toast');t.textContent=msg;t.classList.ad
 
 let modalReturn=null;
 // important popups (a choice that costs something, or news of a loss): a button with wait:true counts down
-// READ_WAIT seconds before it works, so there's time to read first. Cancel / Stay / Escape never wait.
+// READ_WAIT seconds before it works, so there's time to read first. wait:1 (buying in the market) only holds it
+// for a second, with no count. Cancel / Stay / Escape never wait.
 const READ_WAIT=3;
-function readWait(e,label){
-  let n=READ_WAIT;e.classList.add('waiting');e.setAttribute('aria-disabled','true');
+function readWait(e,label,s=READ_WAIT){
+  let n=s;e.classList.add('waiting');e.setAttribute('aria-disabled','true');
   const tick=()=>{if(!e.isConnected)return;
-    if(n>0){e.textContent=`${label} (${n--})`;setTimeout(tick,1000)}
+    if(n>0){if(s>1)e.textContent=`${label} (${n})`;n--;setTimeout(tick,1000)}
     else{e.textContent=label;e.classList.remove('waiting');e.removeAttribute('aria-disabled')}};
   tick();
 }
@@ -99,11 +105,11 @@ function modal(html,btns=[]){
   const bx=bg.querySelector('.mbtns');
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'');e.textContent=b.label;if(b.esc)e.dataset.esc='';
     e.onclick=()=>{if(e.classList.contains('waiting'))return;if(!bg.querySelector('.cd-box'))sfx('click');if(!b.keep)closeModal();b.fn&&b.fn()};bx.append(e);
-    if(b.wait)readWait(e,b.label)});
+    if(b.wait)readWait(e,b.label,b.wait===true?READ_WAIT:b.wait)});
   const h=bg.querySelector('h2');
   if(h){h.id='mTitle';bg.setAttribute('aria-labelledby','mTitle')}else bg.removeAttribute('aria-labelledby');
   bg.classList.add('on');
-  $$('.screen').forEach(s=>s.inert=true);
+  $$('.screen,#hubTabs').forEach(s=>s.inert=true);
   const box=bg.querySelector('.mbox');
   (box.querySelector('.pk,.btn.primary:not(:disabled)')||box.querySelector('.btn')||box).focus({preventScroll:true});
   return box;
@@ -113,11 +119,13 @@ function closeModal(){
   if(collectionCard)collCardBack(m); // the card flies back into its sleeve (collection.js); needs the popup still on screen
   m.classList.remove('on');m.innerHTML='';
   // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
-  const away=$('#away').classList.contains('on');$$('.screen').forEach(s=>s.inert=away);
+  const away=$('#away').classList.contains('on');$$('.screen,#hubTabs').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});
   modalReturn=null;
   // news about a match you left waits for the popup in front of it to close (spare.js)
   if(OWES.news.length)setTimeout(oweNews,300);
+  // the jukebox's player stops with it, and the place's own song comes back (music.js)
+  musicListenEnd();
 }
 
 // Same / Plus / Combo: n counts the Combos in this move; the second one and any after it ring higher
@@ -140,7 +148,7 @@ const SFX_NAMES=['click','place','flip','banner','win','lose','draw','tick','tim
   'pack_reveal_1','pack_reveal_2','pack_reveal_3','pack_reveal_4','pack_reveal_5','pack_fling',
   'coll_page_01','coll_page_02','coll_page_03','coll_page_04','coll_card_out','coll_card_in',
   'coll_hand_add','coll_deny','coll_hand_full','coll_set_done','coll_riffle','coll_bump','coll_tab',
-  'coll_open','coll_close','coll_locked','coll_lost','coll_shimmer','coll_lift','coll_return','coll_hand_remove','hand_pick','badge_claim','same_plus','combo','combo2'];
+  'coll_open','coll_close','coll_locked','coll_lost','coll_shimmer','coll_lift','coll_return','coll_hand_remove','hand_pick','badge_claim','buy','same_plus','combo','combo2'];
 const SFX_BUFFERS={},SFX_QUEUED={};let SFX_LOADING=null;
 function sfxLoad(){
   if(SFX_LOADING)return SFX_LOADING;
@@ -153,7 +161,7 @@ function sfxLoad(){
 // vol: 0–1 of the normal loudness (a softer version of the same sound)
 function sfx(k,vol=1){
   const v=SAVE.sfxVol/100*vol;
-  if(!SAVE.sound||!v)return;
+  if(SAVE.sfxMute||!v)return;
   try{
     AC=AC||new(window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
@@ -173,74 +181,3 @@ function sfx(k,vol=1){
     }
   }catch(e){}
 }
-
-/* ---------- music ---------- */
-// Game track, played on every screen from the first click, tap or key press. It is 173.48 BPM in 4/4
-// (one bar = 1.3835 s) and starts on a downbeat at 0 s. Its last bar (bar 122, from 167.409 s) is just a
-// final hit ringing out into near-silence, so the opening comes back in on that bar's downbeat and the
-// final hit and its ring play on top of it, fading out, instead of leaving a second of silence.
-// Replace these numbers if the track changes.
-const MUSIC={src:'audio/theme.mp3',max:.5,first:0,loopAt:167.4085,
-  buf:null,loading:null,node:null,gain:null,want:false,pos:null,t0:0,off:0};
-function musicOn(){return !!(SAVE.sound&&SAVE.musicVol)}
-const musicGain=()=>MUSIC.max*SAVE.musicVol/100;
-// download now; decoding needs the audio context, which waits for the first interaction
-MUSIC.data=fetch(MUSIC.src).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()});
-MUSIC.data.catch(()=>{});
-function audioUnlock(){
-  removeEventListener('pointerdown',audioUnlock,true);removeEventListener('keydown',audioUnlock,true);
-  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){return}
-  sfxLoad();
-  musicPlay();
-}
-addEventListener('pointerdown',audioUnlock,true);addEventListener('keydown',audioUnlock,true);
-function musicLoad(){
-  if(MUSIC.loading)return MUSIC.loading;
-  AC=AC||new(window.AudioContext||window.webkitAudioContext)();
-  MUSIC.loading=MUSIC.data.then(d=>new Promise((ok,no)=>AC.decodeAudioData(d,ok,no))).then(b=>{
-    const sr=b.sampleRate,S=Math.round(MUSIC.first*sr),E=Math.round(MUSIC.loopAt*sr),F=b.length-E;
-    // from the loop point to the end of the file: the opening plus the leftover tail fading out (cosine curve)
-    for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);
-      for(let j=0;j<F;j++)d[E+j]=d[S+j]+d[E+j]*.5*(1+Math.cos(Math.PI*j/F))}
-    // then carry on from just after that stretch of the opening
-    MUSIC.buf=b;MUSIC.loopStart=(S+F)/sr;MUSIC.loopEnd=b.length/sr;return b;
-  }).catch(e=>{MUSIC.loading=null;throw e});
-  return MUSIC.loading;
-}
-function musicPlay(){
-  MUSIC.want=true;
-  if(!musicOn()||MUSIC.node)return;
-  musicLoad().then(b=>{
-    if(!MUSIC.want||!musicOn()||MUSIC.node)return;
-    if(AC.state==='suspended')AC.resume();
-    const src=AC.createBufferSource(),g=AC.createGain(),t=AC.currentTime+.05;
-    // after a mute, carry on from where it stopped (fading in), not from the top
-    const off=MUSIC.pos??MUSIC.first,resume=MUSIC.pos!=null;MUSIC.pos=null;
-    src.buffer=b;src.loop=true;src.loopStart=MUSIC.loopStart;src.loopEnd=MUSIC.loopEnd;
-    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+(resume?.6:.03));
-    src.connect(g).connect(AC.destination);src.start(t,off);
-    Object.assign(MUSIC,{node:src,gain:g,t0:t,off});
-  }).catch(()=>{});
-}
-function musicStop(keepWant){
-  if(!keepWant)MUSIC.want=false;
-  const src=MUSIC.node,g=MUSIC.gain;if(!src)return;
-  MUSIC.node=MUSIC.gain=null;
-  const t=AC.currentTime;
-  // where in the track we are: past the loop end it wraps back to the loop start
-  let p=MUSIC.off+Math.max(0,t-MUSIC.t0);
-  if(p>=MUSIC.loopEnd)p=MUSIC.loopStart+(p-MUSIC.loopEnd)%(MUSIC.loopEnd-MUSIC.loopStart);
-  MUSIC.pos=p;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);
-  src.stop(t+.65);
-}
-function musicSync(){
-  if(!musicOn()){musicStop(true);return}
-  if(!MUSIC.node){if(MUSIC.want)musicPlay();return}
-  if(!document.hidden)MUSIC.gain.gain.setTargetAtTime(musicGain(),AC.currentTime,.05);
-}
-// fade out while the tab is hidden, back in when it returns
-document.addEventListener('visibilitychange',()=>{
-  const g=MUSIC.gain;if(!g)return;
-  const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(Math.max(g.gain.value,.0001),t);
-  g.gain.exponentialRampToValueAtTime(document.hidden?.0001:musicGain(),t+(document.hidden?.3:1));
-});

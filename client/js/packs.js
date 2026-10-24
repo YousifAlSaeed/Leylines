@@ -9,8 +9,8 @@
    ===================================================================== */
 // the rarity colours, from cards.css (--r1 … --r5), so they're set in one place
 const RC=[1,2,3,4,5].map(r=>getComputedStyle(document.documentElement).getPropertyValue('--r'+r).trim());
-// one colour for a rarity's light: 5★ is the prism, so its light is white and its sparks and rays are rainbow
-const rarCol=r=>r===5?'#ffffff':RC[r-1];
+// one colour for a rarity's light (packs.css --g1 … --g5, deeper in the light theme): 5★ is the prism, so its sparks and rays are rainbow
+const rarCol=r=>getComputedStyle($('#pkStage')).getPropertyValue('--g'+r).trim()||RC[r-1];
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const PK={src:null,ids:[],fresh:[],i:0,state:'',ret:null,tear:{on:false}};
 
@@ -99,7 +99,8 @@ function fxTick(){
   for(const p of FX.p){p.vy+=p.g;p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;cx.globalAlpha=Math.max(0,p.l/p.m);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.s,0,7);cx.fill()}
   cx.globalAlpha=1;FX.raf=FX.p.length?requestAnimationFrame(fxTick):0;
 }
-const rainbow=()=>['#ff8fd0','#ffd76a','#7fe0ff','#b98cff','#fff'][Math.floor(Math.random()*5)];
+const RAINBOW={dark:['#ff8fd0','#ffd76a','#7fe0ff','#b98cff','#fff'],light:['#e0338f','#d08f00','#0a9fd0','#6a2fe8']};
+const rainbow=()=>{const c=RAINBOW[document.documentElement.dataset.theme==='light'?'light':'dark'];return c[Math.floor(Math.random()*c.length)]};
 
 /* ---------- the stage ---------- */
 const stg=$('#pkStage'),pk=$('#pkPack'),pkBody=$('#pkStage .pk-body'),strip=$('#pkStrip'),lipw=$('#pkStage .pk-lipw'),lip=$('#pkStage .pk-lip'),seam=$('#pkStage .pk-seam'),leak=$('#pkStage .pk-leak');
@@ -111,7 +112,7 @@ function pkStart(p,ids,fresh){
   Object.assign(PK,{src:p,ids,fresh,i:0,state:'idle'});
   if(!stg.classList.contains('on'))PK.ret=document.activeElement;
   stg.className='pk-stage on t-'+p.t+(best===5?' best5':'');stg.style.setProperty('--leak',rarCol(best));
-  $$('.screen').forEach(s=>s.inert=true);fxFit();
+  $$('.screen,#hubTabs').forEach(s=>s.inert=true);fxFit();
   $('#pkTitle').textContent=p.daily?`Daily pack · day ${p.daily}`:p.lv?`Level ${p.lv} pack`:T.name+' pack';
   $('#pkName').textContent=T.name;$('#pkSub').textContent=`${T.n} cards`+(p.mile?' · 4★ inside':'');
   pk.setAttribute('aria-label',`${T.name} pack, ${T.n} cards. Drag across the top to tear it open, or press Enter.`);
@@ -126,7 +127,7 @@ function pkStart(p,ids,fresh){
 }
 function pkClose(){
   stg.className='pk-stage';FX.p=[];PK.state='';
-  $$('.screen').forEach(s=>s.inert=false);
+  $$('.screen,#hubTabs').forEach(s=>s.inert=false);
   if($('#scr-packs').classList.contains('on'))renderPacks();
   if($('#scr-store').classList.contains('on'))renderStore();
   if($('#scr-menu').classList.contains('on'))renderMenu();
@@ -278,7 +279,7 @@ function dealCards(){
   PK.state='deal';
   $('#pkDeck').innerHTML=PK.ids.map((id,i)=>{const c=CARDS[id];
     return `<div class="pk-slot" data-i="${i}" style="--rc:${RC[c.rar-1]};--rt:var(--r${c.rar}t);z-index:${50-i};transform:translate(-50%,10vh) scale(.6);opacity:0">
-    <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,'blue')}</div></div>
+    <div class="pk-flip" style="--g:${rarCol(c.rar)}"><div class="pk-face pk-back"></div><div class="pk-face pk-front">${cardHTML(id,myCol())}</div></div>
     ${PK.fresh[i]?'<span class="pk-new">NEW</span>':''}<div class="pk-rname"><b>${esc(c.name)}</b><small class="rt rar${c.rar}">${rarName(c.rar)}</small></div></div>`}).join('');
   const slots=$$('#pkDeck .pk-slot');
   slots.forEach((s,i)=>{bindSlot(s);setTimeout(()=>{s.style.opacity=1;s.style.transform=`translate(-50%,-50%) translate(${-i*3}px,${-i*4}px)`},120+i*90)});
@@ -321,7 +322,7 @@ function reveal(s){
     setTimeout(()=>{
       s.revealed=true;s.busy=false;s.classList.add('shown');PSND.reveal(c.rar);buzz(c.rar>=4?[30,40,60]:10);
       const r=s.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
-      if(c.rar>=3)spark(x,y,c.rar===5?rainbow:RC[c.rar-1],c.rar===5?90:c.rar===4?50:18,c.rar>=4?9:5,c.rar>=4?80:50,.1);
+      if(c.rar>=3)spark(x,y,c.rar===5?rainbow:rarCol(c.rar),c.rar===5?90:c.rar===4?50:18,c.rar>=4?9:5,c.rar>=4?80:50,.1);
       if(c.rar===5)for(let k=1;k<5;k++)setTimeout(()=>spark(x,y,rainbow,30,7,70,.1),k*160);
       $('#pkStage .pk-live').textContent=`${c.name}, ${rarName(c.rar)}${PK.fresh[i]?', new':''}`;
       setTimeout(()=>{stg.classList.remove('focus');$('#pkRays').className='pk-rays'},c.rar>=4?1400:0);
@@ -329,7 +330,7 @@ function reveal(s){
   };
   if(!td)return go();
   f.style.setProperty('--td',td+'ms');f.classList.add('tease');
-  if(c.rar>=4){stg.classList.add('focus');const R=$('#pkRays');R.style.setProperty('--ray',RC[c.rar-1]);R.className='pk-rays'+(c.rar===5?' r5':'');PSND.build(c.rar)}
+  if(c.rar>=4){stg.classList.add('focus');const R=$('#pkRays');R.style.setProperty('--ray',rarCol(c.rar));R.className='pk-rays'+(c.rar===5?' r5':'');PSND.build(c.rar)}
   setTimeout(go,td);
 }
 function fling(s,d){
@@ -344,7 +345,7 @@ function summary(){
   pkHint('');$('#pkCount').style.opacity=0;$('#pkDeck').innerHTML='';
   const n=PK.fresh.filter(Boolean).length;
   $('#pkSum').innerHTML=`<h3>${PACKS[PK.src.t].name} pack</h3><div class="pk-row">${PK.ids.map((id,i)=>
-    `<div class="pk-it" style="animation-delay:${i*80}ms">${PK.fresh[i]?'<em>NEW</em>':'<em class="dup">+1 copy</em>'}${cardHTML(id,'blue')}</div>`).join('')}</div>
+    `<div class="pk-it" style="animation-delay:${i*80}ms">${PK.fresh[i]?'<em>NEW</em>':'<em class="dup">+1 copy</em>'}${cardHTML(id,myCol())}</div>`).join('')}</div>
     <p>${plural(PK.ids.length,'card')} added to your collection${n?` · <b>${n} new</b>`:''}</p>`;
   $('#pkSum').className='pk-sum on';
   const next=nextPack();
@@ -404,7 +405,7 @@ function renderPacks(){
       <li>Chances are for each card. Cards come out worst to best, so the best one is always last.</li>
       <li>The level road repeats every 10 levels: a Leyline at levels ending in 5, a Mythic at levels ending in 0 (from level 20; level 10 is a Leyline), and 4 small packs between them (Spark, or Arcane from level 21). The Leyline and Mythic levels are milestones: their last card is at least 4★.</li>
       <li>Light leaks out of the tear in the colour of the best card inside.</li>
-      <li>Duplicates are extra copies: use them in decks or lose them in trades.</li></ul></details>`;
+      <li>Duplicates are extra copies: use them in decks, lose them in trades, or take them to the market's Forge to melt into shards or forge five into a rarer card.</li></ul></details>`;
 
   const pity=`<section class="pk-card pk-pity">${pityHTML()}</section>`;
   $('#pkBody').innerHTML=daily+inv+pity+roadHTML+odds;

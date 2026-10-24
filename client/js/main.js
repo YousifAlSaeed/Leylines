@@ -2,7 +2,7 @@
 /* =====================================================================
    BOOT
    ===================================================================== */
-applyTheme();updSnd();renderMenu();layout();acctBoot();
+applyTheme();updSnd();renderMenu();layout();acctBoot();lbHubFetch(); // the menu's Leaderboard box (leaderboard.js)
 // offline support (sw.js); service workers only run on https and localhost
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 (function(){
@@ -11,7 +11,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   if(rs){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}openReset(rs[1]);return}
   const P=new URLSearchParams(location.search),q=P.get('join'),u=P.get('u');
   // opened by tapping an alert (alerts.js)
-  if(P.get('friends')||P.get('invite')){const url=location.href;try{history.replaceState(null,'',location.pathname)}catch(e){}alertOpen(url);return}
+  if(P.get('friends')||P.get('invite')||P.get('daily')){const url=location.href;try{history.replaceState(null,'',location.pathname)}catch(e){}alertOpen(url);return}
   // a shared profile link: ?u=username
   if(u&&!q){try{history.replaceState(null,'',location.pathname)}catch(e){}if(/^[A-Za-z0-9_]{3,20}$/.test(u))openPlayer(u);return}
   if(q){

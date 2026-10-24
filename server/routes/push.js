@@ -16,7 +16,8 @@ export function pushHostOk(endpoint) {
 }
 const key = (v) => typeof v === 'string' && v.length > 0 && v.length <= 200 && /^[A-Za-z0-9_=-]+$/.test(v);
 
-export function pushRouter(db, push) {
+// daily: lib/dailyAlerts.js
+export function pushRouter(db, push, daily) {
   const r = Router();
   const limit = rateLimit({ windowMs: 60 * 60 * 1000, max: 60, message: 'Too many tries. Try again later.' });
 
@@ -39,6 +40,14 @@ export function pushRouter(db, push) {
     if (!config.devUsers.includes(req.user.username.toLowerCase())) return res.status(403).json({ error: 'Only developers can send a test alert.' });
     if (!push) return res.status(503).json({ error: 'Alerts are not set up on this server.' });
     res.json(await push.notify(req.user.id, { title: 'Leylines', body: 'Alerts work on this device.', tag: 'test', url: './', ttl: 600 }));
+  });
+
+  // → { devices, sent, failed, waiting }: the daily reminder to every device of yours, now (Settings → Daily reminder → Test).
+  // Developer accounts (DEV_USERS) only.
+  r.post('/test-daily', limit, requireAuth(db), async (req, res) => {
+    if (!config.devUsers.includes(req.user.username.toLowerCase())) return res.status(403).json({ error: 'Only developers can send a test alert.' });
+    if (!push) return res.status(503).json({ error: 'Alerts are not set up on this server.' });
+    res.json(await daily.test(req.user.id));
   });
 
   // { endpoint } → 204

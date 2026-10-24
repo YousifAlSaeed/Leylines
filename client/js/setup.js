@@ -45,8 +45,15 @@ const DIFF_INFO={easy:[1,'1★ Common cards'],normal:[2,'1–2★ cards'],hard:[
 const STAKE={none:'Nothing',one:'1 card',diff:'Diff',all:'All 5'};
 const seriesName=n=>n===1?'1 match':'Best of '+n;
 // Sweep needs cards to change hands: off in Couch, and with trade None (or a guest in the online room)
-const sweepBlock=()=>setupMode==='local'?'Couch games never trade cards, so Sweep is off.':tradeLocked()?'Card bets are off, so Sweep is off.'
+const sweepBlock=()=>setupMode==='local'?'Couch games never trade cards, so Sweep is off.':setupDraft()?'Drafted cards are borrowed, so Sweep is off.':tradeLocked()?'Card bets are off, so Sweep is off.'
   :SR().trade==='none'?(roomGuest()?'The trade rule is None, so Sweep is off.':'Pick a trade rule below (not None) to use Sweep.'):'';
+// a Draft room (online.js roomDraft): the cards come from the table, so no trade,
+// and Random means a random table (any mix of rarities) instead of a random hand
+const setupDraft=()=>inRoom()&&roomDraft();
+const ruleBlock=k=>k==='sweep'?sweepBlock():'';
+const DRAFT_RANDOM=['The table is a random mix','The 10 cards on the table are picked at random from every card, so any mix of rarities can come up. Off: 2 of each rarity, 1★ to 5★.'];
+const ruleShort=k=>k==='random'&&setupDraft()?DRAFT_RANDOM[0]:RULE_SHORT[k];
+const ruleLong=r=>r[0]==='random'&&setupDraft()?DRAFT_RANDOM[1]:r[2];
 let setupLast=null; // the rule card tapped last, explained in the box under the cards
 // Solo keeps its own timer (off by default); Couch and the room use the rules' one.
 // The per-turn seconds are SAVE.cpuTimer / rules.timer; the type, bank and out-of-time rule are SAVE.cpuTk / the rules
@@ -112,21 +119,22 @@ function renderSetup(flipKey){
   setVal('diff',DIFFS.find(d=>d[0]===SAVE.diff)[1]);
   renderRows();
   const R=cur.rules;
-  const swb=sweepBlock();
+  if(inRoom())$('#setupTitle').innerHTML=setupDraft()?'Draft room <em class="dbeta">Testing</em>':'Waiting room';
+  $('#tradeBox').classList.toggle('hidden',setupMode==='local'||setupDraft());
   $('#ruleChips').innerHTML=RULES.map(([k,l])=>{
-    const dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus),off=k==='sweep'&&swb,on=R[k]&&!off;
-    return`<button class="rc ${on?'on':''} ${dim?'dim':''} ${off?'off':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!on}"${ro?' aria-readonly="true"':''}${off?' aria-disabled="true"':''} aria-label="${l}: ${RULE_SHORT[k]}"><span class="em">${ruleSvg(k)}</span><b>${l}</b><small class="rd" aria-hidden="true">${off?swb:RULE_SHORT[k]}</small></button>`}).join('');
-  // the guest can tap a card to read about it, but not turn it on or off (nor can anyone turn on a blocked Sweep)
+    const blk=ruleBlock(k),dim=(k==='sameWall'&&!R.same)||(k==='combo'&&!R.same&&!R.plus),off=!!blk,on=R[k]&&!off;
+    return`<button class="rc ${on?'on':''} ${dim?'dim':''} ${off?'off':''} ${flipKey===k?'flip':''}" data-k="${k}" role="switch" aria-checked="${!!on}"${ro?' aria-readonly="true"':''}${off?' aria-disabled="true"':''} aria-label="${l}: ${ruleShort(k)}"><span class="em">${ruleSvg(k)}</span><b>${l}</b><small class="rd" aria-hidden="true">${off?blk:ruleShort(k)}</small></button>`}).join('');
+  // the guest can tap a card to read about it, but not turn it on or off (nor can anyone turn on a blocked Sweep or Random)
   $$('#ruleChips .rc').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
-    if(ro||k==='sweep'&&swb){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
+    if(ro||ruleBlock(k)){setupLast=k;sfx('click');renderSetup();refocus('#ruleChips',b);return}
     R[k]=!R[k];if(k==='sameWall'&&R.sameWall)R.same=true;
     // Open shows the whole hand and Three open just 3 cards: only one of them at a time
     if(k==='open'&&R.open)R.threeOpen=false;if(k==='threeOpen'&&R.threeOpen)R.open=false;
     setupLast=k;save();sfx('flip');renderSetup(k);refocus('#ruleChips',b)});
   renderTimerRow();
   const lr=RULES.find(r=>r[0]===setupLast);
-  const lrOn=lr&&R[lr[0]]&&!(lr[0]==='sweep'&&swb);
-  $('#ruleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${lrOn?'on':'off'}</b><span>${lr[2]}${lr[0]==='sweep'&&swb?` <b class="gold">${swb}</b>`:''}</span></div>`
+  const lrBlk=lr&&ruleBlock(lr[0]),lrOn=lr&&R[lr[0]]&&!lrBlk;
+  $('#ruleInfo').innerHTML=lr?`${ruleSvg(lr[0])}<div><b>${lr[1]} · ${lrOn?'on':'off'}</b><span>${ruleLong(lr)}${lrBlk?` <b class="gold">${lrBlk}</b>`:''}</span></div>`
     :`${ruleSvg('info')}<div><b>Tap a rule card</b><span>${ro?'Violet cards are on. Only the host can change them. Tap one to see what it does.':'Violet cards are on. Tap one to turn it on or off and see what it does.'}</span></div>`;
   const lock=ro?' aria-disabled="true"':'',tlock=ro||tradeLocked()?' aria-disabled="true"':'';
   $('#tradeSeg').innerHTML=TRADES.map(([k])=>`<button class="tc ${cur.trade===k?'on':''}" data-k="${k}" aria-pressed="${cur.trade===k}"${tlock}><span class="k">${STAKE[k]}</span></button>`).join('');
@@ -135,7 +143,7 @@ function renderSetup(flipKey){
   const tr=TRADES.find(t=>t[0]===cur.trade);
   $('#tradeDesc').textContent=tr[2];
   // leaving early gives up the cards too (match.js, spare.js)
-  $('#tradeWarn').innerHTML=tradeLocked()?(myUser()
+  $('#tradeWarn').innerHTML=setupDraft()?'':tradeLocked()?(myUser()
       ?`<b>🔒 Card bets are off.</b> <b class="gold">${esc(NET.oppName)}</b> is playing as a guest. Both players need an account to play for cards.`
       :`<b>🔒 Card bets are off.</b> You're playing as a guest. Create an account to play online for cards.`)
     :cur.trade==='none'||setupMode==='local'?'':`<b>⚠ Leaving mid-match counts as a loss.</b> ${inRoom()?'Your opponent can take your cards or spare you.':'The CPU takes your cards as if it won.'}`;
@@ -161,18 +169,21 @@ function renderRoom(){
   const guestRow=on?row('g',host?NET.oppAv:myAv(),host?NET.oppName:myName(),!host,false,ready?'✓ Ready':host&&!NET.oppIn?'Still on results':'Not ready',ready)
     :`<li class="empty"><span class="av">?</span><b>Waiting for a friend…${host&&invPending()?` <small class="rinv">Invited ${esc(invPending())}</small>`:''}</b><span class="spin"></span>`+
       // while the seat is empty, the host can invite friends who are on the main menu (pulse.js)
-      (host?'<button class="btn small primary" id="roomInvBtn">Invite</button>':'')+'</li>';
+      (host?'<button class="btn small primary" id="roomInvBtn">Invite</button>':'')+
+      // a Draft needs nobody else: the host can draft against the CPU instead (draft.js)
+      (host&&setupDraft()?'<button class="btn small" id="roomCpuBtn">Play the CPU</button>':'')+'</li>';
   $('#roomPlayers').innerHTML=hostRow+guestRow;
   const ib=$('#roomInvBtn');if(ib)ib.onclick=()=>{sfx('click');invPop()};
-  const go=$('#setupGo');
+  const cb=$('#roomCpuBtn');if(cb)cb.onclick=()=>{sfx('click');draftCpu()};
+  const go=$('#setupGo'),dn=setupDraft()?'<b>Draft:</b> 10 cards go on the table and you take turns picking 5. ':'';
   if(host){
     go.textContent='Start match';go.disabled=!(on&&NET.oppReady);
     $('#setupNote').innerHTML=NET.roomMsg||(!NET.code?'<span class="spin"></span>Connecting…'
-      :!on?'Send the code or the invite link to a friend. You can set the rules while you wait.'
-      :NET.oppReady?`<b class="gold">${opp}</b> is ready. Start when you are.`:`Waiting for <b class="gold">${opp}</b> to tap Ready. Changing a rule asks them again.`);
+      :dn+(!on?'Send the code or the invite link to a friend. You can set the rules while you wait.'
+      :NET.oppReady?`<b class="gold">${opp}</b> is ready. Start when you are.`:`Waiting for <b class="gold">${opp}</b> to tap Ready. Changing a rule asks them again.`));
   }else{
     go.textContent=NET.meReady?'Not ready':'Ready';go.disabled=false;
-    $('#setupNote').innerHTML=NET.meReady?`You're ready. Waiting for <b class="gold">${opp}</b> to start.`:`Only <b class="gold">${opp}</b> can change the rules. Tap Ready when you're happy with them.`;
+    $('#setupNote').innerHTML=dn+(NET.meReady?`You're ready. Waiting for <b class="gold">${opp}</b> to start.`:`Only <b class="gold">${opp}</b> can change the rules. Tap Ready when you're happy with them.`);
   }
 }
 $('#setupGo').onclick=()=>{

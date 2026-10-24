@@ -6,8 +6,7 @@
    button anywhere a username shows up: the online room, the result screen,
    someone's profile. Every one of those buttons repaints when the list changes.
    ===================================================================== */
-const FR={friends:[],incoming:[],outgoing:[],loaded:false,loading:null,again:false};
-const FR_POLL=120000; // the server says when the list changes (pulse.js); this catches anything that check missed
+const FR={friends:[],incoming:[],outgoing:[],moments:[],pick:null,loaded:false,loading:null,again:false};
 const frKey=n=>String(n||'').toLowerCase();
 const frIn=(list,name)=>list.some(u=>frKey(u.username)===frKey(name));
 // 'friends' | 'incoming' (they asked you) | 'sent' (you asked them) | ''
@@ -19,16 +18,16 @@ function frLoad(){
   // asked again while a check is out: that answer may be from before the change, so check once more after it
   if(FR.loading){FR.again=true;return FR.loading}
   FR.loading=api('/friends')
-    .then(r=>{Object.assign(FR,{friends:r.friends,incoming:r.incoming,outgoing:r.outgoing,loaded:true});frChanged();if(FR.friends.length)earnNow('friend')})
+    .then(r=>{Object.assign(FR,{friends:r.friends,incoming:r.incoming,outgoing:r.outgoing,moments:r.moments||[],loaded:true});frChanged();if(FR.friends.length)earnNow('friend')})
     .catch(e=>{if(e.status===401)acctSignedOut('Your session ended. Sign in again.');else if(!FR.loaded)renderFriends()})
     .finally(()=>{FR.loading=null;if(FR.again){FR.again=false;frLoad()}});
   return FR.loading;
 }
 // signing out: nothing about the old account stays on screen
-function frReset(){Object.assign(FR,{friends:[],incoming:[],outgoing:[],loaded:false});frChanged()}
+function frReset(){Object.assign(FR,{friends:[],incoming:[],outgoing:[],moments:[],pick:null,loaded:false});frChanged()}
 function frChanged(){renderFriendTile();renderFriends();frPaint();frNotify()}
-// keep the list current while the game is open and in front: levels and avatars, and anything the pulse missed
-setInterval(()=>{if(ACCT.token&&ACCT.up&&document.visibilityState==='visible')frLoad()},FR_POLL);
+// No timer: the pulse says when the list changes (pulse.js) and opening Friends loads it again (levels and avatars),
+// so a game left open doesn't keep the database awake
 
 /* ---------- the button that goes next to a name ---------- */
 // remove: also offer "Remove" once you're friends (on their profile)
@@ -146,11 +145,49 @@ function renderFriendTile(){
   t.hidden=API==null;
   const n=FR.friends.length,k=FR.incoming.length,dot=$('#friendDot');
   const on=ACCT.token?FR.friends.filter(u=>frFree(u.username)).length:0;
+  // requests, then today's moments and who's online; just the count of friends when none of those
+  const today=FR.moments.filter(m=>Date.now()-new Date(m.at)<864e5).length;
   $('#friendSub').textContent=!ACCT.token?'Sign in to add friends':!FR.loaded?'Your friend list'
-    :(n?plural(n,'friend'):'No friends yet')+(k?` · ${plural(k,'request')}`:on?` · ${on} online`:'');
+    :[k?plural(k,'request'):'',today?plural(today,'moment')+' today':'',on?`${on} online`:''].filter(Boolean).join(' · ')||(n?plural(n,'friend'):'No friends yet');
   dot.hidden=!(ACCT.token&&k);dot.textContent=k;t.classList.toggle('hot',!!(ACCT.token&&k));
   t.setAttribute('aria-label','Friends'+(ACCT.token&&k?`, ${plural(k,'new request')}`:''));
 }
+
+/* ---------- moments: friends' news, made by the server from their saves (server/lib/moments.js) ---------- */
+const REACTS=['🔥','😮','👏','😂']; // the same four as the server's REACTIONS
+function momentHTML(m){
+  const u=FR.friends.find(x=>frKey(x.username)===frKey(m.username));if(!u)return '';
+  const who=`<b>${esc(u.displayName)}</b>`,d=m.data||{},c=CARDS[d.c];
+  const [txt,sub]=m.kind==='card'&&c?[`${who} found ${esc(c.name)}`,rarName(c.rar)]
+    :m.kind==='title'?[`${who} reached level ${d.lv}`,esc(titleOf(d.lv||1))]
+    :m.kind==='gauntlet'?[`${who} cleared the Gauntlet`,'All three stages']
+    :m.kind==='streak'?[`${who} won ${d.n} in a row online`,'Win streak']:['',''];
+  if(!txt)return '';
+  const chips=REACTS.filter(e=>m.re&&m.re[e]).map(e=>`<button class="mo-re${m.mine===e?' on':''}" type="button" data-mo="${m.id}" data-e="${e}" aria-pressed="${m.mine===e}">${e}<span>${m.re[e]}</span></button>`).join('');
+  const pick=REACTS.map(e=>`<button class="mo-pk" type="button" data-mo="${m.id}" data-e="${e}" aria-label="React ${e}">${e}</button>`).join('');
+  return `<div class="mo">${frAvatar(u)}<div class="mo-b"><span class="mo-t">${txt}</span><small>${sub} · ${ago(m.at)}</small>`+
+    `<div class="mo-rs${FR.pick===m.id?' open':''}">${chips}<button class="mo-add" type="button" data-mo="${m.id}" aria-label="Add a reaction" aria-expanded="${FR.pick===m.id}">+</button><span class="mo-pick">${pick}</span></div></div>`+
+    (m.kind==='card'&&c?`<span class="mo-card">${cardHTML(d.c,u.col||'blue',{name:false})}</span>`:'')+'</div>';
+}
+const momentsHTML=list=>`<div class="mo-list">${list.map(momentHTML).join('')}</div>`;
+// a tap on an emoji: yours goes on, or comes off if it was already yours. "+" shows the four to pick from
+// (FR.pick: the moment it's open on, so it stays open when the menu redraws)
+function bindMoments(el){
+  el.querySelectorAll('.mo-add').forEach(b=>b.onclick=()=>{sfx('click');FR.pick=FR.pick===+b.dataset.mo?null:+b.dataset.mo;frMomentsDrawn()});
+  el.querySelectorAll('.mo-re,.mo-pk').forEach(b=>b.onclick=()=>{sfx('click');FR.pick=null;frReact(+b.dataset.mo,b.dataset.e)});
+}
+async function frReact(id,e){
+  const m=FR.moments.find(x=>x.id===id);if(!m)return;
+  const was={re:{...m.re},mine:m.mine};
+  // shown straight away, then put right by the server's answer
+  if(m.mine){m.re[m.mine]--;if(!m.re[m.mine])delete m.re[m.mine]}
+  m.mine=m.mine===e?null:e;if(m.mine)m.re[m.mine]=(m.re[m.mine]||0)+1;
+  frMomentsDrawn();
+  try{Object.assign(m,await api(`/friends/moments/${id}/react`,{method:'POST',body:{emoji:e}}))}
+  catch(x){Object.assign(m,was);if(x.status===404)FR.moments=FR.moments.filter(y=>y.id!==id);toast(x.status===404?'That moment is gone.':"Couldn't send that. Try again.")}
+  frMomentsDrawn();
+}
+function frMomentsDrawn(){renderFriends();if(typeof hubFriends==='function')hubFriends()}
 
 /* ---------- the screen ---------- */
 function openFriends(){
@@ -199,7 +236,9 @@ function renderFriends(){
   const friends=`<section class="pf-card"><h3>Your friends ${FR.loaded?`<em>${FR.friends.length}</em>`:''}</h3>${list}</section>`;
   const sent=FR.outgoing.length?`<section class="pf-card"><h3>Sent requests <em>${FR.outgoing.length}</em></h3><div class="fr-list">${FR.outgoing.map(u=>row(u,
     `<button class="btn small" data-can="${esc(u.username)}" aria-label="Cancel request to ${esc(u.displayName)}">Cancel</button>`)).join('')}</div></section>`:'';
-  el.innerHTML=add+reqs+live+friends+sent;
+  const news=FR.moments.length?`<section class="pf-card"><h3>This week <em>${FR.moments.length}</em></h3>${momentsHTML(FR.moments)}</section>`:'';
+  el.innerHTML=add+reqs+live+news+friends+sent;
+  bindMoments(el);
 
   const f=$('#frAddF'),inp=$('#frName'),err=$('#frErr');
   inp.value=typed;if(focused)inp.focus();

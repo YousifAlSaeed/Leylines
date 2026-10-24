@@ -98,6 +98,19 @@ describe('leaderboard', () => {
     assert.deepEqual(order(await board('?q=%25')), []);
   });
 
+  test('a limit sends just the top of the board, and you wherever you are', async () => {
+    const b = await board('?by=wins&limit=2', T.dee_x);
+    assert.deepEqual(order(b), ['1 bob', '2 ana']);
+    assert.equal(b.me.rank, 4);
+    assert.equal(b.counts.all, 4);
+    // a bad or out-of-range limit is clamped or ignored, never put in the SQL as it came
+    assert.equal((await board('?limit=0')).rows.length, 4);
+    assert.equal((await board('?limit=-3')).rows.length, 1);
+    assert.equal((await board('?limit=1;DROP')).rows.length, 1);
+    assert.equal((await board('?limit=nope')).rows.length, 4);
+    assert.equal((await board('?limit=999')).rows.length, 4);
+  });
+
   test('unknown options fall back to the defaults', async () => {
     const b = await board('?by=xp;DROP&show=nope');
     assert.equal(b.by, 'level');

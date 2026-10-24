@@ -71,7 +71,36 @@ button.fr-row:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2
 .fr-inv-tip{margin-top:10px}
 .fr-on.away{color:var(--muted)}
 /* Settings → Alerts: the switch and the Test button side by side */
-#alertsCtl{display:flex;align-items:center;gap:8px;flex:none}
-@media (max-width:440px){.setalerts{flex-wrap:wrap;row-gap:8px}.setalerts #alertsCtl{width:100%;justify-content:flex-end}}
+#alertsCtl,#dailyAlertCtl{display:flex;align-items:center;gap:8px;flex:none}
+@media (max-width:440px){.setalerts{flex-wrap:wrap;row-gap:8px}.setalerts #alertsCtl,.setalerts #dailyAlertCtl{width:100%;justify-content:flex-end}}
 #setAlerts[hidden]{display:none} /* .setrow sets display, which would beat the hidden attribute */
 .al-bell svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* friends' news, on the menu's Friends widget and in Friends (friends.js momentHTML) */
+.mo-list{display:flex;flex-direction:column}
+.mo{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.mo:first-child{border-top:0;padding-top:0}
+.mo:last-child{padding-bottom:0}
+.mo>.pc-av{width:32px;height:32px;font-size:16px}
+.mo-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mo-t{font-size:14px;line-height:1.3}
+.mo-t b{font-weight:700}
+.mo-b>small{font-size:12px;color:var(--muted)}
+/* a 5★ card found: the card itself, small, on the right */
+.mo-card{flex:none;font-size:7.5px;align-self:center}
+/* reactions: the ones given, with how many; yours is lit. "+" opens the four to pick from */
+.mo-rs{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px}
+.mo-re,.mo-add,.mo-pk{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:26px;padding:0 9px;border-radius:999px;border:1px solid var(--line2);
+  background:rgba(var(--tint),.04);color:var(--text);font:600 12px/1 var(--body);cursor:pointer;transition:transform .15s var(--spring),border-color .15s,background .15s}
+.mo-re span{color:var(--muted)}
+.mo-re.on{border-color:var(--accent-ink);background:rgba(var(--tint),.1)}
+.mo-re.on span{color:var(--accent-ink)}
+@supports (color:color-mix(in srgb,red 50%,transparent)){.mo-re.on{background:color-mix(in srgb,var(--accent-ink) 16%,transparent)}}
+.mo-add{width:26px;padding:0;color:var(--muted);font-size:16px;font-weight:500}
+.mo-pk{padding:0 7px;font-size:14px}
+.mo-re:hover,.mo-add:hover,.mo-pk:hover{transform:translateY(-1px);border-color:var(--accent-ink)}
+.mo-re:active,.mo-add:active,.mo-pk:active{transform:scale(.94)}
+.mo-re:focus-visible,.mo-add:focus-visible,.mo-pk:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.mo-pick{display:none;gap:5px}
+.mo-rs.open .mo-pick{display:inline-flex}
+.mo-rs.open .mo-add{transform:rotate(45deg);color:var(--text)}

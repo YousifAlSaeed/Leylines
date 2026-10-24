@@ -1,13 +1,13 @@
 'use strict';
 /* =====================================================================
-   DAILY  (the Daily tab on the Play card: Daily Duel, Daily Puzzle, Gauntlet)
+   DAILY  (the Daily box on the menu: Daily Duel, Daily Puzzle, Gauntlet)
    Everything comes from the game day (clock.js, the server's time), so
    every player gets the same challenges on the same day. Progress lives
    in SAVE.trial and resets at the game's midnight, like the daily pack.
-   Until the server has told the time, the tab waits.
+   Until the server has told the time, the Daily waits.
    ===================================================================== */
 const DAILY_EPOCH=Date.UTC(2026,9,1); // challenge #1
-// shards from the Daily tab don't count toward the daily limit on match shards (store.js)
+// shards from the Daily don't count toward the daily limit on match shards (store.js)
 const DAILY_REWARD={duel:{xp:100,pack:'spark',shards:50},puzzle:{xp:50,pack:'spark',shards:30},
   // the Gauntlet's first run pays one tier per win; later runs only the shards, once a day
   gauntlet:[{shards:75},{pack:'spark'},{pack:'arcane'}]};
@@ -163,7 +163,7 @@ function playGauntlet(sure){
   if(g.run&&!gauntActive(g)&&sure!==true){gauntNewRun();return}
   if(deckable(collPool())<5)ensureMinimum();
   // a new run only starts once a deck is chosen, so backing out doesn't use up the first run
-  openDeck({title:'Gauntlet · choose 5',pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,
+  openDeck({title:'Gauntlet · choose 5',pool:collPool(),pre:preDeck(),loadouts:true,
     onDone:ids=>{const g2=trial().g;if(!gauntActive(g2)){g2.run++;g2.stage=0;g2.over=0}g2.deck=ids;SAVE.lastDeck=ids;save();startGauntStage()},onBack:()=>show('menu')});
 }
 // before a second run (or later) today: say plainly what it pays, so nobody plays it expecting the first run's rewards
@@ -191,7 +191,7 @@ function dailyBadges(t){if(t.duel&&t.puz===2&&t.gw)earn('fullday')}
 function dailyFinish(w){
   const d=G.daily,t=trial(),won=w===G.me;
   d.again=null;
-  if(t.at!==d.at)return dailyBox('',"This challenge ended at midnight. Today's is ready on the Daily tab.");
+  if(t.at!==d.at)return dailyBox('',"This challenge ended at midnight. Today's is ready on the menu.");
   if(d.kind==='duel'){
     if(won)earn('duel');
     if(won&&!t.duel){t.duel=1;dailyBadges(t);save();d.again={label:'Play again',fn:startDuel};return dailyBox(dailyGive(DAILY_REWARD.duel),'Daily Duel won. Come back tomorrow for a new one.')}
@@ -228,7 +228,7 @@ function dailyChip(){
   return `<span class="ser">${d.kind==='duel'?`Daily Duel #${dayNo()}`:d.kind==='puzzle'?`Puzzle · flip ${d.p.goal}`:`Gauntlet ${d.stage+1}/3`}</span>`;
 }
 
-/* ---------- the Daily tab on the Play card ---------- */
+/* ---------- where today's challenges stand (the menu's Daily box, menu.js hubDaily) ---------- */
 function dailyStatus(){
   const t=trial(),g=t.g,act=gauntActive(g);
   return {
@@ -242,37 +242,17 @@ function dailyStatus(){
   };
 }
 const dailyOpen=()=>clockOk()&&dailyStatus().left>0;
-// the rewards today's challenges can still pay (the menu card's numbers): {xp, shards, packs}
-function dailyLeft(){
-  const t=trial(),g=t.g,R=DAILY_REWARD,out={xp:0,shards:0,packs:0};
-  const add=r=>{out.xp+=r.xp||0;out.shards+=r.shards||0;out.packs+=r.pack?1:0};
-  if(!t.duel)add(R.duel);
-  if(!t.puz)add(R.puzzle);
-  // the Gauntlet: its shards once a day; its packs only on the first run, for the stages not yet won
-  if(!g.paid)out.shards+=R.gauntlet[0].shards;
-  if(!g.run||g.run===1&&!g.over)R.gauntlet.forEach((r,i)=>{if(r.pack&&i>=g.stage)out.packs++});
-  return out;
-}
 const DLY_ICON={
   duel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M9.5 6.5L13 3h3v3l-3.5 3.5M5 14l-2 2 2 2 2-2"/></svg>',
   puzzle:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg>',
   gauntlet:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V9l7-5 7 5v11"/><path d="M9 20v-5h6v5M3 20h18"/></svg>'};
 const DLY_NAME={duel:'Duel',puzzle:'Puzzle',gauntlet:'Gauntlet'};
-function dailyPane(){
-  if(!clockOk())return {h:'Daily',sub:'Checking the time with the server…',side:'',stats:[],
-    row:'<p class="hero-sub">The challenges show up once the game reaches the server.</p>'};
-  const s=dailyStatus(),done=['duel','puzzle','gauntlet'].filter(k=>s[k].done).length;
-  // only the next challenge to play is pink, like the one main button in the other modes
-  const next=['duel','puzzle','gauntlet'].find(k=>!s[k].done);
-  const btn=k=>`<button class="dly ${s[k].done?'done':''} ${s[k].miss?'miss':''} ${k===next?'next':''}" id="dly-${k}" data-k="${k}">${DLY_ICON[k]}<b>${DLY_NAME[k]}</b><small>${s[k].done&&!s[k].miss?'✓ ':''}${s[k].txt}</small></button>`;
-  const l=dailyLeft();
-  return {h:`Daily <span class="dly-no">#${dayNo()}</span>`,sub:`${done} of 3 done · new in <span class="dly-wait">${untilMidnight()}</span>`,
-    stats:[[`+${l.xp}`,'XP left today'],[`${shd()}+${l.shards}`,'shards left today'],[l.packs,l.packs===1?'pack left today':'packs left today']],
-    // the picture: a stamp per challenge that lights up once it's done
-    side:`<div class="dly-stamps" aria-hidden="true">${['duel','puzzle','gauntlet'].map(k=>`<i class="${s[k].done?(s[k].miss?'miss':'on'):''}">${DLY_ICON[k]}${s[k].done&&!s[k].miss?'<em>✓</em>':''}</i>`).join('')}</div>`,
-    row:`<div class="dly-row">${btn('duel')}${btn('puzzle')}${btn('gauntlet')}</div>`};
+// the next challenge still to play opens its briefing (the Daily box's header, the Inbox, a Daily alert)
+function dailyNext(){
+  if(!clockOk())return;
+  const s=dailyStatus(),k=['duel','puzzle','gauntlet'].find(k=>!s[k].done);
+  if(k)dailyBrief(k);else toast(`All done for today. New challenges in ${untilMidnight()}.`);
 }
-function bindDaily(){$$('#heroBody .hero-pane:not(.hero-ghost) .dly').forEach(b=>b.onclick=()=>{sfx('click');dailyBrief(b.dataset.k)})}
 
 /* ---------- the briefing before each challenge ---------- */
 const ruleChips=R=>`<div class="dly-rules">${RULES.filter(r=>R[r[0]]).map(r=>`<span title="${esc(r[2])}">${r[1]}</span>`).join('')||'<span>Basic rules</span>'}</div>`;
@@ -281,7 +261,7 @@ function dailyBrief(k){
   if(k==='duel'){
     const d=duelSetup();
     modal(`<div class="kick">Daily Duel #${n}</div><h2>${t.duel?'Won today':'Today\'s duel'}</h2>${ruleChips(d.rules)}
-      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,'blue')}<p class="dly-lab">Challenger CPU</p>${rowHTML(d.cpu,'red')}
+      <p class="dly-lab">Your lent hand</p>${rowHTML(d.you,myCol())}<p class="dly-lab">Challenger CPU</p>${rowHTML(d.cpu,'red')}
       <p class="dly-note">${t.duel?'You already won today. Play again for fun; there\'s no reward.':`First win: <b>${rewardText(DAILY_REWARD.duel)}</b>. Lose and you can try again, as often as you like.`} Same hands and rules for every player.</p>`,
       [{label:t.duel?'Play again':t.dt?'Try again':'Start',cls:'primary',fn:startDuel},{label:'Close',esc:true}]);
   }else if(k==='puzzle'){
@@ -303,10 +283,5 @@ function dailyBrief(k){
       [{label:act?'Continue':g.run?'New run':'Choose deck',cls:'primary',fn:playGauntlet},{label:'Close',esc:true}]);
   }
 }
-// keeps the countdown on the Daily tab current, and rolls the tab over at midnight
-setInterval(()=>{
-  if(!$('#scr-menu').classList.contains('on'))return;
-  const w=$$('#heroBody .dly-wait');if(!w.length)return;
-  if(SAVE.trial&&SAVE.trial.at!==today()){renderHero();return}
-  w.forEach(e=>e.textContent=untilMidnight());
-},30000);
+// keeps the Daily box's countdown current, and rolls it over at midnight (menu.js hubDaily)
+setInterval(()=>{if($('#scr-menu').classList.contains('on'))hubDaily()},30000);

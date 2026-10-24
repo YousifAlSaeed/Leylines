@@ -30,6 +30,8 @@ export function createPusher(db, { send } = {}) {
     publicKey: config.vapidPublic || 'test-key',
     ready,
     has: (id) => users.has(id),
+    // everyone with alerts on here (lib/dailyAlerts.js)
+    ids: () => [...users],
     // a device turned alerts on (or the same device signed in to another account)
     async add(id, { endpoint, keys }) {
       await db.run('DELETE FROM push_subs WHERE endpoint = $e', { $e: endpoint });

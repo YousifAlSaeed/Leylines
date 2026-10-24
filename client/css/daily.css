@@ -1,32 +1,7 @@
 /* =====================================================================
-   DAILY  (the Daily tab on the Play card and its briefings — daily.js)
+   DAILY  (the Daily box's challenge buttons and their briefings — daily.js)
    ===================================================================== */
-/* the dot on the Daily tab while a challenge can still pay out */
-.modeseg button{position:relative}
-.modeseg .mdot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--cta);box-shadow:0 0 0 2px var(--surf2)}
-/* four tabs on a narrow phone */
-@media (max-width:400px){.modeseg button{font-size:12px;padding:6px 3px}}
-
-.dly-no{font-weight:600;color:var(--accent-ink);font-size:.62em;vertical-align:.18em}
-.dly-wait{font-variant-numeric:tabular-nums}
-/* the Daily picture on the menu card: one stamp per challenge, lit once it's done */
-.dly-stamps{display:flex;gap:6px;flex:none;padding-top:2px}
-.dly-stamps i{position:relative;width:40px;height:46px;border-radius:11px;display:grid;place-items:center;font-style:normal;
-  border:1.5px dashed var(--line2);color:var(--muted);background:rgba(var(--tint),.03)}
-.dly-stamps i:nth-child(1){transform:rotate(-5deg)} .dly-stamps i:nth-child(3){transform:rotate(5deg)}
-.dly-stamps svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.dly-stamps i.on{border:1.5px solid transparent;background:linear-gradient(160deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#000));color:var(--on-accent);box-shadow:0 6px 16px -8px var(--accent-glow)}
-.dly-stamps i.miss{border-style:solid;border-color:color-mix(in srgb,var(--warn) 50%,transparent);color:var(--warn)}
-.dly-stamps em{position:absolute;right:-5px;bottom:-5px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:800 10px/1 var(--body);font-style:normal;background:var(--pf-win);color:#06281c;box-shadow:0 0 0 2px var(--surf2)}
-@media (min-width:920px) and (min-height:560px){.dly-stamps i{width:52px;height:60px;border-radius:13px}.dly-stamps svg{width:26px;height:26px}}
-
 .dly-row{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-/* on the menu card: as tall as the two rows of buttons the other modes have; only the next challenge
-   is pink, the others are outlined so the card has one main button like the other modes */
-.hero-row .dly{min-height:104px}
-.hero-row .dly:not(.next):not(.done){background:var(--surf2);color:var(--text);border-color:var(--line2);box-shadow:none}
-.hero-row .dly:not(.next):not(.done) svg{color:var(--cta)}
-.hero-row .dly:not(.next):not(.done) small{color:var(--muted);opacity:1}
 .dly{appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:76px;padding:8px 4px;border-radius:14px;cursor:pointer;
   background:linear-gradient(180deg,var(--cta-hi),var(--cta));color:var(--on-cta);border:1px solid transparent;font:inherit;
   box-shadow:0 10px 24px -10px var(--cta-glow);transition:transform .2s var(--spring),filter .15s}
@@ -55,5 +30,5 @@
 .dly-art{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:linear-gradient(160deg,var(--red1),var(--red2))}
 .dly-rw{font:600 12px var(--body);color:var(--accent-ink);text-align:right;max-width:9em}
 .dly-st.won{opacity:.6}
-.dly-st.won .dly-rw{color:var(--blue-ink);font-size:16px}
+.dly-st.won .dly-rw{color:var(--me-ink,var(--blue-ink));font-size:16px}
 .dly-st.now{border-color:var(--cta);box-shadow:inset 0 0 0 1px var(--cta)}

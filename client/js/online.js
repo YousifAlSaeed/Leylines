@@ -41,8 +41,12 @@ const netUser=u=>typeof u==='string'&&/^[A-Za-z0-9_]{3,20}$/.test(u)?u:'';
 // a guest (no account) is in the room: then no cards are bet. A guest who leaves can't be made to give
 // up cards (spare.js), and a throwaway guest could pass its cards on to an account by losing on purpose.
 function guestIn(){return !myUser()||(!!NET.oppName&&!NET.oppUser)}
-// the trade rule the room really plays: the host's pick, or none with a guest in
-const roomTrade=()=>guestIn()?'none':SAVE.trade;
+// a Draft room (draft.js): the host picked Draft in Host a game, the guest hears it from the host
+const roomDraft=()=>NET.role==='guest'?!!(NET.room&&NET.room.draft):!!NET.draft;
+// the trade rule the room really plays: the host's pick, or none with a guest in. Drafted cards are borrowed, so none there too
+const roomTrade=()=>guestIn()||roomDraft()?'none':SAVE.trade;
+// the rules the host sends (in a Draft, Random deals a random table instead of a random hand: draft.js)
+const roomRules=()=>({...SAVE.rules});
 function oppName(){return G&&G.mode==='online'&&G.names?G.names[1-G.me]:(NET.oppName||'Your opponent')}
 function onStatus(html,err){const s=$('#onStatus');s.innerHTML=html;s.classList.toggle('err',!!err)}
 // which lobby panels are visible: 'choose' (name + host/join) or 'none'
@@ -96,9 +100,9 @@ $('#btnShare').onclick=()=>{
 
 /* ---------- hosting ---------- */
 // hosting opens the waiting room straight away; the code shows up there once the connection is made
-async function hostStart(){
+async function hostStart(draft){
   clearRejoin();
-  netClose(true);NET.closing=false;NET.role='host';NET.code=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';
+  netClose(true);NET.closing=false;NET.role='host';NET.draft=!!draft;NET.code=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';
   NET.want=newCode(); // picked now, so invites can go out before the connection is made (pulse.js)
   openRoom();
   try{await loadPeerJS()}catch(e){if(!NET.closing){NET.roomMsg=esc(e.message);renderRoom()}return}
@@ -364,13 +368,13 @@ function renderAway(){
   const bx=el.querySelector('.mbtns');
   for(const[label,cls,fn] of btns){const b=document.createElement('button');b.className='btn '+cls;b.textContent=label;b.onclick=()=>{sfx('click');fn()};bx.append(b)}
   el.querySelector('h2').id='awTitle';el.setAttribute('aria-labelledby','awTitle');
-  el.classList.add('on');$('#modal').inert=true;$$('.screen').forEach(s=>s.inert=true);
+  el.classList.add('on');$('#modal').inert=true;$$('.screen,#hubTabs').forEach(s=>s.inert=true);
   el.querySelector('.btn').focus({preventScroll:true});
 }
 function hideAway(){
   const el=$('#away');if(!el.classList.contains('on'))return;
   el.classList.remove('on');el.innerHTML='';$('#modal').inert=false;
-  if(!$('#modal').classList.contains('on'))$$('.screen').forEach(s=>s.inert=false);
+  if(!$('#modal').classList.contains('on'))$$('.screen,#hubTabs').forEach(s=>s.inert=false);
 }
 // they're back (or we are): hand over what they missed and carry on
 function comeBack(){
@@ -410,7 +414,7 @@ function backToRoom(){
 }
 function sendRoom(){
   NET.roomCfg=JSON.stringify([SAVE.rules,roomTrade(),boOf(SAVE.bo)]);
-  netSend({t:'room',v:1,rv:NET.rv,rules:{...SAVE.rules},trade:roomTrade(),bo:boOf(SAVE.bo),name:myName(),user:myUser(),av:myAv()});
+  netSend({t:'room',v:1,rv:NET.rv,rules:roomRules(),trade:roomTrade(),bo:boOf(SAVE.bo),draft:roomDraft()?1:0,name:myName(),user:myUser(),av:myAv()});
 }
 // the host changed something: tell the guest, and their Ready no longer counts
 function roomSync(){
@@ -419,15 +423,16 @@ function roomSync(){
   NET.rv++;NET.oppReady=false;sendRoom();
 }
 function sendSetup(){
-  const seed=rand32(),bo=boOf(SAVE.bo),trade=roomTrade();
-  netSend({t:'setup',v:1,rules:{...SAVE.rules},trade,bo,seed,name:myName(),user:myUser(),av:myAv()});
-  beginOnline({rules:{...SAVE.rules},trade,bo,seed});
+  const seed=rand32(),bo=boOf(SAVE.bo),trade=roomTrade(),draft=roomDraft();
+  netSend({t:'setup',v:1,rules:roomRules(),trade,bo,seed,draft:draft?1:0,name:myName(),user:myUser(),av:myAv()});
+  beginOnline({rules:roomRules(),trade,bo,seed,draft});
 }
 function beginOnline(cfg){
   closeModal();
   NET.meNext=NET.oppNext=0;NET.meReady=NET.oppReady=NET.oppIn=false;
   const me=NET.role==='host'?0:1,other=NET.oppName||(me===0?'Guest':'Host');
   G=baseMatch('online',{rules:cfg.rules,trade:cfg.trade,bo:cfg.bo,seed:cfg.seed,me,bottom:me,names:me===0?[myName(),other]:[other,myName()]});
+  if(cfg.draft){G.draft=1;G.trade='none';NET.pendingDeck=null;draftStart();return}
   if(NET.pendingDeck){G.decks[1-me]=NET.pendingDeck;NET.pendingDeck=null}
   if(deckable(collPool())<5)ensureMinimum();
   const done=ids=>{
@@ -436,7 +441,7 @@ function beginOnline(cfg){
     tryStartOnline();
   };
   if(cfg.rules.random){done(randomDeck(collPool()));return}
-  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:preDeck(),color:'blue',loadouts:true,onDone:done,
+  openDeck({title:`vs ${other} — choose 5`,pool:collPool(),pre:preDeck(),loadouts:true,onDone:done,
     onBack:()=>modal('<h2>Leave online game?</h2>',[{label:'Leave',cls:'danger',wait:true,fn:()=>{clearRejoin();netClose(true);G=null;show('menu')}},{label:'Stay',cls:'primary',esc:true}])});
 }
 function tryStartOnline(){if(G&&G.decks[0]&&G.decks[1]&&!G.st)startMatch()}
@@ -475,7 +480,7 @@ function onNet(m){
       NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);NET.oppUser=netUser(m.user);NET.oppIn=true;
       const rv=Number.isInteger(m.rv)?m.rv:0;
       if(NET.room&&NET.room.rv!==rv)NET.meReady=false;
-      NET.room={rules:netRules(m),trade:netTrade(m.trade),bo:boOf(m.bo),rv};
+      NET.room={rules:netRules(m),trade:m.draft?'none':netTrade(m.trade),bo:boOf(m.bo),rv,draft:!!m.draft};
       saveRejoin();
       // still looking at the last match: the new rules wait until Rematch
       if(G&&G.st)break;
@@ -494,7 +499,9 @@ function onNet(m){
       if(NET.role!=='guest')return;
       setJoining(false);
       NET.oppName=cleanName(m.name)||'Host';NET.oppAv=netAv(m.av);NET.oppUser=netUser(m.user);
-      beginOnline({rules:netRules(m),trade:netTrade(m.trade),bo:boOf(m.bo),seed:m.seed>>>0});break;
+      {const draft=!!m.draft,rules=netRules(m);
+      beginOnline({rules,trade:draft?'none':netTrade(m.trade),bo:boOf(m.bo),seed:m.seed>>>0,draft});}break;
+    case 'dpick':draftIn(m);break;
     case 'deck':
       if(!validDeck(m.ids))return;
       if(G&&G.mode==='online'&&!G.st){G.decks[1-G.me]=m.ids;tryStartOnline()}

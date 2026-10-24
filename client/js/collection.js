@@ -3,26 +3,30 @@
    COLLECTION
    ===================================================================== */
 // the hand you build in the collection; it stays put while you browse, and survives leaving the screen
-const CH={pfx:'coll',sel:[],pool:[],color:'blue',loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
+const CH={pfx:'coll',sel:[],pool:[],loadouts:true,saving:false,note:'',deal:-1,render:()=>renderCollHand()};
 function renderCollHand(){renderHand(CH);bdSyncAdd()}
-// the hand the binder and tray work on: CH in the collection, DK when picking cards for a match
+// the hand the binder and tray work on: CH in the collection, DK when picking cards for a match, the Forge's anvil
+// (forge.js) when picking cards to dissolve or forge
 let BH=CH;
 const picking=()=>BH!==CH;
 wireHand('coll',()=>BH);
 // switch the screen between the collection and the match picker (Play button, its own title and back)
 function collMode(h,title,meta){
   BH=h;const pick=picking();
-  $('#scr-coll').classList.toggle('pick',pick);
+  $('#scr-coll').classList.toggle('pick',pick);$('#scr-coll').classList.toggle('forge',!!h.forge);
   $('#collTitle').textContent=title;$('#collMeta').innerHTML=meta;
   $('#collGo').classList.toggle('hidden',!pick);
   const sv=$('#collSave');
   sv.className=pick?'dk-act':'btn primary';
   sv.innerHTML=pick?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>Save hand</span>':'Save hand';
+  tabsSync(); // no tab bar while picking (menu.js)
 }
-$('#collBack').onclick=()=>{if(picking()){sfx('click');DK.onBack&&DK.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
-$('#collGo').onclick=()=>{if(picking()&&DK.sel.length===5){sfx('click');DK.onDone(DK.sel.slice())}};
-function openCollection(){
-  sfx('coll_open');collNewSeen(); // the menu tile's "new" count starts again (menu.js)
+$('#collBack').onclick=()=>{if(picking()){sfx('click');BH.onBack&&BH.onBack()}else{sfx('coll_close');bdCoverClose(()=>show('menu'))}};
+// a match needs 5 cards; the Forge takes any number (min)
+$('#collGo').onclick=()=>{if(picking()&&BH.sel.length>=(BH.min??5)){sfx('click');BH.onDone(BH.sel.slice())}};
+// r: a rarity (1–5) to open the binder at, from the menu's Collection box; called from a click it's an event, so it's ignored
+function openCollection(r){
+  collNewSeen(); // the menu tile's "new" count starts again (menu.js)
   const lost=SAVE.seen.filter(i=>!owned(i)).length;
   collMode(CH,'Collection',(unlocked()?`All ${CARDS.length} cards unlocked`:`${SAVE.seen.length} of ${CARDS.length} discovered · ${collTotal()} cards owned`)+(lost?` · <span class="lostc">${lost} lost</span>`:''));
   // cards can be won or lost between visits: keep only the hand cards you still own enough copies of
@@ -30,8 +34,9 @@ function openCollection(){
   const keep=CH.sel;CH.sel=[];keep.forEach(id=>{if(handRemaining(CH,id)>0&&!rarBlock(CH.sel,id))CH.sel.push(id)});
   CH.saving=false;CH.note='';
   show('coll');$('#scr-coll').scrollTop=0;
+  if(Number.isInteger(r))BD.p=Math.max(0,bdFirst(r)); // bdRender keeps the rarity if the book changes between one page and two
   bdRender();renderCollHand(); // after show(), so the binder can measure the space it has
-  bdCoverOpen();
+  bdCoverOpen(); // plays the open sound as the cover swings
 }
 
 /* ---------- card detail: the card slides out of its sleeve and flies into the popup ---------- */
@@ -49,19 +54,21 @@ function collDetail(id,pocket){
   const shiny=!lost&&c.rar>=4;
   sfx(lost?'coll_lost':'coll_card_out');if(shiny)setTimeout(()=>sfx('coll_shimmer'),120);
   const r=handRemaining(CH,id),full=CH.sel.length>=5,capped=!!rarBlock(CH.sel,id),src=pocket&&pocket.querySelector('.card');
-  const box=modal(`<div class="cd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="cd-sheet">
+  const box=modal(`<div class="cd-sheet">
     <div class="cd-top"><span>No. ${id+1} / ${CARDS.length}</span><b class="rar${c.rar} rt">${rarName(c.rar)}</b></div>
-    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':'blue',{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
+    <div class="cd-pulled"><div class="cd-sleeve">${cardHTML(id,lost?'red':myCol(),{cls:(lost?'lost ':'')+(src?'hold':'')})}${lost?'<span class="cd-stamp">Lost</span>':''}</div></div>
     <h2 class="nm2 cd-name">${esc(c.name)}</h2>
     <div class="cd-sub">${c.e?ELEM[c.e]+' '+c.e[0].toUpperCase()+c.e.slice(1):'No element'} · Power ${c.sum}</div>
     <div class="cd-sides">${SIDE_NAMES.map((s,i)=>`<div><b>${fmt(c.s[i])}</b><span>${s}</span></div>`).join('')}</div>
-    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your binder':n>1?'copies in your binder':'copy in your binder'}</div>
+    <div class="cd-own ${lost?'lost':''}"><b>×${n}</b>${lost?'None left in your book':n>1?'copies in your book':'copy in your book'}</div>
     ${lost?'<p class="cd-msg">You lost every copy of this card. Win it back in a match with a trade rule.</p>':''}</div>`,
     lost?[{label:'Close',cls:'primary',esc:true}]
       :[{label:'Close',esc:true},{label:r<=0?'All copies in hand':full?'Hand is full':capped?'Over rarity limit':'Add to hand',cls:'primary',keep:true,fn:()=>{
         // the card flies from the popup straight into the hand instead of back to its sleeve
         CD.toHand=true;handAdd(CH,id,box.querySelector('.cd-sleeve .card'));closeModal()}}]);
   box.classList.add('cd-box');
+  // a tap anywhere outside the buttons puts the card back
+  $('#modal').onclick=e=>{if($('#modal .cd-box')&&!e.target.closest('button'))closeModal()};
   // move the buttons onto the page (this drops focus, so set it again below)
   box.querySelector('.cd-sheet').append(box.querySelector('.mbtns'));
   const add=box.querySelector('.mbtns .btn.primary');
@@ -104,24 +111,61 @@ function collCardBack(m){
 }
 // the + on each owned card: faded once every copy is in the hand, the hand is full, or the rarity limit is reached
 // (it still answers a tap, with a "no", instead of doing nothing)
-const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&!rarBlock(BH.sel,id);
+const bdCanAdd=id=>BH.sel.length<5&&handRemaining(BH,id)>0&&(BH.anyRar||!rarBlock(BH.sel,id));
 // how many of a card the binder holds: owned copies in the collection, the picker's pool when picking
 const bdHave=id=>{const e=BH.pool.find(x=>x.id===id);return e?e.count:0};
 // when picking, a card you can't add right now also fades, like the old picker grid
-function bdSyncAdd(){$$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dataset.add);b.classList.toggle('off',no);b.setAttribute('aria-disabled',no);b.parentNode.classList.toggle('used',no&&picking())})}
+function bdSyncAdd(){
+  $$('#binder .pk-add').forEach(b=>{const no=!bdCanAdd(+b.dataset.add);b.classList.toggle('off',no);b.setAttribute('aria-disabled',no);b.parentNode.classList.toggle('used',no&&picking())});
+  // cards in the hand are out of the book: the seal counts the copies left, and with none left the card fades
+  $$('#binder .pocket[data-id]').forEach(p=>{const id=+p.dataset.id;if(!bdHave(id))return;bdOut(p,handRemaining(BH,id))});
+}
+function bdOut(p,left){
+  p.classList.toggle('out',left<=0);p.classList.toggle('x2',left===2);p.classList.toggle('x3',left>2);
+  let s=p.parentNode.querySelector('.seal');
+  if(left>1){if(!s){s=document.createElement('span');s.className='seal';s.setAttribute('aria-hidden','true');p.after(s)}s.textContent=`×${left}`}
+  else if(s)s.remove();
+}
 // a card's face in its sleeve on the open pages (where hand cards fly home to)
 const bdPocketCard=id=>{const p=$(`#bdL .pocket[data-id="${id}"],#bdR .pocket[data-id="${id}"]`);return p&&p.querySelector('.card')};
+// a card leaving the hand goes back to its spot in the book. If that page isn't open, the card is held up while the
+// book turns there, then drops in. Returns false when there's no book to go to (it floats off instead).
+function bdSendHome(src,id){
+  if(!$('#scr-coll').classList.contains('on')||noMotion())return false;
+  const land=(from,home)=>{home.style.visibility='hidden';
+    fly(from,home,{ms:560,lift:.25,liftAt:.24,liftScale:1.08,arc:30,shadow:true,ease:'cubic-bezier(.4,.1,.25,1)',done:()=>{home.style.visibility='';bdPocketLand(home)}})};
+  const home=bdPocketCard(id);
+  if(home){land(src,home);return true}
+  const k=BD_BOOK.findIndex(pg=>pg.cards&&pg.cards.some(c=>c.id===id));
+  if(k<0||bdCovered())return false;
+  const a=src.getBoundingClientRect(),fs=cardPx(src),g=src.cloneNode(true);
+  g.classList.remove('hold','deal','ghost','dragging');g.classList.add('flyer','lifted');
+  Object.assign(g.style,{fontSize:fs+'px',left:(a.left+a.width/2-2.5*fs)+'px',top:(a.top+a.height/2-3*fs)+'px',transform:'',visibility:''});
+  document.body.append(g);
+  g.animate([{transform:'none'},{transform:'translateY(-1.6em) scale(1.08) rotate(-3deg)'}],{duration:280,easing:'cubic-bezier(.3,1.3,.5,1)',fill:'forwards'});
+  bdTurn(k);
+  // wait for the turn to land, then drop in (give up after 2 s, or if the collection closes)
+  const t0=performance.now(),wait=()=>{
+    if(!$('#scr-coll').classList.contains('on')){g.remove();return}
+    if(BD_TURN&&performance.now()-t0<2000){setTimeout(wait,40);return}
+    const h=bdPocketCard(id);
+    if(h){land(g,h);g.remove()}
+    else g.animate([{opacity:1},{opacity:0,transform:'translateY(-4em) scale(.9)'}],{duration:300,fill:'forwards'}).onfinish=()=>g.remove();
+  };
+  setTimeout(wait,120);
+  return true;
+}
 const bdPocketLand=card=>{const p=card&&card.closest('.pocket');if(p&&!noMotion())p.animate([{transform:'scale(1.07)'},{transform:'none'}],{duration:260,easing:'cubic-bezier(.2,1.4,.4,1)'})};
 
-/* ---------- binder: pages by rarity ----------
-   8 cards a page (3×3 sleeves with one spare, 4×2 on short pages, 2×4 on tall ones). Epic and Legendary are
-   trophy pages: 4 cards in bigger sleeves. With two pages side by side, a rarity with an odd number of pages
-   gets a blank one, so every rarity starts on its own spread and a tab always opens just that rarity. */
-const BD_PER=8,BD_BIG=4;
+/* ---------- the book: pages by rarity ----------
+   4 cards a page (2×2), each in a shallow spot pressed into the paper. Epic and Legendary glow in their colour.
+   With two pages side by side, a rarity with an odd number of pages gets a blank one, so every rarity starts on
+   its own spread and a bookmark always opens just that rarity. */
+const BD_PER=4;
 function bdBook(spread){
   const out=[];
   for(let r=1;r<=5;r++){
-    const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),big=r>=4,per=big?BD_BIG:BD_PER,n=Math.ceil(cs.length/per),start=out.length;
+    const cs=CARDS.filter(c=>c.rar===r).sort((a,b)=>a.lv-b.lv||a.id-b.id),big=r>=4,per=BD_PER,n=Math.ceil(cs.length/per),start=out.length;
     for(let i=0;i<n;i++)out.push({r,big,cards:cs.slice(i*per,(i+1)*per),part:i+1,parts:n});
     if(spread&&(out.length-start)%2)out.push({r,blank:true});
   }
@@ -139,34 +183,39 @@ function bdPage(k){
   const pg=BD_BOOK[k];
   if(!pg)return '';
   if(pg.blank)return '<div class="bd-blank"></div>';
-  const cs=pg.cards,[f,t]=rarFound(pg.r),slots=pg.big?BD_BIG:9;
+  const cs=pg.cards,[f,t]=rarFound(pg.r);
   let pk='';
-  for(let i=0;i<slots;i++){
+  for(let i=0;i<BD_PER;i++){
     const c=cs[i];
-    if(!c){pk+=`<div class="pk-cell${i===8?' p9':''}"><div class="pocket blank" aria-hidden="true"></div></div>`;continue}
+    if(!c){pk+='<div class="pk-cell blank"><div class="pocket blank" aria-hidden="true"></div></div>';continue}
     const n=bdHave(c.id),seen=isSeen(c.id),no=n&&!bdCanAdd(c.id);
-    const face=n?cardHTML(c.id,BH.color||'blue',{count:n}):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
-    const lbl=n?esc(cardLabel(c.id))+`, owned ×${n}`:seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
+    // the Forge's book holds only spare copies: a card you own but can't spare shows faded
+    const kept=!n&&BH.forge&&owned(c.id)>0;
+    const face=n?cardHTML(c.id,myCol(),{count:n}):kept?cardHTML(c.id,myCol()):seen?cardHTML(c.id,'red',{cls:'lost'}):'<div class="card unknown"><i>?</i></div>';
+    const lbl=n?esc(cardLabel(c.id))+(BH.forge?`, ${n} spare`:`, owned ×${n}`):kept?esc(c.name)+', no spare copies':seen?esc(c.name)+', lost':`Undiscovered ${c.rar} star ${RARITY[c.rar-1]} card`;
     const add=n?`<button class="pk-add${no?' off':''}" data-add="${c.id}" aria-disabled="${!!no}" aria-label="Add ${esc(c.name)} to hand" title="Add to hand">+</button>`:'';
-    pk+=`<div class="pk-cell${no&&picking()?' used':''}"><button class="pocket" data-id="${c.id}" aria-label="${lbl}">${face}</button>${add}</div>`;
+    // spare copies stack up behind the card with a tab under it counting the copies still in the book (the rest are in your
+    // hand); none left and the card fades
+    const left=n?handRemaining(BH,c.id):0,seal=left>1?`<span class="seal" aria-hidden="true">×${left}</span>`:'';
+    pk+=`<div class="pk-cell${no&&picking()||kept?' used':''}"><button class="pocket${n||kept||seen?' rar'+c.rar:''}${n&&left<=0?' out':''}${left===2?' x2':left>2?' x3':''}" data-id="${c.id}" aria-label="${lbl}${n&&left<=0?', in your hand':''}">${face}</button>${seal}${add}</div>`;
   }
-  return `<div class="bd-h rar${pg.r}"><b><span class="rt">${pg.r}★</span> ${RARITY[pg.r-1]}${pg.parts>1?` <em>${pg.part}/${pg.parts}</em>`:''}</b>`+
-    `<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} / ${t} found</span></div>`+
-    `<div class="bd-bar"><i style="width:${(f/t*100).toFixed(1)}%"></i></div><div class="bd-grid${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-num">${k+1}</div>`;
+  // one page (a phone): no chapter line over the cards, so they get its room; a footer under them has the rarity, how
+  // many you've found and the page number in one line
+  if(!BD.sp)return `<div class="bd-grid ft${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-foot rar${pg.r}"><em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}<i class="sep"></i><span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span><i class="fill"></i>${k+1}</div>`;
+  // a quiet chapter line: the rarity on a rarity's odd pages, how many you've found on the even ones
+  const head=pg.part%2?`<em class="rt">${pg.r}★</em>${RARITY[pg.r-1]}`:`<span class="${f===t?'done':''}">${f===t?'✓ ':''}${f} of ${t} found</span>`;
+  return `<div class="bd-chap rar${pg.r}">${head}</div><div class="bd-grid${pg.big?' big rar'+pg.r:''}">${pk}</div><div class="bd-num">${k+1}</div>`;
 }
 function bdChrome(p){
   const sp=BD.sp,n=BD_BOOK.length;
-  // the open rarity's tab rises and joins the page
-  const seen=new Set((sp?[p,p+1]:[p]).map(k=>BD_BOOK[k]&&BD_BOOK[k].r));
-  $$('#bdTabs .bd-tab').forEach(b=>{const on=seen.has(+b.dataset.r);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  // bookmarks: the open rarity's ribbon is pulled out, passed ones lie on the left (flipping over with the page), the rest wait on the right
+  const cur=BD_BOOK[p]?BD_BOOK[p].r:1;
+  $$('#bdTabs .bd-rib').forEach(b=>{const r=+b.dataset.r,on=r===cur;b.classList.toggle('on',on);b.classList.toggle('left',r<cur);b.style.setProperty('--d',Math.max(0,cur-1-r));b.setAttribute('aria-pressed',on)});
   $('#bdPos').textContent=sp?`Pages ${p+1}–${p+2} of ${n}`:`Page ${p+1} of ${n}`;
   $('#bdPrev').disabled=p===0;
   $('#bdNext').disabled=p+(sp?2:1)>=n;
   // the folded corner shows on a page you can turn
   $('#binder').classList.toggle('has-prev',p>0);$('#binder').classList.toggle('has-next',p+(sp?2:1)<n);
-  // keep the current tab in view by scrolling the tab row sideways only (never the screen)
-  const row=$('#bdTabs'),t=$('#bdTabs .bd-tab.on');
-  if(t&&row.scrollWidth>row.clientWidth)row.scrollTo({left:t.offsetLeft-(row.clientWidth-t.offsetWidth)/2,behavior:'smooth'});
 }
 function bdRender(){
   if(BD.done)BD.done();
@@ -177,14 +226,14 @@ function bdRender(){
   $('#binder').classList.toggle('single',!sp);$('#collBook').classList.toggle('single',!sp);
   $('#bdL').innerHTML=sp?bdPage(BD.p):'';
   $('#bdR').innerHTML=bdPage(sp?BD.p+1:BD.p);
-  // one tab per rarity; it opens that rarity's first page. On one page only the open tab shows its name.
+  // one bookmark per rarity; it opens that rarity's first page. Two faces, so it reads the right way round on either side.
   $('#bdTabs').innerHTML=[1,2,3,4,5].map(r=>{
-    const [f,t]=rarFound(r);
-    return `<button class="bd-tab rar${r}" data-r="${r}" aria-label="${RARITY[r-1]}"><span class="rt">${r}★</span><span class="tn"> ${RARITY[r-1]}</span>${f===t?'<i aria-label="complete">✓</i>':''}</button>`}).join('');
-  $$('#bdTabs .bd-tab').forEach(b=>b.onclick=()=>{bdTabPop(b);bdTurn(bdFirst(+b.dataset.r),'tab')});
+    const [f,t]=rarFound(r),lbl=`${r}★${f===t?'<em>✓</em>':''}`;
+    return `<button class="bd-rib rar${r}" data-r="${r}" aria-label="${RARITY[r-1]}${f===t?', complete':''}"><i>${lbl}</i><i class="b">${lbl}</i></button>`}).join('');
+  $$('#bdTabs .bd-rib').forEach(b=>b.onclick=()=>{if(bdCovered())return;bdTabPop(b);bdTurn(bdFirst(+b.dataset.r),'tab')});
   bdChrome(BD.p);
 }
-const bdTabPop=b=>{if(!noMotion())b.animate([{transform:'none'},{transform:'translateY(-4px) scale(1.04)',offset:.45},{transform:'none'}],{duration:210,easing:'ease-out'})};
+const bdTabPop=b=>{if(!noMotion())b.animate([{scale:'1'},{scale:'1.06',offset:.45},{scale:'1'}],{duration:210,easing:'ease-out'})};
 
 /* ---------- page turns ----------
    One engine for arrows, tabs, riffles and drags. A sheet is cut into 8 strips that each turn a little more
@@ -198,9 +247,10 @@ function cubicBez(x1,y1,x2,y2){
   return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<8;i++){const d=dX(t);if(Math.abs(d)<1e-6)break;t-=(X(t)-x)/d}return Y(Math.max(0,Math.min(1,t)))};
 }
 const BD_EASE=cubicBez(.45,.05,.2,1),BD_AWAY=cubicBez(.45,0,.8,.55),BD_IN=cubicBez(.2,.45,.55,1);
-// s=1: hinge on the sheet's left edge; s=-1: on its right. gap: how far outside the sheet the hinge sits.
+// s=1: hinge on the sheet's left edge; s=-1: on its right. gap: how far outside the sheet the hinge sits. shade: how dark the
+// sheet gets edge-on (a phone's one page stays lighter: its sheet fills the page, and on the dark theme it went nearly black)
 function bdLeaf(host,o){
-  const {w,h,s}=o,sw=w/BD_STRIPS;
+  const {w,h,s}=o,sw=w/BD_STRIPS,shade=o.shade??.5;
   const el=document.createElement('div');el.className='bd-leaf';el.setAttribute('aria-hidden','true');
   Object.assign(el.style,{left:o.x+'px',top:o.y+'px',width:w+'px',height:h+'px',zIndex:o.z,transformOrigin:s>0?`${-o.gap}px 50%`:`${w+o.gap}px 50%`});
   let par=el;const sl=[],sh=[];
@@ -222,8 +272,8 @@ function bdLeaf(host,o){
       const e=k?b*(.6+k*.12):0;a+=e; // the bend grows toward the free edge
       if(k)sl[k].style.transform=`rotateY(${(-s*e).toFixed(2)}deg)`;
       const c=Math.max(0,Math.min(180,a));
-      sh[2*k].style.opacity=(.5*Math.pow(Math.min(1,c/90),1.5)).toFixed(3);
-      sh[2*k+1].style.opacity=(.5*Math.pow(Math.min(1,(180-c)/90),1.5)).toFixed(3);
+      sh[2*k].style.opacity=(shade*Math.pow(Math.min(1,c/90),1.5)).toFixed(3);
+      sh[2*k+1].style.opacity=(shade*Math.pow(Math.min(1,(180-c)/90),1.5)).toFixed(3);
     }
   };
   return {el,set};
@@ -249,12 +299,17 @@ function bdBuildTurn(from,to){
     const r=src.getBoundingClientRect(),g=gap*r.width/b.w;
     T.hinge=fwd?r.left-g:r.right+g;T.W=r.width+g;T.edge0=fwd?r.right:r.left;T.dirE=fwd?1:-1;T.minCos=-1;
   }else{
-    const clip=document.createElement('div');clip.className='bd-clip';const b=box(R);
-    Object.assign(clip.style,{left:b.x+'px',top:b.y+'px',width:b.w+'px',height:b.h+'px'});binder.append(clip);T.clip=clip;
+    const clip=document.createElement('div');clip.className='bd-clip';const b=box(R);$('#collBook').classList.add('lift');
+    // lifting toward you, the sheet grows past the page. On a short screen (a phone held sideways) the view is a little
+    // flatter, so the sheet stops at the bottom of the screen instead of making it scroll mid-turn
+    const sc=$('#scr-coll'),sr=sc.getBoundingClientRect(),z=sr.height/sc.offsetHeight||1,
+      room=((sc.scrollHeight-sc.scrollTop)*z+sr.top-R.getBoundingClientRect().bottom)/z;
+    Object.assign(clip.style,{left:b.x+'px',top:b.y+'px',width:b.w+'px',height:b.h+'px',perspective:Math.max(1400,b.w+b.h/2*b.w/Math.max(8,room))+'px'});
+    binder.append(clip);T.clip=clip;
     T.src=R;T.srcHTML=R.innerHTML;
     // forward: the page lifts away to edge-on, the next waits underneath. Back: the earlier page swings in over it.
     if(fwd)R.innerHTML=bdPage(to);
-    for(let i=0;i<n;i++)T.leaves.push({...bdLeaf(clip,{x:0,y:0,w:b.w,h:b.h,s:1,gap:0,z:fwd?30-i:30+i,front:bdPage(fwd?list[i]:list[i+1]),back:'',fSide:'r',bSide:'r'}),t0:fwd?0:90,t1:fwd?90:0});
+    for(let i=0;i<n;i++)T.leaves.push({...bdLeaf(clip,{x:0,y:0,w:b.w,h:b.h,s:1,gap:0,shade:.15,z:fwd?30-i:30+i,front:bdPage(fwd?list[i]:list[i+1]),back:'',fSide:'r',bSide:'r'}),t0:fwd?0:90,t1:fwd?90:0});
     T.under=document.createElement('i');T.under.className='bd-under to-r';R.append(T.under);
     T.underOp=fwd?p=>.45*(1-p):p=>.3*p;
     const r=R.getBoundingClientRect();
@@ -267,7 +322,7 @@ function bdBuildTurn(from,to){
     T.leaves.forEach(l=>l.el.remove());T.under.remove();if(T.clip)T.clip.remove();
     if(commit){if(sp)T.land.innerHTML=T.landHTML;else R.innerHTML=bdPage(to);BD.p=to}
     else T.src.innerHTML=T.srcHTML;
-    binder.classList.remove('grabbing');bdChrome(BD.p);
+    binder.classList.remove('grabbing');$('#collBook').classList.remove('lift');bdChrome(BD.p);
   };
   BD_TURN=T;BD.done=()=>T.end(true);
   return T;
@@ -319,8 +374,8 @@ const bdStep=d=>{
   if(to===BD.p){bdBump(d);return}
   bdTurn(to);
 };
-$('#bdPrev').onclick=()=>bdStep(-1);
-$('#bdNext').onclick=()=>bdStep(1);
+$('#bdPrev').onclick=$('#bdPrevEar').onclick=()=>bdStep(-1);
+$('#bdNext').onclick=$('#bdNextEar').onclick=()=>bdStep(1);
 
 /* ---------- drag a page ----------
    Grab any empty bit of paper (or the folded corner) and pull: the free edge follows the finger. Let go past
@@ -396,10 +451,18 @@ const bdEdgeTheta=(T,x)=>{const c=T.dirE*(T.edge0+(x-T.x0)*1.15-T.hinge)/T.W;ret
 }
 
 /* ---------- the front cover ----------
-   Opening the collection: two pages, the cover (the right half) swings open on the rings and lands as the
-   left half while the binder slides to the middle. One page: it swings off to the left and fades. Leaving
-   plays it backwards, quickly. Not when picking cards for a match. */
-let bdCover=null;
+   Opening the collection: the elastic band snaps off, the Leylines sigil lights up, then the cover swings open on
+   the spine and lands as the left half while the book slides to the middle. One page: it swings off to the left
+   and fades. Light follows the swing: the cover darkens as it turns away, the inside lightens as it lands, and its
+   shadow sweeps over the page under it. Leaving plays the swing backwards, quickly. Not when picking for a match. */
+// the Leylines emblem in light lines; its ley lines and gems light up as the book opens
+const CV_SIGIL='<svg class="cv-sigil" viewBox="0 0 240 240" aria-hidden="true"><circle class="pulse" cx="120" cy="120" r="114"/>'+
+  '<circle class="eng" cx="120" cy="120" r="114"/><circle class="eng" cx="120" cy="120" r="104" stroke-dasharray="3 6"/><g class="eng f">'+
+  [26,92,158].map(y=>[26,92,158].map(x=>`<rect x="${x}" y="${y}" width="56" height="56" rx="8"/>`).join('')).join('')+'</g>'+
+  '<path class="ln" pathLength="1" d="M54 54H120V120H186V186"/><path class="ln" pathLength="1" d="M54 120V186H120V120"/><path class="ln" pathLength="1" d="M186 54L120 120L54 186"/>'+
+  [[54,54],[120,54],[54,120],[186,120],[120,186],[186,186]].map(([x,y])=>`<polygon class="gem" points="${x},${y-10} ${x+10},${y} ${x},${y+10} ${x-10},${y}"/>`).join('')+
+  '<polygon class="gem" points="120,104 136,120 120,136 104,120"/></svg>';
+let bdCover=null,bdCast=null;
 const bdCovered=()=>!!bdCover;
 function bdCoverBuild(){
   if(bdCover)bdCover.remove();
@@ -407,31 +470,60 @@ function bdCoverBuild(){
   const left=sp?binder.offsetLeft+binder.offsetWidth/2:binder.offsetLeft+R.offsetLeft-8;
   const cv=bdCover=document.createElement('div');cv.className='bd-cover';cv.setAttribute('aria-hidden','true');
   Object.assign(cv.style,{left:left+'px',top:binder.offsetTop+'px',height:binder.offsetHeight+'px',width:(binder.offsetLeft+binder.offsetWidth-left)+'px'});
-  cv.innerHTML=`<div class="cf front"><div class="emb"><i class="emb-ic"></i><b>Leylines</b><span>Collection</span></div><i class="strap"></i></div>`+
-    `<div class="cf back">${sp?`<div class="bd-page l" style="left:${L.offsetLeft}px;top:${L.offsetTop}px;width:${L.offsetWidth}px;height:${L.offsetHeight}px">${L.innerHTML}</div>`:''}</div>`;
+  cv.innerHTML=`<div class="cf front"><i class="cv-spine"></i>${CV_SIGIL}<span class="cv-title">Collection</span><i class="cv-band"></i><i class="cv-shd"></i></div>`+
+    `<div class="cf back">${sp?`<div class="bd-page l" style="left:${L.offsetLeft}px;top:${L.offsetTop}px;width:${L.offsetWidth}px;height:${L.offsetHeight}px">${L.innerHTML}</div>`:''}<i class="cv-shd"></i></div>`;
   $('#bdWrap').append(cv);
   return cv;
 }
-function bdCoverReset(){if(bdCover){bdCover.remove();bdCover=null}$('#binder').style.clipPath='';$('#bdWrap').style.transform=''}
+function bdCoverReset(){
+  if(bdCover){bdCover.remove();bdCover=null}if(bdCast){bdCast.remove();bdCast=null}
+  $('#binder').style.clipPath='';$('#bdWrap').style.transform='';$('#bdTabs').classList.remove('hide');
+}
 function bdCoverOpen(){
-  bdCoverReset();if(noMotion())return;
-  const cv=bdCoverBuild(),sp=BD.sp,wrap=$('#bdWrap'),binder=$('#binder');let a;
+  bdCoverReset();
+  if(noMotion()){sfx('coll_open');return}
+  const cv=bdCoverBuild(),sp=BD.sp,wrap=$('#bdWrap'),binder=$('#binder'),ribs=$('#bdTabs');
+  const D=520,T=1000,CE='cubic-bezier(.35,.05,.25,1)',live=()=>bdCover===cv;
+  ribs.classList.add('hide');
+  // 1. the elastic band is pulled back, then snaps off past the edge (with a click)
+  const band=cv.querySelector('.cv-band');
+  band.animate([{transform:'none'},{transform:'translateX(-30%) scaleX(.85)',offset:.55},{transform:'translateX(-40%) scaleX(.8)'}],{duration:210,delay:30,easing:'ease-out',fill:'forwards'});
+  band.animate([{transform:'translateX(-40%) scaleX(.8)',opacity:1},{transform:'translateX(260%) scaleX(1.1)',opacity:1,offset:.6},{transform:'translateX(420%) scaleX(1)',opacity:0}],{duration:300,delay:240,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
+  setTimeout(()=>{if(live())sfx('coll_tab')},250);
+  // 2. the sigil's ley lines draw themselves, the gems light, a ring of light pulses out
+  const sg=cv.querySelector('.cv-sigil');
+  sg.querySelectorAll('.ln').forEach((l,k)=>l.animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:260,delay:170+k*80,easing:'ease-in-out',fill:'forwards'}));
+  setTimeout(()=>{if(!live())return;sg.classList.add('lit');
+    sg.querySelector('.pulse').animate([{opacity:.9,transform:'scale(.92)'},{opacity:0,transform:'scale(1.4)'}],{duration:700,easing:'ease-out'});
+    cv.querySelector('.cf.front').animate([{filter:'brightness(1)'},{filter:'brightness(1.45)'},{filter:'brightness(1)'}],{duration:420})},430);
+  // 3. the swing, with its sound; light and shadow follow it
+  setTimeout(()=>{if(live())sfx('coll_open')},D);
+  let a;
   if(sp){
     // the left half appears the moment the cover lies flat on it, so the swap can't be seen
     binder.style.clipPath='inset(0 0 0 50%)';
-    a=[wrap.animate([{transform:'translateX(-25%) translateY(10px) scale(.97)'},{transform:'translateX(-25%)',offset:.14},{transform:'none'}],{duration:820,easing:'cubic-bezier(.3,.1,.2,1)'}),
-      cv.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-12deg)',offset:.12},{transform:'rotateY(-180deg)',offset:.82},{transform:'rotateY(-174deg)',offset:.91},{transform:'rotateY(-180deg)'}],{duration:1000,easing:'cubic-bezier(.35,.05,.25,1)',fill:'forwards'})];
-    setTimeout(()=>{if(bdCover===cv)binder.style.clipPath=''},820);
+    a=[wrap.animate([{transform:'translateX(-25%) translateY(10px) scale(.97)'},{transform:'translateX(-25%)',offset:.14},{transform:'none'}],{duration:820,delay:D,easing:'cubic-bezier(.3,.1,.2,1)',fill:'backwards'}),
+      cv.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-12deg)',offset:.12},{transform:'rotateY(-180deg)',offset:.82},{transform:'rotateY(-174deg)',offset:.91},{transform:'rotateY(-180deg)'}],{duration:T,delay:D,easing:CE,fill:'both'})];
+    setTimeout(()=>{if(live())binder.style.clipPath=''},D+820);
   }else{
-    a=[wrap.animate([{transform:'translateY(10px) scale(.97)'},{transform:'none'}],{duration:260,easing:'cubic-bezier(.2,.8,.3,1)'}),
-      cv.animate([{transform:'rotateY(0deg)',opacity:1},{transform:'rotateY(-12deg)',opacity:1,offset:.12},{transform:'rotateY(-105deg)',opacity:1,offset:.55},{transform:'rotateY(-160deg)',opacity:0,offset:.8},{transform:'rotateY(-180deg)',opacity:0}],{duration:1000,easing:'cubic-bezier(.35,.05,.25,1)',fill:'forwards'})];
+    a=[wrap.animate([{transform:'translateY(10px) scale(.97)'},{transform:'none'}],{duration:260,delay:D,easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'}),
+      cv.animate([{transform:'rotateY(0deg)',opacity:1},{transform:'rotateY(-12deg)',opacity:1,offset:.12},{transform:'rotateY(-105deg)',opacity:1,offset:.55},{transform:'rotateY(-160deg)',opacity:0,offset:.8},{transform:'rotateY(-180deg)',opacity:0}],{duration:T,delay:D,easing:CE,fill:'both'})];
   }
-  a[1].onfinish=()=>{if(bdCover===cv)bdCoverReset()};
+  const o={duration:T,delay:D,easing:CE,fill:'both'};
+  cv.querySelector('.front .cv-shd').animate([{opacity:0},{opacity:.7,offset:.5},{opacity:.7}],o);
+  cv.querySelector('.back .cv-shd').animate([{opacity:.75},{opacity:.75,offset:.5},{opacity:0}],o);
+  bdCast=document.createElement('i');bdCast.className='bd-under to-r';$('#bdR').append(bdCast);
+  bdCast.animate([{opacity:0},{opacity:.9,offset:.4},{opacity:0}],o);
+  // the bookmarks come out once the cover is past them
+  setTimeout(()=>{if(live())ribs.classList.remove('hide')},D+T*.75);
+  a[1].onfinish=()=>{if(live())bdCoverReset()};
 }
 function bdCoverClose(then){
   if(BD.done)BD.done();
   if(noMotion()||bdCover||!$('#scr-coll').classList.contains('on')){bdCoverReset();then();return}
   const cv=bdCoverBuild(),sp=BD.sp;let a;
+  $('#bdTabs').classList.add('hide');
+  cv.querySelector('.front .cv-shd').animate([{opacity:.7},{opacity:0}],{duration:250,easing:'ease-in',fill:'both'});
   if(sp){
     $('#binder').style.clipPath='inset(0 0 0 50%)';
     a=[cv.animate([{transform:'rotateY(-180deg)'},{transform:'rotateY(0deg)'}],{duration:240,easing:'cubic-bezier(.55,0,.9,.45)',fill:'forwards'}),
@@ -454,7 +546,10 @@ $('#binder').addEventListener('click',e=>{
   if(!b)return;
   // picking: a tap adds the card straight to the hand; in the collection it opens the card
   const id=+b.dataset.id;
-  if(picking()&&bdHave(id))handAdd(BH,id,b.querySelector('.card'));else collDetail(id,b);
+  if(picking()&&bdHave(id))handAdd(BH,id,b.querySelector('.card'));
+  else if(BH.forge&&owned(id)>0){sfx('coll_deny');shakeNo(b);
+    toast(forgeKeep(id,forgeHeld())>1?`A saved loadout or an unfinished match uses every ${CARDS[id].name} you have.`:`You have one ${CARDS[id].name}. The Forge only takes extra copies.`,2800)}
+  else collDetail(id,b);
 });
 // drag an owned card from the binder onto the hand. Mouse: just drag. Touch: press and hold first,
 // so a quick swipe still turns the page.
@@ -513,6 +608,32 @@ $('#binder').addEventListener('click',e=>{
  $('#binder').addEventListener('contextmenu',e=>{if(BD.drag)e.preventDefault()});
  window.addEventListener('pointerup',e=>end(e,false));
  window.addEventListener('pointercancel',e=>end(e,true));
+}
+// drag a card from the hand onto the book: it goes back to its spot (turning to its page if need be);
+// let go anywhere else and it slides back into the hand
+{const book=$('#bdWrap'),overBook=(x,y)=>{const r=book.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom};
+ let D=null;
+ $('#collSlots').addEventListener('pointerdown',e=>{const s=e.target.closest('.dk-fs[data-i]');if(!s||e.button>0||bdCovered())return;D={s,i:+s.dataset.i,x:e.clientX,y:e.clientY,pid:e.pointerId,g:null}});
+ window.addEventListener('pointermove',e=>{
+   if(!D||e.pointerId!==D.pid)return;
+   if(!D.g){
+     if(Math.hypot(e.clientX-D.x,e.clientY-D.y)<8)return;
+     const c=D.s.querySelector('.card');if(!c){D=null;return}
+     const g=c.cloneNode(true);g.classList.remove('deal','hold');g.classList.add('ghost');g.style.fontSize=cardPx(c)+'px';
+     ghostSweep();document.body.append(g);D.g=g;c.style.visibility='hidden';sfx('coll_lift');
+   }
+   D.g.style.left=e.clientX+'px';D.g.style.top=e.clientY+'px';book.classList.toggle('drop',overBook(e.clientX,e.clientY));
+ },{passive:true});
+ const up=(e,cancel)=>{
+   if(!D||e.pointerId!==D.pid)return;const d=D;D=null;if(!d.g)return;
+   book.classList.remove('drop');handDragged=true;setTimeout(()=>{handDragged=false},0);
+   const c=d.s.querySelector('.card');
+   if(!cancel&&overBook(e.clientX,e.clientY))handRemove(BH,d.i,d.g);
+   else{sfx('coll_return');fly(d.g,c,{ms:300,arc:16,shadow:true,ease:'cubic-bezier(.4,0,.3,1)',done:()=>{if(c){c.style.visibility='';settle(c)}}})}
+   d.g.remove();ghostSweep();
+ };
+ window.addEventListener('pointerup',e=>up(e,false));window.addEventListener('pointercancel',e=>up(e,true));
+ $('#collSlots').addEventListener('touchmove',e=>{if(D&&D.g&&e.cancelable)e.preventDefault()},{passive:false});
 }
 // switch between one and two pages when the window crosses the breakpoint
 const bdFit=()=>{if($('#scr-coll').classList.contains('on')&&BD.sp!==bdSpread()){bdCoverReset();bdRender()}};

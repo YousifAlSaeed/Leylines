@@ -7,7 +7,7 @@ const STARTER=[0,1,2,3,4,5,6,7,13];
 function defSave(){
   const coll={};STARTER.forEach(i=>coll[i]=1);
   return {coll,lastDeck:[],rules:{open:true,same:true,sameWall:false,plus:true,combo:true,elemental:false,suddenDeath:false,random:false,chaos:false,threeOpen:false,reverse:false,sweep:false,timer:45,tkind:'turn',bank:180,flag:'random'},
-    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},sound:true,musicVol:70,sfxVol:100,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
+    trade:'one',diff:'normal',bo:1,cpuTimer:0,cpuTk:{tkind:'turn',bank:180,flag:'random'},stats:{w:0,l:0,d:0,ow:0,ol:0,od:0},musicVol:50,sfxVol:50,volV:1,musicMute:false,sfxMute:false,theme:'system',menuMode:'ai',name:'',cid:'',seen:STARTER.slice(),loadouts:[null,null,null],
     // profile (profile.js): avatar {c: card id, r: ring colour}, XP, win streaks, last results, toughest CPU beaten, badges {id: date}, pinned cards
     pv:2,avatar:null,xp:0,streak:0,best:0,recent:[],beat:-1,badges:{},showcase:[],
     // badges whose shards were claimed on the profile {id: 1}, and packs opened (both for badges)
@@ -20,7 +20,7 @@ function defSave(){
     packs:[],packLv:1,daily:null,dailyRoll:null,pity:0,
     // ids of the packs a developer gave you that were added already (packs.js)
     gifts:[],
-    // the Daily tab (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
+    // the Daily (daily.js): today's challenge progress, reset at the game's midnight (clock.js)
     trial:null,
     // a Solo match the app closed on (match.js), online matches you may still lose cards from,
     // and spares (spare.js): how many, and who you spared today (each player counts once a day)
@@ -79,8 +79,13 @@ function grantPacks(p){
   return got;
 }
 // a stored save with any missing fields filled in
-function normSave(s){
-  const d=defSave();
+function normSave(o){
+  const d=defSave(),{sound,...s}=o;
+  // sound used to be one mute for everything: now music and sound effects each have their own, and keep their level while muted
+  if(sound===false&&!('musicMute' in s))s.musicMute=s.sfxMute=true;
+  // the volumes start at half now: a slider still where the old defaults left it (music 70, effects 100) moves there,
+  // once (volV); one the player set stays
+  if(!s.volV){if(s.musicVol==null||s.musicVol===70)s.musicVol=50;if(s.sfxVol==null||s.sfxVol===100)s.sfxVol=50;s.volV=1}
   return fixProfile({...d,...s,rules:{...d.rules,...(s.rules||{})},stats:{...d.stats,...(s.stats||{})},coll:s.coll&&typeof s.coll==='object'?s.coll:d.coll},s);
 }
 function loadSave(){
@@ -89,6 +94,7 @@ function loadSave(){
 }
 let SAVE=loadSave();
 if(SAVE.music===false)SAVE.musicVol=0;delete SAVE.music;
+for(const k of ['musicMute','sfxMute'])SAVE[k]=!!SAVE[k];
 for(const k of ['musicVol','sfxVol'])SAVE[k]=Math.max(0,Math.min(100,Math.round(+SAVE[k]/5)*5||0));
 normTimer(SAVE.rules);
 // Sweep used to be a trade rule: it's a rule card now, played on top of a trade rule (One, the gentlest)
@@ -116,7 +122,7 @@ fixMain();
 // Only this device's sound and look stay. (Leaving it would let anyone copy an account into a new one.)
 function resetSave(){
   const d=defSave();
-  for(const k of ['sound','musicVol','sfxVol','theme','cid'])d[k]=SAVE[k];
+  for(const k of ['musicVol','sfxVol','musicMute','sfxMute','jb','theme','aero','liquid','cid'])d[k]=SAVE[k];
   d.tut=1; // the tutorial was offered on this device already; its pack can still be earned
   SAVE=d;fixMain();save();
 }
@@ -146,6 +152,18 @@ function isDev(){
 // "Unlock all cards" (a developer tool) lends at least 1 copy of every card while it's on; the real collection stays underneath.
 // It's ignored for everyone else, even if an old save has it switched on.
 const unlocked=()=>!!SAVE.unlockAll&&isDev();
+// "Frutiger Aero" (a developer tool): glossy glass and a summer sky over the light theme (settings.js applyTheme, aero.css).
+// Ignored for everyone else in the same way.
+const aeroOn=()=>!!SAVE.aero&&isDev();
+// "Liquid glass" (a developer tool): the menu and the phone's tab bar made of glass, like iOS 26 (settings.js applyTheme,
+// glass.css, glass.js). Ignored for everyone else too. Settings → Themes picks one of the two (an old save may have both: Aero wins)
+const liquidOn=()=>!!SAVE.liquid&&isDev()&&!aeroOn();
+// your colour (Settings → Your colour): your cards and your side everywhere, blue to start with. Red is always
+// the other side's, so it's never one of them. Free for now; it moves to the Atelier (store.js) as a cosmetic later.
+const MY_COLS=['blue','teal','green','gold','purple','grey'];
+const COL_NAME={blue:'Blue',red:'Red',gold:'Gold',green:'Green',purple:'Purple',teal:'Teal',grey:'Black'}; // grey is the collection's old colour, called Black
+const okCol=c=>MY_COLS.includes(c)?c:'blue';
+const myCol=()=>okCol(SAVE.col);
 const owned=id=>{const n=SAVE.coll[id]||0;return unlocked()?Math.max(1,n):n};
 const isSeen=id=>unlocked()||SAVE.seen.includes(id);
 const seenCount=()=>unlocked()?CARDS.length:SAVE.seen.length;

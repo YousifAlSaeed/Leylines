@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { rateLimit } from '../lib/rateLimit.js';
 import { requireAuth } from '../lib/sessions.js';
 import { publicProfile, publicUser } from '../lib/users.js';
+import { REACTIONS, friendMoments, reactTo } from '../lib/moments.js';
 
 export const MAX_FRIENDS = 200;
 export const MAX_SENT = 50; // requests waiting for an answer
@@ -20,24 +21,34 @@ export function friendsRouter(db, hub) {
     let save = null;
     try { save = row.data && JSON.parse(row.data); } catch { /* a broken save just shows no avatar */ }
     const p = publicProfile(save);
-    return { ...publicUser(row), xp: p.xp, avatar: p.avatar, since: row.since };
+    return { ...publicUser(row), xp: p.xp, avatar: p.avatar, col: p.col, since: row.since };
   };
   // both players' games reload their lists on their next check (pulse.js)
   const changed = (...ids) => ids.forEach((id) => hub?.bump(id, 'fr'));
   const list = async (sql, me) => (await db.all(sql, { $me: me })).map(card);
 
-  // → { friends, incoming, outgoing }
+  // → { friends, incoming, outgoing, moments }; moments: your friends' news from the last week (lib/moments.js)
   r.get('/', async (req, res) => {
     const me = req.user.id;
-    const [friends, incoming, outgoing] = await Promise.all([
+    const [friends, incoming, outgoing, moments] = await Promise.all([
       list(`SELECT u.*, s.data, f.created_at AS since FROM friends f JOIN users u ON u.id = f.friend_id
             LEFT JOIN user_saves s ON s.user_id = u.id WHERE f.user_id = $me ORDER BY lower(u.display_name), u.id`, me),
       list(`SELECT u.*, s.data, q.created_at AS since FROM friend_requests q JOIN users u ON u.id = q.from_id
             LEFT JOIN user_saves s ON s.user_id = u.id WHERE q.to_id = $me ORDER BY q.created_at DESC`, me),
       list(`SELECT u.*, s.data, q.created_at AS since FROM friend_requests q JOIN users u ON u.id = q.to_id
             LEFT JOIN user_saves s ON s.user_id = u.id WHERE q.from_id = $me ORDER BY q.created_at DESC`, me),
+      friendMoments(db, me),
     ]);
-    res.json({ friends, incoming, outgoing });
+    res.json({ friends, incoming, outgoing, moments });
+  });
+
+  // { emoji } → { re, mine }: your reaction to a friend's moment. The same emoji again, or null, takes it back
+  r.post('/moments/:id/react', async (req, res) => {
+    const id = Number(req.params.id), emoji = req.body?.emoji ?? null;
+    if (!Number.isInteger(id) || (emoji !== null && !REACTIONS.includes(emoji))) return res.status(400).json({ error: 'Pick one of the reactions shown.' });
+    const out = await reactTo(db, req.user.id, id, emoji);
+    if (!out) return res.status(404).json({ error: 'That moment is gone.' });
+    res.json(out);
   });
 
   // { username } → { status: 'sent' | 'friends' }

@@ -8,8 +8,10 @@ function demoLoop(steps,period){
   cyc();const iv=setInterval(cyc,period);
   return()=>{clearInterval(iv);ts.forEach(clearTimeout)};
 }
-function flipTo(card,col,axis){card.classList.remove('fx','fy','drop');void card.offsetWidth;card.classList.add(axis);setTimeout(()=>{card.classList.remove('blue','red');card.classList.add(col)},230)}
-function setCol(card,col){card.classList.remove('fx','fy','blue','red');card.classList.add(col)}
+// the examples are written in blue and red: blue shows as your colour (save.js myCol)
+const exCol=c=>c==='blue'?myCol():c;
+function flipTo(card,col,axis){card.classList.remove('fx','fy','drop');void card.offsetWidth;card.classList.add(axis);setTimeout(()=>{card.classList.remove(...CARD_COLS);card.classList.add(exCol(col))},230)}
+function setCol(card,col){card.classList.remove('fx','fy',...CARD_COLS);card.classList.add(exCol(col))}
 
 /* ---------- examples ----------
    A small board with cards keyed "row,col". Each scene drops your new card on `at`, then each wave tags the
@@ -21,7 +23,7 @@ const exNb=(k,d)=>{const[r,c]=k.split(',').map(Number);return (r+EX_DIR[d][0])+'
 const exX=c=>.35+c*4.9,exY=r=>.35+r*5.82;
 function exBoard(sc){
   let h='';
-  for(let r=0;r<sc.rows;r++)for(let c=0;c<sc.cols;c++){const k=r+','+c,x=sc.cards[k];h+=`<div class="c" data-k="${k}">${x?cardHTML(x[0],x[1],{name:false}):''}</div>`}
+  for(let r=0;r<sc.rows;r++)for(let c=0;c<sc.cols;c++){const k=r+','+c,x=sc.cards[k];h+=`<div class="c" data-k="${k}">${x?cardHTML(x[0],exCol(x[1]),{name:false}):''}</div>`}
   return `<div class="ex${sc.rows===1?' big':''}" style="grid-template-columns:repeat(${sc.cols},4.6em)">${h}</div>`;
 }
 function exTag(b,k,d,txt,ok){
@@ -49,7 +51,7 @@ function exDemo(st,scenes,still){
   const steps=[],q=k=>st.querySelector(`[data-k="${k}"]`);let t=0,first=0;
   scenes.forEach((sc,i)=>{
     steps.push([t,()=>{st.innerHTML=`<div class="ex-wrap"><span class="ex-lbl">${sc.label}</span>${exBoard(sc)}<div class="ex-cap"></div></div>`;exFit(st)}]);
-    steps.push([t+500,()=>{q(sc.at).innerHTML=cardHTML(sc.card,'blue',{name:false,cls:still?'':'drop'})}]);
+    steps.push([t+500,()=>{q(sc.at).innerHTML=cardHTML(sc.card,myCol(),{name:false,cls:still?'':'drop'})}]);
     t+=1200;
     for(const w of sc.waves){
       steps.push([t,()=>{const b=st.querySelector('.ex');b.querySelectorAll('.ex-tag').forEach(x=>x.classList.add('old'));w.pairs.forEach(p=>exTag(b,...p))}]);
@@ -157,6 +159,10 @@ function renderHow(){
   // plays the lesson on the real board; not from inside a match, which it would end
   const tr=$('#hTry');tr.hidden=h.tut==null||$('#scr-game').classList.contains('on');
   tr.textContent='▶ '+(h.try||`Try ${h.tab} yourself`);
+  // the whole tutorial's button says what finishing it gives, until it's been given (tutorial.js)
+  const gift=h.tut===0&&SAVE.tut<2&&!tr.hidden;
+  if(gift)tr.insertAdjacentHTML('beforeend','<span class="htry-gift">🎁 Finish the tutorial to get a free pack!</span>');
+  tr.parentNode.classList.toggle('gift',gift);
   $('#hDots').innerHTML=HOW.map((_,i)=>`<i class="${i===HI?'on':''}"></i>`).join('');
   $('#hNext').textContent=HI===HOW.length-1?'Got it':'Next';
   $('#hBack').disabled=$('#hPrev').disabled=HI===0;
@@ -167,14 +173,14 @@ function goHow(i,focusTab){HI=Math.max(0,Math.min(HOW.length-1,i));renderHow();i
 function openHow(i=0){
   const d=$('#how');
   if(!d.classList.contains('on'))howReturn=document.activeElement;
-  d.classList.add('on');$$('.screen').forEach(s=>s.inert=true);
+  d.classList.add('on');$$('.screen,#hubTabs').forEach(s=>s.inert=true);
   goHow(i,true);
 }
 function closeHow(){
   const d=$('#how');if(!d.classList.contains('on'))return;
   if(hStop){hStop();hStop=null}
   d.classList.remove('on');
-  if(!$('#modal').classList.contains('on'))$$('.screen').forEach(s=>s.inert=false);
+  if(!$('#modal').classList.contains('on'))$$('.screen,#hubTabs').forEach(s=>s.inert=false);
   if(howReturn&&howReturn.isConnected&&howReturn.offsetParent)howReturn.focus({preventScroll:true});
   howReturn=null;
 }

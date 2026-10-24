@@ -89,7 +89,7 @@ function acctFail(e){
 async function acctRefresh(){
   if(!ACCT.token)return;
   ACCT.checkedAt=Date.now();
-  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck();GIFTS.wait=true;giftsCheck()}
+  try{const r=await api('/me');ACCT.user=r.user;ACCT.up=true;acctStore();applyTheme();renderProfilePage();acctReconcile(r.save,false);frLoad();owesCheck();GIFTS.wait=true;giftsCheck()}
   catch(e){acctFail(e)}
 }
 function acctReconcile(s,justSignedIn){
@@ -112,7 +112,7 @@ function acctState(s){ACCT.state=s;renderProfile()}
 /* ---------- signing in and out ---------- */
 function acctSignedIn(r){
   Object.assign(ACCT,{token:r.token,user:r.user,rev:r.save?r.save.rev:0,dirty:false,up:true,syncedAt:Date.now(),state:'',conflict:null});
-  acctStore();renderProfile();renderProfilePage();frLoad();lbAcct();GIFTS.wait=true;
+  acctStore();applyTheme();renderProfile();renderProfilePage();frLoad();lbAcct();GIFTS.wait=true; // applyTheme: a developer's look comes with their account (save.js aeroOn)
 }
 function acctSignedOut(msg){
   clearTimeout(ACCT.pushT);
@@ -122,7 +122,7 @@ function acctSignedOut(msg){
   // the progress belonged to the account: this device goes back to a fresh guest. In a match that
   // waits for the menu (renderMenu), and SAVE.wipe makes sure it still happens if the app closes first.
   if(G){SAVE.wipe=1;save()}else acctWipe();
-  renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
+  applyTheme();renderProfile();renderProfilePage();frReset();pulseReset();lbAcct();
   if(msg)toast(msg,3500);
 }
 function acctWipe(){
@@ -274,7 +274,7 @@ function acctStatus(){
 function renderProfile(){
   const el=$('#pcard');if(!el)return;
   const u=ACCT.token&&ACCT.user,cta=!u&&ACCT.up,lv=levelOf(SAVE.xp),name=u?u.displayName:profName();
-  // a dot in the corner, like the Daily tab's: badges with shards waiting on your profile
+  // a dot in the corner: badges with shards waiting on your profile
   const wait=toClaim().length;
   el.innerHTML=(wait?'<span class="pc-dot" aria-hidden="true"></span>':'')+avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
@@ -286,6 +286,8 @@ function renderProfile(){
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
   renderGuestNote();
+  // the tab bar's avatar and dots, when it's up off the menu (a badge claimed or a sign-in on Friends, the Collection or You)
+  if(document.body.dataset.tab&&typeof hubDots==='function')hubDots();
 }
 // the guest popup: after a guest's first match, back on the menu, a reminder that their progress lives on this device only.
 // It shows once, then again after GNOTE_EVERY more matches. It waits for any other popup to close first.

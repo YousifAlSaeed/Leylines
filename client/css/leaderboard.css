@@ -46,7 +46,7 @@
 .lb-find{flex:1 1 180px;display:flex;align-items:center;gap:8px;padding:0 12px;min-height:46px;border-radius:14px;background:var(--well);border:1px solid var(--line)}
 .lb-find:focus-within{outline:2px solid var(--accent-ink);outline-offset:1px}
 .lb-find svg{flex:none;width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
-.lb-find input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:500 16px var(--body)}
+.lb-find input{flex:1;min-width:0;width:0;background:none;border:0;outline:0;color:var(--text);font:500 16px var(--body)}
 .lb-find input::placeholder{color:var(--muted);opacity:.7}
 
 /* the table */
@@ -138,5 +138,28 @@
 }
 /* small phones: the short tab names */
 @container (max-width:519px){.lb-by .lb-l{display:none}.lb-by .lb-s{display:inline}}
+@media (max-width:299px){.lb-by button{min-width:0;padding:6px 3px;font-size:12.5px}} /* a tiny or zoomed-in phone: the four tabs still fit */
 /* without the third column there's nothing to show which player is picked */
 @container (max-width:1079px){.lb-row.sel:not(.me){background:none;box-shadow:none}.lb-row.sel+.lb-row{border-top-color:var(--line)}}
+
+/* older phones without container queries: the same layouts, from the widths cq.js marks on .lb-wrap and .lb-table */
+.cq-poly .lb-wrap:not(.cq-b760) .lb-grid{grid-template-columns:240px minmax(0,1fr)}
+.cq-poly .lb-wrap:not(.cq-b1080) .lb-grid{grid-template-columns:240px minmax(0,1fr) 280px}
+.cq-poly .lb-wrap:not(.cq-b1080) .lb-side{display:block;position:sticky;top:0}
+.cq-poly .lb-table.cq-b600 .lb-head,.cq-poly .lb-table.cq-b600 .lb-row{grid-template-columns:26px minmax(0,1fr) auto;gap:8px;padding:8px 6px}
+.cq-poly .lb-table.cq-b600 .lb-c{display:none}
+.cq-poly .lb-table.cq-b600 .lb-narrow{display:inline-flex}
+.cq-poly .lb-wrap.cq-b760 .lb-me .lb-kv,.cq-poly .lb-wrap.cq-b760 .lb-me .lb-tiny,.cq-poly .lb-wrap.cq-b760 .lb-note,.cq-poly .lb-wrap.cq-b760 .lb-show h3{display:none}
+.cq-poly .lb-wrap.cq-b760 .lb-me:not(.guest){display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:4px 14px}
+.cq-poly .lb-wrap.cq-b760 .lb-me .lb-who{grid-column:1/-1}
+.cq-poly .lb-wrap.cq-b760 .lb-me.guest .pf-hint{margin-bottom:10px}
+.cq-poly .lb-wrap.cq-b760 .lb-me .lb-big{margin:0;grid-row:2/4}
+.cq-poly .lb-wrap.cq-b760 .lb-me .lb-lvl{margin:0}
+.cq-poly .lb-wrap.cq-b760 .lb-show{padding:4px;border-radius:14px}
+.cq-poly .lb-wrap.cq-b760 .lb-opts{flex-direction:row;gap:2px}
+.cq-poly .lb-wrap.cq-b760 .lb-opt{justify-content:center;gap:6px}
+.cq-poly .lb-wrap.cq-b520 .lb-by .lb-l{display:none}
+.cq-poly .lb-wrap.cq-b520 .lb-by .lb-s{display:inline}
+/* (the table is always narrower than 1080px, so this one always holds) */
+.cq-poly .lb-row.sel:not(.me){background:none;box-shadow:none}
+.cq-poly .lb-row.sel+.lb-row{border-top-color:var(--line)}

@@ -68,7 +68,7 @@
 .st-stops{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 24px;align-items:stretch;padding-bottom:12px}
 @media (max-width:1099px){.st-stops{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .st-stop{display:flex;flex-direction:column;min-width:0}
-.s-merchant{--sc:#B894FF}.s-forge{--sc:#FF86C4}.s-packs{--sc:#8ef0fa}.s-well{--sc:#5EE6B0}
+.s-merchant{--sc:#B894FF}.s-forge{--sc:#FF86C4}.s-packs{--sc:#8ef0fa}.s-atelier{--sc:#5EE6B0}
 .st-sh{display:flex;align-items:center;gap:12px;margin:0 0 10px;font:700 12px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--text)}
 .st-sh svg{width:24px;height:24px;flex:none;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc))}
 .st-sh i{flex:1;border-top:1px dashed rgba(237,230,255,.3)}
@@ -93,14 +93,35 @@
 .st-slot.sold::after{content:"SOLD";position:absolute;top:2.4em;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font:800 14px/1 var(--display);letter-spacing:.14em;
   color:#FF86C4;border:2px solid currentColor;border-radius:5px;padding:3px 7px;background:#140C33;pointer-events:none}
 
-/* II · the Forge: closed for now */
-.s-forge .st-glass{border-style:dashed;border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
-.st-forge{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-.st-forge svg{width:72px;height:72px;fill:var(--sc);opacity:.55}
-.st-forge b{font:800 22px/1 var(--display)}
-.st-soon{padding:7px 14px;border-radius:999px;font:700 12px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--sc);
-  border:1px solid color-mix(in srgb,var(--sc) 45%,transparent);background:color-mix(in srgb,var(--sc) 10%,transparent)}
-.st-forge small{color:var(--muted);font-size:12.5px}
+/* II · the Forge (forge.js): five places round the anvil, then what they can become */
+.s-forge .st-glass{border-color:color-mix(in srgb,var(--sc) 30%,transparent)}
+/* the anvil takes the height the stop has left, between 150 and 230px, and its cards are sized to it */
+.s-forge .st-glass{min-height:0}
+.fg{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.fg-ring{position:relative;flex:1 1 230px;min-height:150px;max-height:230px;container-type:size}
+.fg-anvil{position:absolute;left:50%;top:52%;width:64px;height:64px;transform:translate(-50%,-50%);fill:var(--sc);opacity:.5;transition:opacity .3s,filter .3s}
+.fg-ring.ready .fg-anvil{opacity:1;filter:drop-shadow(0 0 12px var(--sc))}
+.fg-slot{position:absolute;width:5em;height:6em;padding:0;border:0;border-radius:.6em;background:none;transform:translate(-50%,-50%);cursor:pointer;color:inherit;
+  font-size:clamp(6px,calc(100cqh / 26),9px);
+  transition:transform .25s var(--spring)}
+.cq-poly .fg-slot{font-size:clamp(6px,calc(var(--cqh) / 26),9px)} /* older phones without container queries (cq.js) */
+.fg-slot:hover{transform:translate(-50%,-50%) translateY(-2px)}
+.fg-slot:not(.on){display:grid;place-items:center;border:1.5px dashed color-mix(in srgb,var(--sc) 55%,transparent);background:color-mix(in srgb,var(--sc) 7%,transparent)}
+.fg-slot:not(.on):hover{background:color-mix(in srgb,var(--sc) 15%,transparent)}
+.fg-plus{font:800 22px/1 var(--display);font-style:normal;color:var(--sc)}
+.fg-clear,.fg-fill{position:absolute;right:0;top:0;min-height:30px;padding:0 6px;font-size:12.5px;color:var(--muted)}
+.fg-fill{right:auto;left:0;color:var(--sc);font-weight:700}
+.fg-say b{color:var(--text)}
+.fg-say{margin:0;min-height:2.7em;text-align:center;color:var(--muted);font-size:12.5px;text-wrap:balance}
+.fg-acts{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.fg-make{width:100%;border-radius:999px}
+.fg-make .st-price{color:inherit}
+.fg-make .st-price.short{opacity:.6}
+.fg-melt{width:100%;justify-content:center}
+/* the confirm and result boxes */
+.fg-row{display:flex;justify-content:center;gap:6px;margin:6px 0 12px;font-size:10px}
+.fg-new .card{font-size:24px}
+.fg-got{text-align:center}
 
 /* III · the Pack Counter */
 .st-tiers{flex:1;display:flex;flex-direction:column;justify-content:center}
@@ -120,7 +141,30 @@
 .st-was{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:11.5px}
 .st-was s{color:var(--muted)}
 
-/* IV · the Shard well */
+/* III · the Pack counter's two tabs: the packs, and the shards you've earned (what the Shard well was) */
+.st-seg{margin-bottom:12px;flex:none}
+.st-seg button{min-height:34px;font:700 13px/1 var(--display)}
+.st-pane{flex:1;display:flex;flex-direction:column}
+.st-pane[data-pane="shards"]{justify-content:center}
+.st-pane[hidden]{display:none}
+.st-pane>.st-note:last-child{margin-top:auto;padding-top:12px}
+/* IV · the Atelier: closed for now (it will sell cosmetics) */
+.st-closed{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.st-closed svg{width:72px;height:72px;fill:var(--sc);opacity:.55}
+.st-closed b{font:800 22px/1 var(--display)}
+.st-soon{padding:7px 14px;border-radius:999px;font:700 12px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--sc);
+  border:1px solid color-mix(in srgb,var(--sc) 45%,transparent);background:color-mix(in srgb,var(--sc) 10%,transparent)}
+.st-closed small{color:var(--muted);font-size:12.5px}
+/* the cauldron's bubbles rise and pop, one after another (still with reduced motion) */
+.st-brew{overflow:visible}
+/* by night: the pot and bubbles in the sign's soft green (as it looked faded over the sky), under a deeper green rim */
+#scr-store:not(.st-day) .st-closed .st-brew{opacity:1;fill:color-mix(in srgb,var(--sc) 58%,#0c0a2a)}
+#scr-store:not(.st-day) .st-brew rect{fill:color-mix(in srgb,var(--sc) 32%,#0c0a2a)}
+.st-brew .bub{transform-box:fill-box;transform-origin:center;animation:stBub 2.4s ease-out infinite}
+.st-brew .bub:nth-of-type(2){animation-delay:.8s}.st-brew .bub:nth-of-type(3){animation-delay:1.6s}
+@keyframes stBub{0%{transform:translateY(3px) scale(.6);opacity:0}25%{opacity:1}100%{transform:translateY(-5px) scale(1.05);opacity:0}}
+.s-atelier .st-glass{border-style:dashed;border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
+/* the shards you've earned today (the Pack counter's second tab) */
 .st-rings{display:flex;justify-content:space-around;gap:12px}
 .st-ring-w{text-align:center}
 .st-ring{width:96px;height:96px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -153,7 +197,7 @@
   /* the constellation: a short strip over the market, the whole sky without it */
   .st-map{display:block;position:relative;height:100px;margin:4px -8px 0;flex:none}
   .st-down .st-map{flex:1;min-height:230px}
-  .st-lines{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
+  .st-lines{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;fill:none;stroke:rgba(237,230,255,.35);stroke-dasharray:3 4}
   .st-star{position:absolute;transform:translate(-50%,-15px);min-width:72px;min-height:56px;padding:0;border:0;background:none;cursor:pointer;
     display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:600 12px/1.2 var(--body)}
   .st-star svg{width:30px;height:30px;fill:var(--sc);filter:drop-shadow(0 0 8px var(--sc));opacity:.55;transition:transform .35s var(--spring),opacity .3s}
@@ -163,7 +207,7 @@
   .st-star.on svg{transform:scale(1.2);opacity:1}
   .st-star.on::before{opacity:.65;transform:none}
   .st-star.on span{opacity:1;font-weight:700}
-  .st-star.s-merchant{left:16%;top:40%}.st-star.s-forge{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-well{left:85%;top:66%}
+  .st-star.s-merchant{left:16%;top:40%}.st-star.s-forge{left:40%;top:72%}.st-star.s-packs{left:63%;top:30%}.st-star.s-atelier{left:85%;top:66%}
   /* in the sky every star shines alike, with no names and no ring */
   .st-down .st-star svg{opacity:1;transform:none}
   .st-down .st-star::before,.st-down .st-star span{opacity:0}
@@ -192,10 +236,17 @@
     background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid rgba(237,230,255,.12);
     opacity:.45;transform:scale(.94);transition:opacity .35s,transform .45s var(--ease)}
   .st-stop.on{opacity:1;transform:none}
-  .st-stop.s-forge{border-style:dashed;border-color:color-mix(in srgb,var(--sc) 40%,transparent)}
+  .st-stop.s-forge{border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
+  /* a subtitle keeps its lines; the stop's body takes what's left */
+  .st-sub{flex:none}
+  .st-ring{width:80px;height:80px}.st-ring span{width:66px;height:66px}
+  .st-rates{margin-top:10px}
+  .st-seg{margin-bottom:8px}
+  .st-pane .st-note{font-size:11.5px;padding-top:8px}
   .st-sub{min-height:0}
   .st-glass,.s-forge .st-glass{padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .st-slot .card{font-size:max(12px,min(16px,4vw,calc((100cqh - 268px) / 12)))}
+  .cq-poly .st-slot .card{font-size:max(12px,min(16px,4vw,calc((var(--cqh) - 268px) / 12)))} /* no container queries (cq.js) */
   .st-cards{row-gap:12px}
   .st-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
   .st-dots i{width:6px;height:6px;border-radius:99px;background:rgba(237,230,255,.3);transition:width .35s var(--ease),background .35s}
@@ -220,7 +271,7 @@
     linear-gradient(180deg,var(--s1),var(--s2) 55%,var(--s3))}
 /* a wide screen: the arc takes the moon's place beside the countdown */
 .st-dial .st-orbit{flex:1 1 320px;display:block;position:relative;height:150px;min-width:0}
-.st-dial .st-arc{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:rgba(237,230,255,.4);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
+.st-dial .st-arc{display:block;position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;overflow:visible;fill:none;stroke:rgba(237,230,255,.4);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 6}
 .st-dial .st-orbit small{display:block;position:absolute;top:100%;margin-top:-14px;font:700 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .st-dial .st-orbit small:first-of-type{left:4%}
 .st-dial .st-orbit small:nth-of-type(2){left:50%;transform:translateX(-50%)}
@@ -239,7 +290,7 @@
   .st-dial .st-moon.st-mm{display:block;left:var(--zx,50%);top:var(--zy,50%);width:44px;height:44px}
   .st-day.st-dial .st-moon.st-mm{left:var(--mx,50%);top:var(--my,14%)}
   .st-dial .st-star{z-index:1}
-  .st-day .st-star.s-merchant{left:15%;top:55.8%}.st-day .st-star.s-forge{left:38%;top:19.5%}.st-day .st-star.s-packs{left:62%;top:19.5%}.st-day .st-star.s-well{left:85%;top:55.8%}
+  .st-day .st-star.s-merchant{left:15%;top:55.8%}.st-day .st-star.s-forge{left:38%;top:19.5%}.st-day .st-star.s-packs{left:62%;top:19.5%}.st-day .st-star.s-atelier{left:85%;top:55.8%}
 }
 
 /* ---------- the Day Market (.st-day): the light theme's sky, a sun for the moon ---------- */
@@ -252,7 +303,8 @@
 .st-day .st-moon{background:radial-gradient(circle,#fffbd6,#ffd43b 58%,#ff9f43);box-shadow:0 0 0 12px rgba(255,236,160,.4),0 0 0 28px rgba(255,236,160,.18),0 0 70px rgba(255,160,60,.6)}
 .st-day.st-dial .st-moon{box-shadow:0 0 0 6px rgba(255,236,160,.45),0 0 34px rgba(255,150,60,.8)}
 .st-day .st-arc{stroke:rgba(43,26,63,.4)}
-.st-day .s-merchant{--sc:#6a2bae}.st-day .s-forge{--sc:#c2255c}.st-day .s-packs{--sc:#0b7285}.st-day .s-well{--sc:#2b8a3e}
+.st-day .s-merchant{--sc:#6a2bae}.st-day .s-forge{--sc:#c2255c}.st-day .s-packs{--sc:#0b7285}.st-day .s-atelier{--sc:#2b8a3e}
+.st-day .st-closed svg{opacity:1;filter:drop-shadow(0 6px 8px rgba(23,72,40,.3))} /* full colour by day, with a shadow under the pot */
 .st-day .st-sh svg{filter:none}.st-day .st-sh i{border-top-color:rgba(43,26,63,.3)}
 .st-day .st-glass{border-color:rgba(43,26,63,.12);background:rgba(255,255,255,.55)}
 .st-day .s-forge .st-glass{border-color:color-mix(in srgb,var(--sc) 35%,transparent)}
@@ -285,4 +337,5 @@
 .st-cost{display:flex;align-items:center;justify-content:center;gap:2px;color:var(--muted)}
 .st-cost b{color:var(--shard-ink);font:700 18px/1 var(--display);margin-right:6px}
 
+@media (prefers-reduced-motion:reduce){.st-brew .bub{animation:none}}
 @media (prefers-reduced-motion:reduce){.st-buy,.st-pk,.st-star svg,.st-star::before,.st-star span,.st-stops,.st-stop,.st-swipe,.st-dots i,.st-top,.st-hero>div>.st-lab,.st-hero>div>.st-count,.st-now{transition:none}.st-stop.on{animation:none}}

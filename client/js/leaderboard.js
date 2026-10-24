@@ -22,6 +22,7 @@ async function lbLoad(){
     const j=await api('/leaderboard?'+qs,{timeout:60000});
     if(n!==LB.seq)return;
     LB.data=j;
+    if(!LB.q)lbKeep(j);
     // keep the player you picked if they're still on screen, otherwise pick the top one
     if(!lbFind(LB.sel))LB.sel=j.rows.length?j.rows[0].username:'';
   }catch(e){
@@ -33,6 +34,32 @@ async function lbLoad(){
 }
 const lbFind=name=>{const d=LB.data;if(!d||!name)return null;return [...d.rows,d.me].find(p=>p&&p.username===name)||null};
 const lbIsMe=p=>!!(p&&ACCT.user&&frKey(p.username)===frKey(ACCT.user.username));
+// the top of the board for the menu's widget (menu.js hubLb), for whoever was signed in: what you saw when you last opened
+// it, or what the menu fetched itself. Kept on this device, and in LB_HUB.copy too for a device that can't store anything
+const LB_LAST='leylines.lbLast';
+const lbWho=()=>ACCT.user?frKey(ACCT.user.username):'';
+// at: when the menu last asked (a failed try waits its turn too, instead of going again on every redraw); copy: the last kept
+const LB_HUB={who:null,at:0,busy:false,copy:null},LB_HUB_EVERY=5*60e3;
+function lbKeep(j){const d={who:lbWho(),by:j.by,show:j.show,at:Date.now(),rows:j.rows.slice(0,3),me:j.me||null};LB_HUB.copy=d;
+  try{localStorage.setItem(LB_LAST,JSON.stringify(d))}catch(e){}}
+// the newer of the two (another tab may have stored a newer one)
+function lbSeen(){
+  const ok=d=>d&&d.who===lbWho()&&Array.isArray(d.rows)?d:null,m=ok(LB_HUB.copy);
+  let s=null;try{s=ok(JSON.parse(localStorage.getItem(LB_LAST)))}catch(e){}
+  return m&&s?((m.at||0)>=(s.at||0)?m:s):m||s;
+}
+// the menu asks for just the top three and you when its copy is 5 minutes old (or there's none), for the tab and the
+// everyone-or-friends you looked at last. Only when you come to it (the game opening, show('menu'), coming back to the
+// tab): a menu left open doesn't keep asking, so the database can sleep
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('#scr-menu').classList.contains('on'))lbHubFetch()});
+function lbHubFetch(){
+  if(API==null||LB_HUB.busy||document.hidden)return;
+  const who=lbWho(),d=lbSeen(),now=Date.now(),recent=t=>t>0&&now-t>=0&&now-t<LB_HUB_EVERY;
+  if(recent(d&&d.at)||LB_HUB.who===who&&recent(LB_HUB.at))return;
+  Object.assign(LB_HUB,{who,at:now,busy:true});
+  const qs=new URLSearchParams({by:d?d.by:'level',show:d&&d.show==='friends'&&ACCT.token?'friends':'all',limit:3});
+  api('/leaderboard?'+qs,{timeout:60000}).then(j=>{if(lbWho()===who)lbKeep(j)},()=>{}).finally(()=>{LB_HUB.busy=false;hubSoon()});
+}
 
 /* ---------- the screen ---------- */
 function openLeaderboard(){
@@ -98,10 +125,10 @@ const lbTier=lv=>`<span class="lb-tier t${TITLES.filter(t=>lv>=t[0]).length-1}">
 const lbLast=(r,n=5)=>{const l=[...(r||'')].slice(-n);return l.length?`<span class="lb-l5" role="img" aria-label="Last ${plural(l.length,'online result')}: ${l.map(x=>({w:'win',l:'loss',d:'draw'})[x]).join(', ')}">${l.map(x=>`<i class="${x}"></i>`).join('')}</span>`:'<span class="lb-none">—</span>'};
 const lbRate=(w,l,d)=>{const n=w+l+d;return n?Math.round(w/n*100)+'%':'—'};
 // the number the board is ranked by, and what it counts
-function lbStat(p){
-  if(LB.by==='level')return [levelOf(p.xp),`${p.xp.toLocaleString()} XP`];
-  if(LB.by==='wins')return [p.wins,p.wins===1?'win':'wins'];
-  if(LB.by==='streak')return [p.best,'wins in a row'];
+function lbStat(p,by=LB.by){
+  if(by==='level')return [levelOf(p.xp),`${p.xp.toLocaleString()} XP`];
+  if(by==='wins')return [p.wins,p.wins===1?'win':'wins'];
+  if(by==='streak')return [p.best,'wins in a row'];
   return [p.cards,`of ${CARDS.length}`];
 }
 const lbRankCls=r=>r===1?' g':r===2?' s':r===3?' b':'';
@@ -153,7 +180,7 @@ function lbPlayerHTML(p){
   const lv=levelOf(p.xp),me=lbIsMe(p),hand=(p.hand||[]).filter(i=>CARDS[i]);
   return `<div class="lb-pp">${frAvatar(p)}<div><b>${esc(p.displayName)}${me?' <em>(you)</em>':''}</b><div>${lbTier(lv)}<small>#${p.rank} · LV ${lv} · @${esc(p.username)}</small></div></div></div>
     <div class="lb-trio"><div><b>${lv}</b><small>Level</small></div><div><b>${lbRate(p.wins,p.losses,p.draws)}</b><small>Online win rate</small></div><div><b>${p.best}</b><small>Best online streak</small></div></div>
-    <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,'blue',{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
+    <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,me?myCol():okCol(p.col),{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
     <h4>Recent online results</h4>${p.recent?`<span class="pf-form">${[...p.recent].map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<p class="lb-none">No online matches yet.</p>'}
     <div class="lb-kv"><span>Online W / L / D</span><b>${p.wins} / ${p.losses} / ${p.draws}</b></div>
     <div class="lb-kv"><span>Cards found</span><b>${p.cards} / ${CARDS.length}</b></div>

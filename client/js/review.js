@@ -154,7 +154,7 @@ function revWave(e,last,st,prev,Rl=G.rules,nb=NB,cells=CELLS){
 function revTags(){TT.forEach(g=>g.el.remove());TT.length=0}
 
 /* ---------- the words and the buttons ---------- */
-const revWho=p=>G.mode==='local'?(p===0?'Blue':'Red'):p===G.me?'You':G.mode==='ai'?'The CPU':esc(oppName());
+const revWho=p=>G.mode==='local'?(p===0?COL_NAME[myCol()]:'Red'):p===G.me?'You':G.mode==='ai'?'The CPU':esc(oppName());
 function revText(m,r,k,st,last,R,steps){
   const n=R.moves.length,sd=r>0?`Sudden death ${r} · `:'',ser=G.bo>1?`Match ${m+1} · `:'';
   let kick=`${ser}${sd}${k?`Move ${k}${last.half?'.5':''} of ${n}`:'Start'}`,txt;
