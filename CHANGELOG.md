@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.31.1 (2026-10-25)
+- The Owl's review grades every move, like a chess coach: Brilliant, Best, Mistake, Blunder and more. You get an accuracy score, a graph of who was ahead, which CPU you played like, the best move on any turn, and a Try again to find it yourself
+
 ## 0.31.0 (2026-10-25)
 - News from the team: a megaphone on the menu, beside the bell, holds posts from the developers. A new post can put a number on it, show a banner at the top of the menu (on a phone it waits a few seconds, then covers the top bar until you close it or go somewhere else; the megaphone still has it) or pop up once with a Close that waits 3 seconds so it gets read
 - ALPHA sits beside the version number now, the same size as it, and on a computer both sit under the name. Tap ALPHA to read that progress may be reset

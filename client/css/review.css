@@ -27,3 +27,116 @@ body.drev #duoQuitBtn{visibility:hidden}
 @media (max-width:559px){body.drev .rv-bar{padding:10px 6px}body.drev .rv-nav{gap:3px}}
 /* who played, in their seat's colour */
 .tut-coach b.rv-who{color:var(--dink)}
+
+/* ---------- the Owl's review (review.js, owl.js): badges, the bar beside the board, the summary ---------- */
+:root{--ow-brilliant:#1fbca2;--ow-great:#5b8fd6;--ow-best:#7cc04a;--ow-excellent:#5fae68;--ow-good:#8aa87a;--ow-inaccuracy:#f2c230;
+  --ow-mistake:#ff9a4a;--ow-miss:#ff7a8a;--ow-blunder:#ff4062;--ow-forced:#7f789c}
+.ow-brilliant{--owq:var(--ow-brilliant)}.ow-great{--owq:var(--ow-great)}.ow-best{--owq:var(--ow-best)}.ow-excellent{--owq:var(--ow-excellent)}
+.ow-good{--owq:var(--ow-good)}.ow-inaccuracy{--owq:var(--ow-inaccuracy)}.ow-mistake{--owq:var(--ow-mistake)}.ow-miss{--owq:var(--ow-miss)}
+.ow-blunder{--owq:var(--ow-blunder)}.ow-forced{--owq:var(--ow-forced)}
+/* a badge, like chess.com's: its sign in a round, in the grade's colour */
+.ow-q{display:inline-grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:var(--owq);color:#fff;
+  font:900 11px/1 var(--display);font-style:normal;letter-spacing:-.04em;text-shadow:0 1px 1px rgba(0,0,0,.35);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ow-q.ow-inaccuracy{color:#3a2a00;text-shadow:none}
+/* the grade's name, after the move number in the owl's bubble */
+.ow-tag{display:inline-block;margin-left:5px;padding:1px 7px;border-radius:6px;background:var(--owq);color:#170d2e;
+  font:800 10.5px/1.5 var(--body);letter-spacing:.04em;vertical-align:1px}
+.ow-tag.ow-great,.ow-tag.ow-blunder,.ow-tag.ow-forced{color:#fff}
+/* on the board: the move's square ringed in its grade's colour, the badge on its corner */
+.cell.rv-last{outline-color:var(--owc,var(--hot))}
+.cell>.ow-q{position:absolute;right:calc(var(--cell)*-.11 - 2px);top:calc(var(--cell)*-.11 - 2px);z-index:5;width:calc(var(--cell)*.22 + 4px);height:calc(var(--cell)*.22 + 4px);
+  font-size:calc(var(--cell)*.1 + 3px);animation:owPop .35s var(--spring)}
+@keyframes owPop{from{transform:scale(.3);opacity:0}}
+/* Show best: the better card, see-through, its square dashed */
+.cell .card.ow-ghost{opacity:.55}
+.cell.ow-bestc{outline:2.5px dashed var(--ow-best);outline-offset:3px;box-shadow:none}
+.ow-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ow-btns .btn.small{min-height:34px;padding:4px 12px;font-size:13px;border-radius:10px}
+.ow-btns .btn.on{border-color:var(--ow-best);color:var(--ow-best)}
+/* the moves of the round, each with its badge, a stripe in the mover's colour */
+.ow-strip{display:flex;gap:4px;width:min(380px,calc(100vw - 44px))}
+.ow-strip button{flex:1 1 0;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 5px;
+  border:1px solid var(--line);border-radius:9px;background:none;color:var(--muted);font:700 11px/1 var(--display);cursor:pointer}
+.ow-strip button::before{content:"";position:absolute;left:6px;right:6px;top:-1px;height:3px;border-radius:0 0 3px 3px;background:var(--pc)}
+.ow-strip button.on{background:var(--seg-on);border-color:var(--line2);color:var(--text)}
+.ow-strip .ow-q{width:18px;height:18px;font-size:10px}
+.rv-bar .rv-nav{flex-wrap:wrap;justify-content:center}
+.rv-bar .rv-nav .btn.small{min-height:40px;padding:6px 12px}
+/* phones: the owl's words a little smaller, the buttons on one row */
+@media (max-width:559px){
+  body.rev .tut-coach{font-size:13.5px;line-height:1.38;padding:10px 12px}
+  body.rev .tut-coach .tc-av{width:36px;height:36px;font-size:22px}
+  .rv-bar .rv-nav{gap:5px}
+  .rv-bar .rv-nav .iconbtn{width:40px;height:40px}
+  .rv-bar .rv-nav .rv-pos{min-width:50px}
+  .rv-bar .rv-nav .btn.small{padding:6px 10px;font-size:13px}
+}
+/* who's ahead with perfect play: up the left of the board, or along its top on a phone; your colour from the bottom (left) */
+.ow-eval{position:fixed;zoom:var(--ui);z-index:calc(var(--z-banner) - 3);width:16px;display:flex;flex-direction:column;overflow:hidden;
+  border-radius:8px;background:var(--ow-op);border:1px solid var(--line2);box-shadow:0 6px 18px rgba(var(--sh),calc(.6*var(--shk)))}
+.ow-eval[hidden]{display:none}
+.ow-eval i{display:block;margin-top:auto;height:calc(var(--f) * 100%);background:var(--ow-me);transition:height .5s var(--ease)}
+.ow-eval b{position:absolute;left:0;right:0;text-align:center;font:800 10px/1 var(--display);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.ow-eval .ow-ea{bottom:4px}.ow-eval .ow-eb{top:4px}
+.ow-eval.h{flex-direction:row;width:auto;height:14px}
+.ow-eval.h i{margin:0;height:auto;width:calc(var(--f) * 100%);transition:width .5s var(--ease)}
+.ow-eval.h b{top:2px;left:auto;right:auto}
+.ow-eval.h .ow-ea{left:7px;bottom:auto}.ow-eval.h .ow-eb{right:7px}
+/* trying a move again: the mover's hand comes back, the step buttons go */
+body.rev.rv-try #handBot{visibility:visible}
+body.rv-try .rv-bar{display:none}
+
+/* the summary popup */
+.mbox.ow-box{max-width:470px;text-align:left;padding:18px 16px 16px}
+.ow-box .mbtns{margin-top:12px}
+.ow-hd{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.mbox.ow-box h2.nm2{margin:0}
+.ow-tabs{justify-content:flex-start;margin-bottom:10px}
+.mbox p.ow-say{margin:0 0 10px;max-width:none;padding:9px 12px;border-radius:14px;background:var(--surf2);border:1px solid var(--line);
+  color:var(--text);font-size:14px;line-height:1.45}
+.ow-say b{color:var(--accent-ink)}
+.ow-say .ow-q{width:18px;height:18px;font-size:10px;vertical-align:-3px}
+.ow-graph{margin-bottom:10px;padding:6px 6px 3px;border-radius:12px;background:var(--well);border:1px solid var(--line)}
+.ow-gw{position:relative}
+.ow-gw svg{display:block;width:100%;height:auto}
+.ow-gw button{position:absolute;top:0;bottom:0;padding:0;border:0;border-radius:4px;background:none;cursor:pointer}
+.ow-gw button:hover,.ow-gw button:focus-visible{background:rgba(var(--tint),.1)}
+.ow-mid{stroke:var(--line2);stroke-width:1;stroke-dasharray:3 3}
+.ow-line{fill:none;stroke:var(--text);stroke-width:1.4;opacity:.85}
+.ow-gx{display:flex;justify-content:space-between;padding-top:2px;font:600 10px var(--body);color:var(--muted)}
+.ow-gx.ow-gsd{justify-content:space-around}
+.ow-l{font:600 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ow-acc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ow-acc>div{padding:7px 10px 8px;border-radius:12px;border:1px solid var(--line);border-top:3px solid var(--pc);background:rgba(var(--tint),.03);min-width:0}
+.ow-acc .ow-l{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ow-acc b{display:block;font:800 27px/1.1 var(--display);color:var(--pk);font-variant-numeric:tabular-nums}
+.ow-like{display:block;font-size:12px;color:var(--muted)}
+/* how many moves of each grade: two columns of rows, each with both players' counts */
+.ow-cls{display:grid;grid-template-rows:repeat(6,auto);grid-auto-flow:column;grid-auto-columns:1fr;column-gap:12px;margin-bottom:6px}
+.ow-row{display:grid;grid-template-columns:1fr 30px 30px;align-items:center;gap:2px;padding:3px 4px;border:0;border-radius:8px;
+  background:none;color:var(--text);font:500 13px var(--body);text-align:left;cursor:pointer;min-width:0}
+.ow-row>span{display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap;overflow:hidden}
+.ow-row b{text-align:center;font:700 14px var(--display);color:var(--pk);font-variant-numeric:tabular-nums}
+.ow-row b.z{opacity:.3}
+button.ow-row:hover,.ow-row.on{background:rgba(var(--tint),.07)}
+.ow-row.ow-th{cursor:default;padding-bottom:1px}
+.ow-th b{font:700 10px var(--body);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:559px){
+  .ow-cls{column-gap:4px}
+  .ow-row{grid-template-columns:1fr 25px 25px;gap:3px;padding:3px 0;font-size:12px}
+  .ow-row>span{gap:4px}
+  .ow-row .ow-q{width:18px;height:18px;font-size:10px}
+  .ow-th b{font-size:9px;letter-spacing:0}
+}
+/* Start, Middle, End: a badge for each player's moves there */
+.ow-ph{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:5px 8px;align-items:center;justify-items:center;padding:8px 4px 0;border-top:1px solid var(--line)}
+.ow-pn{justify-self:start;max-width:90px;font:700 12px var(--body);color:var(--pk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ow-none{color:var(--muted);font-style:normal}
+.mbox p.ow-note{margin:8px 0 0;max-width:none;font-size:12px}
+/* reading the match */
+.ow-load{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;text-align:center}
+.ow-think{animation:owThink 1.4s ease-in-out infinite}
+@keyframes owThink{50%{transform:rotate(-8deg) scale(1.06)}}
+.ow-prog{width:100%;max-width:280px;height:8px;margin-top:6px;border-radius:5px;background:var(--well);border:1px solid var(--line);overflow:hidden}
+.ow-prog i{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--accent),var(--cta));transition:width .3s}
+@media (prefers-reduced-motion:reduce){.ow-think,.cell>.ow-q{animation:none}}

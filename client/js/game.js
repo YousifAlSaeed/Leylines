@@ -7,7 +7,8 @@ function buildBoard(){
   const b=$('#board');b.innerHTML='';CELLS=[];
   for(let i=0;i<9;i++){
     const c=document.createElement('div');c.className='cell';c.dataset.i=i;c.setAttribute('role','button');
-    c.onclick=()=>{if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
+    c.onclick=()=>{if(RV.try){owlTryCell(i);return} // trying a move again in the Owl's review (review.js)
+      if(G&&G.sel!=null&&canAct(G.st.turn)&&G.st.b[i]<0){requestMove(G.sel,i)}};
     b.append(c);CELLS.push(c);
   }
 }
