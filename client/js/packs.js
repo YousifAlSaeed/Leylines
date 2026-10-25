@@ -415,7 +415,7 @@ function renderPacks(){
 }
 function renderPackTile(){
   const d=dailyState(),n=SAVE.packs.length,all=n+(d.ready?1:0);
-  $('#packSub').textContent=[d.ready?'Daily ready':'',n?`${n} to open`:''].filter(Boolean).join(' · ')||(d.wait?'Daily pack: connecting…':`Next daily in ${untilMidnight()}`);
+  $('#packSub').textContent=[d.ready?'Daily ready':'',n?`${n} to open`:''].filter(Boolean).join(' · ')||(d.wait?'Daily pack: connecting…':'Opened today'); // no countdown: the Daily's is the menu's only one
   const dot=$('#packDot');dot.textContent=all;dot.hidden=!all;
   $('#packTile').classList.toggle('hot',!!all);
   $('#packTile').setAttribute('aria-label',`Packs. ${$('#packSub').textContent}`);

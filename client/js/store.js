@@ -388,7 +388,9 @@ addEventListener('resize',()=>{if($('#scr-store').classList.contains('on')&&!stD
 // the menu's Night Market tile, and the shards on the player card (account.js)
 function renderStoreTile(){
   const fresh=clockOk()&&(!SAVE.shop||SAVE.shop.at!==today()),day=stDay(),name=day?'Day Market':'Night Market';
-  const sub=!clockOk()?(day?"Today's stock":"Tonight's stock"):fresh?`New stock ${day?'today':'tonight'}`:`New stock in ${untilMidnight()}`;
+  // the Merchant's cards still for sale. No countdown here: the Daily's is the menu's only one
+  const left=()=>{const got=shopDay(true).got,all=merchStock(dayNo(),true).cards,n=all.filter((_,i)=>got[i]==null).length;return n?`${n} of ${all.length} cards left`:'All sold today'};
+  const sub=!clockOk()?(day?"Today's stock":"Tonight's stock"):fresh?`New stock ${day?'today':'tonight'}`:left();
   $('#storeTile b').textContent=name;$('#storeTile svg').innerHTML=ST_ICON[day?'day':'night'];
   $('#storeSub').textContent=sub;
   $('#storeTile').classList.toggle('hot',fresh);

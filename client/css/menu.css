@@ -290,6 +290,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .hw-mt small{font-size:12px;color:var(--muted);white-space:nowrap}
 .hw-mt small i{font-style:normal;font-weight:700;color:var(--cta)}
 .hw-mk .btn.small{align-self:center;flex:none;gap:4px}
+/* Buy is violet: pink is for playing (Play, the Daily, Open) */
+.btn.primary.hw-buy{background:linear-gradient(180deg,var(--ley-violet-500),var(--ley-violet-700));color:#fff;box-shadow:0 8px 24px -10px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.25)}
 .hw-buy.short{opacity:.7}
 .hw-mdots{display:flex;gap:6px;justify-content:center;margin-top:6px}
 .hw-mdots button{position:relative;width:6px;height:6px;padding:0;border:0;border-radius:3px;background:var(--line2);cursor:pointer;transition:width .25s var(--ease),background .25s}
@@ -317,7 +319,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 /* "See all" on the Friends widget's header */
 .hw-more{margin-left:auto;flex:none;font:600 12px/1 var(--body);color:var(--accent-ink);white-space:nowrap}
 /* the news under them: as many as fit (three at most, menu.js), the rest are in Friends */
-.hw-fr .hw-x{flex:1;min-height:0;overflow:hidden}
+.hw-fr .hw-x{flex:1;min-height:0;overflow:hidden;
+  /* 3px of room on the left, so the clip doesn't slice off the ring around a friend's picture (2px outside it, account.css) */
+  padding-left:3px;margin-left:-3px}
 .hw-fr .mo-list{min-height:0}
 .hw-fr .mo{padding:8px 0}.hw-fr .mo:first-child{padding-top:2px}
 .hw-fr .mo-t{font-size:13px}.hw-fr .mo-b>small{font-size:11.5px}

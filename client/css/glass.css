@@ -28,6 +28,10 @@
   --lq-pink-sh:0 10px 28px -12px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(255,255,255,.12),
     inset 0 0 0 1px color-mix(in srgb,var(--cta-hi) 55%,transparent),inset 0 0 18px color-mix(in srgb,var(--cta-hi) 22%,transparent);
   --lq-pink-ink:var(--cta-hi);
+  /* the same glass in violet, for Buy on the Merchant (pink is for playing) */
+  --lq-violet:linear-gradient(180deg,color-mix(in srgb,var(--ley-violet-500) 70%,transparent),color-mix(in srgb,var(--ley-violet-700) 58%,transparent));
+  --lq-violet-sh:0 10px 28px -12px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(255,255,255,.12),
+    inset 0 0 0 1px color-mix(in srgb,var(--ley-violet-300) 55%,transparent),inset 0 0 18px color-mix(in srgb,var(--ley-violet-300) 22%,transparent);
   /* clear glass inside the glass: the other buttons and the Daily's challenges */
   --lq-clear:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));
   --lq-clear-sh:0 6px 16px -8px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,255,255,.28),inset 0 0 0 1px rgba(255,255,255,.12);
@@ -59,12 +63,16 @@
   --lq-pink-sh:0 10px 26px -12px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.15),
     inset 0 0 0 1px color-mix(in srgb,var(--cta-hi) 60%,transparent),inset 0 0 18px color-mix(in srgb,var(--cta-hi) 30%,transparent);
   --lq-pink-ink:color-mix(in srgb,var(--cta) 80%,#000);
+  --lq-violet:linear-gradient(180deg,color-mix(in srgb,var(--ley-violet-500) 92%,transparent),color-mix(in srgb,var(--ley-violet-700) 88%,transparent));
+  --lq-violet-sh:0 10px 26px -12px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.15),
+    inset 0 0 0 1px color-mix(in srgb,var(--ley-violet-300) 60%,transparent),inset 0 0 18px color-mix(in srgb,var(--ley-violet-300) 30%,transparent);
   --lq-clear:linear-gradient(180deg,#fff,rgba(255,255,255,.7));
   --lq-clear-sh:0 6px 16px -10px rgba(40,20,90,.3),inset 0 1px 1px #fff,inset 0 0 0 1px rgba(40,20,90,.08);
 }
 /* browsers without color-mix (iOS before 16.2, Chrome before 111): the pink button solid, as before the glass */
 @supports not (color:color-mix(in srgb,red 50%,transparent)){
-  :root.liquid,:root.liquid[data-theme="light"]{--lq-pink:linear-gradient(180deg,var(--cta-hi),var(--cta));--lq-pink-sh:0 8px 24px -8px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.35);--lq-on-pink:var(--on-cta)}
+  :root.liquid,:root.liquid[data-theme="light"]{--lq-pink:linear-gradient(180deg,var(--cta-hi),var(--cta));--lq-pink-sh:0 8px 24px -8px var(--cta-glow),inset 0 1px 0 rgba(255,255,255,.35);--lq-on-pink:var(--on-cta);
+    --lq-violet:linear-gradient(180deg,var(--ley-violet-500),var(--ley-violet-700));--lq-violet-sh:0 8px 24px -10px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.25)}
   :root.liquid[data-theme="light"]{--lq-pink-ink:var(--cta)}
 }
 
@@ -143,9 +151,12 @@
 .liquid #scr-menu .hero-stats div+div{border-left-color:var(--lq-well-line)}
 :root.liquid[data-theme="light"] #scr-menu .hero-stats{box-shadow:inset 0 1px 2px rgba(40,20,90,.08)}
 /* pink glass, coloured with a bright edge: the Play card's main button (Play, Quick play, Rejoin), the Daily's challenges
-   still to play, Open on the Packs and Buy on the Merchant */
-.liquid #scr-menu :is(.hero .btn.primary,.hw-packs .btn.primary,.hw-buy,.dly:not(.done)){background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);
+   still to play and Open on the Packs */
+.liquid #scr-menu :is(.hero .btn.primary,.hw-packs .btn.primary,.dly:not(.done)){background:var(--lq-pink);border-color:transparent;color:var(--lq-on-pink,#fff);
   text-shadow:0 1px 2px rgba(70,0,40,.3);box-shadow:var(--lq-pink-sh);transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
+/* Buy on the Merchant: the same glass in violet, as on the plain menu */
+.liquid #scr-menu .hw-buy{background:var(--lq-violet);border-color:transparent;color:#fff;
+  text-shadow:0 1px 2px rgba(30,0,70,.3);box-shadow:var(--lq-violet-sh);transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}
 /* the rest (Invite): clear glass with pink writing */
 .liquid #scr-menu .btn.primary:not(.hero .btn,.hw-packs .btn,.hw-buy){background:var(--lq-clear);border-color:transparent;box-shadow:var(--lq-clear-sh);color:var(--lq-pink-ink);
   transition:transform .5s var(--lq-bouncy),filter .2s,box-shadow .3s}

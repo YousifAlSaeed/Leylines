@@ -6,6 +6,11 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.31.2 (2026-10-25)
+- On the menu only the Daily counts down to the new day. The Night Market says how many of its cards are left, and Packs says when today's pack is opened
+- The Merchant's Buy button on the menu is violet, so pink is for playing (Play and the Daily)
+- The coloured ring around a friend's picture in Friends on the menu isn't cut off on the left any more
+
 ## 0.31.1 (2026-10-25)
 - The Owl's review grades every move, like a chess coach: Brilliant, Best, Mistake, Blunder and more. You get an accuracy score, a graph of who was ahead, which CPU you played like, the best move on any turn, and a Try again to find it yourself
 
