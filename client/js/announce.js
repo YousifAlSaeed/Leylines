@@ -97,7 +97,7 @@ function annOpen(id){
     (list.length?`<div class="ann-list">${list.map(p=>annCard(p,!s.read.includes(p.id))).join('')}</div>`
       :`<p class="ann-none">Nothing from the team right now. When the developers post something, it shows up here.</p>`)+
     `<div class="ann-more"><button class="pf-link" type="button" id="annWn">What's new in v${VERSION}</button>${dev?'<button class="pf-link" type="button" id="annWrite">Write a post</button>':''}</div>`,
-    [{label:'Close',cls:'primary',esc:true}]);
+    [{label:'Close',cls:'primary',esc:true}],{out:true});
   box.classList.add('ann-box');
   $('#annWn').onclick=()=>{closeModal();setTimeout(openNews,60)};
   if(dev)$('#annWrite').onclick=()=>{sfx('click');closeModal();openAnnAdmin()};
@@ -146,7 +146,7 @@ function annBigMaybe(){
 function annBig(p,preview){
   const box=modal(`<div class="ann-art" aria-hidden="true">${ANN_IC}</div><div class="kick">From the team · ${ANN_KIND[p.kind]||'News'}</div>`+
     `<h2 class="nm2" dir="auto">${esc(p.title)}</h2><div class="ann-txt" dir="auto">${annBody(p.body)}</div><p class="ann-by">${esc(p.by)} · ${annDate(p.start)}</p>`,
-    [{label:'Close',cls:'primary',esc:true,wait:true,fn:()=>{if(!preview){annMark('read',[p.id]);annRender()}}}]);
+    [{label:'Close',cls:'primary',esc:true,wait:true,fn:()=>{if(!preview){annMark('read',[p.id]);annRender()}}}],{out:true});
   box.classList.add('ann-big');
 }
 

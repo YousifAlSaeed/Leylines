@@ -25,6 +25,15 @@ document.addEventListener('keydown',e=>{
   if($('#modal').classList.contains('on')){const b=$('#modal [data-esc]');if(b){e.preventDefault();b.click()}return}
   if($('#how').classList.contains('on')){e.preventDefault();closeHow()}
 });
+// a tap on the dimmed page around some popups (modal(…,{out:true}): the Inbox, the team's news) closes them like Esc,
+// so a Close that's still counting down still holds. Only when the press started out there too: picking text in the
+// popup and letting go outside it doesn't close it
+let modalDownOut=false;
+document.addEventListener('pointerdown',e=>{modalDownOut=e.target.id==='modal'});
+document.addEventListener('click',e=>{
+  const m=$('#modal');if(e.target!==m||!modalDownOut||!m.classList.contains('tap-out'))return;
+  const b=m.querySelector('[data-esc]');if(b)b.click();
+});
 function cardHTML(id,color,o={}){
   if(o.back) return `<div class="card back ${o.cls||''}" ${o.attrs||''}><i>◆</i></div>`;
   const c=CARDS[id];
@@ -98,9 +107,10 @@ function readWait(e,label,s=READ_WAIT){
     else{e.textContent=label;e.classList.remove('waiting');e.removeAttribute('aria-disabled')}};
   tick();
 }
-function modal(html,btns=[]){
+function modal(html,btns=[],o={}){
   const bg=$('#modal');
   if(!bg.classList.contains('on'))modalReturn=document.activeElement;
+  bg.classList.toggle('tap-out',!!o.out);
   bg.innerHTML=`<div class="mbox" tabindex="-1">${html}<div class="mbtns"></div></div>`;
   const bx=bg.querySelector('.mbtns');
   btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.cls||'');e.textContent=b.label;if(b.esc)e.dataset.esc='';
@@ -117,7 +127,7 @@ function modal(html,btns=[]){
 function closeModal(){
   const m=$('#modal'),collectionCard=!!m.querySelector('.cd-box');
   if(collectionCard)collCardBack(m); // the card flies back into its sleeve (collection.js); needs the popup still on screen
-  m.classList.remove('on');m.innerHTML='';
+  m.classList.remove('on','tap-out');m.innerHTML='';
   // the "waiting for the other player" layer can sit on top of a modal; the screens stay blocked under it
   const away=$('#away').classList.contains('on');$$('.screen,#hubTabs').forEach(s=>s.inert=away);
   if(modalReturn&&modalReturn.isConnected&&modalReturn.offsetParent)modalReturn.focus({preventScroll:true});

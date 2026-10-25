@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.31.4 (2026-10-25)
+- Tap anywhere outside the Inbox or the team's news to close it, no need to press Close
+
 ## 0.31.3 (2026-10-25)
 - No more pink dot on your profile box for badges to claim: the bell already tells you about them
 

@@ -226,7 +226,7 @@ function inboxSeen(){const s={};inboxItems().forEach(i=>s[i[0]]=i[4]);ibxSave(s)
 function openInbox(){
   const it=inboxItems(),nw=new Set(inboxNew(it).map(i=>i[0]));
   const box=modal(`<h2 class="nm2">Inbox</h2>`+(it.length?`<div class="ibx">${it.map(([ic,t,s],i)=>`<button class="ibx-row" type="button" data-i="${i}">${HUB_IC[ic]}<span class="rt"><b>${esc(t)}</b><small>${esc(s)}</small></span>${nw.has(ic)?'<i class="ibx-new"><span class="sr">New</span></i>':''}${hubSvg('<path d="M9 5l7 7-7 7"/>')}</button>`).join('')}</div>`
-    :`<p>Nothing is waiting for you. You're all caught up.</p>`),[...nw.size?[{label:'Mark as seen',fn:inboxSeen}]:[],{label:'Close',esc:true}]);
+    :`<p>Nothing is waiting for you. You're all caught up.</p>`),[...nw.size?[{label:'Mark as seen',fn:inboxSeen}]:[],{label:'Close',esc:true}],{out:true});
   box.querySelectorAll('.ibx-row').forEach(b=>b.onclick=()=>{sfx('click');closeModal();it[+b.dataset.i][3]()});
 }
 // the tab bar's dots and the inbox count follow the tiles
