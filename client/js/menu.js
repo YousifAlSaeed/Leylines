@@ -301,17 +301,19 @@ function heroPane(m){
     h='Couch';sub=d?'Quick play repeats your last game':`${COL_NAME[myCol()]} picks, then passes to Red`;side=localFan(d);
     // no XP or shards here, so the bar says what kind of game it is
     stats=[['2 players','one device'],['Friendly','no trades'],[ruleCountText().replace(' on',' rules'),'turned on']];
-    row=`<button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button><button class="btn full" id="heroGo">New rules and cards</button>`;
+    row=`<button class="btn full" id="heroGo">New rules and cards</button><button class="btn primary full" id="heroQuick" ${d?'':'disabled title="Play one game first"'}>Quick play</button>`;
   }else{
     // online uses the host's rules, so your own "random deck" setting doesn't apply here
     const dk=heroDeck(false),rj=readRejoin(),drj=rj?null:duoResumeInfo();
     h='Online';sub=esc(dk.sub)+' · Host picks the rules';side=dk.fan;
     stats=winStats(MATCH_XP.online[0],MATCH_SHARDS.online);
-    // a game this device was in when the app closed: one tap back in
-    // a 2v2 game this device was in, or hosted
-    row=(rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+
-      (drj?`<button class="btn primary full" id="heroDuoRejoin">${drj.host?'Resume':'Rejoin'} Crossroads game ${drj.code}</button>`:'')+
-      `<button class="btn ${rj||drj?'':'primary '}full" id="heroGo">Host a game</button><div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`;
+    // the code to join on top, the pink button at the bottom like Solo's Play
+    row=`<div class="joinrow"><input class="codein" id="heroCode" maxlength="5" placeholder="CODE" aria-label="Friend's game code" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="heroJoin">Join</button></div>`+
+      `<button class="btn ${rj||drj?'':'primary '}full" id="heroGo">Host a game</button>`+
+      // a game this device was in when the app closed: one tap back in
+      // a 2v2 game this device was in, or hosted
+      (rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+
+      (drj?`<button class="btn primary full" id="heroDuoRejoin">${drj.host?'Resume':'Rejoin'} Crossroads game ${drj.code}</button>`:'');
   }
   return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div>`+
     (stats.length?`<div class="hero-stats">${stats.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>`:'')+`<div class="hero-row">${row}</div>`;

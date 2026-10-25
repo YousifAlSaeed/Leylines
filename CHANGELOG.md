@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.11 (2026-10-25)
+- On the menu, Online has the code box on top and Host a game below it; Couch has Quick play at the bottom
+
 ## 0.30.10 (2026-10-25)
 - The Inbox has a Mark as seen button: the bell only counts new things after that
 
