@@ -428,10 +428,10 @@ setInterval(()=>{
 },30000);
 addEventListener('resize',()=>{if(stg.classList.contains('on'))fxFit()});
 
-/* ---------- gifts: packs a developer gave you from your profile (server/routes/gifts.js) ---------- */
+/* ---------- gifts: packs or shards a developer gave you from the control panel (server/routes/gifts.js, admin.js) ---------- */
 // SAVE.gifts: ids of the gifts already added, so none is added twice. The server keeps a gift until
 // a synced save has it: if the account's copy replaces this device's progress first, it's added again.
-// They arrive quietly: no message, the pack is just there with the others.
+// Packs arrive quietly: no message, the pack is just there with the others. Shards (from the control panel) say so.
 // wait: there may be gifts to fetch or clear (set by the pulse, signing in, and adding some)
 const GIFTS={busy:false,wait:true};
 async function giftsCheck(){
@@ -440,15 +440,20 @@ async function giftsCheck(){
   let list;
   try{list=(await api('/gifts')).gifts}catch(e){return}finally{GIFTS.busy=false}
   if(!ACCT.token||ACCT.conflict||!Array.isArray(list))return;
-  list=list.filter(g=>g&&Number.isInteger(g.id)&&PACKS[g.pack]);
+  // a pack, or shards from the control panel (pack 'shards')
+  const shards=g=>g.pack==='shards'&&Number.isInteger(g.shards)&&g.shards>0;
+  list=list.filter(g=>g&&Number.isInteger(g.id)&&(PACKS[g.pack]||shards(g)));
   const fresh=list.filter(g=>!SAVE.gifts.includes(g.id));
   // already in the account's copy (nothing left to sync): the server can let them go
   const done=ACCT.dirty?[]:list.filter(g=>SAVE.gifts.includes(g.id)).map(g=>g.id);
   if(done.length)api('/gifts/ack',{method:'POST',body:{ids:done}}).catch(()=>{});
   GIFTS.wait=fresh.length>0||done.length<list.length;
   if(!fresh.length)return;
-  fresh.forEach(g=>SAVE.packs.push({t:g.pack,src:'gift'}));
+  fresh.filter(g=>!shards(g)).forEach(g=>SAVE.packs.push({t:g.pack,src:'gift'}));
+  const sh=fresh.filter(shards).reduce((n,g)=>n+g.shards,0);
+  SAVE.shards+=sh;
   SAVE.gifts=[...SAVE.gifts,...fresh.map(g=>g.id)].slice(-100);save();
+  if(sh){toast(`The developers sent you ${shardsTxt(sh)}`,3500);if(typeof renderProfile==='function')renderProfile()}
   if($('#scr-menu').classList.contains('on'))renderPackTile();
   if($('#scr-packs').classList.contains('on'))renderPacks();
 }

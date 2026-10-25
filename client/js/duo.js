@@ -98,6 +98,7 @@ function duoAlt(){
    HOST
    ===================================================================== */
 async function duoHost(){
+  if(typeof onlinePaused==='function'&&onlinePaused())return;
   netClose(true);duoQuit();
   DUO.role='host';DUO.closing=false;DUO.took=false;DUO.me=0;DUO.ep=1;DUO.tok=duoNewTok();
   DUO.code=newCode();DUO.rules=duoLoadRules();DUO.invSeat={};DUO.phase='room';DUO.st=null;DUO.last=null;DUO.decks=[null,null,null,null];
@@ -1394,6 +1395,7 @@ $('#duoShare').onclick=()=>{
 };
 // Host a game (the menu and the Online screen): first pick 1v1 or Crossroads
 function hostPick(){
+  if(typeof onlinePaused==='function'&&onlinePaused())return; // the developers paused online play (control.js)
   if(!playerName()){openOnline();askName('Enter your name, then tap <b>Host a game</b>.');return}
   const box=modal(`<h2>Host a game</h2><p>What kind of game?</p><div class="hostpick">`+
     `<button class="hp" data-k="one"><b>1v1</b><span>You and one friend on the 3×3 board. You pick the rules and the trade.</span></button>`+

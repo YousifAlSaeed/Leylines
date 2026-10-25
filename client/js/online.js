@@ -101,6 +101,7 @@ $('#btnShare').onclick=()=>{
 /* ---------- hosting ---------- */
 // hosting opens the waiting room straight away; the code shows up there once the connection is made
 async function hostStart(draft){
+  if(typeof onlinePaused==='function'&&onlinePaused())return;
   clearRejoin();
   netClose(true);NET.closing=false;NET.role='host';NET.draft=!!draft;NET.code=null;NET.oppName='';NET.oppAv=null;NET.oppUser='';
   NET.want=newCode(); // picked now, so invites can go out before the connection is made (pulse.js)
@@ -189,6 +190,7 @@ function newSession(){NET.sid=Math.random().toString(36).slice(2,12);NET.out=[];
 /* ---------- joining ---------- */
 // patient: tries again this many times if the room isn't open yet (an invite can arrive a moment before its room does)
 async function joinGame(code,{patient=0}={}){
+  if(typeof onlinePaused==='function'&&onlinePaused())return; // the developers paused online play (control.js)
   code=(code||'').toUpperCase().replace(/[^A-Z]/g,'');
   if(code.length!==5){onStatus('Enter the 5-letter code from your friend.',true);return}
   // a join that got stuck (the phone went to another app halfway) doesn't block a new one

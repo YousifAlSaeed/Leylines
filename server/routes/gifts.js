@@ -35,10 +35,10 @@ export function giftsRouter(db, hub) {
     res.status(204).end();
   });
 
-  // → { gifts: [{ id, name, pack, at }] }. They stay until acknowledged.
+  // → { gifts: [{ id, name, pack, shards, at }] }: pack 'shards' is shards from the control panel (routes/admin.js). They stay until acknowledged.
   r.get('/', async (req, res) => {
     const rows = await db.all('SELECT * FROM gifts WHERE to_id = $u ORDER BY id', { $u: req.user.id });
-    res.json({ gifts: rows.map((g) => ({ id: Number(g.id), name: g.from_name, pack: g.pack, at: g.created_at })) });
+    res.json({ gifts: rows.map((g) => ({ id: Number(g.id), name: g.from_name, pack: g.pack, shards: Number(g.shards) || 0, at: g.created_at })) });
   });
 
   // { ids: [gift ids] } → 204. The game's synced save has these now.

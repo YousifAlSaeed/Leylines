@@ -32,7 +32,7 @@ export function pulseRouter(db, hub) {
   // { menu, away } → { boot, fr, fo, online: [usernames], away: [the online ones who minimised the game], alerts: [usernames of friends not online who get alerts], invites: [{ from, name, code, at (when it was sent: a new one each time it's sent again), left }], declined: [names] }
   r.post('/', async (req, res) => {
     const me = req.user.id;
-    if (hub.checkIn(me, req.body?.menu === true, req.body?.away === true)) await tellFriends(me);
+    if (hub.checkIn(me, req.body?.menu === true, req.body?.away === true, req.body?.ver)) await tellFriends(me);
     const mine = await friendsOf(me);
     const online = mine.filter((f) => hub.onMenu(f.id)).map((f) => f.username);
     const away = mine.filter((f) => hub.onMenu(f.id) && hub.isAway(f.id)).map((f) => f.username);

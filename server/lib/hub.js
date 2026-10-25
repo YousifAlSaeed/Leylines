@@ -16,7 +16,7 @@ export const MAX_INVITES = 5;        // waiting for any one player
 export function createHub(push = null) {
   const boot = crypto.randomBytes(6).toString('hex');
   const vers = new Map();     // user id → { fr, fo, gi }
-  const seen = new Map();     // user id → { at, menu, away } (away: the game is minimised or in the background)
+  const seen = new Map();     // user id → { at, menu, away, ver } (away: the game is minimised or in the background; ver: its version)
   const invites = new Map();  // user id → [{ fromId, from, name, code, at }]
   const declined = new Map(); // user id → [display names who said no]
   const friends = new Map();  // user id → [{ id, username }], until their friends change
@@ -78,9 +78,9 @@ export function createHub(push = null) {
       notify(id, { k: kind, v: v[kind] });
     },
     // → whether they became free, stopped being free, or went away or came back (their friends should hear)
-    checkIn(id, menu, away = false) {
+    checkIn(id, menu, away = false, ver = '') {
       const was = onMenu(id), wasAway = isAway(id);
-      seen.set(id, { at: Date.now(), menu: !!menu, away: !!away });
+      seen.set(id, { at: Date.now(), menu: !!menu, away: !!away, ver: typeof ver === 'string' ? ver.slice(0, 12) : '' });
       return was !== onMenu(id) || (onMenu(id) && wasAway !== !!away);
     },
     onMenu,
@@ -112,6 +112,11 @@ export function createHub(push = null) {
       }
     },
     newsVer: () => news,
+    // signed-in games for the control panel (routes/admin.js): in the game now, free to play, and on a version older than live
+    stats(older) {
+      const now = Date.now(), ids = [...seen.keys()].filter((id) => hasLine(id) || now - seen.get(id).at < AWAY_MS);
+      return { online: ids.length, free: ids.filter(onMenu).length, old: ids.filter((id) => older(seen.get(id).ver)).length };
+    },
     // the announcements changed: every open game loads them again
     newsChanged() { news++; for (const id of lines.keys()) notify(id, { k: 'nw', v: news }); },
     takeDeclined(id) { const l = declined.get(id) ?? []; declined.delete(id); return l; },

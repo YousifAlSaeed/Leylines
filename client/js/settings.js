@@ -19,12 +19,9 @@ function openSettings(){
   // the developers' themes, Frutiger Aero and Liquid glass: a row only developers get (save.js aeroOn, liquidOn).
   // Under Aero the theme picks its day or its night
   const themeSub=()=>aeroOn()?'Frutiger Aero: Light is day, Dark is night':'System follows your device';
-  const look=SAVE.aero?'aero':SAVE.liquid?'glass':'off';
   const box=modal(`<h2 class="nm2">Settings</h2><div class="setlist">${acctSettingsRow()}${alertsRow()}
     <div class="setrow"><span class="rt"><b>Theme</b><small id="setThemeSub">${themeSub()}</small></span><div class="seg" id="setTheme" role="group" aria-label="Theme">${
       [['system','System'],['dark','Dark'],['light','Light']].map(([k,l])=>`<button data-k="${k}" class="${th===k?'on':''}" aria-pressed="${th===k}">${l}</button>`).join('')}</div></div>
-    ${isDev()?`<div class="setrow"><span class="rt"><b>Themes</b><small>Frutiger Aero, or a menu of liquid glass. Only developers see this</small></span><div class="seg" id="setLook" role="group" aria-label="Themes">${
-      [['aero','Aero'],['glass','Glass'],['off','Off']].map(([k,l])=>`<button data-k="${k}" class="${look===k?'on':''}" aria-pressed="${look===k}">${l}</button>`).join('')}</div></div>`:''}
     <div class="setrow setcol"><span class="rt"><b>Your colour</b><small id="setColSub">${COL_NAME[myCol()]}: your cards everywhere. Red is always the other side</small></span><div class="colpick" id="setCol" role="group" aria-label="Your colour">${
       MY_COLS.map(c=>`<button class="dc-${c}${c===myCol()?' on':''}" data-col="${c}" aria-pressed="${c===myCol()}" aria-label="${COL_NAME[c]}" title="${COL_NAME[c]}"></button>`).join('')}</div></div>
     <div class="setrow"><span class="rt"><b>Menu background</b><small>${noMotion()?'Cards behind the menu, kept still: your device reduces motion':'Cards drifting behind the menu'}</small></span><div class="seg" id="setDrift" role="group" aria-label="Menu background">${
@@ -35,11 +32,6 @@ function openSettings(){
   box.querySelectorAll('#setTheme button').forEach(b=>b.onclick=()=>{
     SAVE.theme=b.dataset.k;save();applyTheme();sfx('click');
     box.querySelectorAll('#setTheme button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
-  });
-  box.querySelectorAll('#setLook button').forEach(b=>b.onclick=()=>{
-    SAVE.aero=b.dataset.k==='aero';SAVE.liquid=b.dataset.k==='glass';save();applyTheme();sfx('click');
-    box.querySelector('#setThemeSub').textContent=themeSub();
-    box.querySelectorAll('#setLook button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
   box.querySelectorAll('#setCol button').forEach(b=>b.onclick=()=>{
     if(SAVE.col===b.dataset.col)return;

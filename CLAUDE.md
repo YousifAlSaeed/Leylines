@@ -31,24 +31,22 @@ your change.
 
 The game has a hidden look, **Frutiger Aero**: glossy glass, bubbles, a summer
 sky by day and an aurora by night. Only developer accounts (`DEV_USERS`) and
-local copies can switch it on, from a Settings row nobody else sees. It lives in
-`client/css/aero.css` and `aeroOn()` (`client/js/save.js`).
+local copies can switch it on, from Looks in the control panel's My account
+(`client/js/control.js`). It lives in `client/css/aero.css` and `aeroOn()`
+(`client/js/save.js`).
 
 Players must not find out it exists, and `CHANGELOG.md` is shown in the game as
 What's new. So:
 
-- **Any change to Aero is logged in `CHANGELOG.md` as `- Small fixes`**, never
-  by name and never describing what changed. It still bumps the version (patch).
+- **Never put it in `CHANGELOG.md`**, and **don't bump the version** for a change
+  that only touches it. The owners will decide how to log it when Aero goes on sale.
 - Commit messages and pull requests on GitHub can describe it normally.
-- **Before committing anything that touches Aero, remind whoever you're working
-  with (Yousif or Jawad) of this rule**, and check the new changelog line says
-  only "Small fixes".
 
 ### Liquid glass (developers only, kept secret too)
 
 A second hidden look: the main menu and the phone's tab bar made of glass, like
-iOS 26. Developers pick it in the same Settings row as Aero (**Themes: Aero /
-Glass / Off**). It lives in `client/css/glass.css`, `client/js/glass.js` and
+iOS 26. Developers pick it in the same Looks row as Aero (**Normal / Aero /
+Glass**). It lives in `client/css/glass.css`, `client/js/glass.js` and
 `liquidOn()` (`client/js/save.js`).
 
 - **Never put it in `CHANGELOG.md`**, not even as "Small fixes", and **don't

@@ -9,7 +9,8 @@ import { requireAuth } from '../lib/sessions.js';
 export const TEAM = 'The Leylines team';
 const isDevUser = (u) => config.devUsers.includes(u.username.toLowerCase());
 
-export function newsRouter(db, hub, push) {
+// boosts: lib/boosts.js, the live event that comes with the posts; maint: lib/maint.js, the Server section's switches
+export function newsRouter(db, hub, push, boosts, maint) {
   const r = Router();
   const news = createNews(db, hub, push);
   const limit = rateLimit({ windowMs: 60 * 60 * 1000, max: 100, message: 'Too many changes. Try again later.' });
@@ -24,12 +25,14 @@ export function newsRouter(db, hub, push) {
   }
   const idOf = (req) => (/^\d{1,9}$/.test(req.params.id) ? Number(req.params.id) : -1);
 
-  // → { posts: [showing now, newest first], next: when the next one starts (ms) or null, v }. From memory.
+  // → { posts: [showing now, newest first], boost: the live event or null, next: when the next post or event starts (ms)
+  // or null, pause, reload, gifts (lib/maint.js), v }. From memory
   r.get('/', async (req, res) => {
-    await news.ready;
-    const now = Date.now();
+    await Promise.all([news.ready, boosts?.ready, maint?.ready]);
+    const now = Date.now(), next = [news.next(now), boosts?.next(now)].filter((t) => t != null);
     res.set('Cache-Control', 'no-store');
-    res.json({ posts: news.live(now), next: news.next(now), v: hub?.newsVer?.() ?? 0 });
+    res.json({ posts: news.live(now), boost: boosts?.current(now) ?? null, next: next.length ? Math.min(...next) : null,
+      ...(maint ? maint.live(now) : { pause: null, reload: null, gifts: [] }), v: hub?.newsVer?.() ?? 0 });
   });
 
   // → { posts: [every post, drafts and ended ones too], signs: [names a post can be from], now }

@@ -75,7 +75,6 @@
 .ann-big p.ann-by{text-align:center}
 
 /* writing them (developers only) */
-.wrap.an-wrap{max-width:1180px}
 .an-admin{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 .an-side{display:flex;flex-direction:column;gap:16px;min-width:0}
 .an-main{min-width:0}

@@ -103,7 +103,7 @@ async function alertsTry(path){
   if(r.failed.length)throw new Error(`The alert didn't go through (${r.failed[0]}).`);
   return r;
 }
-// Settings → Alerts → Test: the server sends one to each of your devices and says how it went
+// the control panel's Alert test (control.js): the server sends one to each of your devices and says how it went
 async function alertsTest(){
   const r=await alertsTry('/push/test');
   toast(r.devices>1?`Test alert sent to your ${r.devices} devices`:'Test alert sent. It should show up in a moment.',3500);
@@ -115,9 +115,7 @@ function alertsRow(){
   return `<div class="setrow setalerts" id="setAlerts" hidden><span class="rt"><b>Alerts</b><small id="alertsSub">Invites, friend requests, match news and a daily reminder, even with the game closed</small></span><span id="alertsCtl"></span></div>`+
     // the evening reminder (server/lib/dailyAlerts.js): on unless the player turns it off. It's in the save, so the server can read it
     `<div class="setrow setalerts" id="setDailyAlert" hidden><span class="rt"><b>Daily reminder</b><small>One alert in the evening if your daily pack or Daily challenges are still waiting</small></span><span id="dailyAlertCtl"><div class="seg" id="dailyAlertSeg" role="group" aria-label="Daily reminder">${
-      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div>`+
-      // Test: developer accounts only (and a local copy of the game)
-      `${isDev()?'<button class="btn small" id="dailyAlertTest">Test</button>':''}</span></div>`;
+      [[1,'On'],[0,'Off']].map(([k,l])=>`<button data-k="${k}" class="${dailyAlertOn()==!!k?'on':''}" aria-pressed="${dailyAlertOn()==!!k}">${l}</button>`).join('')}</div></span></div>`;
 }
 const dailyAlertOn=()=>SAVE.dailyAlert!==false;
 function dailyAlertWire(box){
@@ -127,15 +125,8 @@ function dailyAlertWire(box){
     save();sfx('click');
     box.querySelectorAll('#setDailyAlert .seg button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b)});
   });
-  const t=box.querySelector('#dailyAlertTest');
-  if(t)t.onclick=async()=>{
-    if(ALERTS.busy)return;
-    sfx('click');ALERTS.busy=true;t.disabled=true;
-    try{await dailyAlertTest()}catch(e){toast(e.message,5000)}
-    finally{ALERTS.busy=false;t.disabled=false}
-  };
 }
-// Settings → Daily reminder → Test: the server sends this account's reminder now (a sample when nothing's waiting)
+// the control panel's Reminder test (control.js): the server sends this account's reminder now (a sample when nothing's waiting)
 async function dailyAlertTest(){
   const r=await alertsTry('/push/test-daily');
   toast(r.waiting?'Daily reminder sent. It should show up in a moment.':'Nothing is waiting today, so you got a sample. It should show up in a moment.',4000);
@@ -153,25 +144,16 @@ async function alertsPaint(box){
   const draw=on=>{
     if(daily)daily.hidden=!on; // only with alerts on for this device
     say(on?'On for this device. Invites, friend requests, match news and a daily reminder reach you even with the game closed.':'Invites, friend requests, match news and a daily reminder, even with the game closed',
-      `<div class="seg" id="alertsSeg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`+
-      // Test: developer accounts only (and a local copy of the game)
-      (on&&isDev()?'<button class="btn small" id="alertsTest">Test</button>':''));
+      `<div class="seg" id="alertsSeg" role="group" aria-label="Alerts">${[['off','Off'],['on','On']].map(([k,l])=>`<button data-k="${k}" class="${(k==='on')===on?'on':''}" aria-pressed="${(k==='on')===on}">${l}</button>`).join('')}</div>`);
     ctl.querySelectorAll('.seg button').forEach(b=>b.onclick=async()=>{
       if(ALERTS.busy||(b.dataset.k==='on')===on)return;
       sfx('click');ALERTS.busy=true;ctl.querySelectorAll('button').forEach(x=>x.disabled=true);
       try{
-        if(b.dataset.k==='on'){await alertsOn();toast(isDev()?'Alerts are on. Tap Test to try one.':'Alerts are on',3000)}
+        if(b.dataset.k==='on'){await alertsOn();toast('Alerts are on',3000)}
         else{await alertsOff();toast('Alerts are off')}
       }catch(e){toast(e.message,7000)}
       finally{ALERTS.busy=false;if(box.isConnected)alertsPaint(box)}
     });
-    const t=ctl.querySelector('#alertsTest');
-    if(t)t.onclick=async()=>{
-      if(ALERTS.busy)return;
-      sfx('click');ALERTS.busy=true;t.disabled=true;
-      try{await alertsTest()}catch(e){toast(e.message,5000)}
-      finally{ALERTS.busy=false;t.disabled=false}
-    };
   };
   // the switch shows at once from what this device remembers, then from what the browser says
   draw(alertsMarked()&&Notification.permission==='granted');

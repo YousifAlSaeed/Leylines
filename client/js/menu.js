@@ -282,8 +282,12 @@ function localFan(d){
   return `<div class="vsfan" aria-hidden="true"><div class="fan">${two(0,myCol())}</div><em>vs</em><div class="fan">${two(1,'red')}</div></div>`;
 }
 // the bar of 3 numbers above a mode's buttons: [value, label]. XP, shards, then one more that fits the mode
-const shardsToday=()=>[`${shd()}${shardDay().n}/${SHARD_CAP}`,'shards today'];
-const winStats=(xp,sh)=>[[`+${xp}`,'XP a win'],[`${shd()}+${sh}`,'shards a win'],shardsToday()];
+const shardsToday=()=>[`${shd()}${shardDay().n}/${shardCap()}`,'shards today'];
+// during a live event (store.js boostOn) the numbers are what a win pays now, each with its multiple
+const boostTag=n=>n>1?`<em class="hero-x">×${n}</em>`:'';
+const winStats=(xp,sh)=>{const bx=boostXp(),bs=boostSh();return [[`+${xp*bx}${boostTag(bx)}`,'XP a win'],[`${shd()}+${sh*bs}${boostTag(bs)}`,'shards a win'],shardsToday()]};
+// the live event's chip: what it is and how long it has left (control.js boostName, boostLeft)
+const boostChip=()=>{const b=boostOn();return b?`<span class="hero-boost"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span>${boostName(b)} · <b class="hero-left">${boostLeft(b)}</b> left</span></span>`:''};
 // what the Play card shows for one mode. Every mode has the same parts: a title with a picture,
 // the bar of 3 numbers, then the controls (two rows), so no mode leaves a gap
 function heroPane(m){
@@ -316,7 +320,7 @@ function heroPane(m){
       (rj?`<button class="btn primary full" id="heroRejoin">Rejoin game ${rj.code}</button>`:'')+
       (drj?`<button class="btn primary full" id="heroDuoRejoin">${drj.host?'Resume':'Rejoin'} Crossroads game ${drj.code}</button>`:'');
   }
-  return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p></div>${side}</div>`+
+  return `<div class="hero-top"><div><h2 class="hero-h">${h}</h2><p class="hero-sub">${sub}</p>${m==='local'?'':boostChip()}${m==='online'?pauseChip():''}</div>${side}</div>`+
     (stats.length?`<div class="hero-stats">${stats.map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('')}</div>`:'')+`<div class="hero-row">${row}</div>`;
 }
 // the Play card: a 3-way mode switch, then what that mode needs

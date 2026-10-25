@@ -23,6 +23,17 @@ const shd=()=>'<i class="shd" aria-hidden="true"></i>';
 const fmtSh=n=>n.toLocaleString('en-US');
 const shardsTxt=n=>`${fmtSh(n)} shard${n===1?'':'s'}`;
 
+/* ---------- live events (the control panel, control.js) ---------- */
+// BOOST.now: the event the developers started, from the server with the announcements (announce.js annLoad):
+// {id, xp, shards, raise, start, end}. While it runs, CPU and online matches pay its multiple of XP (profile.js recordMatch)
+// and of shards, and with raise the daily limit grows by the same. The Daily's own rewards stay as they are
+const BOOST={now:null};
+function boostOn(){const b=BOOST.now,t=annNow();return b&&b.start<=t+ANN_GRACE&&b.end>t?b:null}
+const boostXp=()=>{const b=boostOn();return b?b.xp:1};
+const boostSh=()=>{const b=boostOn();return b?b.shards:1};
+// today's limit on shards from matches
+const shardCap=()=>{const b=boostOn();return b&&b.raise?SHARD_CAP*b.shards:SHARD_CAP};
+
 /* ---------- earning ---------- */
 // today's shards from matches {at: game day, n}. Without the server's time they count toward the last known day
 // (or the first day the clock comes back), so playing offline can't get round the limit.
@@ -33,15 +44,15 @@ function shardDay(){
   else if(t&&d.at<t)d=SAVE.shardDay={at:t,n:0};
   return d;
 }
-// recordMatch (profile.js) calls this; the caller saves. Returns {sh: shards given, capped: the limit cut it short}
+// recordMatch (profile.js) calls this; the caller saves. Returns {sh: shards given, capped: the limit cut it short, bs: a live event's multiple}
 function matchShards(res,o={}){
-  if(o.left)return {sh:0,capped:false};
-  const base=o.online?MATCH_SHARDS.online:MATCH_SHARDS[o.diff]||0;
-  const full=res==='w'?base:res==='d'?Math.round(base/2):o.online?ONLINE_LOSS:0;
-  if(!full)return {sh:0,capped:false};
-  const d=shardDay(),sh=Math.min(full,Math.max(0,SHARD_CAP-d.n));
+  if(o.left)return {sh:0,capped:false,bs:1};
+  const base=o.online?MATCH_SHARDS.online:MATCH_SHARDS[o.diff]||0,bs=o.daily?1:boostSh();
+  const full=(res==='w'?base:res==='d'?Math.round(base/2):o.online?ONLINE_LOSS:0)*bs;
+  if(!full)return {sh:0,capped:false,bs};
+  const d=shardDay(),sh=Math.min(full,Math.max(0,shardCap()-d.n));
   d.n+=sh;SAVE.shards+=sh;
-  return {sh,capped:sh<full};
+  return {sh,capped:sh<full,bs};
 }
 
 /* ---------- the shop's day ---------- */
@@ -232,13 +243,13 @@ function renderStore(){
 
   const d=shardDay(),pity=Math.min(PITY,SAVE.pity);
   const ring=(n,max,col,label)=>`<div class="st-ring-w"><div class="st-ring" style="--p:${(Math.min(n,max)/max*100).toFixed(1)};--rc:${col}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${n}"><span><b>${fmtSh(n)}</b><small>of ${max}</small></span></div><div class="st-rl">${label}</div></div>`;
-  const earned=`<div class="st-rings">${ring(d.n,SHARD_CAP,'var(--shard)','Shards from matches today')}${ring(pity,PITY,'var(--st-gold)','5★ guarantee')}</div>
+  const earned=`<div class="st-rings">${ring(d.n,shardCap(),'var(--shard)','Shards from matches today')}${ring(pity,PITY,'var(--st-gold)','5★ guarantee')}</div>
     <dl class="st-rates">
       <div><dt>Solo win</dt><dd>${MATCH_SHARDS.easy} · ${MATCH_SHARDS.normal} · ${MATCH_SHARDS.hard}</dd></div>
       <div><dt>Online</dt><dd>Win ${MATCH_SHARDS.online} · Draw ${MATCH_SHARDS.online/2} · Loss ${ONLINE_LOSS}</dd></div>
       <div><dt>Daily</dt><dd>Duel ${DAILY_REWARD.duel.shards} · Puzzle ${DAILY_REWARD.puzzle.shards} · Gauntlet ${DAILY_REWARD.gauntlet[0].shards}</dd></div>
     </dl>
-    <p class="st-note">Matches pay up to ${SHARD_CAP} shards a day, and the Daily pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
+    <p class="st-note">Matches pay up to ${shardCap()} shards a day, and the Daily pays on top. Every pack you open adds to the guarantee (${pityPts()}): the one that reaches ${PITY} ends with a 5★.</p>`;
   // both tabs are drawn, and switching only shows one or the other (the market isn't drawn again)
   const tab=(k,html)=>`<div class="st-pane" data-pane="${k}"${stPkTab===k?'':' hidden'}>${html}</div>`;
   const packs=`<div class="seg st-seg" id="stSeg" role="group" aria-label="Pack counter">${[['packs','Packs'],['shards','Shards']].map(([k,l])=>

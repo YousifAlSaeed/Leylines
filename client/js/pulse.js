@@ -27,7 +27,8 @@ async function pulse(){
   if(PULSE.busy){PULSE.again=true;return}
   PULSE.busy=true;PULSE.at=Date.now();
   let r;
-  try{r=await api('/pulse',{method:'POST',body:{menu:isFree(),away:document.hidden},timeout:10000})}
+  // ver: the control panel counts games on older versions (server/routes/admin.js)
+  try{r=await api('/pulse',{method:'POST',body:{menu:isFree(),away:document.hidden,ver:VERSION},timeout:10000})}
   catch(e){if(e.status===401)acctSignedOut('Your session ended. Sign in again.');return}
   finally{PULSE.busy=false;if(PULSE.again){PULSE.again=false;setTimeout(pulse,0)}}
   if(!ACCT.user)return;

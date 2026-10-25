@@ -55,6 +55,7 @@
 <link rel="stylesheet" href="css/daily.css">
 <link rel="stylesheet" href="css/leaderboard.css">
 <link rel="stylesheet" href="css/announce.css">
+<link rel="stylesheet" href="css/control.css">
 <link rel="stylesheet" href="css/store.css">
 <link rel="stylesheet" href="css/duo.css">
 <link rel="stylesheet" href="css/draft.css">
@@ -318,10 +319,10 @@
 </section>
 
 <!-- STORE -->
-<!-- ANNOUNCEMENTS: where developers write posts to every player (announce.js) -->
-<section id="scr-annc" class="screen">
-  <div class="topbar"><button class="iconbtn" id="annBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Announcements</h2></div>
-  <div class="wrap an-wrap" id="annBody"></div>
+<!-- CONTROL PANEL: every developer tool, developers only (control.js; Announcements: announce.js) -->
+<section id="scr-ctl" class="screen">
+  <div class="topbar"><button class="iconbtn" id="ctlBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Control panel</h2></div>
+  <div class="wrap ctl-wrap"><nav class="ctl-nav" id="ctlNav" aria-label="Control panel"></nav><div class="ctl-body" id="ctlBody"></div></div>
 </section>
 
 <section id="scr-store" class="screen">
@@ -444,6 +445,7 @@
 <script src="js/pulse.js"></script>
 <script src="js/alerts.js"></script>
 <script src="js/announce.js"></script>
+<script src="js/control.js"></script>
 <script src="js/leaderboard.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/owl.js"></script>

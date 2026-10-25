@@ -165,9 +165,10 @@ function freshToast(){
 function recordMatch(res,o={}){
   const k=(o.online?'o':'')+res,rec=!o.daily;
   if(rec)SAVE.stats[k]=(SAVE.stats[k]||0)+1;
-  const lv0=levelOf(SAVE.xp),xp=MATCH_XP[o.online?'online':o.diff]||MATCH_XP.normal,gain=o.left?0:xp['wdl'.indexOf(res)];
+  // a live event multiplies the XP, but not a Daily game's (store.js boostXp)
+  const lv0=levelOf(SAVE.xp),xp=MATCH_XP[o.online?'online':o.diff]||MATCH_XP.normal,bx=o.daily?1:boostXp(),gain=o.left?0:xp['wdl'.indexOf(res)]*bx;
   SAVE.xp+=gain;
-  const packs=grantPacks(SAVE),{sh,capped}=matchShards(res,o);
+  const packs=grantPacks(SAVE),{sh,capped,bs}=matchShards(res,o);
   // a draw doesn't break a streak, it just doesn't add to it
   if(rec){
     if(res==='w'){SAVE.streak++;SAVE.best=Math.max(SAVE.best,SAVE.streak)}else if(res==='l')SAVE.streak=0;
@@ -185,7 +186,7 @@ function recordMatch(res,o={}){
     for(const k of ['elemental','reverse','chaos','random'])if(o.rules&&o.rules[k])earn(k);
   }
   profCheck();save();
-  return {gain,lv0,lv:levelOf(SAVE.xp),packs,sh,capped};
+  return {gain,lv0,lv:levelOf(SAVE.xp),packs,sh,capped,bx,bs};
 }
 // a move's flips, for the badges (only your own moves in CPU and online matches)
 function profFlips(ev){
@@ -196,8 +197,10 @@ function profFlips(ev){
 }
 function rewardHTML(r){
   const up=r.lv>r.lv0,newTitle=titleOf(r.lv)!==titleOf(r.lv0);
-  return `<div class="pf-reward">${r.gain?`<span class="pf-gain">+${r.gain} XP</span>`:''}`+
-    (r.sh?`<span class="pf-shard">${shd()}+${r.sh}</span>`:'')+(r.capped?'<span class="pf-cap">Daily shard limit reached</span>':'')+
+  // a live event's multiple, beside what it multiplied
+  const x=n=>n>1?`<em class="pf-x">×${n} event</em>`:'';
+  return `<div class="pf-reward">${r.gain?`<span class="pf-gain">+${r.gain} XP${x(r.bx)}</span>`:''}`+
+    (r.sh?`<span class="pf-shard">${shd()}+${r.sh}${x(r.bs)}</span>`:'')+(r.capped?'<span class="pf-cap">Daily shard limit reached</span>':'')+
     (up?`<span class="pf-up">Level ${r.lv}${newTitle?' · '+titleOf(r.lv):''}</span>`:'')+
     Object.entries((r.packs||[]).reduce((n,k)=>(n[k.t]=(n[k.t]||0)+1,n),{})).map(([t,n])=>`<span class="pf-pack">🎁 ${PACKS[t].name} pack${n>1?' ×'+n:''}</span>`).join('')+`</div>`+freshHTML();
 }
@@ -450,21 +453,14 @@ function renderProfilePage(force){
     else acct=`<section class="pf-card"><h3>Account</h3>`+(ACCT.up
       ?`<p class="pf-hint left">Make an account to keep your cards, stats and badges on every device, and to share your profile.</p><div class="pf-two"><button class="btn primary" id="pfUp">Create account</button><button class="btn" id="pfIn">Sign in</button></div>`
       :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+resetRow+`</section>`;
-    // developer tools: only for accounts in the server's DEV_USERS list, or on a local copy of the game
+    // developer tools, all in the control panel (control.js): only for accounts in the server's DEV_USERS list, or on a local copy of the game
     if(isDev())dev=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
-      ${API!=null?`<div class="pf-row pf-ann"><span class="rt"><b>Announcements</b><small>${u&&u.dev?'Write to every player: a note, a banner on the menu or a popup.':'Sign in with a developer account to write to players.'}</small></span>${u&&u.dev?'<button class="btn small primary" id="pfAnn">Open</button>':''}</div>`:''}
-      <div class="pf-row"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection.</small></span>
-        <div class="seg" id="pfUnlock" role="group" aria-label="Unlock all cards">${[[false,'Off'],[true,'On']].map(([k,l])=>
-          `<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
-      <div class="pf-row"><span class="rt"><b>Level up</b><small>Jump to level ${levelOf(SAVE.xp)+1} and get its pack.</small></span><button class="btn small" id="pfLvUp">+1 level</button></div>
-      <div class="pf-row"><span class="rt"><b>Daily pack</b><small>Make today's daily pack ready again.</small></span><button class="btn small" id="pfDaily">Refill</button></div>
-      <div class="pf-row"><span class="rt"><b>Screen info</b><small>Sizes this device reports, for fixing layout on phones.</small></span><button class="btn small" id="pfScreen">Show</button></div>
+      <div class="pf-row"><span class="rt"><b>Control panel</b><small>${u&&u.dev?'Live events, announcements, players and your testing tools.':'Your testing tools. Sign in with a developer account for the rest.'}</small></span><button class="btn small primary" id="pfCtl">Open</button></div>
       </section>`;
   }
-  // developer accounts can give a pack to the player they're looking at (server/routes/gifts.js)
-  else if(u&&ACCT.token&&ACCT.user&&ACCT.user.dev)acct=`<section class="pf-card pf-dev"><h3>Developer <em>Give packs</em></h3>
-    <p class="pf-hint left">Each tap sends @${esc(u.username)} one pack. It arrives on their next check-in.</p>
-    <div class="pf-gift">${Object.keys(PACKS).map(t=>`<button class="btn small" data-gift="${t}">+1 ${PACKS[t].name}</button>`).join('')}</div></section>`;
+  // developer accounts manage the player they're looking at from the control panel's Players (control.js)
+  else if(u&&ACCT.token&&ACCT.user&&ACCT.user.dev)acct=`<section class="pf-card pf-dev"><h3>Developer</h3>
+    <div class="pf-row"><span class="rt"><b>Control panel</b><small>Give @${esc(u.username)} packs or shards, change their name or sign them out.</small></span><button class="btn small primary" id="pfCtlP">Open</button></div></section>`;
 
   // match history: yours, or theirs from the server (null when they hid it)
   const hist=()=>mine?SAVE.history:s.history===undefined?[]:s.history;
@@ -475,17 +471,11 @@ function renderProfilePage(force){
   histWire(hist,mine,name);
   const on=(sel,fn)=>$$('#pfBody '+sel).forEach(b=>b.onclick=()=>{sfx('click');fn(b)});
   on('.bg-card',c=>badgeGroup(s,mine,+c.dataset.g));
-  on('[data-gift]',b=>{const t=b.dataset.gift;b.disabled=true;
-    api('/gifts',{method:'POST',body:{to:u.username,pack:t}}).then(()=>toast(`Sent ${aPack(t)} to ${u.displayName}.`)).catch(e=>toast(e.message,3000)).finally(()=>b.disabled=false)});
+  on('#pfCtlP',()=>openControl('players',u.username));
   if(!mine)return;
   on('#pfAv',pickAvatar);on('[data-pin]',pickShowcase);on('#pfColl',openCollection);
   on('#pfShare',profShare);on('#pfJoin',()=>openAuth('up'));on('#pfUp',()=>openAuth('up'));on('#pfIn',()=>openAuth('in'));
   on('#pfName',editName);on('#pfEmail',editEmail);on('#pfPass',editPassword);on('#pfOut',acctSignOut);on('#pfDel',deleteAccount);
   on('#pfReset',()=>confirmReset(renderProfilePage));
-  on('#pfUnlock button',b=>{const v=b.dataset.k==='true';if(!!SAVE.unlockAll===v)return;SAVE.unlockAll=v;save();renderProfilePage();toast(v?'All cards unlocked.':'Back to your own collection.')});
-  on('#pfAnn',openAnnAdmin);
-  on('#pfLvUp',()=>{const lv=levelOf(SAVE.xp)+1;SAVE.xp=lvlXp(lv);const got=grantPacks(SAVE);profCheck();save();renderProfile();renderProfilePage();
-    toast(`Level ${lv}`+(got.length?` · ${PACKS[got[0].t].name} pack added`:''));freshToast()});
-  on('#pfScreen',screenInfo);
-  on('#pfDaily',()=>{SAVE.daily={at:yesterday(),n:SAVE.daily?SAVE.daily.n:0};save();toast('Daily pack is ready.')});
+  on('#pfCtl',()=>openControl());
 }

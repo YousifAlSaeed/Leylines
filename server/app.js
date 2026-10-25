@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'node:fs';
 import path from 'node:path';
 import { authRouter } from './routes/auth.js';
 import { createHub } from './lib/hub.js';
@@ -8,6 +9,10 @@ import { forfeitsRouter } from './routes/forfeits.js';
 import { friendsRouter } from './routes/friends.js';
 import { giftsRouter } from './routes/gifts.js';
 import { leaderboardRouter } from './routes/leaderboard.js';
+import { adminRouter } from './routes/admin.js';
+import { createBoosts } from './lib/boosts.js';
+import { watchDb } from './lib/dbWatch.js';
+import { createMaint } from './lib/maint.js';
 import { meRouter } from './routes/me.js';
 import { newsRouter } from './routes/news.js';
 import { pulseRouter } from './routes/pulse.js';
@@ -17,6 +22,11 @@ import { usersRouter } from './routes/users.js';
 // pushSend: replaces the real push delivery (tests)
 export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, pushSend }) {
   const app = express();
+  const started = Date.now();
+  watchDb(db); // counts the database's questions for the control panel (lib/dbWatch.js)
+  // the game's version, from the file the game itself reads (client/js/version.js)
+  let live = '';
+  try { live = /VERSION='([\d.]+)'/.exec(fs.readFileSync(path.join(clientDir, 'js/version.js'), 'utf8'))?.[1] ?? ''; } catch { /* unknown */ }
   const push = createPusher(db, { send: pushSend }); // push alerts (lib/push.js), null without VAPID keys
   const hub = createHub(push); // presence, invites and change counters (lib/hub.js)
   app.locals.dailyAlerts = startDailyAlerts(db, push, hub, { timer: !pushSend }); // the evening reminder (lib/dailyAlerts.js)
@@ -75,7 +85,10 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, 
   api.use('/pulse', pulseRouter(db, hub));
   api.use('/push', pushRouter(db, push, app.locals.dailyAlerts));
   api.use('/leaderboard', leaderboardRouter(db));
-  api.use('/news', newsRouter(db, hub, push));
+  const boosts = createBoosts(db, hub); // live events: ×2 or ×3 XP and shards (lib/boosts.js)
+  const maint = createMaint(db, hub); // pausing online play, asking older games to reload, gifts for everyone (lib/maint.js)
+  api.use('/news', newsRouter(db, hub, push, boosts, maint));
+  api.use('/admin', adminRouter(db, hub, boosts, { maint, push, live, started }));
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   // malformed JSON and other request errors come back as JSON, not an HTML page
   api.use((err, req, res, next) => {

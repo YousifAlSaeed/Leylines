@@ -19,6 +19,8 @@ export async function openSqlite(file) {
   if (userCols.length && !userCols.includes('email_hash')) db.run('ALTER TABLE users ADD COLUMN email_hash TEXT');
   const boardCols = cols('leaderboard');
   if (boardCols.length && !boardCols.includes('v')) db.run('ALTER TABLE leaderboard ADD COLUMN v INTEGER NOT NULL DEFAULT 0');
+  const giftCols = cols('gifts');
+  if (giftCols.length && !giftCols.includes('shards')) db.run('ALTER TABLE gifts ADD COLUMN shards INTEGER NOT NULL DEFAULT 0');
   db.exec(SCHEMA);
 
   function persist() {

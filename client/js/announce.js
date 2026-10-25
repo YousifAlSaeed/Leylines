@@ -11,7 +11,7 @@
    The megaphone lists every post showing now. What's been read, closed
    and popped up is kept on this device. The posts come with the game's
    first check and again when the server says they changed (pulse.js).
-   Developers write them from the Developer card on their profile.
+   Developers write them in the control panel's Announcements (control.js).
    ===================================================================== */
 const ANN={posts:[],at:0,nextT:0,endT:0,barT:0,barReady:false,busy:null};
 const ANN_KEY='leylines.news';
@@ -54,6 +54,8 @@ function annLoad(){
       const r=await api('/news',{timeout:10000});
       ANN.posts=(Array.isArray(r.posts)?r.posts:[]).filter(p=>p&&Number.isInteger(p.id)&&typeof p.title==='string'&&typeof p.body==='string'&&Array.isArray(p.show));
       ANN.at=Date.now();
+      boostSet(r.boost); // a live event comes with them (control.js)
+      ctlLive(r); // and the Server section's switches: online play paused, reload, gifts for everyone (control.js)
       // a post scheduled for later: ask again when it starts (only while the game is open)
       clearTimeout(ANN.nextT);
       const w=Number(r.next)-annNow();
@@ -137,6 +139,7 @@ ANN_WIDE.addEventListener?.('change',annBar);
 
 // a Big post pops up once, on the menu, when nothing else is open. A new player sees the tutorial's welcome first
 function annBigMaybe(){
+  ctlReloadMaybe(); // "a new version is ready" waits for the same moment (control.js)
   if(!SAVE.tut||G||!$('#scr-menu').classList.contains('on')||$('#modal').classList.contains('on')||stg.classList.contains('on'))return;
   const s=annSeen(),p=annShown().find(x=>x.show.includes('big')&&!s.big.includes(x.id));
   if(!p)return;
@@ -161,25 +164,28 @@ const annBlank=()=>({id:null,title:'',body:'',show:['banner'],kind:'update',who:
 const annStatus=(p,now=annNow())=>p.draft?'draft':p.end<=now?'ended':p.start>now+ANN_GRACE?'soon':'live';
 const ANN_ST={live:['Live','ok'],soon:['Scheduled','warn'],draft:['Draft',''],ended:['Ended','']};
 
-async function openAnnAdmin(){
-  show('annc');$('#scr-annc').scrollTop=0;
+// the megaphone's Write a post: the control panel at its Announcements
+function openAnnAdmin(){openControl('news')}
+// the control panel's Announcements section, drawn in #ctlBody (control.js)
+async function annSection(){
   ANA.mode='list';ANA.err='';
-  $('#annBody').innerHTML='<p class="pf-hint"><span class="spin"></span> Loading posts…</p>';
+  $('#ctlBody').innerHTML='<p class="pf-hint"><span class="spin"></span> Loading posts…</p>';
   try{
     const r=await api('/news/all');
     ANA.posts=Array.isArray(r.posts)?r.posts:[];ANA.signs=Array.isArray(r.signs)?r.signs:[];
   }catch(e){
-    $('#annBody').innerHTML=`<p class="pf-hint">${esc(e.message)}</p><button class="btn" type="button" id="annRetry">Try again</button>`;
-    $('#annRetry').onclick=()=>{sfx('click');openAnnAdmin()};return;
+    if(CTL.sec!=='news')return;
+    $('#ctlBody').innerHTML=`<p class="pf-hint">${esc(e.message)}</p><button class="btn" type="button" id="annRetry">Try again</button>`;
+    $('#annRetry').onclick=()=>{sfx('click');annSection()};return;
   }
-  ANA.f=annBlank();annAdmin();
+  if(CTL.sec==='news'){ANA.f=annBlank();annAdmin()}
 }
 // a post from the list into the form: edit it, or (copy) start a new one from it
 function annFill(p,copy){
   const now=annNow(),live=!copy&&!p.draft&&p.start<=now+ANN_GRACE;
   ANA.f={id:copy?null:p.id,title:p.title,body:p.body,show:[...p.show],kind:p.kind,who:p.who,by:ANA.signs.includes(p.by)?p.by:ANA.signs[0]||'',alert:copy?false:p.alert,
     start:copy||live?'':toLocal(p.start),end:toLocal(copy||p.end<=now?now+3*DAY_MS:p.end),live,keep:live?p.start:null};
-  ANA.mode='form';ANA.err='';annAdmin();$('#scr-annc').scrollTop=0;
+  ANA.mode='form';ANA.err='';annAdmin();$('#scr-ctl').scrollTop=0;
 }
 function annFormHTML(){
   const f=ANA.f,tog=(on,attr,label,sub)=>`<button type="button" class="an-tog${on?' on':''}" ${attr} aria-pressed="${on}"><b>${label}</b>${sub?`<small>${sub}</small>`:''}</button>`;
@@ -229,8 +235,9 @@ function annDraft(){
 }
 function annAdmin(){
   const f=ANA.f;
-  $('#annBody').innerHTML=`<div class="an-admin" data-mode="${ANA.mode}"><div class="an-main">${annFormHTML()}</div><div class="an-side"><div id="anPrevBox">${annPreviewHTML()}</div>${annPostsHTML()}</div></div>`;
-  const B=$('#annBody');
+  if(CTL.sec!=='news')return;
+  $('#ctlBody').innerHTML=`<div class="an-admin" data-mode="${ANA.mode}"><div class="an-main">${annFormHTML()}</div><div class="an-side"><div id="anPrevBox">${annPreviewHTML()}</div>${annPostsHTML()}</div></div>`;
+  const B=$('#ctlBody');
   const counts=()=>{$('#anTl').textContent=`${60-f.title.length} left`;$('#anBl').textContent=`${400-f.body.length} left`};
   const prev=()=>{$('#anPrevBox').innerHTML=annPreviewHTML();const b=$('#anBig');if(b)b.onclick=()=>{sfx('click');annBig(annDraft(),true)};
     const go=$('#anGo'),later=!f.live&&f.start&&fromLocal(f.start)>annNow()+ANN_GRACE;go.textContent=f.id&&f.live?'Save changes':later?'Schedule':'Post now'};
@@ -253,7 +260,7 @@ function annAdmin(){
   $('#anGo').onclick=()=>annSave(false);
   $('#anPrev').onclick=()=>{sfx('click');$('#anPrevBox').scrollIntoView({behavior:'smooth',block:'start'})};
   const nw=$('#anNew');if(nw)nw.onclick=()=>{sfx('click');ANA.f=annBlank();ANA.err='';annAdmin()};
-  $('#anNewPost').onclick=()=>{sfx('click');ANA.f=annBlank();ANA.mode='form';ANA.err='';annAdmin();$('#scr-annc').scrollTop=0};
+  $('#anNewPost').onclick=()=>{sfx('click');ANA.f=annBlank();ANA.mode='form';ANA.err='';annAdmin();$('#scr-ctl').scrollTop=0};
   B.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{sfx('click');const p=ANA.posts.find(x=>x.id===+b.dataset.id);if(!p)return;
     const a=b.dataset.act;
     if(a==='edit')annFill(p,false);
@@ -270,7 +277,7 @@ async function annSave(draft){
   try{
     await api(f.id?`/news/${f.id}`:'/news',{method:f.id?'PUT':'POST',body});
     toast(draft?'Saved as a draft':start&&start>annNow()+ANN_GRACE?'Scheduled':f.id&&f.live?'Changes saved':'Posted',2500);
-    await annReload();ANA.f=annBlank();ANA.mode='list';ANA.err='';annAdmin();$('#scr-annc').scrollTop=0;
+    await annReload();ANA.f=annBlank();ANA.mode='list';ANA.err='';annAdmin();$('#scr-ctl').scrollTop=0;
   }catch(e){ANA.err=e.message;const er=$('#anErr');if(er)er.textContent=e.message}
   finally{ANA.busy=false}
 }
@@ -283,7 +290,5 @@ async function annReload(){
   try{const r=await api('/news/all');ANA.posts=Array.isArray(r.posts)?r.posts:[];if(Array.isArray(r.signs))ANA.signs=r.signs}catch(e){}
   annLoad();
 }
-// Back: a phone writing a post goes back to the list first
-$('#annBack').onclick=()=>{sfx('click');if(ANA.mode==='form'&&!HUB_PC.matches){ANA.mode='list';ANA.err='';annAdmin();return}openProfile()};
 
 annMenuShown();annLoad();
