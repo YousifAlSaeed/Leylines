@@ -353,6 +353,8 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 .ibx-row svg:last-child{width:16px;height:16px;color:var(--muted)}
 .ibx-row .rt{flex:1;min-width:0}
 .ibx-row b{display:block;font:700 15px/1.2 var(--display)}.ibx-row small{display:block;font-size:12.5px;color:var(--muted)}
+/* new since you last marked the inbox as seen: a dot like the bell's */
+.ibx-new{flex:none;width:9px;height:9px;border-radius:50%;background:var(--cta)}
 /* a phone's tab bar (index.html, after the menu): only on a screen that has a tab (menu.js tabsSync sets body[data-tab]).
    Friends and your profile leave room for it under their page, and the bar takes the place of their Back button.
    Friends' Leaderboard button is only for a phone held sideways, whose menu has no Leaderboard tile */

@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.30.10 (2026-10-25)
+- The Inbox has a Mark as seen button: the bell only counts new things after that
+
 ## 0.30.9 (2026-10-24)
 - Alerts no longer stop reaching your device after the game's server restarts or moves
 

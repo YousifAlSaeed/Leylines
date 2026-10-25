@@ -199,20 +199,33 @@ function hubLb(){
   const x=rows.length<3?-1:rows.findIndex(lbIsMe)===2?1:2;
   el.innerHTML=`<div class="hw-lbl">${rows.map((p,k)=>`<span class="hw-lr${lbIsMe(p)?' me':''}${k===x?' x':''}"><i>${p.rank}</i><span>${lbIsMe(p)?'You':esc(p.displayName)}</span><em>${val(p)}</em></span>`).join('')}</div>`;
 }
-// what's waiting for you, gathered in one place
+// what's waiting for you, gathered in one place; each thing ends with its count (the Daily's is the day, so a new day is news)
 function inboxItems(){
   const it=[];
-  if(ACCT.token&&FR.incoming.length)it.push(['friends',plural(FR.incoming.length,'friend request'),FR.incoming.slice(0,3).map(u=>u.displayName).join(', '),()=>openFriends()]);
-  const b=toClaim().length;if(b)it.push(['badge',`${plural(b,'badge')} to claim`,'Shards are waiting on your profile',()=>openProfile()]);
-  const d=dailyState(),p=SAVE.packs.length+(d.ready?1:0);if(p)it.push(['pack',`${plural(p,'pack')} to open`,d.ready?'Your daily pack is ready':'From levels, the Daily and the market',()=>openPacks()]);
-  if(dailyOpen())it.push(['daily','Daily rewards left today',`${plural(dailyStatus().left,'challenge')} can still pay out`,()=>dailyNext()]);
-  if(OWES.news.length)it.push(['news','News about a match you left','What happened to your cards',()=>setTimeout(oweNews,50)]);
+  if(ACCT.token&&FR.incoming.length)it.push(['friends',plural(FR.incoming.length,'friend request'),FR.incoming.slice(0,3).map(u=>u.displayName).join(', '),()=>openFriends(),FR.incoming.length]);
+  const b=toClaim().length;if(b)it.push(['badge',`${plural(b,'badge')} to claim`,'Shards are waiting on your profile',()=>openProfile(),b]);
+  const d=dailyState(),p=SAVE.packs.length+(d.ready?1:0);if(p)it.push(['pack',`${plural(p,'pack')} to open`,d.ready?'Your daily pack is ready':'From levels, the Daily and the market',()=>openPacks(),p]);
+  if(dailyOpen())it.push(['daily','Daily rewards left today',`${plural(dailyStatus().left,'challenge')} can still pay out`,()=>dailyNext(),dayNo()]);
+  if(OWES.news.length)it.push(['news','News about a match you left','What happened to your cards',()=>setTimeout(oweNews,50),OWES.news.length]);
   return it;
 }
+// Mark as seen: the bell only counts what grew since (the counts you saw are kept per device, like the Collection's).
+// A count that went down (a pack opened) lowers its mark, so the next one is news again
+const IBX_KEY='leylines.inboxSeen';
+function ibxSeen(){try{return JSON.parse(localStorage.getItem(IBX_KEY)||'{}')||{}}catch(e){return {}}}
+function ibxSave(s){try{localStorage.setItem(IBX_KEY,JSON.stringify(s))}catch(e){}}
+function inboxNew(it=inboxItems()){
+  const s=ibxSeen(),n={};let low=false;
+  it.forEach(i=>n[i[0]]=i[4]);
+  for(const k in s)if(!(n[k]>=s[k])){if(n[k])s[k]=n[k];else delete s[k];low=true}
+  if(low)ibxSave(s);
+  return it.filter(i=>i[4]>(s[i[0]]||0));
+}
+function inboxSeen(){const s={};inboxItems().forEach(i=>s[i[0]]=i[4]);ibxSave(s);hubDots()}
 function openInbox(){
-  const it=inboxItems();
-  const box=modal(`<h2 class="nm2">Inbox</h2>`+(it.length?`<div class="ibx">${it.map(([ic,t,s],i)=>`<button class="ibx-row" type="button" data-i="${i}">${HUB_IC[ic]}<span class="rt"><b>${esc(t)}</b><small>${esc(s)}</small></span>${hubSvg('<path d="M9 5l7 7-7 7"/>')}</button>`).join('')}</div>`
-    :`<p>Nothing is waiting for you. You're all caught up.</p>`),[{label:'Close',esc:true}]);
+  const it=inboxItems(),nw=new Set(inboxNew(it).map(i=>i[0]));
+  const box=modal(`<h2 class="nm2">Inbox</h2>`+(it.length?`<div class="ibx">${it.map(([ic,t,s],i)=>`<button class="ibx-row" type="button" data-i="${i}">${HUB_IC[ic]}<span class="rt"><b>${esc(t)}</b><small>${esc(s)}</small></span>${nw.has(ic)?'<i class="ibx-new"><span class="sr">New</span></i>':''}${hubSvg('<path d="M9 5l7 7-7 7"/>')}</button>`).join('')}</div>`
+    :`<p>Nothing is waiting for you. You're all caught up.</p>`),[...nw.size?[{label:'Mark as seen',fn:inboxSeen}]:[],{label:'Close',esc:true}]);
   box.querySelectorAll('.ibx-row').forEach(b=>b.onclick=()=>{sfx('click');closeModal();it[+b.dataset.i][3]()});
 }
 // the tab bar's dots and the inbox count follow the tiles
@@ -226,8 +239,8 @@ function hubDots(){
   $('#tabFriends').hidden=API==null;
   $('#tabAv').innerHTML=avatar(ACCT.token&&ACCT.user);
   tabs.querySelector('.tab-mkt').innerHTML=ST_ICON[stDay()?'day':'night'];
-  const n=inboxItems().length,ib=$('#inboxDot');ib.hidden=!n;ib.textContent=n;
-  $('#btnInbox').setAttribute('aria-label',n?`Inbox, ${plural(n,'thing')} waiting`:'Inbox');
+  const n=inboxNew().length,ib=$('#inboxDot');ib.hidden=!n;ib.textContent=n;
+  $('#btnInbox').setAttribute('aria-label',n?`Inbox, ${plural(n,'new thing')}`:'Inbox');
 }
 // redraw the widgets whenever another script changes a tile (its line, its dot, news); the tiles' own 30-second timers keep the countdowns fresh
 let hubT=0;
