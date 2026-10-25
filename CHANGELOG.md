@@ -6,6 +6,9 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.31.3 (2026-10-25)
+- No more pink dot on your profile box for badges to claim: the bell already tells you about them
+
 ## 0.31.2 (2026-10-25)
 - On the menu only the Daily counts down to the new day. The Night Market says how many of its cards are left, and Packs says when today's pack is opened
 - The Merchant's Buy button on the menu is violet, so pink is for playing (Play and the Daily)
