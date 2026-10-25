@@ -452,6 +452,7 @@ function renderProfilePage(force){
       :`<p class="pf-hint left">${API==null?'Accounts need the game server.':'Accounts are unavailable right now. Try again later.'} Your progress is saved on this device.</p>`)+resetRow+`</section>`;
     // developer tools: only for accounts in the server's DEV_USERS list, or on a local copy of the game
     if(isDev())dev=`<section class="pf-card pf-dev"><h3>Developer <em>${u&&u.dev?'Developer account':'Local copy'}</em></h3>
+      ${API!=null?`<div class="pf-row pf-ann"><span class="rt"><b>Announcements</b><small>${u&&u.dev?'Write to every player: a note, a banner on the menu or a popup.':'Sign in with a developer account to write to players.'}</small></span>${u&&u.dev?'<button class="btn small primary" id="pfAnn">Open</button>':''}</div>`:''}
       <div class="pf-row"><span class="rt"><b>Unlock all cards</b><small>Use every card. Off brings back your own collection.</small></span>
         <div class="seg" id="pfUnlock" role="group" aria-label="Unlock all cards">${[[false,'Off'],[true,'On']].map(([k,l])=>
           `<button data-k="${k}" class="${!!SAVE.unlockAll===k?'on':''}" aria-pressed="${!!SAVE.unlockAll===k}">${l}</button>`).join('')}</div></div>
@@ -482,6 +483,7 @@ function renderProfilePage(force){
   on('#pfName',editName);on('#pfEmail',editEmail);on('#pfPass',editPassword);on('#pfOut',acctSignOut);on('#pfDel',deleteAccount);
   on('#pfReset',()=>confirmReset(renderProfilePage));
   on('#pfUnlock button',b=>{const v=b.dataset.k==='true';if(!!SAVE.unlockAll===v)return;SAVE.unlockAll=v;save();renderProfilePage();toast(v?'All cards unlocked.':'Back to your own collection.')});
+  on('#pfAnn',openAnnAdmin);
   on('#pfLvUp',()=>{const lv=levelOf(SAVE.xp)+1;SAVE.xp=lvlXp(lv);const got=grantPacks(SAVE);profCheck();save();renderProfile();renderProfilePage();
     toast(`Level ${lv}`+(got.length?` · ${PACKS[got[0].t].name} pack added`:''));freshToast()});
   on('#pfScreen',screenInfo);

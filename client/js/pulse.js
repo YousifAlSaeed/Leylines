@@ -9,7 +9,7 @@
    (it dropped, or the browser can't stream) it checks every few seconds.
    ===================================================================== */
 const PULSE_MS=5000,PULSE_SLOW=25000; // how often to check without the live line, and with it
-const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,busy:false,again:false,at:0,online:[],away:[],alerts:[],soonT:0};
+const PULSE={user:null,boot:'',fr:0,fo:0,gi:0,nw:0,busy:false,again:false,at:0,online:[],away:[],alerts:[],soonT:0};
 // hosting or joining an online game (NET.role stays set after netClose, so closing counts as out)
 // in a 1v1 room or a Crossroads one (duo.js)
 const inOnline=()=>!!NET.role&&!NET.closing||!!DUO.role;
@@ -36,7 +36,8 @@ async function pulse(){
   if(!first&&(restart||r.fr!==PULSE.fr))frLoad();
   if(!first&&(restart||r.fo!==PULSE.fo))owesCheck();
   if(!first&&(restart||r.gi!==PULSE.gi)){GIFTS.wait=true;giftsCheck()}
-  Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi});
+  if(!first&&(restart||r.nw!==PULSE.nw))annLoad(); // the developers' announcements changed (announce.js)
+  Object.assign(PULSE,{user:ACCT.user.id,boot:r.boot,fr:r.fr,fo:r.fo,gi:r.gi,nw:r.nw});
   if(first){alertsSync();alertsTipMaybe()}
   const names=l=>Array.isArray(l)?l.filter(u=>typeof u==='string'):[];
   const online=names(r.online),away=names(r.away),alerts=names(r.alerts);
@@ -52,7 +53,7 @@ async function pulse(){
 function pulseSoon(){clearTimeout(PULSE.soonT);PULSE.soonT=setTimeout(pulse,50)}
 
 /* ---------- the live line ---------- */
-// a stream the server writes to when something for you changes: {k:'fr'|'fo'|'gi', v} or {k:'on'|'inv'|'no'}
+// a stream the server writes to when something for you changes: {k:'fr'|'fo'|'gi'|'nw', v} or {k:'on'|'inv'|'no'}
 const LINE={ctl:null,on:false,tries:0,t:0};
 async function lineOpen(){
   if(LINE.ctl||!ACCT.token||!ACCT.user||!ACCT.up||API==null||!window.ReadableStream||!window.TextDecoder)return;
@@ -85,6 +86,7 @@ function lineEvent(ev){
   if(m.k==='fr'){if(mine)PULSE.fr=m.v;frLoad()}
   else if(m.k==='fo'){if(mine)PULSE.fo=m.v;owesCheck()}
   else if(m.k==='gi'){if(mine)PULSE.gi=m.v;GIFTS.wait=true;giftsCheck()}
+  else if(m.k==='nw'){if(mine)PULSE.nw=m.v;annLoad()}
   else pulse();
 }
 function lineClose(){clearTimeout(LINE.t);LINE.t=0;LINE.tries=0;const c=LINE.ctl;LINE.ctl=null;LINE.on=false;if(c)c.abort()}

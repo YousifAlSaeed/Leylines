@@ -1,0 +1,132 @@
+/* ---------- announcements (announce.js) ---------- */
+/* the banner: on a phone (or a smaller window) it lies over the whole top bar, the logo, the name and the round buttons,
+   and the bar grows to fit it, pushing the menu down (menu.css .hub-top is a grid). A wide screen has room for it between
+   the logo and the buttons (announce.js ANN_WIDE) */
+.ann-bar{grid-row:1;grid-column:1/-1;align-self:stretch;z-index:3;min-width:0;display:flex;align-items:center;gap:6px;
+  padding:8px 6px 8px 10px;border-radius:18px;background:var(--surf2);border:1px solid color-mix(in srgb,var(--cta) 55%,transparent);
+  box-shadow:0 10px 26px -14px var(--cta-glow),0 4px 12px rgba(var(--sh),calc(.5*var(--shk)));animation:annIn .45s var(--ease) both}
+.ann-bar[hidden]{display:none}
+@keyframes annIn{from{opacity:0;transform:translateY(-6px)}}
+.ann-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:0;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.ann-ic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--cta);background:color-mix(in srgb,var(--cta) 15%,transparent)}
+.ann-ic svg,.ann-art svg,.ann-x svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ann-t{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ann-t small{font:700 9.5px/1.1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--cta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the title and the start of the message, two lines each at most */
+.ann-t b,.ann-line{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.ann-t b{font:700 15px/1.2 var(--display)}
+.ann-line{font-size:12.5px;line-height:1.35;color:var(--muted)}
+.ann-x{flex:none;align-self:flex-start;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.ann-x svg{width:16px;height:16px}
+.ann-x:hover{color:var(--text);background:rgba(var(--tint),.07)}
+@media (min-width:920px) and (min-height:560px){
+  .ann-bar{padding:10px 10px 10px 14px;border-radius:20px}
+  .ann-open{gap:12px}
+  .ann-ic{width:44px;height:44px;border-radius:14px}
+  .ann-ic svg{width:24px;height:24px}
+  .ann-t small{font-size:10.5px}
+  .ann-t b{font-size:17px;-webkit-line-clamp:1}
+  .ann-line{font-size:13px;-webkit-line-clamp:1}
+  .ann-x{align-self:center}
+}
+/* wide: the banner in its own column between the logo and the buttons */
+@media (min-width:1180px) and (min-height:560px){
+  .hub-top{grid-template-columns:auto minmax(0,1fr) auto}
+  .hub-top>.hub-tools{grid-column:3}
+  .ann-bar{grid-column:2;align-self:center;justify-self:center;width:100%;max-width:640px}
+}
+/* a phone held sideways is short: one line each, no kicker */
+@media (orientation:landscape) and (max-height:520px){
+  .ann-bar{padding:5px 6px 5px 8px;border-radius:14px}
+  .ann-ic{width:30px;height:30px;border-radius:10px}
+  .ann-t small{display:none}
+  .ann-t b,.ann-line{-webkit-line-clamp:1}
+  .ann-t b{font-size:14px}
+  .ann-x{align-self:center;width:30px;height:30px}
+}
+@media (prefers-reduced-motion:reduce){.ann-bar{animation:none}}
+
+/* the megaphone's list */
+.mbox.ann-box{max-width:520px;text-align:left}
+.ann-box .kick,.ann-box h2{text-align:center}
+.ann-list{display:flex;flex-direction:column;gap:10px;margin:14px 0 4px}
+.ann-card{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--surf)}
+.ann-k{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ann-k small{margin-left:auto;color:var(--muted);font-size:12px}
+.ann-chip{font:700 10.5px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;padding:5px 8px;border-radius:999px;color:var(--cta);background:color-mix(in srgb,var(--cta) 14%,transparent)}
+.ann-chip.k-break{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.ann-chip.k-thanks{color:var(--blue-ink);background:color-mix(in srgb,var(--blue-ink) 14%,transparent)}
+.ann-chip.k-update{color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.ann-new{font:800 10px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:999px;background:var(--cta);color:var(--on-cta)}
+.ann-card h3{display:block;margin:10px 0 4px;font:700 18px/1.2 var(--display);letter-spacing:0;text-transform:none;text-wrap:balance}
+.mbox .ann-txt p{margin:6px 0 0;max-width:none;color:var(--text);opacity:.88;line-height:1.5;font-size:14.5px}
+.mbox .ann-txt b{color:var(--text)}
+.mbox p.ann-by{margin:10px 0 0;max-width:none;font-size:12.5px;color:var(--muted)}
+.mbox p.ann-by::before{content:"— "}
+.ann-none{text-align:center}
+.ann-more{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:10px 0 2px}
+
+/* a Big post */
+.mbox.ann-big{max-width:440px}
+.ann-art{width:74px;height:74px;margin:2px auto 12px;border-radius:22px;display:grid;place-items:center;color:var(--cta);
+  background:color-mix(in srgb,var(--cta) 15%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--cta) 40%,transparent),0 12px 34px -12px var(--cta-glow)}
+.ann-art svg{width:38px;height:38px}
+.ann-big .ann-txt{text-align:left;margin:8px auto 0;max-width:40ch}
+.ann-big p.ann-by{text-align:center}
+
+/* writing them (developers only) */
+.wrap.an-wrap{max-width:1180px}
+.an-admin{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.an-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.an-main{min-width:0}
+/* a phone: the posts first; the form (with its preview) takes the screen while writing */
+.an-admin[data-mode="list"] .an-main,.an-admin[data-mode="list"] #anPrevBox,.an-admin[data-mode="form"] .an-posts{display:none}
+@media (min-width:920px){
+  .an-admin{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .an-admin[data-mode] .an-main,.an-admin[data-mode] #anPrevBox,.an-admin[data-mode] .an-posts{display:block}
+}
+.an-form{display:flex;flex-direction:column;gap:14px}
+.an-form h3,.an-posts h3{margin-bottom:0}
+.an-fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.an-fld>span{display:flex;align-items:baseline;gap:6px;font:600 12.5px var(--body);color:var(--muted)}
+.an-fld>span i{font-style:normal;font-weight:400;opacity:.8}
+.an-fld>span em{margin-left:auto;font-style:normal;font-weight:500}
+.an-fld input,.an-fld textarea{background:var(--well);color:var(--text);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;font:500 16px var(--body);min-height:44px;width:100%;box-sizing:border-box}
+.an-fld textarea{resize:vertical;line-height:1.45;min-height:96px}
+.an-fld input:focus,.an-fld textarea:focus{outline:2px solid var(--accent-ink);outline-offset:1px}
+.an-fld input:disabled{opacity:.55}
+.an-togs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.an-tog{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 12px;border-radius:14px;border:1.5px solid var(--line2);background:none;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.an-tog b{font:700 14.5px var(--body)}
+.an-tog small{font-size:11.5px;line-height:1.35;color:var(--muted)}
+.an-tog.on{border-color:var(--cta);background:color-mix(in srgb,var(--cta) 10%,transparent)}
+.an-tog.on b::after{content:" ✓";color:var(--cta)}
+.an-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.an-chips{display:flex;flex-wrap:wrap;gap:6px}
+.an-chip{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--muted);font:500 13px var(--body);cursor:pointer}
+.an-chip.on{border-color:var(--cta);color:var(--text);font-weight:650;background:color-mix(in srgb,var(--cta) 12%,transparent)}
+.an-tog:focus-visible,.an-chip:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.an-check{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);cursor:pointer}
+.an-check input{width:18px;height:18px;flex:none;accent-color:var(--cta)}
+.an-check span{display:flex;flex-direction:column}
+.an-check b{font-weight:600;font-size:14px}
+.an-check small{font-size:12px;color:var(--muted)}
+.an-err{margin:0;min-height:1.2em;color:var(--danger);font-size:13px}
+.an-btns{display:flex;gap:8px;flex-wrap:wrap}
+.an-btns .btn.primary{flex:1 1 160px}
+.an-pl{font:600 11.5px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 0 8px}
+.an-prev .ann-bar.an-demo{position:relative;top:auto;left:auto;transform:none;min-height:0;margin-bottom:16px;animation:none}
+.an-prev .an-card-demo{margin-bottom:12px}
+.an-prev .ann-card .ann-txt p{margin:6px 0 0;color:var(--text);opacity:.88;line-height:1.5;font-size:14px}
+.an-prev .ann-card p.ann-by{margin:10px 0 0;font-size:12.5px;color:var(--muted)}
+.an-prev .ann-card p.ann-by::before{content:"— "}
+.an-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
+.an-posts h3+.an-row{border-top:0}
+.an-row .rt{flex:1 1 220px;min-width:0}
+.an-row b{display:block;font-weight:600;font-size:14.5px}
+.an-row small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.an-st{flex:none;font:700 10.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+.an-st.ok{border-color:transparent;color:var(--green-ink);background:color-mix(in srgb,var(--green-ink) 14%,transparent)}
+.an-st.warn{border-color:transparent;color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.an-acts{display:flex;gap:6px;flex:none}
+@media (max-width:420px){.an-togs{grid-template-columns:minmax(0,1fr)}.an-tog{flex-direction:row;align-items:baseline;gap:8px}.an-two{grid-template-columns:minmax(0,1fr)}}

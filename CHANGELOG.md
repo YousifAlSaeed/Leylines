@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.31.0 (2026-10-25)
+- News from the team: a megaphone on the menu, beside the bell, holds posts from the developers. A new post can put a number on it, show a banner at the top of the menu (on a phone it waits a few seconds, then covers the top bar until you close it or go somewhere else; the megaphone still has it) or pop up once with a Close that waits 3 seconds so it gets read
+- ALPHA sits beside the version number now, the same size as it, and on a computer both sit under the name. Tap ALPHA to read that progress may be reset
+
 ## 0.30.11 (2026-10-25)
 - On the menu, Online has the code box on top and Host a game below it; Couch has Quick play at the bottom
 

@@ -187,6 +187,8 @@ function alertOpen(url){
   if(q.get('friends')&&!G)openFriends();
   if(q.get('daily')&&!G&&$('#scr-menu').classList.contains('on'))dailyNext();
   if(q.get('invite')){ALERTS.fromInvite=true;INV.done.clear();pulseSoon()}
+  // an announcement: the megaphone's list, at that post (announce.js)
+  if(q.get('news')&&!G){const id=+q.get('news');annLoad().then(()=>{if(!$('#modal').classList.contains('on')){annMark('big',[id]);annOpen(id)}})}
 }
 // the game was open already: the service worker hands the alert over
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.t==='alert')alertOpen(e.data.url)});

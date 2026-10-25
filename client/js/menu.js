@@ -12,6 +12,7 @@ function show(id){
   $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='scr-'+id));
   if(id!=='menu')emReset(); // the small logo in a match is the same drawing, so it goes back to the real logo
   if(id==='game')layout();if(id==='menu'){renderMenu();lbHubFetch()}
+  if(typeof annMenuShown==='function')id==='menu'?annMenuShown():annMenuLeft(); // an announcement's banner (announce.js)
   document.documentElement.classList.toggle('night',id==='store');applyTheme(); // the market's sky (store.css)
   pulseSoon(); // friends see whether you're free to play (pulse.js)
   musicUpdate(); // each place has its song (music.js)

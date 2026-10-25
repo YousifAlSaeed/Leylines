@@ -144,7 +144,9 @@ input.rng:focus-visible{outline:none}input.rng:focus-visible::-webkit-slider-thu
 :root{--tabh:calc(66px + env(safe-area-inset-bottom))}
 #scr-menu{justify-content:center}
 .menu{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;margin:auto 0;padding-bottom:var(--tabh)}
-.hub-top{display:flex;align-items:center;gap:10px;flex:none}
+/* a grid, so an announcement's banner (announce.css) can lie over the whole bar, and the bar grows when the banner is taller */
+.hub-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;flex:none}
+.hub-top>.brand{grid-row:1;grid-column:1}.hub-top>.hub-tools{grid-row:1;grid-column:2}
 .brand{display:flex;align-items:center;gap:12px;margin:0;flex:1;min-width:0}
 .brand .emblem{display:block;height:44px;width:44px;flex:none}
 .brand>div{min-width:0}
@@ -384,10 +386,10 @@ body[data-tab] #toast{bottom:calc(var(--tabh) + 8px)}
 .hub-tabs .td[hidden]{display:none}
 @media (min-width:600px){.hub-tabs{grid-auto-columns:minmax(0,104px)}}
 #scr-menu .a2hs{bottom:calc(var(--tabh) + 8px)}
-/* alpha notice: a pill under the title on phones (tap for the full text), a box under the tiles on PC */
-.alpha-pill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font:700 10.5px/1 var(--body);letter-spacing:.08em;color:var(--warn);cursor:pointer;
-  border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 12%,transparent);border-radius:999px;padding:5px 9px}
-.alpha-pill i{font-style:normal;letter-spacing:0;font-weight:500;color:var(--muted)}
+/* alpha notice: a pill beside the version tag, the same size as it (tap it for the notice that progress may reset) */
+.alpha-pill{display:inline-flex;align-items:center;font:700 11px/1 var(--body);letter-spacing:.06em;color:var(--warn);cursor:pointer;white-space:nowrap;
+  border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 12%,transparent);border-radius:999px;padding:4px 8px}
+.alpha-pill:hover{background:color-mix(in srgb,var(--warn) 20%,transparent)}
 /* short phones (an iPhone SE): a little less room inside the Play card */
 @media (max-height:760px){.hero{padding:14px}.hero-top{padding:6px 0 4px}}
 /* very short phones: less room between and inside everything */
@@ -395,14 +397,15 @@ body[data-tab] #toast{bottom:calc(var(--tabh) + 8px)}
   .hero-stats div{padding:5px 4px}.hero-row{padding-top:6px}.hero-row .btn.primary{min-height:46px}.hw{padding:9px 11px}.hw-daily .dly{min-height:52px}}
 /* the top bar on a phone: the title narrows with the screen, so the inbox, How to play and Settings always fit beside it */
 .hub-top .title .logo-word{height:19px}
-/* on a phone the version tag and the alpha pill share the line under the title; narrow phones keep just ALPHA (tap it for the notice) */
+/* on a phone the version tag and the alpha pill share the line under the title */
 .hub-top .brand>div{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:6px;row-gap:5px}
 .hub-top .title-row{display:contents}
 .hub-top .title{grid-column:1/-1}
 .hub-top .ver,.hub-top .alpha-pill{grid-row:2;justify-self:start;margin-top:0}
-@media (max-width:419px){.hub-top .alpha-pill i{display:none}}
-@media (max-width:379px){.hub-top .title .logo-word{height:16px}.brand{gap:9px}.brand .emblem{height:38px;width:38px}.hub-tools{gap:4px}.hub-ib{width:34px;height:34px}}
-@media (max-width:339px){.hub-top .title .logo-word{height:13px}.brand .emblem{height:32px;width:32px}.hub-ib{width:30px;height:30px}.hub-ib svg{width:17px;height:17px}}
+@media (max-width:379px){.hub-top .title .logo-word{height:16px}.brand{gap:9px}.brand .emblem{height:38px;width:38px}.hub-tools{gap:4px}.hub-ib{width:34px;height:34px}
+  .hub-top .brand>div{column-gap:4px}.hub-top .ver,.hub-top .alpha-pill{font-size:10px;padding:3px 6px;letter-spacing:.02em}}
+@media (max-width:339px){.hub-top .title .logo-word{height:13px}.brand .emblem{height:32px;width:32px}.hub-ib{width:30px;height:30px}.hub-ib svg{width:17px;height:17px}
+  .hub-top .ver,.hub-top .alpha-pill{font-size:9.5px;padding:3px 5px}}
 /* narrow phones: smaller icons and names, so "Night Market" fits whole */
 @media (max-width:400px){.tile{gap:9px}.tile>svg{width:22px;height:22px}.tile b{font-size:15px;font-stretch:84%}.tile.ptile .ptdot{display:none}}
 /* a phone held sideways: the tab bar becomes a rail down the left, the Play card sits beside the Daily */
@@ -428,7 +431,8 @@ body[data-tab] #toast{bottom:calc(var(--tabh) + 8px)}
   .brand{gap:18px}
   .brand .emblem{height:68px;width:68px}
   .hub-top .title .logo-word{height:28px}
-  .hub-top .brand>div{display:block}.hub-top .title-row{display:flex}.hub-top .alpha-pill{margin-top:8px}
+  /* the version and ALPHA under the name, as on a phone, which leaves room beside it for an announcement */
+  .hub-top .brand>div{column-gap:8px;row-gap:9px}
   .hub-tools{gap:8px}
   /* the round buttons and the profile chip are the same height */
   .hub-ib{width:52px;height:52px}

@@ -9,6 +9,7 @@ import { friendsRouter } from './routes/friends.js';
 import { giftsRouter } from './routes/gifts.js';
 import { leaderboardRouter } from './routes/leaderboard.js';
 import { meRouter } from './routes/me.js';
+import { newsRouter } from './routes/news.js';
 import { pulseRouter } from './routes/pulse.js';
 import { pushRouter } from './routes/push.js';
 import { usersRouter } from './routes/users.js';
@@ -74,6 +75,7 @@ export function createApp({ db, clientDir, corsOrigins = ['*'], trustProxy = 0, 
   api.use('/pulse', pulseRouter(db, hub));
   api.use('/push', pushRouter(db, push, app.locals.dailyAlerts));
   api.use('/leaderboard', leaderboardRouter(db));
+  api.use('/news', newsRouter(db, hub, push));
   api.use((req, res) => res.status(404).json({ error: 'Not found.' }));
   // malformed JSON and other request errors come back as JSON, not an HTML page
   api.use((err, req, res, next) => {

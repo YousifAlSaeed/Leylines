@@ -124,6 +124,8 @@ function closeModal(){
   modalReturn=null;
   // news about a match you left waits for the popup in front of it to close (spare.js)
   if(OWES.news.length)setTimeout(oweNews,300);
+  // a Big announcement waits for the popup in front of it too (announce.js)
+  else if(typeof annBigMaybe==='function')setTimeout(annBigMaybe,400);
   // the jukebox's player stops with it, and the place's own song comes back (music.js)
   musicListenEnd();
 }

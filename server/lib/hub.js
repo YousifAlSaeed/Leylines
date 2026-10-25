@@ -21,6 +21,7 @@ export function createHub(push = null) {
   const declined = new Map(); // user id → [display names who said no]
   const friends = new Map();  // user id → [{ id, username }], until their friends change
   const lines = new Map();    // user id → Set of send(message) for their open live lines
+  let news = 0;               // goes up when the announcements change (routes/news.js)
 
   const ver = (id) => vers.get(id) ?? { fr: 0, fo: 0, gi: 0 };
   const live = (list) => (list ?? []).filter((i) => Date.now() - i.at < INVITE_MS);
@@ -110,6 +111,9 @@ export function createHub(push = null) {
         if (k.length !== l.length) { invites.set(id, k); notify(id, { k: 'inv' }); }
       }
     },
+    newsVer: () => news,
+    // the announcements changed: every open game loads them again
+    newsChanged() { news++; for (const id of lines.keys()) notify(id, { k: 'nw', v: news }); },
     takeDeclined(id) { const l = declined.get(id) ?? []; declined.delete(id); return l; },
   };
 }

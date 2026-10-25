@@ -40,7 +40,7 @@ export function pulseRouter(db, hub) {
     const now = Date.now();
     res.set('Cache-Control', 'no-store');
     res.json({
-      boot: hub.boot, ...hub.ver(me), online, away, alerts,
+      boot: hub.boot, ...hub.ver(me), nw: hub.newsVer(), online, away, alerts,
       invites: hub.invitesFor(me).map((i) => ({ from: i.from, name: i.name, code: i.code, at: i.at, left: Math.max(0, Math.round((i.at + INVITE_MS - now) / 1000)) })),
       declined: hub.takeDeclined(me),
     });
