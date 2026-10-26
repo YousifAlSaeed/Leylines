@@ -19,6 +19,14 @@ It is kept in three places that must always match (`npm test` checks):
 
 Changes that don't touch the game (README, tests only, CI, tooling) don't bump.
 
+**The developers' control panel never bumps the version and never goes in
+`CHANGELOG.md`.** This holds for everyone working on the repo (Yousif and
+Jawad alike): fixing it, adding a section or a tool to it, or changing anything
+that only developers see through it (`client/js/control.js`, `client/css/control.css`,
+`server/routes/admin.js`, `server/lib/boosts.js`, `server/lib/maint.js`,
+`server/lib/dbWatch.js`). A commit that also changes the game for players
+bumps and logs only that part.
+
 When bumping, add a short line for the change under a new top heading in
 `CHANGELOG.md` with today's date. Several commits pushed together may share
 one bump.
