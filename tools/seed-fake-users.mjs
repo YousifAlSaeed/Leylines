@@ -95,9 +95,14 @@ async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   let db;
   try {
-    const where = await ask(rl, 'SEED_DB', 'Dev database (Postgres public URL, or a local .sqlite file): ');
+    const where = (await ask(rl, 'SEED_DB', 'Dev database (Postgres public URL, or a local .sqlite file): ')).replace(/^["']|["']$/g, '');
     if (!where) throw new Error('No database given.');
     const pg = /^postgres(ql)?:\/\//.test(where);
+    // Railway shows the recipe (${{ … }}) until you reveal the value, and an empty host until Public Access is deployed
+    if (pg && (where.includes('${{') || !URL.canParse(where) || !new URL(where).hostname)) {
+      throw new Error('That URL isn\'t complete. Copy the VALUE of DATABASE_PUBLIC_URL (eye icon, not the ${{ … }} recipe), ' +
+        'and check Public Access is on and deployed: it should look like postgresql://postgres:…@….proxy.rlwy.net:12345/railway');
+    }
     db = await openDatabase(pg ? { url: tidy(where) } : { file: where });
     const host = pg ? new URL(where).hostname + ':' + (new URL(where).port || 5432) : where;
 
