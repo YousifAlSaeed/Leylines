@@ -13,7 +13,7 @@
   // the boxes, and the widths (w) or heights (h) their @container rules switch at; r: the book page's
   // "wide" shape (width at least 1.5 × height), where its cards sit in one row
   const BOX=[['.dk-tray',{w:[261,331,361]}],['.coll-book',{w:[260]}],['.bd-page',{h:[261],r:1.5}],['.bd-cover',{}],['.dr-wrap',{}],
-    ['.mh-card',{w:[440]}],['.lb-wrap',{w:[520,760,1080]}],['.lb-table',{w:[600]}],['.fg-ring',{}],['.st-stop',{}]];
+    ['.mh-card',{w:[440]}],['.lb-wrap',{w:[520,760,1080]}],['.lb-table',{w:[600]}],['.lb-handbox',{h:[120]}],['.fg-ring',{}],['.st-stop',{}]];
   const SEL=BOX.map(b=>b[0]).join(','),seen=new WeakSet();
   document.documentElement.classList.add('cq-poly');
   const put=(el,w,h)=>{

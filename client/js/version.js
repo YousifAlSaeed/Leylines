@@ -2,7 +2,7 @@
 // The game's version, shown to the right of the title on the menu.
 // Bump it with every change (rules in CLAUDE.md). package.json and the top of
 // CHANGELOG.md must match; npm test checks.
-const VERSION='0.31.4';
+const VERSION='0.32.0';
 document.querySelectorAll('.ver').forEach(e=>{e.textContent='v'+VERSION});
 // the test site (leylines-dev on Railway) gets its own tab name and a grey icon, so it's never mixed up with the live game.
 // Runs first, before pulse.js copies the title.

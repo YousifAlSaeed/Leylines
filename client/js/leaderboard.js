@@ -3,10 +3,15 @@
    LEADERBOARD  (everyone, or you and your friends)
    The server ranks players from their cloud saves (/api/leaderboard), so
    only signed-in players are on it; guests can still look. Wide screens
-   get three columns: you, the table, and the player you picked. Narrower
+   get three columns: you, the board, and the player you picked. Narrower
    ones drop the last column and open the player in a pop-up instead.
+   The board is a sky (lbsky.js) or a table (List), picked at the top.
    ===================================================================== */
-const LB={by:'level',show:'all',q:'',data:null,sel:'',err:'',loading:false,seq:0,qT:0};
+// data: what's listed (a search's finds while you search); board: the whole board for the tab, which the Sky draws.
+// view: 'sky' or 'list', kept on this device
+const LB_VIEW='leylines.lbView';
+const LB={by:'level',show:'all',q:'',data:null,board:null,sel:'',err:'',loading:false,seq:0,qT:0,
+  view:(()=>{try{return localStorage.getItem(LB_VIEW)==='list'?'list':'sky'}catch(e){return 'sky'}})()};
 // [key, tab name, short name for phones]
 const LB_BY=[['level','Level','Level'],['wins','Online wins','Wins'],['streak','Online streak','Streak'],['cards','Cards found','Cards']];
 
@@ -18,13 +23,15 @@ function renderLbTile(){const t=$('#lbTile');if(t)t.hidden=API==null}
 async function lbLoad(){
   const n=++LB.seq;LB.loading=true;LB.err='';lbPaint();
   try{
-    const qs=new URLSearchParams({by:LB.by,show:LB.show});if(LB.q)qs.set('q',LB.q);
-    const j=await api('/leaderboard?'+qs,{timeout:60000});
+    const key=new URLSearchParams({by:LB.by,show:LB.show}).toString(),qs=new URLSearchParams(key);if(LB.q)qs.set('q',LB.q);
+    // the Sky shows the whole board while you search, so a search on another tab (or Everyone / Friends) asks for it too
+    const more=LB.q&&!(LB.board&&LB.board.key===key);
+    const [j,b]=await Promise.all([api('/leaderboard?'+qs,{timeout:60000}),more?api('/leaderboard?'+key,{timeout:60000}):null]);
     if(n!==LB.seq)return;
     LB.data=j;
-    if(!LB.q)lbKeep(j);
-    // keep the player you picked if they're still on screen, otherwise pick the top one
-    if(!lbFind(LB.sel))LB.sel=j.rows.length?j.rows[0].username:'';
+    const board=LB.q?b:j;if(board){board.key=key;LB.board=board;lbKeep(board)}
+    // keep the player you picked if they're still on screen (a search picks the first it finds), otherwise pick the top one
+    if(LB.q?j.rows.length&&!j.rows.some(p=>p.username===LB.sel):!lbFind(LB.sel))LB.sel=j.rows.length?j.rows[0].username:'';
   }catch(e){
     if(n!==LB.seq)return;
     if(e.status===401&&ACCT.token){acctSignedOut('Your session ended. Sign in again.');LB.show='all';LB.loading=false;lbLoad();return}
@@ -32,7 +39,8 @@ async function lbLoad(){
   }
   LB.loading=false;lbPaint();
 }
-const lbFind=name=>{const d=LB.data;if(!d||!name)return null;return [...d.rows,d.me].find(p=>p&&p.username===name)||null};
+// what's listed first, then the board (a star picked in the Sky while you search)
+const lbFind=name=>{if(!name)return null;for(const d of [LB.data,LB.board]){const p=d&&[...d.rows,d.me].find(p=>p&&p.username===name);if(p)return p}return null};
 const lbIsMe=p=>!!(p&&ACCT.user&&frKey(p.username)===frKey(ACCT.user.username));
 // the top of the board for the menu's widget (menu.js hubLb), for whoever was signed in: what you saw when you last opened
 // it, or what the menu fetched itself. Kept on this device, and in LB_HUB.copy too for a device that can't store anything
@@ -76,10 +84,13 @@ function lbShell(){
       <div class="lb-tools"><div class="seg lb-by" id="lbBy" role="group" aria-label="Rank by">${LB_BY.map(([k,n,sh])=>`<button data-by="${k}" aria-pressed="false" aria-label="${n}"><span class="lb-l">${n}</span><span class="lb-s" aria-hidden="true">${sh}</span></button>`).join('')}</div>
         <label class="lb-find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
           <input id="lbQ" type="search" maxlength="20" placeholder="Find a player" aria-label="Find a player" autocomplete="off" autocapitalize="off" spellcheck="false"></label></div>
+      <section class="pf-card lb-sky" id="lbSky"><div class="lb-skybox"><canvas id="lbCv" tabindex="0" aria-label="The leaderboard as a sky: each star is a player, first place in the middle. The arrow keys go through the ranks." aria-describedby="lbInfo"></canvas>
+        <p class="lb-skymsg" id="lbSkyMsg"></p></div><p class="lb-info" id="lbInfo" aria-live="polite"></p></section>
       <section class="pf-card lb-table" id="lbTable" aria-live="polite"></section>
     </div>
     <aside class="lb-side" id="lbSide" aria-label="Player"></aside>
   </div>`;
+  skyMount($('#lbCv'));
   const q=$('#lbQ');q.value=LB.q;
   q.oninput=()=>{clearTimeout(LB.qT);LB.qT=setTimeout(()=>{const v=q.value.trim().replace(/^@/,'');if(v!==LB.q){LB.q=v;lbLoad()}},250)};
   $$('#lbBody [data-by]').forEach(b=>b.onclick=()=>{if(LB.by===b.dataset.by)return;sfx('click');LB.by=b.dataset.by;lbLoad()});
@@ -103,15 +114,25 @@ function lbShell(){
 function lbPaint(){
   if(!$('#lbTable'))return;
   $$('#lbBody [data-by]').forEach(b=>{const on=b.dataset.by===LB.by;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  $$('#lbView [data-view]').forEach(b=>{const on=b.dataset.view===LB.view;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   $('#lbMe').innerHTML=lbMeHTML();$('#lbMe').classList.toggle('guest',!ACCT.token);$('#lbShow').innerHTML=lbShowHTML();
+  $('#lbBody .lb-grid').classList.toggle('sky',LB.view==='sky');$('#lbSky').classList.toggle('hidden',LB.view!=='sky');$('#lbTable').classList.toggle('hidden',LB.view!=='list');
   $('#lbTable').innerHTML=lbTableHTML();$('#lbTable').classList.toggle('busy',LB.loading&&!!LB.data);
-  lbPaintSide();
+  lbPaintSide();skyPaint();
 }
+// Sky or List, at the top of the screen. Coming to the Sky, the stars unfold from the middle again
+$('#lbView').onclick=e=>{
+  const b=e.target.closest('[data-view]');if(!b||b.dataset.view===LB.view)return;
+  sfx('click');LB.view=b.dataset.view;try{localStorage.setItem(LB_VIEW,LB.view)}catch(e){}
+  if(LB.view==='sky'){SKY.nodes.clear();SKY.intro=true;SKY.built=null}
+  if($('#lbTable'))lbPaint();
+};
+const lbSideOn=()=>getComputedStyle($('#lbSide')).display!=='none';
 // the third column shows whoever you picked; without it (narrow screens) they open in a pop-up
 function lbPick(name){
   const p=lbFind(name);if(!p)return;
-  LB.sel=name;
-  if(getComputedStyle($('#lbSide')).display!=='none'){
+  LB.sel=name;skyPaint();
+  if(lbSideOn()){
     $$('#lbTable [data-u]').forEach(r=>r.classList.toggle('sel',r.dataset.u===name));lbPaintSide();return;
   }
   modal(`<div class="lb-pop">${lbPlayerHTML(p)}</div>`,[
@@ -180,7 +201,7 @@ function lbPlayerHTML(p){
   const lv=levelOf(p.xp),me=lbIsMe(p),hand=(p.hand||[]).filter(i=>CARDS[i]);
   return `<div class="lb-pp">${frAvatar(p)}<div><b>${esc(p.displayName)}${me?' <em>(you)</em>':''}</b><div>${lbTier(lv)}<small>#${p.rank} · LV ${lv} · @${esc(p.username)}</small></div></div></div>
     <div class="lb-trio"><div><b>${lv}</b><small>Level</small></div><div><b>${lbRate(p.wins,p.losses,p.draws)}</b><small>Online win rate</small></div><div><b>${p.best}</b><small>Best online streak</small></div></div>
-    <h4>Main hand</h4>${hand.length===5?`<div class="lb-hand">${hand.map(i=>cardHTML(i,me?myCol():okCol(p.col),{name:false})).join('')}</div>`:'<p class="lb-none">No hand saved yet.</p>'}
+    <h4>Main hand</h4>${hand.length===5?`<div class="lb-handbox"><div class="lb-hand">${hand.map(i=>cardHTML(i,me?myCol():okCol(p.col),{name:false})).join('')}</div></div>`:'<p class="lb-none">No hand saved yet.</p>'}
     <h4>Recent online results</h4>${p.recent?`<span class="pf-form">${[...p.recent].map(r=>`<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span>`:'<p class="lb-none">No online matches yet.</p>'}
     <div class="lb-kv"><span>Online W / L / D</span><b>${p.wins} / ${p.losses} / ${p.draws}</b></div>
     <div class="lb-kv"><span>Cards found</span><b>${p.cards} / ${CARDS.length}</b></div>

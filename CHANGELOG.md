@@ -6,6 +6,10 @@ fails if they don't match. How to bump it is in `CLAUDE.md`.
 
 Versions before 0.6.0 were worked out afterwards from the commit history.
 
+## 0.32.0 (2026-10-27)
+- The Leaderboard is a night sky now: every player is a star, with #1 in the middle and the ranks spiralling out past rings at the top 3, 10 and 25. A star's size is the number you're ranked by and its colour is the player's title. Pick a star and a line runs from you to them, and Friends shows just you and your friends. List, at the top, shows the table
+- A player's cards on the Leaderboard keep their card shape, and on a computer the player you pick in the sky gets bigger cards
+
 ## 0.31.4 (2026-10-25)
 - Tap anywhere outside the Inbox or the team's news to close it, no need to press Close
 

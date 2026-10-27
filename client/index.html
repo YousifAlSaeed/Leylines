@@ -308,7 +308,8 @@
 
 <!-- LEADERBOARD: everyone or your friends, ranked by level, online wins, best streak or cards found; leaderboard.js draws it -->
 <section id="scr-leaders" class="screen">
-  <div class="topbar lb-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Leaderboard</h2></div>
+  <div class="topbar lb-top"><button class="iconbtn" data-back="menu" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Leaderboard</h2>
+    <div class="seg lb-view" id="lbView" role="group" aria-label="View"><button data-view="sky" aria-pressed="false">Sky</button><button data-view="list" aria-pressed="false">List</button></div></div>
   <div class="wrap lb-wrap" id="lbBody"></div>
 </section>
 
@@ -447,6 +448,7 @@
 <script src="js/announce.js"></script>
 <script src="js/control.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/lbsky.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/owl.js"></script>
 <script src="js/review.js"></script>
