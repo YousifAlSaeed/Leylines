@@ -392,7 +392,7 @@ function renderProfilePage(force){
       <div class="pf-xp" role="img" aria-label="${s.xp} XP. ${hi-s.xp} XP to level ${lv+1}"><div class="pf-xpbar"><i style="width:${pct.toFixed(1)}%"></i></div><small>${s.xp-lo} / ${hi-lo} XP to Lv ${lv+1}</small></div>
     </div>
     <div class="pf-acts">${mine&&u?'<button class="btn small" id="pfShare"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12h.01M4 12a8 8 0 1016 0 8 8 0 00-16 0"/><path d="M10 14l4-4M9 7h8v8"/></svg>Share</button>':''}${
-      mine&&!u&&ACCT.up?'<button class="btn primary small" id="pfJoin">Create account</button>':''}${!mine&&u?friendBtn(u.username,{remove:true}):''}</div>
+      mine&&!u&&ACCT.up?'<button class="btn primary small" id="pfJoin">Sign in</button>':''}${!mine&&u?friendBtn(u.username,{remove:true}):''}</div>
   </div>`;
 
   // record: online matches only, like the leaderboard; games against the computer get one line at the bottom
@@ -474,7 +474,7 @@ function renderProfilePage(force){
   on('#pfCtlP',()=>openControl('players',u.username));
   if(!mine)return;
   on('#pfAv',pickAvatar);on('[data-pin]',pickShowcase);on('#pfColl',openCollection);
-  on('#pfShare',profShare);on('#pfJoin',()=>openAuth('up'));on('#pfUp',()=>openAuth('up'));on('#pfIn',()=>openAuth('in'));
+  on('#pfShare',profShare);on('#pfJoin',()=>openAuth('in'));on('#pfUp',()=>openAuth('up'));on('#pfIn',()=>openAuth('in'));
   on('#pfName',editName);on('#pfEmail',editEmail);on('#pfPass',editPassword);on('#pfOut',acctSignOut);on('#pfDel',deleteAccount);
   on('#pfReset',()=>confirmReset(renderProfilePage));
   on('#pfCtl',()=>openControl());

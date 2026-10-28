@@ -152,11 +152,12 @@ function acctSignOut(){
 function acctLeave(){api('/auth/logout',{method:'POST'}).catch(()=>{});acctSignedOut();toast('Signed out.')}
 
 const USERNAME_RE=/^[A-Za-z0-9_]{3,20}$/;
-// one sheet for both: .up = create account, .in = sign in
-function openAuth(mode='up'){
+// one sheet for both: .up = create account, .in = sign in.
+// Sign in comes first, so someone coming back doesn't make a second account by mistake
+function openAuth(mode='in'){
   const n=Object.values(SAVE.coll).reduce((a,b)=>a+b,0);
   const box=modal(`<h2 class="nm2"></h2>
-    <div class="seg" id="auTabs" role="group" aria-label="Account"><button data-k="up">Create account</button><button data-k="in">Sign in</button></div>
+    <div class="seg" id="auTabs" role="group" aria-label="Account"><button data-k="in">Sign in</button><button data-k="up">Create account</button></div>
     <form class="authf" id="authf" novalidate>
       <label>Username<input name="username" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="vael_99" required></label>
       <label>Password<input name="password" type="password" maxlength="200" required></label>
@@ -278,9 +279,9 @@ function renderProfile(){
   el.innerHTML=avatar(u)+
     `<span class="pc-main"><b>${esc(name)}</b><small class="pc-lv">${titleOf(lv)} · Lv ${lv}</small>`+
     `<small class="pc-st ${ACCT.state}">${!u&&ACCT.up?'<span class="lg">Saved on this device only</span><span class="sm">This device only</span>':acctStatus()}</small></span>`+
-    // your shards in the corner, and for a guest who could sign up, a button under them
+    // your shards in the corner, and for a guest who could sign in, a button under them (it opens the sign-in sheet, not the profile)
     `<span class="pc-side"><span class="pc-sh" id="pcShards">${shd()}${fmtSh(SAVE.shards)}</span>`+
-    (cta?'<span class="btn small pc-cta"><span class="lg">Create account</span><span class="sm">Sign up</span></span>':'')+'</span>';
+    (cta?'<span class="btn small pc-cta">Sign in</span>':'')+'</span>';
   el.setAttribute('aria-label',`${name}${u?', signed in':''}. ${titleOf(lv)}, level ${lv}. ${shardsTxt(SAVE.shards)}. ${acctStatus()}. Open profile.`);
   // the profile's sync line, when it's open
   const sy=$('#pfSync');if(sy)sy.textContent=acctStatus();
@@ -301,11 +302,11 @@ function renderGuestNote(){
   // a moment after the menu shows, so it doesn't land on top of something opening right then
   gNoteT=setTimeout(()=>{gNoteT=0;if(!gNoteDue())return;
     SAVE.gNote=matchesPlayed();save();
-    modal(`<h2>You're playing as a guest</h2><p>Your cards and progress are saved on this device only. Create an account to keep them and to play online for cards.</p>`,
-      [{label:'Later',esc:true},{label:'Create account',cls:'primary',fn:()=>openAuth('up')}]);
+    modal(`<h2>You're playing as a guest</h2><p>Your cards and progress are saved on this device only. Sign in or create an account to keep them and to play online for cards.</p>`,
+      [{label:'Later',esc:true},{label:'Sign in',cls:'primary',fn:()=>openAuth('in')}]);
   },700);
 }
-$('#pcard').onclick=()=>{sfx('click');openProfile()};
+$('#pcard').onclick=e=>{sfx('click');if(e.target.closest('.pc-cta'))openAuth('in');else openProfile()};
 // the first row of Settings; empty when there's no server to sign in to
 function acctSettingsRow(){
   const u=ACCT.token&&ACCT.user;

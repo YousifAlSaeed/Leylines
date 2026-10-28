@@ -15,7 +15,7 @@
 .pc-main b+small{font-variant-numeric:tabular-nums}
 .pc-st.offline,.pc-st.error{color:var(--warn)}
 /* looks like a button, but the whole card is the button */
-.pcard .pc-cta{flex:none;min-height:28px;padding:3px 10px;font-size:12.5px;border-radius:10px;pointer-events:none}
+.pcard .pc-cta{flex:none;min-height:28px;padding:3px 10px;font-size:12.5px;border-radius:10px}
 @media (pointer:coarse){.pcard .pc-cta{min-height:28px}}
 /* the right-hand side, centred top to bottom: your shards, with the sign-up button (guests) under them */
 .pc-side{flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px}
